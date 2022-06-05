@@ -3111,7 +3111,7 @@ of bibliographic references.")
 (define-public emacs-corfu
   (package
     (name "emacs-corfu")
-    (version "0.22")
+    (version "0.25")
     (source
      (origin
        (method git-fetch)
@@ -3120,13 +3120,13 @@ of bibliographic references.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "062lxyqh7nfaixmgfgmqfbkainxc8ypdkj6qjq38xigk55s7c5wk"))))
+        (base32 "1brq8dfn4mx5mxyqqikmhwpwlqdrfq1z0wprm6awxr89xk506g77"))))
     (build-system emacs-build-system)
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-         ;; Move the extensions source files to the top level, which is included in
-         ;; the EMACSLOADPATH.
+         ;; Move the extensions source files to the top level, which is included
+         ;; in the EMACSLOADPATH.
          (add-after 'unpack 'move-source-files
            (lambda _
              (let ((el-files (find-files "./extensions" ".*\\.el$")))
@@ -3135,10 +3135,34 @@ of bibliographic references.")
                          el-files)))))))
     (home-page "https://github.com/minad/corfu")
     (synopsis "Completion overlay region function")
-    (description "Corfu enhances the default completion in region function
-with a completion overlay.  The current candidates are shown in a popup
-overlay below or above the point.  Corfu can be considered the minimalistic
+    (description
+     "Corfu enhances the default completion in region function with a completion
+overlay.  The current candidates are shown in a popup overlay below or above
+the point.  Corfu can be considered the minimalistic
 @code{completion-in-region} counterpart of the Vertico minibuffer UI.")
+    (license license:gpl3+)))
+
+(define-public emacs-corfu-doc
+  (package
+    (name "emacs-corfu-doc")
+    (version "0.6.3")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/galeo/corfu-doc")
+             (commit "f9566cf13f6730a45b2f3c12e491a3fa2097e5d5")))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "098yf29yv1b11p7kvdc7n4ra7f5vcmf6nlvhl85jgwqrsdz1795b"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-corfu))
+    (home-page "https://github.com/galeo/corfu-doc")
+    (synopsis "Documentation popup for Corfu")
+    (description
+     "The @code{corfu-doc} package provides a way to display a documentation
+popup for completion candidates when using @code{emacs-corfu}.  It can
+be regarded as @code{emacs-company-quickhelp} for @code{emacs-corfu}.")
     (license license:gpl3+)))
 
 (define-public emacs-cape

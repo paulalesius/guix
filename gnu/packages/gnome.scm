@@ -4074,14 +4074,15 @@ Hints specification (EWMH).")
 (define-public goffice
   (package
     (name "goffice")
-    (version "0.10.50")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnome/sources/goffice/"
-                                  (version-major+minor version)  "/"
-                                  "goffice-" version ".tar.xz"))
-              (sha256
-               (base32 "1p5zbj7cbcfcxd6l8pnph54p6ah1bwf146y810j4bcq8ggf3sp1c"))))
+    (version "0.10.52")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "mirror://gnome/sources/goffice/"
+                           (version-major+minor version)  "/"
+                           "goffice-" version ".tar.xz"))
+       (sha256
+        (base32 "0344k0ffndd79as3c4nfq3mia7mrds6aq2jg76drdw3h8gcyzfb0"))))
     (build-system gnu-build-system)
     (outputs '("out"
                "doc"))                  ; 4.0 MiB of gtk-doc
@@ -4092,8 +4093,7 @@ Hints specification (EWMH).")
     (inputs
      (list gtk+ libgsf librsvg libxslt libxml2))
     (native-inputs
-     (list intltool
-           `(,glib "bin") pkg-config))
+     (list intltool `(,glib "bin") pkg-config))
     (home-page "https://developer.gnome.org/goffice/")
     (synopsis "Document-centric objects and utilities")
     (description "A GLib/GTK+ set of document-centric objects and utilities.")
@@ -4133,7 +4133,7 @@ Hints specification (EWMH).")
 (define-public gnumeric
   (package
     (name "gnumeric")
-    (version "1.12.50")
+    (version "1.12.52")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/gnumeric/"
@@ -4141,7 +4141,7 @@ Hints specification (EWMH).")
                                   "gnumeric-" version ".tar.xz"))
               (sha256
                (base32
-                "1f0lrj5msg80pgjp38jj6rddf352gwddgip7z4lki66n3fx1k23m"))))
+                "0fw201j0sks95wgvns3vydgprhwf6z4v4xb2a0ldi892k8277kvk"))))
     (build-system glib-or-gtk-build-system)
     (arguments
      `(;; The gnumeric developers don't worry much about failing tests.
@@ -4173,12 +4173,12 @@ Hints specification (EWMH).")
            python-pygobject
            zlib))
     (native-inputs
-     `(("bison" ,bison)
-       ("docbook-xml" ,docbook-xml)
-       ("intltool" ,intltool)
-       ("itstool" ,itstool)
-       ("glib:bin" ,glib "bin")
-       ("pkg-config" ,pkg-config)))
+     (list bison
+           docbook-xml
+           `(,glib "bin")
+           intltool
+           itstool
+           pkg-config))
     (home-page "http://www.gnumeric.org")
     (synopsis "Spreadsheet application")
     (description
