@@ -1521,14 +1521,15 @@ of the same name.")
 (define-public wireshark
   (package
     (name "wireshark")
-    (version "3.6.2")
+    (version "3.6.5")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://www.wireshark.org/download/src/wireshark-"
                            version ".tar.xz"))
        (sha256
-        (base32 "03n34jh4318y3q14jclxfxi4r7b9l393w9fw9bq57ydff9aim42x"))))
+        (base32
+         "18gayssbzrpy7966y11nxib4mrgf0zf8rwxrshvn2lgk1zb43mx2"))))
     (build-system cmake-build-system)
     (arguments
      `(#:phases
@@ -3558,7 +3559,7 @@ powerful route filtering syntax and an easy-to-use configuration interface.")
 (define-public iwd
   (package
     (name "iwd")
-    (version "1.24")
+    (version "1.27")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3567,7 +3568,7 @@ powerful route filtering syntax and an easy-to-use configuration interface.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1sdi7008j5jhlg2rqpczh1pzb8zay6mc9dpnjjsmdnsmrcr3v7wi"))))
+                "1859hmbfd35m935bcbzgkwxrqay3z48iqp1qbi0kdkis4zs7xpw0"))))
     (build-system gnu-build-system)
     (inputs
      (list dbus ell (package-source ell) readline))
@@ -4191,3 +4192,4 @@ Transfer Protocol} and older @acronym{SCP, Secure Copy Protocol}
 implementations.")
     (home-page "https://www.chiark.greenend.org.uk/~sgtatham/putty/")
     (license license:expat)))
+

@@ -5524,3 +5524,4 @@ VCS, by default, makes screenshots the same size as the video, see the manual
 for details on how to change this.")
    (home-page "http://p.outlyer.net/vcs/")
    (license license:lgpl2.1+)))
+

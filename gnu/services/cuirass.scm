@@ -165,7 +165,8 @@
                   #:environment-variables
                   (list "GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt"
                         (string-append "GIT_EXEC_PATH=" #$git
-                                       "/libexec/git-core"))
+                                       "/libexec/git-core")
+                        "GUILE_WARN_DEPRECATED=detailed")
 
                   #:user #$user
                   #:group #$group
