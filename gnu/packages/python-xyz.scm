@@ -1515,14 +1515,14 @@ approximate nearest neighbor search with Python bindings.")
 (define-public python-sh
   (package
     (name "python-sh")
-    (version "1.12.14")
+    (version "1.14.2")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "sh" version))
        (sha256
         (base32
-         "1z2hx357xp3v4cv44xmqp7lli3frndqpyfmpbxf7n76h7s1zaaxm"))))
+         "03gyss1rhj4in7pgysg4q0hxp3230whinlpy1532ljs99lrx0ywx"))))
     (build-system python-build-system)
     (arguments
      '(#:phases
@@ -10142,14 +10142,14 @@ file (e.g. @file{PKG-INFO}).")
 (define-public python-pyflakes
   (package
     (name "python-pyflakes")
-    (version "2.3.1")
+    (version "2.4.0")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "pyflakes" version))
         (sha256
          (base32
-          "1ny10364ciqh4ripasj4zzv4145l21l3s85m3qlrvfq5pk58xg7m"))))
+          "0k5jn8jpxni264wxf6cc3xcd1qckc0pww30bsd77mwzdf8l5ra05"))))
     (build-system python-build-system)
     (home-page "https://github.com/PyCQA/pyflakes")
     (synopsis "Passive checker of Python programs")
@@ -10193,13 +10193,13 @@ cyclomatic complexity of Python source code.")
 (define-public python-flake8
   (package
     (name "python-flake8")
-    (version "3.9.1")
+    (version "3.9.2")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "flake8" version))
               (sha256
                (base32
-                "0y732h02n2aih8gzyfj4bbhg4jgahyv84mjwfindk2g6w45rka0s"))))
+                "0sspgh2ph7bb5fmf49mrdhi7n5m421kfkxk1n0vn4akgg20q6lh7"))))
     (build-system python-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
@@ -29292,4 +29292,25 @@ profile.  It supports:
 @end itemize
 
 Currently, Linux is the only platform supported by this library.")
+    (license license:expat)))
+
+(define-public python-musical-scales
+  (package
+    (name "python-musical-scales")
+    (version "1.0.1")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "musical-scales" version))
+              (sha256
+               (base32
+                "1ckn8n37i7b65h0i385ycn0w8sg9na0iabz0kmhxxc1wj0hddkw9"))))
+    (build-system python-build-system)
+    (native-inputs (list python-wheel))
+    (home-page "https://github.com/hmillerbakewell/musical-scale")
+    (synopsis "Retrieve a scale based on a given mode and starting note")
+    (description
+     "Retrieve a scale based on a given mode and starting note.
+Information about these scales can be
+@url{https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes, found on
+Wikipedia}.")
     (license license:expat)))

@@ -111,6 +111,7 @@
 ;;; Copyright © 2022 jgart <jgart@dismail.de>
 ;;; Copyright © 2022 Dominic Martinez <dom@dominicm.dev>
 ;;; Copyright © 2022 Peter Polidoro <peter@polidoro.io>
+;;; Copyright © 2022 Luis Felipe López Acevedo <luis.felipe.la@protonmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -19749,7 +19750,7 @@ by the status of listed files.")
 (define-public emacs-elm-mode
   (package
     (name "emacs-elm-mode")
-    (version "0.21.0")
+    (version "0.22.0")
     (source
      (origin
        (method git-fetch)
@@ -19759,7 +19760,7 @@ by the status of listed files.")
          (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0iwk4fmw8hq3ry4ky1zc7lgl4cpbnrjyk74c2xzddfspi3ks41fd"))))
+        (base32 "1gnr61ibzcznfqy5f8capmbz75rcfikwy106rjdmp45qz2jwp4di"))))
     (propagated-inputs
      (list emacs-dash emacs-f emacs-reformatter emacs-s))
     (build-system emacs-build-system)
@@ -27211,8 +27212,8 @@ zip utility (default is @code{zip}).")
 
 (define-public emacs-ox-gemini
   ;; No releases yet
-  (let ((commit "d88c10bcb10fc463fa5a2f6e29c8c94b75a314c0")
-        (revision "0"))
+  (let ((commit "168f820ea401fb813435a3a55af295873a4c110b")
+        (revision "1"))
     (package
       (name "emacs-ox-gemini")
       (version (git-version "0" revision commit))
@@ -27224,7 +27225,7 @@ zip utility (default is @code{zip}).")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "1f8kbg5vjd1k7fak3v56b77yk612j6vmzx4xzx3m2vq3f0nyxq29"))))
+          (base32 "0jmiya3f9vv4v64p5kxla6wiiyv4wg4w7f4a6zmdrjcn11hflqmm"))))
       (build-system emacs-build-system)
       (home-page "https://sr.ht/~abrahms/ox-gemini")
       (synopsis "Export Org files in Gemini format")
