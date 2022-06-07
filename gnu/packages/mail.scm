@@ -556,7 +556,7 @@ aliasing facilities to work just as they would on normal mail.")
 (define-public mutt
   (package
     (name "mutt")
-    (version "2.2.5")
+    (version "2.2.6")
     (source (origin
              (method url-fetch)
              (uri (list
@@ -566,7 +566,7 @@ aliasing facilities to work just as they would on normal mail.")
                                    version ".tar.gz")))
              (sha256
               (base32
-               "0ivyfld4a4sfzsdiaajqiarvfx4i85g1smbb2b5dqjkrb48pi2zz"))
+               "1lw8111wbsw4hkvrlfsd2cf2l1j25vqwbzys07z0ding2wsxk8pz"))
              (patches (search-patches "mutt-store-references.patch"))))
     (build-system gnu-build-system)
     (inputs
@@ -1158,7 +1158,7 @@ security functionality including PGP, S/MIME, SSH, and SSL.")
 (define-public mu
   (package
     (name "mu")
-    (version "1.6.10")
+    (version "1.6.11")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/djcb/mu/releases/"
@@ -1166,7 +1166,7 @@ security functionality including PGP, S/MIME, SSH, and SSL.")
                                   "mu-" version ".tar.xz"))
               (sha256
                (base32
-                "1dh0x4lqnjflb0k8fybr5clqjxv35scf055g1590pr5znam29hhb"))))
+                "13gchks9znyw0axw1wlks7f7h4442rfagmj7kx0jm3qhvi0b5sk0"))))
     (build-system gnu-build-system)
     (native-inputs
      `(("pkg-config" ,pkg-config)

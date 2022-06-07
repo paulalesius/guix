@@ -187,6 +187,7 @@
   #:use-module (gnu packages libevent)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages libidn)
+  #:use-module (gnu packages libusb)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages man)
@@ -2070,6 +2071,30 @@ controller area network (CAN) support for Python developers; providing common
 abstractions to different hardware devices, and a suite of utilities for
 sending and receiving messages on a CAN bus.")
     (license license:lgpl3+)))
+
+(define-public python-canopen
+  (package
+    (name "python-canopen")
+    (version "2.0.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "canopen" version))
+       (sha256
+        (base32 "1nb543wb37kj95v6bhh272lm5gkpi41q3pnsl1fxlyizm2gamj5w"))))
+    (build-system python-build-system)
+    (native-inputs (list python-packaging))
+    (propagated-inputs (list python-can))
+    (home-page "https://github.com/christiansandberg/canopen")
+    (synopsis "CANopen stack implementation")
+    (description
+     "This package provides a Python implementation of the
+@uref{https://www.can-cia.org/canopen/,CANopen standard} for
+@acronym{CANs, controller-area networks}.  The aim of the project is to
+support the most common parts of the CiA 301 standard in a simple
+Pythonic interface.  It is mainly targeted for testing and automation
+tasks rather than a standard compliant master implementation.")
+    (license license:expat)))
 
 (define-public python-caniusepython3
   (package
@@ -10199,7 +10224,14 @@ cyclomatic complexity of Python source code.")
               (uri (pypi-uri "flake8" version))
               (sha256
                (base32
-                "0sspgh2ph7bb5fmf49mrdhi7n5m421kfkxk1n0vn4akgg20q6lh7"))))
+                "0sspgh2ph7bb5fmf49mrdhi7n5m421kfkxk1n0vn4akgg20q6lh7"))
+              (snippet
+               #~(begin
+                   (use-modules (guix build utils))
+                   (substitute* "setup.cfg"
+                     ;; Remove upper bound on pyflakes version.
+                     (("(pyflakes >=.*), .*" _ pyflakes)
+                      (string-append pyflakes "\n")))))))
     (build-system python-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
@@ -11037,13 +11069,13 @@ third-party code.")
 (define-public python-msgpack
   (package
     (name "python-msgpack")
-    (version "1.0.3")
+    (version "1.0.4")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "msgpack" version))
               (sha256
                (base32
-                "07m84yisf8m6gr68ip9v6vzxax7kqbn8qxg7ir18clk1jgxwgzai"))))
+                "0pqzy1zclyhd42gfibhkcqymbspy5a6v421g87mh40h3iz0nkn7m"))))
     (build-system python-build-system)
     (arguments
      `(#:modules ((guix build utils)
@@ -13851,6 +13883,25 @@ to the Python ecosystem.")
      "Promises/A+ implementation for Python")
     (license license:expat)))
 
+(define-public python-progress
+  (package
+    (name "python-progress")
+    (version "1.6")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "progress" version))
+       (sha256
+        (base32 "1k9lpb7lqr6mywpnqcz71y6qny54xlgprdp327za2gy0nnc6xj69"))))
+    (build-system python-build-system)
+    (home-page "http://github.com/verigak/progress/")
+    (synopsis "Progress reporting bars for Python")
+    (description "This Python package provides progress reporting for visual
+of progress of long running operations.  There are multiple choices of
+progress bars and spinners, with customizable options, such as width, fill
+character, and suffix.")
+    (license license:isc)))
+
 (define-public python-progressbar2
   (package
     (name "python-progressbar2")
@@ -15484,20 +15535,33 @@ respectively.")
 (define-public python-rope
   (package
     (name "python-rope")
-    (version "0.19.0")
+    (version "1.1.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "rope" version))
        (sha256
         (base32
-         "1nlhkmsfvn2p1msrmwqnypnvr993alzawnpc1605q7rfad3xgrk4"))))
+         "0bkzwkllxxdxd3w70xiy137lqvnlmmaplsc2ya3s23ss4kq8y10k"))))
     (build-system python-build-system)
+    (arguments
+     (list #:phases
+           `(modify-phases %standard-phases
+              (add-after 'unpack 'disable-broken-test
+                (lambda _
+                  (substitute* "ropetest/contrib/autoimporttest.py"
+                    (("def test_search_module")
+                     "def __notest_search_module")
+                    (("def test_search_submodule")
+                     "def __notest_search_submodule")))))))
+    (native-inputs
+     (list python-pytest-timeout
+           python-pytest))
     (home-page "https://github.com/python-rope/rope")
     (synopsis "Refactoring library for Python")
     (description "Rope is a refactoring library for Python.  It facilitates
 the renaming, moving and extracting of attributes, functions, modules, fields
-and parameters in Python 2 source code.  These refactorings can also be applied
+and parameters in Python source code.  These refactorings can also be applied
 to occurrences in strings and comments.")
     (license license:lgpl3+)))
 
@@ -16952,6 +17016,91 @@ as well.")
      @item a number of backing contexts (database, redis, sqlite, a slave device).
      @end itemize")
     (license license:bsd-3)))
+
+(define-public python-exodriver
+  (package
+    (name "python-exodriver")
+    (version "2.6.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/labjack/exodriver")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1ikjz8147p14s814yabdq821y691klnr2yg54zgsymcc97kvwp2q"))))
+    (outputs (list "out"
+                   "doc"))              ;544 KiB of examples
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #f                       ;no test suite
+      #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                           (string-append "PREFIX=" #$output)
+                           "RUN_LDCONFIG=0"
+                           "LINK_SO=1")
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (replace 'build
+            (lambda* (#:key make-flags #:allow-other-keys #:rest args)
+              (with-directory-excursion "liblabjackusb"
+                (apply (assoc-ref %standard-phases 'build)
+                       `(,@args #:make-flags ,make-flags)))))
+          (replace 'install
+            (lambda* (#:key make-flags #:allow-other-keys #:rest args)
+              (with-directory-excursion "liblabjackusb"
+                (apply (assoc-ref %standard-phases 'install)
+                       `(,@args #:make-flags ,make-flags)))
+              ;; Install udev rules.
+              (install-file "90-labjack.rules"
+                            (string-append #$output "/lib/udev/rules.d"))
+              ;; Install examples.
+              (let ((doc (string-append #$output:doc "/share/doc/" #$name)))
+                (mkdir-p doc)
+                (copy-recursively "examples"
+                                  (string-append doc "/examples"))))))))
+    (inputs (list libusb))
+    (home-page "https://github.com/labjack/exodriver")
+    (synopsis "USB driver for LabJack data acquisition instruments")
+    (description "This package provides @code{liblabjackusb}, a USB library for low-level
+communication with the U3, U6, UE9, Digit, T4 and T7 LabJack data acquisition
+instruments.  A udev rule is also included to allow unprivileged users to
+communicate with the instruments via USB.")
+    (license license:expat)))           ;see README
+
+(define-public python-labjack
+  (package
+    (name "python-labjack")
+    (version "2.0.4")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "LabJackPython" version))
+              (sha256
+               (base32
+                "013bjqdi05vlbdqprr6kqi8gs4qhqc7rnyp1klw8k6fng77rpdzz"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:tests? #f                       ;no test suite
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-liblabjackusb.so
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* (find-files "." "\\.py$")
+                (("ctypes.CDLL\\(\"liblabjackusb.so\"")
+                 (format #f "ctypes.CDLL(~s"
+                         (search-input-file inputs
+                                            "lib/liblabjackusb.so")))))))))
+    ;; exodriver is provided as a regular input, as only its shared object is
+    ;; used, not its Python API.
+    (inputs (list python-exodriver))
+    (home-page "https://labjack.com/support/software/examples/ud/labjackpython")
+    (synopsis "Python library for LabJack U3, U6, UE9 and U12")
+    (description "This Python library allows communicating with the U3, U6,
+UE9 and U12 LabJack data acquisition (DAQ) modules.")
+    (license license:expat)))          ;see setup.py
 
 (define-public python-kivy-garden
   (package
