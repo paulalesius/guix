@@ -6468,21 +6468,22 @@ a simple netcat replacement with chaining support.")
 (define-public python-pycodestyle
   (package
     (name "python-pycodestyle")
-    (version "2.7.0")
+    (version "2.8.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pycodestyle" version))
        (sha256
         (base32
-         "1vqwmzmjdv331kmfq3q9j3as2x7r2r49lf83r9w4147pdg8c32f3"))))
+         "0zxyrg8029lzjhima6l5nk6y0z6lm5wfp9qchz3s33j3xx3mipgd"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
        (modify-phases %standard-phases
          (replace 'check
-           (lambda _
-             (invoke "pytest" "-vv"))))))
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (invoke "pytest" "-vv")))))))
     (native-inputs
      (list python-pytest))
     (home-page "https://pycodestyle.readthedocs.io/")
@@ -10218,27 +10219,21 @@ cyclomatic complexity of Python source code.")
 (define-public python-flake8
   (package
     (name "python-flake8")
-    (version "3.9.2")
+    (version "4.0.1")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "flake8" version))
               (sha256
                (base32
-                "0sspgh2ph7bb5fmf49mrdhi7n5m421kfkxk1n0vn4akgg20q6lh7"))
-              (snippet
-               #~(begin
-                   (use-modules (guix build utils))
-                   (substitute* "setup.cfg"
-                     ;; Remove upper bound on pyflakes version.
-                     (("(pyflakes >=.*), .*" _ pyflakes)
-                      (string-append pyflakes "\n")))))))
+                "03c7mnk34wfz7a0m5zq0273y94awz69fy5iww8alh4a4v96h6vl0"))))
     (build-system python-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
                   (replace 'check
-                    (lambda* (#:key inputs outputs #:allow-other-keys)
-                      (add-installed-pythonpath inputs outputs)
-                      (invoke "pytest" "-v"))))))
+                    (lambda* (#:key tests? inputs outputs #:allow-other-keys)
+                      (when tests?
+                        (add-installed-pythonpath inputs outputs)
+                        (invoke "pytest" "-v")))))))
     (propagated-inputs (list python-pycodestyle python-entrypoints
                              python-pyflakes python-mccabe))
     (native-inputs (list python-mock python-pytest))
@@ -10364,24 +10359,26 @@ unnecessary plus operators for explicit string literal concatenation.")
        (uri (pypi-uri "flake8-polyfill" version))
        (sha256
         (base32
-         "1nlf1mkqw856vi6782qcglqhaacb23khk9wkcgn55npnjxshhjz4"))))
+         "1nlf1mkqw856vi6782qcglqhaacb23khk9wkcgn55npnjxshhjz4"))
+       (patches (search-patches "python-flake8-polyfill-flake8-4-compat.patch"))))
     (build-system python-build-system)
     (arguments
      '(#:phases
        (modify-phases %standard-phases
          (replace 'check
-           (lambda _
+           (lambda* (#:key tests? #:allow-other-keys)
              ;; Be compatible with Pytest 4:
              ;; https://gitlab.com/pycqa/flake8-polyfill/merge_requests/7
              (substitute* "setup.cfg"
                (("\\[pytest\\]")
                 "[tool:pytest]"))
-             (invoke "py.test" "-v"))))))
+             (when tests?
+               (invoke "py.test" "-v")))))))
     (propagated-inputs
      (list python-flake8))
     (native-inputs
      (list python-mock python-pep8 python-pycodestyle python-pytest))
-    (home-page "https://gitlab.com/pycqa/flake8-polyfill")
+    (home-page "https://github.com/pycqa/flake8-polyfill")
     (synopsis "Polyfill package for Flake8 plugins")
     (description
      "This package that provides some compatibility helpers for Flake8
