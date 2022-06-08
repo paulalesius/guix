@@ -326,7 +326,7 @@ languages.")
     (package
       (inherit emacs)
       (name "emacs-next")
-      (version (git-version "29.1" revision commit))
+      (version (git-version "29.0.50" revision commit))
       (source
        (origin
          (inherit (package-source emacs))
