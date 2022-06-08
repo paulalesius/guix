@@ -838,23 +838,7 @@ in the style of communicating sequential processes (@dfn{CSP}).")
        (alist-replace "go" (list go-1.16) (package-native-inputs go-1.16))
        (package-native-inputs go-1.16)))))
 
-(define-public go-1.18
-  (package
-    (inherit go-1.17)
-    (name "go")
-    (version "1.18.3")
-      (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/golang/go")
-             (commit (string-append "go" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "16h9776nzbhvgr86kv6q5phcxqg9566b3gv7kil80ybdyszm3kl1"))))))
-
-(define-public go go-1.18)
+(define-public go go-1.17)
 
 (define-public (make-go-std go)
   "Return a package which builds the standard library for Go compiler GO."
