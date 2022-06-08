@@ -94,7 +94,7 @@
 ;;; Copyright © 2021 Yurii Kholodkov <urist.mckorobochka@gmail.com>
 ;;; Copyright © 2021 Alexey Abramov <levenson@mmer.org>
 ;;; Copyright © 2021 Xinglu Chen <public@yoctocell.xyz>
-;;; Copyright © 2021 Stefan Reichör <stefan@xsteve.at>
+;;; Copyright © 2021, 2022 Stefan Reichör <stefan@xsteve.at>
 ;;; Copyright © 2021 Simon Tournier <zimon.toutoune@gmail.com>
 ;;; Copyright © 2021 Eugene Klimov <lipklim@mailbox.org>
 ;;; Copyright © 2021 Zheng Junjie <873216071@qq.com>
@@ -112,6 +112,7 @@
 ;;; Copyright © 2022 Dominic Martinez <dom@dominicm.dev>
 ;;; Copyright © 2022 Peter Polidoro <peter@polidoro.io>
 ;;; Copyright © 2022 Luis Felipe López Acevedo <luis.felipe.la@protonmail.com>
+;;; Copyright © 2022 Thomas Albers Raviola <thomas@thomaslabs.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -1938,6 +1939,28 @@ Anaphoric expressions implicitly create one or more temporary variables which
 can be referred to during the expression.  This technique can improve clarity
 in certain cases.  It also enables recursion for anonymous functions.")
     (license license:public-domain)))
+
+(define-public emacs-xah-fly-keys
+  (package
+    (name "emacs-xah-fly-keys")
+    (version "17.13.20220526011611")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/xahlee/xah-fly-keys")
+                    (commit "b1b1ea62c3f1a329376d9125592175cf2027ebc7")))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1gv8d9zgmhzjg6zk2a7y76dz30a3l91xb1p15vldka95faz197wn"))))
+    (build-system emacs-build-system)
+    (home-page "http://xahlee.info/emacs/misc/ergoemacs_vi_mode.html")
+    (synopsis "Modal keybinding system for Emacs, based on command frequency and
+ergonomics")
+    (description "xah-fly-keys.el is a modal editing mode for Emacs, like Vi,
+but the design of key/command choice is based on command frequency statistics
+and ease-of-key score.  Most frequently used commands have most easy keys.")
+    (license license:gpl3)))
 
 (define-public emacs-xr
   (package
@@ -12225,7 +12248,7 @@ extensions.")
 (define-public emacs-evil-collection
   (package
     (name "emacs-evil-collection")
-    (version "0.0.7")
+    (version "0.0.8")
     (source
      (origin
        (method git-fetch)
@@ -12234,7 +12257,7 @@ extensions.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1f5mbg2k527brn6b7njdjizpbzj252c53crzl8sf2564czcprqj0"))))
+        (base32 "159i3qvjnp7jiffwpr517nnxcy3w3g40302vyzxvz6mb6qay6f2c"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-evil emacs-annalist))
@@ -13014,6 +13037,30 @@ to take once it is.  Org Edna runs when either the BLOCKER or TRIGGER
 properties are set on a heading, and when it is changing from a TODO state to
 a DONE state.")
     (license license:gpl3+)))
+
+(define-public emacs-toodoo
+  ;; Package has no release.  Version is extracted from "Version:" keyword in
+  ;; main file, and commit below matches version bump.
+  (package
+    (name "emacs-toodoo")
+    (version "0.2")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/ChanderG/toodoo.el")
+             (commit "149a563863c2f728c5f903475dbce50547c51000")))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "00q7aym0kl03j9m66pivgy0snxcjjg402049b2wdy18kgyypfvx8"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-transient emacs-evil))
+    (home-page "https://github.com/ChanderG/toodoo.el")
+    (synopsis "Magit-like interface for a Todo workflow built on top of Org")
+    (description "This package provides a minor mode for fast and easy management of Todos
+using Org mode and transients.")
+    (license license:asl2.0)))
 
 (define-public emacs-flx
   (package
@@ -15782,6 +15829,30 @@ of commands is displayed in a handy popup.")
 characters from end of lines.")
     (license license:gpl3+)))
 
+(define-public emacs-opencl-mode
+  ;; Upstream never makes any formal releases, there is only v1.0.
+  ;; Use the latest commit instead.
+  (let ((commit "15091eff92c33ee0d1ece40eb99299ef79fee92d")
+        (revision "1"))
+    (package
+      (name "emacs-opencl-mode")
+      (version (git-version "1.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/salmanebah/opencl-mode")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32 "1zn6rr48w0ai0sn51zzyp546va6flfgf9lm12vfrdb6kkiiiq403"))))
+      (build-system emacs-build-system)
+      (synopsis "Emacs major mode for editing OpenCL kernels")
+      (description "This Emacs package provides the @code{opencl-mode} major
+mode for editing OpenCL kernels.  It supports syntax highlighting and online
+access to the OpenCL documentation through the @code{opencl-lookup} function.")
+      (home-page "https://github.com/salmanebah/opencl-mode")
+      (license license:gpl3+))))
+
 (define-public emacs-openwith
   ;; There is no release tag. Version is extracted from main file.
   (let ((version "20120531")
@@ -15860,29 +15931,26 @@ multiplexer.")
     (license license:gpl3+)))
 
 (define-public emacs-plz
-  (let ((commit "7e456638a651bab3a814e3ea81742dd917509cbb")
-        (revision "1"))
-    (package
-      (name "emacs-plz")
-      (version (git-version "0.1-pre" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/alphapapa/plz.el")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "05kgxrps1s20im5hhq799nrs3615bvssm4r0ysgmwm203mmzsjgj"))))
-      (build-system emacs-build-system)
-      (inputs (list curl))
-      (home-page "https://github.com/alphapapa/plz.el")
-      (synopsis "HTTP library for Emacs")
-      (description
-       "This package provides HTTP library for Emacs.  It uses curl as
-a backend, which avoids some of the issues with using Emacs’s built-in url
-library.")
-      (license license:gpl3+))))
+  (package
+    (name "emacs-plz")
+    (version "0.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/alphapapa/plz.el")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0psdjmj1r4g57vhm6c4hajmma72jk893fk820fbjgjwqihr1bxx9"))))
+    (build-system emacs-build-system)
+    (inputs (list curl))
+    (home-page "https://github.com/alphapapa/plz.el")
+    (synopsis "HTTP library for Emacs")
+    (description
+     "This package provides HTTP library for Emacs.  It uses Curl as a backend,
+which avoids some of the issues with using Emacs’s built-in Url library.")
+    (license license:gpl3+)))
 
 (define-public emacs-ement
   (let ((commit "c951737dc855604aba389166bb0e7366afadc533")
@@ -27758,7 +27826,7 @@ Emacs that integrate with major modes like Org-mode.")
 (define-public emacs-modus-themes
   (package
     (name "emacs-modus-themes")
-    (version "2.3.3")
+    (version "2.4.0")
     (source
      (origin
        (method git-fetch)
@@ -27767,7 +27835,7 @@ Emacs that integrate with major modes like Org-mode.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "14nfb94y9vcnpmwj9acwl6h5v0h1c6swqf33ch4zimxxqgx9zrm4"))))
+        (base32 "0ia6r68fqbv64r9jm92vmqypq15nl8yy07n18hqrfbp1fy47zds1"))))
     (native-inputs (list texinfo))
     (build-system emacs-build-system)
     (arguments
@@ -31377,6 +31445,43 @@ buffers using font locking and text properties.  The package styles
 headlines, keywords, tables and source blocks.")
    (license license:gpl3+)))
 
+(define-public emacs-pyimport
+  (let ((commit "a6f63cf7ed93f0c0f7c207e6595813966f8852b9")
+        (revision "0"))
+    (package
+      (name "emacs-pyimport")
+      (version (git-version "1.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://github.com/Wilfred/pyimport")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "1q5gqhvh4zq5dy8vns694warcz48j1hdnxg16sjck4gsi9xivbvs"))))
+      (build-system emacs-build-system)
+      (inputs
+        (list python-pyflakes))
+      (propagated-inputs
+        (list emacs-dash emacs-s emacs-shut-up))
+      (arguments
+        (list #:phases
+              #~(modify-phases %standard-phases
+                  (add-after 'unpack 'patch-pyflakes-executable
+                    (lambda* (#:key inputs #:allow-other-keys)
+                      (let ((pyflakes (search-input-file inputs "/bin/pyflakes")))
+                        (make-file-writable "pyimport.el")
+                        (substitute* "pyimport.el"
+                          (("\"pyflakes")
+                           (string-append "\"" pyflakes)))))))))
+      (home-page "https://github.com/Wilfred/pyimport")
+      (synopsis "Manage Python imports from Emacs")
+      (description
+"@code{emacs-pyimport} manages python imports from Emacs via @code{python-pyflakes}.")
+      (license license:gpl3+)))) ; License is in pyimport.el
+
 (define-public emacs-osm
   (package
     (name "emacs-osm")
@@ -31406,6 +31511,33 @@ headlines, keywords, tables and source blocks.")
 zoomable and moveable map display, display of tracks and POIs from GPX files,
 parallel fetching of tiles with cURL, and more.")
     (license license:gpl3+)))
+
+(define-public emacs-popon
+  ;; Upstream does not tag releases.  The commit below matches the version
+  ;; bump.
+  (let ((commit "d16cb747d356eab3f1bc4061ecee473732f7b8bb"))
+    (package
+      (name "emacs-popon")
+      (version "0.4")
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://codeberg.org/akib/emacs-popon")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "1i5rp0gvcdqakzaznsh0lqzvlq5kif9q2grq4l80gl75dmqdpym7"))))
+      (build-system emacs-build-system)
+      (home-page "https://codeberg.org/akib/emacs-popon/")
+      (synopsis "Pop floating text on a window")
+      (description
+       "@code{emacs-popon} allows you to pop text on a window, what we call
+a popon.  Popons are window-local and sticky, they don't move while
+scrolling, and they even don't go away when switching buffer, but you
+can bind a popon to a specific buffer to only show on that buffer.")
+      (license license:gpl3+))))
 
 (define-public emacs-bitbake-modes
   (package
