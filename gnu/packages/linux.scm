@@ -368,37 +368,37 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
 ;; The "longterm" kernels — the older releases with long-term upstream support.
 ;; Here are the support timelines:
 ;; <https://www.kernel.org/category/releases.html>
-(define-public linux-libre-5.15-version "5.15.44")
+(define-public linux-libre-5.15-version "5.15.46")
 (define-public linux-libre-5.15-gnu-revision "gnu")
 (define deblob-scripts-5.15
   (linux-libre-deblob-scripts
    linux-libre-5.15-version
    linux-libre-5.15-gnu-revision
    (base32 "1n57mz5agvf1d0ggbg080d7hvx8p9y0iqxkq4ypg10a7n96zy7y5")
-   (base32 "0gs92qbpvirwd02rpwwnja7771z2azbiy9ppy9ynpr14lxmzxnnh")))
+   (base32 "17xsn91h0c2d8igpzgmjm1g58nfpihlhgg9wm8zbfyd5g4airs8f")))
 (define-public linux-libre-5.15-pristine-source
   (let ((version linux-libre-5.15-version)
-        (hash (base32 "1p1jz0lxmzyj0c51afqghylg9kblk8zmlw92zq6bsn37wlwbrylv")))
+        (hash (base32 "0srp0wypl24gf5yz91mpk1c2kllabq6wvby1wqrrbdwvfx35figb")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.15)))
 
-(define-public linux-libre-5.10-version "5.10.119")
+(define-public linux-libre-5.10-version "5.10.121")
 (define-public linux-libre-5.10-gnu-revision "gnu1")
 (define deblob-scripts-5.10
   (linux-libre-deblob-scripts
    linux-libre-5.10-version
    linux-libre-5.10-gnu-revision
    (base32 "0mw7qn77y9c6wrnw4rjvf75cpm1w6n1aqqhf8cnghcb97p2yxxrf")
-   (base32 "1xyhz0dyrkg2avz382ly3dzpa5v89x49gfzx80c1drpwsk7jg6gp")))
+   (base32 "1ryfc8fppigssrzz5lfbqgli49cgs3lmf0yh46lpi2k0j2x30qcc")))
 (define-public linux-libre-5.10-pristine-source
   (let ((version linux-libre-5.10-version)
-        (hash (base32 "04952zaz2kfwf7agy4laz50f9sl3mrnpqlbwbj84q1xpl9akwd9y")))
+        (hash (base32 "1iljaaiwqg30rqb9zxrxc4l1p56q75jf0zvsrmn67z2a12sffi4h")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.10)))
 
-(define-public linux-libre-5.4-version "5.4.196")
+(define-public linux-libre-5.4-version "5.4.197")
 (define-public linux-libre-5.4-gnu-revision "gnu1")
 (define deblob-scripts-5.4
   (linux-libre-deblob-scripts
@@ -408,12 +408,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "05i286d98fm2pdf9724x1dsmfcm7gsd7yyyvxqlpisyj1kx14hda")))
 (define-public linux-libre-5.4-pristine-source
   (let ((version linux-libre-5.4-version)
-        (hash (base32 "1x5irgki792f21hm5146xary0260cl9r475kvw8vm9w32vyx18ig")))
+        (hash (base32 "1a1nzrx873vwlpm018l6rk19yh59badvwsknw3chbkbhzjrigbf2")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.4)))
 
-(define-public linux-libre-4.19-version "4.19.245")
+(define-public linux-libre-4.19-version "4.19.246")
 (define-public linux-libre-4.19-gnu-revision "gnu1")
 (define deblob-scripts-4.19
   (linux-libre-deblob-scripts
@@ -423,12 +423,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "1dnjgx1nmawm9gm0yf15nl80nmg7hy7q2vl3jxjbwj6hlrfv5dmx")))
 (define-public linux-libre-4.19-pristine-source
   (let ((version linux-libre-4.19-version)
-        (hash (base32 "1s58qci6xhmss12glzkqk41kp60pqmzh4d84kyz4m4nf4xhdvzcr")))
+        (hash (base32 "0fmsglkvdgdmrkm53vyi9d4hvdl4py9qn1z0mni224n96rd2zb80")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.19)))
 
-(define-public linux-libre-4.14-version "4.14.281")
+(define-public linux-libre-4.14-version "4.14.282")
 (define-public linux-libre-4.14-gnu-revision "gnu1")
 (define deblob-scripts-4.14
   (linux-libre-deblob-scripts
@@ -438,12 +438,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "1dnjgx1nmawm9gm0yf15nl80nmg7hy7q2vl3jxjbwj6hlrfv5dmx")))
 (define-public linux-libre-4.14-pristine-source
   (let ((version linux-libre-4.14-version)
-        (hash (base32 "0pivb1m2cwqnlm8bhd4ccnlq9pwp2r5lmn77gp91k6vbjv3gkqis")))
+        (hash (base32 "18sp2qvk8dkjrlxwf4d470282m9wyvhajvyys9vs94rh1i3whdv6")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.14)))
 
-(define-public linux-libre-4.9-version "4.9.316")
+(define-public linux-libre-4.9-version "4.9.317")
 (define-public linux-libre-4.9-gnu-revision "gnu1")
 (define deblob-scripts-4.9
   (linux-libre-deblob-scripts
@@ -453,7 +453,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "14jyn2yrbm6ayp0bszs4f9jy3p1qkrj5p5gf5c42spr67aa2lv2v")))
 (define-public linux-libre-4.9-pristine-source
   (let ((version linux-libre-4.9-version)
-        (hash (base32 "05yd7djm6dcxv3vaylhmj3p0yml421azv8qabmhv4ric1f99idjp")))
+        (hash (base32 "06qdqcplslnp1ncaqvp5yjr294rz3x4qrxnv522v76awj6dkd8vy")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.9)))
@@ -3692,7 +3692,7 @@ for systems using the Linux kernel.  This includes commands such as
 (define-public inotify-tools
   (package
     (name "inotify-tools")
-    (version "3.20.11.0")
+    (version "3.22.6.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3701,7 +3701,7 @@ for systems using the Linux kernel.  This includes commands such as
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1m8avqccrhm38krlhp88a7v949f3hrzx060bbrr5dp5qw2nmw9j2"))))
+                "1j9j8k5zjp8m4cl53zjncnll9z4dnvzr4ygmfcjk0ci81i59b18i"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf automake libtool))
@@ -6361,8 +6361,7 @@ The collection contains a set of bandwidth and latency benchmark such as:
     (native-inputs
      (list autoconf automake pkg-config))
     (inputs
-     `(("libsysfs" ,sysfsutils)
-       ("openssl" ,openssl)))
+     (list sysfsutils openssl))
     (synopsis "Random number generator daemon")
     (description
      "Monitor a hardware random number generator, and supply entropy

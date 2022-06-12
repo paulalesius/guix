@@ -715,6 +715,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/build/bootloader.scm			\
   %D%/build/chromium-extension.scm		\
   %D%/build/cross-toolchain.scm			\
+  %D%/build/dbus-service.scm			\
   %D%/build/image.scm				\
   %D%/build/jami-service.scm			\
   %D%/build/file-systems.scm			\
@@ -848,7 +849,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/akonadi-not-relocatable.patch		\
   %D%/packages/patches/akonadi-timestamps.patch		\
   %D%/packages/patches/allegro-mesa-18.2.5-and-later.patch	\
-  %D%/packages/patches/alpine-fix-privacy-policy-crash.patch	\
   %D%/packages/patches/anki-mpv-args.patch			\
   %D%/packages/patches/antiword-CVE-2014-8123.patch			\
   %D%/packages/patches/antlr3-3_1-fix-java8-compilation.patch	\
