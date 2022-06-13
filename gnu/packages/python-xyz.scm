@@ -7119,26 +7119,22 @@ a multithreaded image-processing system with low memory needs.")
 (define-public python-pycparser
   (package
     (name "python-pycparser")
-    (version "2.20")
+    (version "2.21")
     (source
      (origin
       (method url-fetch)
       (uri (pypi-uri "pycparser" version))
       (sha256
        (base32
-        "1w0m3xvlrzq4lkbvd1ngfm8mdw64r1yxy6n7djlw6qj5d0km6ird"))))
+        "01kjlyn5w2nn2saj8w1rhq7v26328pd91xwgqn32z1zp2bngsi76"))))
     (outputs '("out" "doc"))
     (build-system python-build-system)
-    (native-inputs
-     (list pkg-config))
     (arguments
      `(#:phases
        (modify-phases %standard-phases
          (replace 'check
            (lambda _
-             (with-directory-excursion "tests"
-               (invoke "python" "all_tests.py"))
-             #t))
+             (invoke "python" "-m" "unittest" "discover")))
          (add-after 'install 'install-doc
            (lambda* (#:key outputs #:allow-other-keys)
              (let* ((data (string-append (assoc-ref outputs "doc") "/share"))
@@ -7149,8 +7145,7 @@ a multithreaded image-processing system with low memory needs.")
                            (copy-file (string-append "." file)
                                       (string-append doc file)))
                          '("/README.rst" "/CHANGES" "/LICENSE"))
-               (copy-recursively "examples" examples)
-               #t))))))
+               (copy-recursively "examples" examples)))))))
     (home-page "https://github.com/eliben/pycparser")
     (synopsis "C parser in Python")
     (description
@@ -11838,14 +11833,14 @@ for OER and UPER.")
 (define-public python-idna
   (package
     (name "python-idna")
-    (version "2.10")
+    (version "3.3")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "idna" version))
        (sha256
         (base32
-         "1xmk3s92d2vq42684p61wixfmh3qpr2mw762w0n6662vhlpqf1xk"))))
+         "0v8f6qjfi5i7qc5icsbv2pi24qy6k6m8wjqjvdf2sxjvlpq3yr4x"))))
     (build-system python-build-system)
     (home-page "https://github.com/kjd/idna")
     (synopsis "Internationalized domain names in applications")
@@ -12906,10 +12901,10 @@ time.")
            texlive-unicode-math
            texlive-xcolor
            (texlive-updmap.cfg (list texlive-amsfonts
+                                     texlive-amsmath
                                      texlive-eurosym
                                      texlive-fonts-rsfs
                                      texlive-jknappen
-                                     texlive-latex-amsmath
                                      texlive-latex-ucs
                                      texlive-lm
                                      texlive-lm-math
@@ -13203,19 +13198,40 @@ simulation, statistical modeling, machine learning and much more.")
 (define-public python-chardet
   (package
     (name "python-chardet")
-    (version "3.0.4")
+    (version "4.0.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "chardet" version))
        (sha256
         (base32
-         "1bpalpia6r5x1kknbk11p1fzph56fmmnp405ds8icksd3knr5aw4"))))
+         "1ykr04qyhgpc0h5b7dhqw4g92b1xv7ki2ky910mhy4mlbnhm6vqd"))))
     (native-inputs
-     (list python-hypothesis python-pytest python-pytest-runner))
+     (list python-pytest))
     (build-system python-build-system)
-    ;; XXX: Incompatible with Pytest 4: <https://github.com/chardet/chardet/issues/173>.
-    (arguments `(#:tests? #f))
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (replace 'check
+                 (lambda _
+                   (invoke "pytest" "-vv")))
+               ;; This package provides a 'chardetect' executable that only
+               ;; depends on Python, so customize the wrap phase to avoid
+               ;; adding pytest and friends in order to save size.
+               ;; (See also <https://bugs.gnu.org/25235>.)
+               (replace 'wrap
+                 (lambda* (#:key inputs outputs #:allow-other-keys)
+                   (let* ((sitedir (site-packages inputs outputs))
+                          (python (dirname (dirname
+                                            (search-input-file
+                                             inputs "bin/python"))))
+                          (python-sitedir
+                           (string-append python "/lib/python"
+                                          (python-version python)
+                                          "/site-packages")))
+                     (wrap-program (string-append #$output "/bin/chardetect")
+                       `("GUIX_PYTHONPATH" ":" suffix
+                         ,(list sitedir python-sitedir)))))))))
     (home-page "https://github.com/chardet/chardet")
     (synopsis "Universal encoding detector for Python 2 and 3")
     (description
@@ -13226,14 +13242,34 @@ automatically detect a wide range of file encodings.")
 (define-public python-charset-normalizer
   (package
     (name "python-charset-normalizer")
-    (version "2.0.5")
+    (version "2.0.11")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "charset-normalizer" version))
        (sha256
-        (base32 "0rr3iv2xw4rz5ijnfqk229fw85cq6p6rhqqsilm0ldzncblfg63h"))))
+        (base32 "071pi2kd222rjjrjdllffqv3iz4bfaj93a9bfs65907fd6fqlfcq"))))
     (build-system python-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               ;; This package provides a 'normalizer' executable that only
+               ;; depends on Python, so customize the wrap phase to avoid
+               ;; adding pytest and friends in order to save size.
+               ;; (See also <https://bugs.gnu.org/25235>.)
+               (replace 'wrap
+                 (lambda* (#:key inputs outputs #:allow-other-keys)
+                   (let* ((sitedir (site-packages inputs outputs))
+                          (python (dirname (dirname
+                                            (search-input-file
+                                             inputs "bin/python"))))
+                          (python-sitedir
+                           (string-append python "/lib/python"
+                                          (python-version python)
+                                          "/site-packages")))
+                     (wrap-program (string-append #$output "/bin/normalizer")
+                       `("GUIX_PYTHONPATH" ":" suffix
+                         ,(list sitedir python-sitedir)))))))))
     (native-inputs
      (list python-pytest))
     (home-page "https://github.com/ousret/charset_normalizer")
@@ -29442,4 +29478,33 @@ Currently, Linux is the only platform supported by this library.")
 Information about these scales can be
 @url{https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes, found on
 Wikipedia}.")
+    (license license:expat)))
+
+(define-public python-langcodes
+  (package
+    (name "python-langcodes")
+    (version "3.3.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "langcodes" version))
+              (sha256
+               (base32
+                "1xkyh3qdcigb18qiimbwl2669y22hhdmd89mqcd270c7lbahfkbr"))))
+    (build-system python-build-system)
+    (native-inputs (list python-pytest))
+    (home-page "https://github.com/rspeer/langcodes")
+    (synopsis "Python library for working with language codes")
+    (description
+     "This package provides a Python library for working with and comparing
+language codes.
+
+@code{python-langcodes} implements @url{http://tools.ietf.org/html/bcp47, BCP
+47}, the IETF Best Current Practices on Tags for Identifying Languages.  BCP
+47 is also known as RFC 5646.  It subsumes ISO 639 and is backward compatible
+with it, and it also implements recommendations from the
+@url{http://cldr.unicode.org/, Unicode CLDR}.
+
+@code{python-langcodes} can also refer to a database of language properties
+and names, built from Unicode CLDR and the IANA subtag registry, if you
+install @code{python-language-data}.")
     (license license:expat)))

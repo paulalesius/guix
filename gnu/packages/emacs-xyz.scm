@@ -31587,6 +31587,59 @@ zoomable and moveable map display, display of tracks and POIs from GPX files,
 parallel fetching of tiles with cURL, and more.")
     (license license:gpl3+)))
 
+(define-public emacs-corfu-terminal
+  ;; Upstream does not tag releases, version taken from package header.
+  (let ((commit "7c5a8a1c07b6c1a41b358b083d5bf7773701d26b")
+        (revision "0"))
+    (package
+      (name "emacs-corfu-terminal")
+      (version (git-version "0.4" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://codeberg.org/akib/emacs-corfu-terminal")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0pk5vfcz8w4hiqrwzwpxdjzlbhla0bw7a1h6v0mqxad0j9y7v3nw"))))
+      (build-system emacs-build-system)
+      (propagated-inputs (list emacs-corfu emacs-popon))
+      (home-page "https://codeberg.org/akib/emacs-corfu-terminal/")
+      (synopsis "Replace corfu child frames with popups")
+      (description
+       "This package replaces the child frames @code{emacs-corfu} uses
+with popups, which also work in the terminal.")
+      (license license:gpl3+))))
+
+(define-public emacs-corfu-doc-terminal
+  ;; Upstream does not tag releases, version taken from package header.
+  (let ((commit "d8945c64b52d76e864b767b3048674f222daf80b")
+        (revision "0"))
+    (package
+      (name "emacs-corfu-doc-terminal")
+      (version (git-version "0.5" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://codeberg.org/akib/emacs-corfu-doc-terminal")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0j0dd8np5x93wic22bc5i9h7bq2gj700n4fh11dzzgsj14lv2r5k"))))
+      (build-system emacs-build-system)
+      (propagated-inputs
+       (list emacs-corfu emacs-corfu-doc emacs-corfu-terminal emacs-popon))
+      (home-page "https://codeberg.org/akib/emacs-corfu-doc-terminal/")
+      (synopsis "Replace corfu docmentation child frames with popups")
+      (description
+       "This package replaces the child frames @code{emacs-corfu-doc} uses
+with popups, which also work in the terminal.")
+      (license license:gpl3+))))
+
 (define-public emacs-popon
   ;; Upstream does not tag releases.  The commit below matches the version
   ;; bump.
