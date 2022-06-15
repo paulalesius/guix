@@ -6056,12 +6056,12 @@ cookie headers, cookie creation, cookie jar creation and more.")
   (sbcl-package->ecl-package sbcl-cl-cookie))
 
 (define-public sbcl-dexador
-  (let ((commit "953090f04c4d1a9ee6632b90133cdc297b68badc")
+  (let ((commit "74a233edb0ebf2b8c696fb8db984ac568fbcc4e5")
         (revision "1"))
     (package
       (name "sbcl-dexador")
       (build-system asdf-build-system/sbcl)
-      (version "0.9.14" )
+      (version (git-version "0.9.15" revision commit))
       (home-page "https://github.com/fukamachi/dexador")
       (source
        (origin
@@ -6069,36 +6069,35 @@ cookie headers, cookie creation, cookie jar creation and more.")
          (uri (git-reference
                (url home-page)
                (commit commit)))
-         (file-name (git-file-name name version))
+         (file-name (git-file-name "cl-dexador" version))
          (sha256
-          (base32
-           "0w18fz3301rpmwc3kwb810czcd24mbf7r1z8vdyc0v5crjfpw3mn"))))
+          (base32 "14cbykd9j8klm8sz3siq5zk78a0ljd6rdwfq12fi4h1ih50apyfi"))))
       (inputs
-       `(("trivial-gray-streams" ,sbcl-trivial-gray-streams)
-         ("babel" ,sbcl-babel)
-         ("usocket" ,sbcl-usocket)
-         ("fast-http" ,sbcl-fast-http)
-         ("quri" ,sbcl-quri)
-         ("fast-io" ,sbcl-fast-io)
-         ("chunga" ,sbcl-chunga)
-         ("cl-ppcre" ,sbcl-cl-ppcre)
-         ("cl-cookie" ,sbcl-cl-cookie)
-         ("trivial-mimes" ,sbcl-trivial-mimes)
-         ("chipz" ,sbcl-chipz)
-         ("cl-base64" ,sbcl-cl-base64)
-         ("cl-reexport" ,sbcl-cl-reexport)
-         ("cl+ssl" ,sbcl-cl+ssl)
-         ("bordeaux-threads" ,sbcl-bordeaux-threads)
-         ("alexandria" ,sbcl-alexandria)))
+       (list sbcl-alexandria
+             sbcl-babel
+             sbcl-bordeaux-threads
+             sbcl-chipz
+             sbcl-chunga
+             sbcl-cl+ssl
+             sbcl-cl-base64
+             sbcl-cl-cookie
+             sbcl-cl-ppcre
+             sbcl-cl-reexport
+             sbcl-fast-http
+             sbcl-fast-io
+             sbcl-quri
+             sbcl-trivial-gray-streams
+             sbcl-trivial-mimes
+             sbcl-usocket))
       (native-inputs
-       `(("prove" ,sbcl-prove)
-         ("lack" ,sbcl-lack)
-         ("clack" ,sbcl-clack)
-         ("babel" ,sbcl-babel)
-         ("alexandria" ,sbcl-alexandria)
-         ("cl-ppcre" ,sbcl-cl-ppcre)
-         ("local-time" ,sbcl-local-time)
-         ("trivial-features" ,sbcl-trivial-features)))
+       (list sbcl-alexandria
+             sbcl-babel
+             sbcl-cl-ppcre
+             sbcl-clack
+             sbcl-lack
+             sbcl-local-time
+             sbcl-prove
+             sbcl-trivial-features))
       (arguments
        ;; TODO: Circular dependency: tests depend on clack-test which depends on dexador.
        `(#:tests? #f
@@ -7504,8 +7503,8 @@ implementation specific equivalent.")
   (sbcl-package->ecl-package sbcl-trivial-macroexpand-all))
 
 (define-public sbcl-serapeum
-  (let ((commit "c29a52ff0c5f6e60b09919c3a0daa8df7599ddb9")
-        (revision "6"))
+  (let ((commit "d2150c6fb75c16f2ee0abd145a1089d0019e7f7e")
+        (revision "7"))
     (package
       (name "sbcl-serapeum")
       (version (git-version "0.0.0" revision commit))
@@ -7518,34 +7517,34 @@ implementation specific equivalent.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0vij9jhji09way1rpd0r5sgjnh5amm3f2ymppnqkw0c6nnk2p0kd"))))
+          (base32 "1czs771nyqz45ndd09iiva2swvazy1b2z0k6h4qqdd839vnjcs06"))))
       (build-system asdf-build-system/sbcl)
       (inputs
-       `(("alexandria" ,sbcl-alexandria)
-         ("trivia" ,sbcl-trivia)
-         ("split-sequence" ,sbcl-split-sequence)
-         ("string-case" ,sbcl-string-case)
-         ("parse-number" ,sbcl-parse-number)
-         ("trivial-garbage" ,sbcl-trivial-garbage)
-         ("bordeaux-threads" ,sbcl-bordeaux-threads)
-         ("named-readtables" ,sbcl-named-readtables)
-         ("fare-quasiquote" ,sbcl-fare-quasiquote)
-         ("parse-declarations-1.0" ,sbcl-parse-declarations)
-         ("global-vars" ,sbcl-global-vars)
-         ("trivial-file-size" ,sbcl-trivial-file-size)
-         ("trivial-macroexpand-all" ,sbcl-trivial-macroexpand-all)))
+       (list sbcl-alexandria
+             sbcl-trivia
+             sbcl-split-sequence
+             sbcl-string-case
+             sbcl-parse-number
+             sbcl-trivial-garbage
+             sbcl-bordeaux-threads
+             sbcl-parse-declarations
+             sbcl-introspect-environment
+             sbcl-trivial-cltl2
+             sbcl-global-vars
+             sbcl-trivial-file-size
+             sbcl-trivial-macroexpand-all))
       (native-inputs
-       `(("fiveam" ,sbcl-fiveam)
-         ("local-time" ,sbcl-local-time)))
+       (list sbcl-atomics
+             sbcl-fiveam
+             sbcl-local-time))
       (arguments
-       '(#:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'disable-failing-tests
-             (lambda* (#:key inputs #:allow-other-keys)
-               (substitute* "serapeum.asd"
-                 ;; Guix does not have Quicklisp, and probably never will.
-                 (("\\(:file \"quicklisp\"\\)") ""))
-               #t)))))
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 (add-after 'unpack 'disable-failing-tests
+                   (lambda _
+                     (substitute* "serapeum.asd"
+                       ;; Guix does not have Quicklisp, and probably never will.
+                       (("\\(:file \"quicklisp\"\\)") "")))))))
       (synopsis "Common Lisp utility library beyond Alexandria")
       (description
        "Serapeum is a conservative library of Common Lisp utilities.  It is a
@@ -15383,51 +15382,53 @@ return the CPU count of the current system.")
   (sbcl-package->cl-source-package sbcl-cl-cpus))
 
 (define-public sbcl-fof
-  (package
-    (name "sbcl-fof")
-    (version "0.2.0")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://gitlab.com/ambrevar/fof")
-             (commit version)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "0j64b7p40h8bq33hqkpgakm3vs1607vyx6n48d7qg3287v1akk6m"))))
-    (build-system asdf-build-system/sbcl)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'fix-paths
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* "ffprobe.lisp"
-               (("\\(defvar \\*ffprobe-command\\* \"ffprobe\"\\)")
-                (format #f "(defvar *ffprobe-command* \"~a/bin/ffprobe\")"
-                        (assoc-ref inputs "ffmpeg") )))
-             #t)))))
-    (inputs
-     `(("alexandria" ,sbcl-alexandria)
-       ("hu.dwim.defclass-star" ,sbcl-hu.dwim.defclass-star)
-       ("local-time" ,sbcl-local-time)
-       ("magicffi" ,sbcl-magicffi)
-       ("osicat" ,sbcl-osicat)
-       ("serapeum" ,sbcl-serapeum)
-       ("str" ,sbcl-cl-str)
-       ("trivia" ,sbcl-trivia)
-       ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
-       ;; Non-CL deps:
-       ("ffmpeg" ,ffmpeg)))
-    (home-page "https://gitlab.com/ambrevar/fof")
-    (synopsis "File object finder library for Common Lisp")
-    (description
-     "This library enable rapid file search, inspection and manipulation
+  (let ((commit "522879e7da110ecf2e841998b197b34062c54b29")
+        (revision "1"))
+    (package
+      (name "sbcl-fof")
+      (version (git-version "0.2.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://gitlab.com/ambrevar/fof")
+               (commit commit)))
+         (file-name (git-file-name "cl-fof" version))
+         (sha256
+          (base32 "0ipy51q2fw03xk9rqcyzbq2b9c32npc1gl3c53rdjywpak7zwwg6"))))
+      (build-system asdf-build-system/sbcl)
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'fix-paths
+             (lambda* (#:key inputs #:allow-other-keys)
+               (substitute* "ffprobe.lisp"
+                 (("\\(defvar \\*ffprobe-command\\* \"ffprobe\"\\)")
+                  (format #f "(defvar *ffprobe-command* \"~a/bin/ffprobe\")"
+                          (assoc-ref inputs "ffmpeg")))))))))
+      (inputs
+       (list sbcl-alexandria
+             sbcl-cl-str
+             sbcl-hu.dwim.defclass-star
+             sbcl-local-time
+             sbcl-magicffi
+             sbcl-named-readtables
+             sbcl-osicat
+             sbcl-serapeum
+             sbcl-trivia
+             sbcl-trivial-package-local-nicknames
+             ;; Non-CL deps:
+             ffmpeg))
+      (home-page "https://gitlab.com/ambrevar/fof")
+      (synopsis "File object finder library for Common Lisp")
+      (description
+       "This library enable rapid file search, inspection and manipulation
 straight from the REPL.
 It aims at replacing Unix tools such as @code{find} or @code{du}.
 It also offers a replacement to the @code{pathname} Common Lisp API.
 Slot writers which commit changes to disk, e.g. permissions, modification
 time, etc.")
-    (license license:gpl3+)))
+      (license license:gpl3+))))
 
 (define-public ecl-fof
   (sbcl-package->ecl-package sbcl-fof))

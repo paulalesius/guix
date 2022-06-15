@@ -48,7 +48,7 @@ Copyright @copyright{} 2017 Thomas Danckaert@*
 Copyright @copyright{} 2017 humanitiesNerd@*
 Copyright @copyright{} 2017, 2021 Christine Lemmer-Webber@*
 Copyright @copyright{} 2017, 2018, 2019, 2020, 2021, 2022 Marius Bakke@*
-Copyright @copyright{} 2017, 2019, 2020 Hartmut Goebel@*
+Copyright @copyright{} 2017, 2019, 2020, 2022 Hartmut Goebel@*
 Copyright @copyright{} 2017, 2019, 2020, 2021 Maxim Cournoyer@*
 Copyright @copyright{} 2017–2022 Tobias Geerinckx-Rice@*
 Copyright @copyright{} 2017 George Clemmer@*
@@ -169,6 +169,7 @@ Weblate} (@pxref{Translating Guix}).
 * Introduction::                What is Guix about?
 * Installation::                Installing Guix.
 * System Installation::         Installing the whole operating system.
+* System Troubleshooting Tips:: When things don't go as planned.
 * Getting Started::             Your first steps.
 * Package Management::          Package installation, upgrade, etc.
 * Channels::                    Customizing the package collection.
@@ -226,6 +227,10 @@ System Installation
 * After System Installation::   When installation succeeded.
 * Installing Guix in a VM::     Guix System playground.
 * Building the Installation Image::  How this comes to be.
+
+System Troubleshooting Tips
+
+* Chrooting into an existing system::  Fixing things from a chroot
 
 Manual Installation
 
@@ -2368,6 +2373,7 @@ See the files under @file{/run/current-system/profile/share/keymaps} for
 a list of available keyboard layouts.  Run @command{man loadkeys} for
 more information.
 
+@anchor{manual-installation-networking}
 @subsubsection Networking
 
 Run the following command to see what your network interfaces are called:
@@ -2820,6 +2826,119 @@ guix system image --system=armhf-linux -e '((@@ (gnu system install) os-with-u-b
 
 @code{A20-OLinuXino-Lime2} is the name of the board.  If you specify an invalid
 board, a list of possible boards will be printed.
+
+@c *********************************************************************
+@cindex troubleshooting, guix system
+@cindex guix system troubleshooting
+@node System Troubleshooting Tips
+@chapter System Troubleshooting Tips
+
+Guix System allows rebooting into a previous generation should the last
+one be malfunctioning, which makes it quite robust against being broken
+irreversibly.  This feature depends on GRUB being correctly functioning
+though, which means that if for whatever reasons your GRUB installation
+becomes corrupted during a system reconfiguration, you may not be able
+to easily boot into a previous generation.  A technique that can be used
+in this case is to @i{chroot} into your broken system and reconfigure it
+from there.  Such technique is explained below.
+
+@cindex chroot, guix system
+@cindex chrooting, guix system
+@cindex repairing GRUB, via chroot
+@node Chrooting into an existing system
+@section Chrooting into an existing system
+
+This section details how to @i{chroot} to an already installed Guix
+System with the aim of reconfiguring it, for example to fix a broken
+GRUB installation.  The process is similar to how it would be done on
+other GNU/Linux systems, but there are some Guix System particularities
+such as the daemon and profiles that make it worthy of explaining here.
+
+@enumerate
+@item
+Obtain a bootable image of Guix System.  It is recommended the latest
+development snapshot so the kernel and the tools used are at least as as
+new as those of your installed system; it can be retrieved from the
+@url{https://ci.guix.gnu.org/search/latest/ISO-9660?query=spec:images+status:success+system:x86_64-linux+image.iso,
+https://ci.guix.gnu.org} URL.  Follow the @pxref{USB Stick and DVD
+Installation} section for copying it to a bootable media.
+
+@item
+Boot the image, and proceed with the graphical text-based installer
+until your network is configured.  Alternatively, you could configure
+the network manually by following the
+@ref{manual-installation-networking} section.  If you get the error
+@samp{RTNETLINK answers: Operation not possible due to RF-kill}, try
+@samp{rfkill list} followed by @samp{rfkill unblock 0}, where @samp{0}
+is your device identifier (ID).
+
+@item
+Switch to a virtual console (tty) if you haven't already by pressing
+simultaneously the @kbd{Control + Alt + F4} keys.  Mount your file
+system at @file{/mnt}.  Assuming your root partition is
+@file{/dev/sda2}, you would do:
+
+@example sh
+mount /dev/sda2 /mnt
+@end example
+
+@item
+Mount special block devices and Linux-specific directories:
+
+@example sh
+mount --bind /proc /mnt/proc
+mount --bind /sys /mnt/sys
+mount --bind /dev /mnt/dev
+@end example
+
+If your system is EFI-based, you must also mount the ESP partition.
+Assuming it is @file{/dev/sda1}, you can do so with:
+
+@example sh
+mount /dev/sda1 /mnt/boot/efi
+@end example
+
+@item
+Enter your system via chroot:
+
+@example sh
+chroot /mnt /bin/sh
+@end example
+
+@item
+Source your @var{user} profile to setup the environment, where
+@var{user} is the user name used for the Guix System you are attempting
+to repair:
+
+@example sh
+source /home/@var{user}/.guix-profile/etc/profile
+@end example
+
+To ensure you are working with the Guix revision you normally would as
+your normal user, also source your current Guix profile:
+
+@example sh
+source /home/@var{user}/.config/guix/current/etc/profile
+@end example
+
+@item
+Start a minimal @command{guix-daemon} in the background:
+
+@example sh
+guix-daemon --build-users-group=guixbuild --disable-chroot &
+@end example
+
+@item
+Edit your Guix System configuration if needed, then reconfigure with:
+
+@example sh
+guix system reconfigure your-config.scm
+@end example
+
+@item
+Finally, you should be good to reboot the system to test your fix.
+
+@end enumerate
 
 @c *********************************************************************
 @node Getting Started
@@ -9139,6 +9258,49 @@ with @code{#:zef} or removed by passing @code{#f} to the
 @code{with-zef?} parameter.
 @end defvr
 
+@defvr {Scheme Variable} rebar-build-system
+This variable is exported by @code{(guix build-system rebar)}.  It
+implements a build procedure around @uref{https://rebar3.org,rebar3},
+a build system for programs written in the Erlang language.
+
+It adds both @code{rebar3} and the @code{erlang} to the set of inputs.
+Different packages can be specified with the @code{#:rebar} and
+@code{#:erlang} parameters, respectively.
+
+This build system is based on @code{gnu-build-system}, but with the
+following phases changed:
+
+@table @code
+
+@item unpack
+This phase, after unpacking the source like the @code{gnu-build-system}
+does, checks for a file @code{contents.tar.gz} at the top-level of the
+source.  If this file exists, it will be unpacked, too.  This eases
+handling of package hosted at @uref{https://hex.pm/},
+the Erlang and Elixir package repository.
+
+@item bootstrap
+@item configure
+There are no @code{bootstrap} and @code{configure} phase because erlang
+packages typically don’t need to be configured.
+
+@item build
+This phase runs @code{rebar3 compile}
+with the flags listed in @code{#:rebar-flags}.
+
+@item check
+Unless @code{#:tests? #f} is passed,
+this phase runs @code{rebar3 eunit},
+or some other target specified with @code{#:test-target},
+with the flags listed in @code{#:rebar-flags},
+
+@item install
+This installs the files created in the @i{default} profile, or some
+other profile specified with @code{#:install-profile}.
+
+@end table
+@end defvr
+
 @defvr {Scheme Variable} texlive-build-system
 This variable is exported by @code{(guix build-system texlive)}.  It is
 used to build TeX packages in batch mode with a specified engine.  The
@@ -13291,6 +13453,33 @@ guix import egg arrays@@1.0
 @end example
 
 Additional options include:
+@table @code
+@item --recursive
+@itemx -r
+Traverse the dependency graph of the given upstream package recursively
+and generate package expressions for all those packages that are not yet
+in Guix.
+@end table
+
+@item hexpm
+@cindex hexpm
+Import metadata from the hex.pm Erlang and Elixir package repository
+@uref{https://hex.pm, hex.pm}, as in this example:
+
+@example
+guix import hexpm stun
+@end example
+
+The importer tries to determine the build system used by the package.
+
+The hexpm importer also allows you to specify a version string:
+
+@example
+guix import hexpm cf@@0.3.0
+@end example
+
+Additional options include:
+
 @table @code
 @item --recursive
 @itemx -r
@@ -19210,15 +19399,16 @@ The node host name that is used to make the first connection to the
 network.  A specific port value can be provided by appending the
 @code{:PORT} suffix.  By default, it uses the Jami bootstrap nodes, but
 any host can be specified here.  It's also possible to disable
-bootsrapping by setting this to the @code{'disabled} symbol.
+bootsrapping by explicitly setting this to the @code{*unspecified*}
+value.
 
 Defaults to @samp{"bootstrap.jami.net:4222"}.
 
 @end deftypevr
 
 @deftypevr {@code{opendht-configuration} parameter} maybe-number port
-The UDP port to bind to.  When set to @code{'disabled}, an available
-port is automatically selected.
+The UDP port to bind to.  When explicitly set to @code{*unspecified*},
+an available port is automatically selected.
 
 Defaults to @samp{4222}.
 
@@ -21767,9 +21957,14 @@ The actual service definitions included in @code{%desktop-services} and
 provided by @code{(gnu services dbus)} and @code{(gnu services desktop)}
 are described below.
 
-@deffn {Scheme Procedure} dbus-service [#:dbus @var{dbus}] [#:services '()]
+@deffn {Scheme Procedure} dbus-service [#:dbus @var{dbus}] [#:services '()] @
+                                       [#:verbose?]
 Return a service that runs the ``system bus'', using @var{dbus}, with
-support for @var{services}.
+support for @var{services}.  When @var{verbose?} is true, it causes the
+@samp{DBUS_VERBOSE} environment variable to be set to @samp{1}; a
+verbose-enabled D-Bus package such as @code{dbus-verbose} should be
+provided as @var{dbus} in this scenario.  The verbose output is logged
+to @file{/var/log/dbus-daemon.log}.
 
 @uref{https://dbus.freedesktop.org/, D-Bus} is an inter-process communication
 facility.  Its system bus is used to allow system services to communicate
@@ -24966,7 +25161,7 @@ The available configuration parameters follow.  Each parameter
 definition is preceded by its type; for example, @samp{string-list foo}
 indicates that the @code{foo} parameter should be specified as a list of
 strings.  Types starting with @code{maybe-} denote parameters that won't
-show up in @code{prosody.cfg.lua} when their value is @code{'disabled}.
+show up in @code{prosody.cfg.lua} when their value is left unspecified.
 
 There is also a way to specify the configuration as a string, if you
 have an old @code{prosody.cfg.lua} file that you want to port over from
@@ -25580,7 +25775,7 @@ Whether to enable debug level messages.
 @item @code{auto-answer?} (default: @code{#f}) (type: boolean)
 Whether to force automatic answer to incoming calls.
 
-@item @code{accounts} (default: @code{disabled}) (type: maybe-jami-account-list)
+@item @code{accounts} (type: maybe-jami-account-list)
 A list of Jami accounts to be (re-)provisioned every time the Jami
 daemon service starts.  When providing this field, the account
 directories under @file{/var/lib/jami/} are recreated every time the
@@ -25602,39 +25797,39 @@ should @emph{not} be encrypted.  It is highly recommended to make it
 readable only to the @samp{root} user (i.e., not in the store), to guard
 against leaking the secret key material of the Jami account it contains.
 
-@item @code{allowed-contacts} (default: @code{disabled}) (type: maybe-account-fingerprint-list)
+@item @code{allowed-contacts} (type: maybe-account-fingerprint-list)
 The list of allowed contacts for the account, entered as their 40
 characters long fingerprint.  Messages or calls from accounts not in
-that list will be rejected.  When unspecified, the configuration of the
-account archive is used as-is with respect to contacts and public
+that list will be rejected.  When left specified, the configuration of
+the account archive is used as-is with respect to contacts and public
 inbound calls/messaging allowance, which typically defaults to allow any
 contact to communicate with the account.
 
-@item @code{moderators} (default: @code{disabled}) (type: maybe-account-fingerprint-list)
+@item @code{moderators} (type: maybe-account-fingerprint-list)
 The list of contacts that should have moderation privileges (to ban,
 mute, etc.  other users) in rendezvous conferences, entered as their 40
-characters long fingerprint.  When unspecified, the configuration of the
-account archive is used as-is with respect to moderation, which
+characters long fingerprint.  When left unspecified, the configuration
+of the account archive is used as-is with respect to moderation, which
 typically defaults to allow anyone to moderate.
 
-@item @code{rendezvous-point?} (default: @code{disabled}) (type: maybe-boolean)
+@item @code{rendezvous-point?} (type: maybe-boolean)
 Whether the account should operate in the rendezvous mode.  In this
 mode, all the incoming audio/video calls are mixed into a conference.
 When left unspecified, the value from the account archive prevails.
 
-@item @code{peer-discovery?} (default: @code{disabled}) (type: maybe-boolean)
+@item @code{peer-discovery?} (type: maybe-boolean)
 Whether peer discovery should be enabled.  Peer discovery is used to
 discover other OpenDHT nodes on the local network, which can be useful
 to maintain communication between devices on such network even when the
 connection to the the Internet has been lost.  When left unspecified,
 the value from the account archive prevails.
 
-@item @code{bootstrap-hostnames} (default: @code{disabled}) (type: maybe-string-list)
+@item @code{bootstrap-hostnames} (type: maybe-string-list)
 A list of hostnames or IPs pointing to OpenDHT nodes, that should be
 used to initially join the OpenDHT network.  When left unspecified, the
 value from the account archive prevails.
 
-@item @code{name-server-uri} (default: @code{disabled}) (type: maybe-string)
+@item @code{name-server-uri} (type: maybe-string)
 The URI of the name server to use, that can be used to retrieve the
 account fingerprint for a registered username.
 
@@ -26268,8 +26463,8 @@ Defaults to @samp{prefer-encrypted-connections}.
 @deftypevr {@code{transmission-daemon-configuration} parameter} maybe-string peer-congestion-algorithm
 The TCP congestion-control algorithm to use for peer connections,
 specified using a string recognized by the operating system in calls to
-@code{setsockopt} (or set to @code{disabled}, in which case the
-operating-system default is used).
+@code{setsockopt}.  When left unspecified, the operating-system default
+is used.
 
 Note that on GNU/Linux systems, the kernel must be configured to allow
 processes to use a congestion-control algorithm not in the default set;
@@ -29897,7 +30092,7 @@ Defaults to @samp{tun}.
 
 If you do not have some of these files (eg.@: you use a username and
 password), you can disable any of the following three fields by setting
-it to @code{'disabled}.
+it to @code{*unspecified*}.
 
 @deftypevr {@code{openvpn-client-configuration} parameter} maybe-string ca
 The certificate authority to check connections against.
@@ -29971,7 +30166,6 @@ Authenticate with server using username/password.  The option is a file
 containing username/password on 2 lines.  Do not use a file-like object as it
 would be added to the store and readable by any user.
 
-Defaults to @samp{'disabled}.
 @end deftypevr
 
 @deftypevr {@code{openvpn-client-configuration} parameter} key-usage verify-key-usage?
@@ -30052,7 +30246,7 @@ Defaults to @samp{tun}.
 
 If you do not have some of these files (eg.@: you use a username and
 password), you can disable any of the following three fields by setting
-it to @code{'disabled}.
+it to @code{*unspecified*}.
 
 @deftypevr {@code{openvpn-server-configuration} parameter} maybe-string ca
 The certificate authority to check connections against.
@@ -30851,10 +31045,10 @@ content by adding a valid @code{tlp-configuration}:
 @end deffn
 
 Each parameter definition is preceded by its type; for example,
-@samp{boolean foo} indicates that the @code{foo} parameter
-should be specified as a boolean.  Types starting with
-@code{maybe-} denote parameters that won't show up in TLP config file
-when their value is @code{'disabled}.
+@samp{boolean foo} indicates that the @code{foo} parameter should be
+specified as a boolean.  Types starting with @code{maybe-} denote
+parameters that won't show up in TLP config file when their value is
+left unset, or is explicitly set to the @code{*unspecified*} value.
 
 @c The following documentation was initially generated by
 @c (generate-tlp-documentation) in (gnu services pm).  Manually maintained
@@ -38449,15 +38643,16 @@ macro which is a shorthand of this.
 @deffn {Scheme Syntax} define-maybe @var{type}
 Sometimes a field should not be serialized if the user doesn’t specify a
 value.  To achieve this, you can use the @code{define-maybe} macro to
-define a ``maybe type''; if the value of a maybe type is set to the
-@code{disabled}, it will not be serialized.
+define a ``maybe type''; if the value of a maybe type is left unset, or
+is set to the @code{*unspecified*} value, then it will not be
+serialized.
 
 When defining a ``maybe type'', the corresponding serializer for the
 regular type will be used by default.  For example, a field of type
 @code{maybe-string} will be serialized using the @code{serialize-string}
 procedure by default, you can of course change this by specifying a
 custom serializer procedure.  Likewise, the type of the value would have
-to be a string, unless it is set to the @code{disabled} symbol.
+to be a string, or left unspecified.
 
 @lisp
 (define-maybe string)
@@ -38467,9 +38662,9 @@ to be a string, unless it is set to the @code{disabled} symbol.
 
 (define-configuration baz-configuration
   (name
-   ;; Nothing will be serialized by default.  If set to a string, the
-   ;; `serialize-string' procedure will be used to serialize the string.
-   (maybe-string 'disabled)
+   ;; If set to a string, the `serialize-string' procedure will be used
+   ;; to serialize the string.  Otherwise this field is not serialized.
+   maybe-string    ; equivalent to (maybe-string *unspecified*)
    "The name of this module."))
 @end lisp
 
@@ -38486,7 +38681,7 @@ serializer name by using the @code{prefix} literal.
 
 There is also the @code{no-serialization} literal, which when set means
 that no serializer will be defined for the ``maybe type'', regardless of
-its value is @code{disabled} or not.
+whether its value is set or not.
 @code{define-maybe/no-serialization} is a shorthand for specifying the
 @code{no-serialization} literal.
 
@@ -38495,7 +38690,7 @@ its value is @code{disabled} or not.
 
 (define-configuration/no-serialization test-configuration
   (mode
-   (maybe-symbol 'disabled)
+   maybe-symbol
    "Docstring."))
 @end lisp
 @end deffn
@@ -38627,10 +38822,10 @@ Below is an example of a record type created using
    "The name of the contact."
    serialize-contact-name)
   (phone-number
-   (maybe-integer 'disabled)
+   maybe-integer
    "The person's phone number.")
   (email
-   (maybe-string 'disabled)
+   maybe-string
    "The person's email address.")
   (married?
    (boolean)
@@ -39354,24 +39549,24 @@ Daytime color temperature (kelvins).
 @item @code{nighttime-temperature} (default: @code{4500}) (type: integer)
 Nighttime color temperature (kelvins).
 
-@item @code{daytime-brightness} (default: @code{disabled}) (type: maybe-inexact-number)
-Daytime screen brightness, between 0.1 and 1.0.
+@item @code{daytime-brightness} (type: maybe-inexact-number)
+Daytime screen brightness, between 0.1 and 1.0, or left unspecified.
 
-@item @code{nighttime-brightness} (default: @code{disabled}) (type: maybe-inexact-number)
-Nighttime screen brightness, between 0.1 and 1.0.
+@item @code{nighttime-brightness} (type: maybe-inexact-number)
+Nighttime screen brightness, between 0.1 and 1.0, or left unspecified.
 
-@item @code{latitude} (default: @code{disabled}) (type: maybe-inexact-number)
+@item @code{latitude} (type: maybe-inexact-number)
 Latitude, when @code{location-provider} is @code{'manual}.
 
-@item @code{longitude} (default: @code{disabled}) (type: maybe-inexact-number)
+@item @code{longitude} (type: maybe-inexact-number)
 Longitude, when @code{location-provider} is @code{'manual}.
 
-@item @code{dawn-time} (default: @code{disabled}) (type: maybe-string)
+@item @code{dawn-time} (type: maybe-string)
 Custom time for the transition from night to day in the
 morning---@code{"HH:MM"} format.  When specified, solar elevation is not
 used to determine the daytime/nighttime period.
 
-@item @code{dusk-time} (default: @code{disabled}) (type: maybe-string)
+@item @code{dusk-time} (type: maybe-string)
 Likewise, custom time for the transition from day to night in the
 evening.
 

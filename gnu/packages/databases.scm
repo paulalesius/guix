@@ -1247,6 +1247,7 @@ pictures, sounds, or video.")
   (package
     (inherit postgresql-14)
     (version "13.6")
+    (replacement postgresql-13/replacement)
     (source (origin
               (inherit (package-source postgresql-14))
               (uri (string-append "https://ftp.postgresql.org/pub/source/v"
@@ -1256,18 +1257,44 @@ pictures, sounds, or video.")
                 "1z37ix80hb2bqa2smh1hbj9r507ypnl3pil43gkqznnlv6ipzz5s"))
               (patches (search-patches "postgresql-riscv-spinlocks.patch"))))))
 
+;; The merge of commit ...
+;;  781dd2de230e3 gnu: postgresql-13: Fix building on riscv64-linux.
+;; ... in ...
+;;  49b350fafc2c3 Merge branch 'master' into staging.
+;; ... lost the inherited patch from postgresql-14, causing problems such as ...
+;;  05fef7bfc6005 gnu: timescaledb: Adjust test preparation to PostgreSQL 13.6.
+;;
+;; While at it, remove the RISC-V spinlock patch, which has been upstreamed
+;; in a different form (so the old patch still applies).
+;; TODO: Remove in the next rebuild cycle.
+(define postgresql-13/replacement
+  (package
+    (inherit postgresql-13)
+    (version "13.7")
+    (source
+     (origin
+       (inherit (package-source postgresql-13))
+       (uri (string-append "https://ftp.postgresql.org/pub/source/v"
+                           version "/postgresql-" version ".tar.bz2"))
+       (sha256
+        (base32
+         "16b3ljid7zd1v5l4l4pmwihx43wi8p9izidkjfii8dnqygs5p40v"))
+       (patches (search-patches "postgresql-disable-resolve_symlinks.patch"))))))
+
 (define-public postgresql-11
   (package
     (inherit postgresql-13)
     (name "postgresql")
-    (version "11.15")
+    (version "11.16")
     (source (origin
               (inherit (package-source postgresql-13))
               (uri (string-append "https://ftp.postgresql.org/pub/source/v"
                                   version "/postgresql-" version ".tar.bz2"))
               (sha256
                (base32
-                "1qvrm0vhwnc5nijfbqybhwfjbq4r7vmk445sz7s6fiagpn78xxf8"))))
+                "1983a7y4y6zhbgh0qcdfkf99445j1zm5q1ncrbkrx555y08y3n9d"))
+              (patches (search-patches
+                        "postgresql-disable-resolve_symlinks.patch"))))
     (native-inputs
      (modify-inputs (package-native-inputs postgresql-13)
        (replace "docbook-xml" docbook-xml-4.2)))))
@@ -1275,14 +1302,14 @@ pictures, sounds, or video.")
 (define-public postgresql-10
   (package
     (inherit postgresql-11)
-    (version "10.20")
+    (version "10.21")
     (source (origin
               (inherit (package-source postgresql-11))
               (uri (string-append "https://ftp.postgresql.org/pub/source/v"
                                   version "/postgresql-" version ".tar.bz2"))
               (sha256
                (base32
-                "17v51a9vnz6lgbfmbdmcwsiyi572wndwa4n30nk2zr6gkgaidpl7"))))
+                "1la5dx4hhy5yaznwk9gwdsymih3sd23fyhh6spssdaajdn2rh8fk"))))
     (native-inputs
      (modify-inputs (package-native-inputs postgresql-11)
        (append opensp docbook-sgml-4.2)
@@ -1293,7 +1320,7 @@ pictures, sounds, or video.")
 (define-public timescaledb
   (package
     (name "timescaledb")
-    (version "2.5.1")
+    (version "2.7.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1302,14 +1329,18 @@ pictures, sounds, or video.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "174dm3higa0i7al9r2hdv5hk36pd0d5fnqj57w5a350kxshxyvyw"))
+                "18wszj8ia5rs4y4zkyfb0f5z4y1g7ac3jym748nbkbszhxmq7nc7"))
+              (patches (search-patches "timescaledb-flaky-test.patch"))
               (modules '((guix build utils)))
               (snippet
                ;; Remove files carrying the proprietary TIMESCALE license.
                '(begin
                   (delete-file-recursively "tsl")
                   (for-each delete-file
-                            '("test/perl/AccessNode.pm"
+                            '("scripts/c_license_header-timescale.h"
+                              "scripts/license_tsl.spec"
+                              "scripts/sql_license_tsl.sql"
+                              "test/perl/AccessNode.pm"
                               "test/perl/DataNode.pm"
                               "test/perl/TimescaleNode.pm"))))))
     (build-system cmake-build-system)
@@ -1362,6 +1393,8 @@ pictures, sounds, or video.")
                         ;; and friends such that 'pg_config --libdir', for
                         ;; instance, points to PG-UNION, allowing it to load
                         ;; the timescaledb extension.
+                        ;; TODO: The above comment and the #:symlink trick can
+                        ;; be removed in the next rebuild cycle.
                         (union-build pg-union (cons #$output directories)
                                      #:symlink
                                      (lambda (old new)
@@ -2056,7 +2089,7 @@ columns, primary keys, unique constraints and relationships.")
 (define-public perl-dbd-pg
   (package
     (name "perl-dbd-pg")
-    (version "3.14.2")
+    (version "3.15.1")
     (source
      (origin
        (method url-fetch)
@@ -2064,7 +2097,7 @@ columns, primary keys, unique constraints and relationships.")
                            "DBD-Pg-" version ".tar.gz"))
        (sha256
         (base32
-         "0kcfqq7g3832wiix0sbyvlc885qghjrp2ah3akn7h2lnb22fjwy9"))))
+         "0zn17xb6bmixkmv53p576igzw1jd43cwql35r19m56jwahxm9iqk"))))
     (build-system perl-build-system)
     (native-inputs
      (list perl-dbi))
@@ -2835,13 +2868,13 @@ can autogenerate peewee models using @code{pwiz}, a model generator.")
 (define-public python-pypika-tortoise
   (package
     (name "python-pypika-tortoise")
-    (version "0.1.1")
+    (version "0.1.5")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pypika-tortoise" version))
        (sha256
-        (base32 "0g4z0lz739nk04b405ynqpd3y1z5nfyxjz9hqgxcw3jydsjx0cb8"))))
+        (base32 "0j20574s2yrq8d7fav3816vj1nfpihkm2mj8jzh2ank4zixp8brf"))))
     (build-system python-build-system)
     (home-page "https://github.com/tortoise/pypika-tortoise")
     (synopsis "Pypika fork for tortoise-orm")
@@ -2872,24 +2905,19 @@ coroutine-specific markup.")
 (define-public python-asyncpg
   (package
     (name "python-asyncpg")
-    (version "0.24.0")
+    (version "0.25.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "asyncpg" version))
        (sha256
-        (base32 "1in0q6iffpl8ag6ady4bvwnn40igh10cpp4xgm426j1lqdis0byx"))))
+        (base32 "0h1573lp4607nppflnnjrhn7yrfy6i54cm98gi4qbcikjykfdy33"))))
     (build-system python-build-system)
     (propagated-inputs (list python-typing-extensions))
     (native-inputs
      (list postgresql
            python-cython
-           python-flake8
-           python-pycodestyle
            python-pytest
-           python-sphinx
-           python-sphinx-rtd-theme
-           python-sphinxcontrib-asyncio
            python-uvloop))
     (home-page "https://github.com/MagicStack/asyncpg")
     (synopsis "Fast PostgreSQL database client library for Python")
@@ -2942,13 +2970,13 @@ of PyMySQL.  @code{aiomysql} tries to preserve the same API as the
 (define-public python-tortoise-orm
   (package
     (name "python-tortoise-orm")
-    (version "0.17.8")
+    (version "0.19.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "tortoise-orm" version))
        (sha256
-        (base32 "1gzgiypln7lck3p95vk3i8rdx1bjbmmlcpb8xpba8cjdjvlj0l0z"))))
+        (base32 "17yk71dlx5ai98i6ivqgsplkwivdxackz9jfn6z42bpcdgbpiwhg"))))
     (build-system python-build-system)
     ;; The test suite relies on asynctest, which is abandoned and doesn't
     ;; support Python >= 3.8.

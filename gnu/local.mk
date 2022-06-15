@@ -1317,6 +1317,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/java-tunnelvisionlabs-antlr-code-too-large.patch	\
   %D%/packages/patches/java-apache-ivy-port-to-latest-bouncycastle.patch	\
   %D%/packages/patches/java-commons-collections-fix-java8.patch \
+  %D%/packages/patches/java-commons-lang-fix-dependency.patch \
   %D%/packages/patches/java-jeromq-fix-tests.patch		\
   %D%/packages/patches/java-openjfx-build-jdk_version.patch     \
   %D%/packages/patches/java-powermock-fix-java-files.patch		\
@@ -1347,6 +1348,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/kinit-kdeinit-extra_libs.patch		\
   %D%/packages/patches/kinit-kdeinit-libpath.patch		\
   %D%/packages/patches/kio-search-smbd-on-PATH.patch		\
+  %D%/packages/patches/kismet-unbundle-boost.patch		\
   %D%/packages/patches/kmail-Fix-missing-link-libraries.patch \
   %D%/packages/patches/kmod-module-directory.patch		\
   %D%/packages/patches/kmscon-runtime-keymap-switch.patch	\
@@ -1843,6 +1845,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/texi2html-i18n.patch			\
   %D%/packages/patches/thefuck-test-environ.patch		\
   %D%/packages/patches/tidy-CVE-2015-5522+5523.patch		\
+  %D%/packages/patches/timescaledb-flaky-test.patch		\
   %D%/packages/patches/tinyxml-use-stl.patch			\
   %D%/packages/patches/tipp10-disable-downloader.patch		\
   %D%/packages/patches/tipp10-fix-compiling.patch		\

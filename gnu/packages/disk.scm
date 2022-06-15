@@ -715,10 +715,10 @@ the card and then checks if can read it.  It will assure you haven't been sold
 a card with a smaller capacity than stated.")
     (license license:gpl3+)))
 
-(define-public python-parted
+(define-public python-pyparted
   (package
-    (name "python-parted")
-    (version "3.11.7")
+    (name "python-pyparted")
+    (version "3.12.0")
     (source
      (origin
        (method git-fetch)
@@ -727,20 +727,8 @@ a card with a smaller capacity than stated.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "01193fmkss9icjvqpw85szpk8ld1pnha7p9kqm7mpwk6rc6gi2m3"))))
+        (base32 "0jxc1i1g3lz32wvqvdbb9ng2ypin783004kjnp0pghiz813lpw1d"))))
     (build-system python-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (delete 'check)
-         (add-after 'install 'check
-           (lambda* (#:key outputs inputs #:allow-other-keys)
-             (add-installed-pythonpath inputs outputs)
-             ;; See <https://github.com/dcantrell/pyparted/issues/47>.
-             (substitute* "tests/test__ped_ped.py"
-               (("\"/tmp/temp-device-\"") "self.path"))
-             (invoke "python" "-m" "unittest" "discover" "-v")
-             #t)))))
     (native-inputs
      (list e2fsprogs pkg-config))
     (propagated-inputs
@@ -751,6 +739,9 @@ a card with a smaller capacity than stated.")
     (synopsis "Parted bindings for Python")
     (description "This package provides @code{parted} bindings for Python.")
     (license license:gpl2+)))
+
+(define-public python-parted
+  (deprecated-package "python-parted" python-pyparted))
 
 (define-public duperemove
   (package

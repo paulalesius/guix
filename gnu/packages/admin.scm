@@ -680,7 +680,7 @@ console.")
 (define-public htop
   (package
     (name "htop")
-    (version "3.2.0")
+    (version "3.2.1")
     (source
      (origin
        (method git-fetch)
@@ -688,7 +688,7 @@ console.")
              (url "https://github.com/htop-dev/htop")
              (commit version)))
        (sha256
-        (base32 "16l1r2ixzs640ybqp2x8bfyvk98kiywy7k3sjmp5j5npdzn5ryd7"))
+        (base32 "0yfmkw3y4qyd42svhpiijif7krvmnb8z88y6h9g4fwf7sfynq2rk"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (inputs
@@ -1840,7 +1840,7 @@ system administrator.")
 (define-public sudo
   (package
     (name "sudo")
-    (version "1.9.11p1")
+    (version "1.9.11p2")
     (source (origin
               (method url-fetch)
               (uri
@@ -1850,7 +1850,7 @@ system administrator.")
                                     version ".tar.gz")))
               (sha256
                (base32
-                "0jr52rmig9h367j0n6h3lp5xf54jsycnvdih42wg9bd9d4d6r2zb"))
+                "1lli4z10b5j238cn7471jb8vcjlj5px68x48ysa3f1n0kzmih6d2"))
               (modules '((guix build utils)))
               (snippet
                '(begin
