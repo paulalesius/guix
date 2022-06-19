@@ -359,7 +359,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    linux-libre-5.18-version
    linux-libre-5.18-gnu-revision
    (base32 "09aikdhij4d89wqd8mmkdr0nrfwqz6dx3n74qm6wx815rfngd2dz")
-   (base32 "1qd4h1i8cjz44qcyl74klilrzizsaxddh38svlsdzqnk80xk9vj2")))
+   (base32 "0vjpn8iw9yg39sr6jfhzyvivf159h9zfgnjamwa283zfll0h0a53")))
 (define-public linux-libre-5.18-pristine-source
   (let ((version linux-libre-5.18-version)
         (hash (base32 "1rrll1ph9wx8szh1iv3wkjqk2n3k80qyhwmvl79rqkwr0pa32dww")))
