@@ -2,7 +2,7 @@
 ;;; Copyright © 2015 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2015 Sou Bunnbu <iyzsong@gmail.com>
 ;;; Copyright © 2015, 2017 Andy Wingo <wingo@pobox.com>
-;;; Copyright © 2015-2017, 2019, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2015-2017, 2019, 2021-2022 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2015, 2017, 2018, 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015 David Hashe <david.hashe@dhashe.com>
 ;;; Copyright © 2016, 2017, 2019, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
@@ -849,35 +849,6 @@ GNOME Shell.  The @command{localectl} command-line tool allows you to interact
 with localed.  This package is extracted from the broader systemd package.")
     (license license:lgpl2.1+)))
 
-(define-public seatd
-  (package
-    (name "seatd")
-    (version "0.5.0")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://git.sr.ht/~kennylevinsen/seatd")
-                    (commit version)))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "1kglq8v4rnr3415mfaghyv2s2f8mxsy5s881gmm2908ig4n4j297"))))
-    (build-system meson-build-system)
-    (arguments
-     `(#:configure-flags '("-Dlogind=enabled")))
-    (native-inputs
-     (list pkg-config scdoc))
-    (propagated-inputs
-     (list elogind))
-    (home-page "https://sr.ht/~kennylevinsen/seatd")
-    (synopsis "Seat management daemon and library")
-    (description
-     "This package provides a minimal seat management daemon whose task is to
-mediate access to shared devices, such as graphics and input, for applications
-that require it.  It also provides a universal seat management library that
-allows applications to use whatever seat management is available.")
-    (license license:expat)))
-
 (define-public packagekit
   (package
     (name "packagekit")
@@ -1048,6 +1019,9 @@ functionality not available in the Wayland core protocol.  Such protocols either
 add completely new functionality, or extend the functionality of some other
 protocol either in Wayland core, or some other protocol in wayland-protocols.")
     (home-page "https://wayland.freedesktop.org")
+    (properties
+     '((release-monitoring-url
+        . "https://wayland.freedesktop.org/releases.html")))
     (license license:expat)))
 
 (define-public waylandpp

@@ -47,6 +47,7 @@
 ;;; Copyright © 2022 Andrew Tropin <andrew@trop.in>
 ;;; Copyright © 2022 Justin Veilleux <terramorpha@cock.li>
 ;;; Copyright © 2022 Thiago Jung Bauermann <bauermann@kolabnow.com>
+;;; Copyright © 2022 Guillaume Le Vaillant <glv@posteo.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -87,6 +88,7 @@
   #:use-module (gnu packages django)
   #:use-module (gnu packages dns)
   #:use-module (gnu packages docbook)
+  #:use-module (gnu packages docker)
   #:use-module (gnu packages documentation)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages enchant)
@@ -1550,7 +1552,7 @@ pairs have previously synchronized.")
 (define-public getmail6
   (package
     (name "getmail6")
-    (version "6.18.6")
+    (version "6.18.9")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1559,7 +1561,7 @@ pairs have previously synchronized.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "08a5yw6ll1kmd1ardj8rzhsw4wl48zzdc87g5lh4p5snv8w2m4ja"))))
+                "1ch5hagkpybmkgg2wbb2mids3nbmjqgdqjhczzz7pvj4hx2m8fdb"))))
     (build-system python-build-system)
     (arguments (list #:tests? #f))      ;tests require docker
     (home-page "https://github.com/getmail6/getmail6")
@@ -1568,7 +1570,7 @@ pairs have previously synchronized.")
      "A flexible, extensible mail retrieval system with support for POP3,
 IMAP4, SSL variants of both, maildirs, mboxrd files, external MDAs, arbitrary
 message filtering, single-user and domain-mailboxes, and many other useful
-features.  This is a fork derived from getmali 5.14, aimed at Python 3
+features.  This is a fork derived from getmail 5.14, aimed at Python 3
 compatibility.")
     (license license:gpl2+)))           ;see docs/COPYING
 
@@ -2422,21 +2424,29 @@ compatibility shims for the @command{sendmail}, @command{mailq}, and
 (define-public fdm
   (package
     (name "fdm")
-    (version "2.0")
+    (version "2.1")
     (source (origin
              (method url-fetch)
              (uri (string-append "https://github.com/nicm/fdm/releases/download/"
                                  version "/fdm-" version ".tar.gz"))
              (sha256
-               (base32 "196fs1z8y7p12wmqn1bylzz94szl58yv2aby3p30nmwjnyv8rch6"))))
+               (base32 "1zxd5j5x2gp6m62j83xsjyfglw1p6gn4zk5qx10djdh8xzkg53c5"))))
     (build-system gnu-build-system)
     (inputs
      (list tdb openssl zlib))
     (home-page "https://github.com/nicm/fdm")
-    (synopsis "Mail Retrieval Agent (MRA) and Mail Delivery Agent (MDA)")
-    (description "fdm is a program designed to fetch mail from POP3
-or IMAP servers, or receive local mail from stdin, and
-deliver it in various ways.")
+    (synopsis
+     "@acronym{MRA, Mail Retrieval Agent} and @acronym{MDA, Mail Delivery Agent}")
+    (description "fdm fetches and delivers mail in various ways.
+
+Mail may be fetched from IMAP or POP3 servers, from local maildirs, or read
+from standard input.  It is then filtered based on regular expressions, its
+size or age, or the output of a (shell) command.  It can be rewritten by an
+external process, dropped, left on the server or delivered into maildirs,
+mboxes, to a file or pipe, or any combination.
+
+fdm is primarily designed for use by a single user, but can use privilege
+separation to safely deliver mail in multi-user setups.")
     (license
      ;; Why point to a source file?  Well, all the individual files have a
      ;; copy of this license in their headers, but there's no seprate file
@@ -4084,10 +4094,16 @@ Git and exports them in maildir format or to an MDA through a pipe.")
              (sha256
               (base32
                "0xni1l54v1z3p0zb52807maay0yqabp8jgf5iras5zmhgjyk3swz"))
-             (file-name (git-file-name name version))))
+             (file-name (git-file-name name version))
+             (patches (search-patches "public-inbox-fix-spawn-test.patch"))))
     (build-system perl-build-system)
     (arguments
-     '(#:tests? #f
+     `(#:imported-modules (,@%perl-build-system-modules
+                           (guix build syscalls))
+       #:modules ((guix build perl-build-system)
+                  (guix build syscalls)
+                  (guix build utils)
+                  (ice-9 match))
        #:phases
        (modify-phases %standard-phases
          (add-before 'configure 'qualify-paths
@@ -4096,18 +4112,45 @@ Git and exports them in maildir format or to an MDA through a pipe.")
              (substitute* "lib/PublicInbox/Xapcmd.pm"
                (("'xapian-compact'")
                 (format #f "'~a'" (search-input-file inputs
-                                                     "/bin/xapian-compact"))))))
+                                                     "/bin/xapian-compact"))))
+             (substitute* "lib/PublicInbox/TestCommon.pm"
+               ;; This is only used for tests, but get it from ‘inputs’ so
+               ;; that cross builds won't hold a reference to a package built
+               ;; for another architecture.
+               (("/bin/cp") (search-input-file inputs "/bin/cp")))))
          (add-before 'check 'pre-check
            (lambda _
-             (substitute* "t/spawn.t"
-               (("\\['env'\\]") (string-append "['" (which "env") "']")))
-             (substitute* "t/ds-leak.t"
-               (("/bin/sh") (which "sh")))
-             (invoke "./certs/create-certs.perl")
-             ;; XXX: This test fails due to zombie process is not reaped by
-             ;; the builder.
-             (substitute* "t/httpd-unix.t"
-               (("^SKIP: \\{") "SKIP: { skip('Guix');"))))
+             (invoke "./certs/create-certs.perl")))
+         (replace 'check
+           (lambda* (#:key target
+                     (tests? (not target)) (test-flags '())
+                     #:allow-other-keys)
+             (if tests?
+                 (match (primitive-fork)
+                   (0                     ;child process
+                    ;; lei tests build UNIX domain sockets in the temporary
+                    ;; directory, but the path of those sockets can be at most
+                    ;; 108 chars and Guix' default value for the variables
+                    ;; below already use 47 chars. Use the shortest temporary
+                    ;; path possible to avoid hitting the limit.
+                    (setenv "TEMP" "/tmp")
+                    (setenv "TEMPDIR" "/tmp")
+                    (setenv "TMP" "/tmp")
+                    (setenv "TMPDIR" "/tmp")
+
+                    ;; Use tini so that signals are properly handled and
+                    ;; doubly-forked processes get reaped; otherwise,
+                    ;; lei-daemon is kept as a zombie and the testsuite
+                    ;; fails thinking that it didn't quit as it should.
+                    (set-child-subreaper!)
+                    (apply execlp "tini" "--"
+                           "make" "check" test-flags))
+                   (pid
+                    (match (waitpid pid)
+                      ((_ . status)
+                       (unless (zero? status)
+                         (error "`make check' exited with status" status))))))
+                 (format #t "test suite not run~%"))))
          (add-after 'install 'wrap-programs
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out")))
@@ -4126,7 +4169,7 @@ Git and exports them in maildir format or to an MDA through a pipe.")
                 (find-files (string-append out "/bin")))))))))
     (native-inputs
      (list ;; For testing.
-           lsof openssl))
+           lsof openssl tini))
     (inputs
      (list bash-minimal
            curl

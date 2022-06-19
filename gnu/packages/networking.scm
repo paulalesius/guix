@@ -3279,7 +3279,7 @@ Ethernet and TAP interfaces is supported.  Packet capture is also supported.")
 (define-public hcxtools
   (package
     (name "hcxtools")
-    (version "5.2.0")
+    (version "6.2.7")
     (source
      (origin
        (method git-fetch)
@@ -3287,19 +3287,22 @@ Ethernet and TAP interfaces is supported.  Packet capture is also supported.")
              (url "https://github.com/ZerBea/hcxtools")
              (commit version)))
        (sha256
-        (base32 "0k2qlq9hz5zc21nyc6yrnfqzga7hydn5mm0x3rpl2fhkwl81lxcn"))
+        (base32 "0460dxbc04w60l3g06rk007yyb6qprgyii59y2zdki0vy7q63m8b"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
-    (inputs
-     (list curl libpcap openssl zlib))
+    (native-inputs (list pkg-config))
+    (inputs (list curl libpcap openssl zlib))
     (arguments
-     `(#:make-flags
-       (list ,(string-append "CC=" (cc-for-target))
-             (string-append "INSTALLDIR=" (assoc-ref %outputs "out") "/bin"))
-       #:tests? #f                      ; no test suite
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure))))
+     (list #:make-flags
+           #~(list (string-append "CC="
+                                  #$(cc-for-target)) "LDFLAGS+=-lcrypto"
+                   "LDFLAGS+=-lcurl" "LDFLAGS+=-lz"
+                   (string-append "PREFIX="
+                                  #$output))
+           #:tests? #f                            ;no test suite
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure))))
     (home-page "https://github.com/ZerBea/hcxtools")
     (synopsis "Capture wlan traffic to hashcat and John the Ripper")
     (description

@@ -123,6 +123,7 @@
 ;;; Copyright © 2022 Jai Vetrivelan <jaivetrivelan@gmail.com>
 ;;; Copyright © 2022 Artyom V. Poptsov <poptsov.artyom@gmail.com>
 ;;; Copyright © 2022 Paul A. Patience <paul@apatience.com>
+;;; Copyright © 2022 Jean-Pierre De Jesus DIAZ <me@jeandudey.tech>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -197,6 +198,7 @@
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages networking)
   #:use-module (gnu packages ncurses)
+  #:use-module (gnu packages node)
   #:use-module (gnu packages ninja)
   #:use-module (gnu packages openstack)
   #:use-module (gnu packages pcre)
@@ -3899,6 +3901,71 @@ written in pure Python.")
 adds a 'now' tag providing a convenient access to the arrow.now() API from
 templates.  A format string can be provided to control the output.")
     (license license:expat)))
+
+(define-public python-pysdl2
+  (package
+    (name "python-pysdl2")
+    (version "0.9.11")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "PySDL2" version))
+              (sha256
+               (base32
+                "19id1qswgcj4v4j5kn49shq1xxx3slhjpm0102w87mczsdbi1rck"))))
+    (build-system python-build-system)
+    (arguments
+      (list #:tests? #f ;; Requires /dev/dri, OpenGL module, etc.
+            #:phases
+            #~(modify-phases %standard-phases
+                (add-after 'unpack 'patch-paths
+                  (lambda* (#:key inputs #:allow-other-keys)
+                    (substitute* "sdl2/dll.py"
+                    ;; Disable pysdl2-dll. It can't be packaged on GNU Guix
+                    ;; as it duplicates an existing package (sdl2).
+                    (("prepath = os\\.getenv\\('PYSDL2_DLL_PATH'\\)")
+                     "prepath = \"system\"")
+                    (("^import sdl2dll$") "")
+                    (("postpath = os\\.getenv\\('PYSDL2_DLL_PATH'\\)")
+                     "postpath = \"system\"")
+                    (("DLL\\(.*, os\\.getenv\\(\"PYSDL2_DLL_PATH\"\\)\\)")
+                     (string-append
+                       "DLL(\"SDL2\", [\"SDL2\", \"SDL2-2.0\", \"SDL2-2.0.0\"], \""
+                       (dirname (search-input-file inputs "/lib/libSDL2.so"))
+                       "\")")))
+              (substitute* "sdl2/sdlimage.py"
+                (("os\\.getenv\\(\"PYSDL2_DLL_PATH\"\\)")
+                 (string-append
+                   "\""
+                   (dirname (search-input-file inputs "/lib/libSDL2_image.so"))
+                   "\"")))
+              (substitute* "sdl2/sdlgfx.py"
+                (("os\\.getenv\\(\"PYSDL2_DLL_PATH\"\\)")
+                 (string-append
+                   "\""
+                   (dirname (search-input-file inputs "/lib/libSDL2_gfx.so"))
+                   "\"")))
+              (substitute* "sdl2/sdlmixer.py"
+                (("os\\.getenv\\(\"PYSDL2_DLL_PATH\"\\)")
+                 (string-append
+                   "\""
+                   (dirname (search-input-file inputs "/lib/libSDL2_mixer.so"))
+                   "\"")))
+              (substitute* "sdl2/sdlttf.py"
+                (("os\\.getenv\\(\"PYSDL2_DLL_PATH\"\\)")
+                 (string-append
+                   "\""
+                   (dirname (search-input-file inputs "/lib/libSDL2_ttf.so"))
+                   "\""))))))))
+    (inputs
+      (list sdl2 sdl2-image sdl2-gfx sdl2-mixer sdl2-ttf))
+    (home-page "https://github.com/py-sdl/py-sdl2")
+    (synopsis "Python bindings around the SDL2 game development library")
+    (description "PySDL2 is a pure Python wrapper around the @code{SDL2},
+@code{SDL2_mixer}, @code{SDL2_image}, @code{SDL2_ttf}, and @code{SDL2_gfx}
+libraries.  Instead of relying on C code, it uses the built-in ctypes module
+to interface with SDL2, and provides simple Python classes and wrappers for
+common SDL2 functionality.")
+    (license license:cc0)))
 
 (define-public python-pystache
   (package
@@ -10262,6 +10329,26 @@ cyclomatic complexity of Python source code.")
      (list python-pycodestyle-2.6 python-entrypoints python-pyflakes-2.2
            python-mccabe))))
 
+(define-public python-flake8-blind-except
+  (package
+    (name "python-flake8-blind-except")
+    (version "0.2.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "flake8-blind-except" version))
+       (sha256
+        (base32 "05nxsxfzfhwsm8gys90228imm2qbnqnw5y8bfqyfngnbkmd5fnpj"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:tests? #f))                    ; no tests
+    (native-inputs (list python-pycodestyle))
+    (home-page "https://github.com/elijahandrews/flake8-blind-except")
+    (synopsis "Check for blind @code{except:} statements")
+    (description "This package provides a flake8 extension that checks for
+blind @code{except:} statements.")
+    (license license:expat)))
+
 (define-public python-flake8-bugbear
   (package
     (name "python-flake8-bugbear")
@@ -10321,6 +10408,29 @@ can be broken over multiple lines by wrapping expressions in parentheses.
 These should be used in preference to using a backslash for line continuation.
 @end quotation")
     (license license:asl2.0)))
+
+(define-public python-flake8-debugger
+  (package
+    (name "python-flake8-debugger")
+    (version "4.1.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "flake8-debugger" version))
+       (sha256
+        (base32 "0h1qlzbxxhjsw6kg3mcml9h8byy77m9a5z06z2dnvqs115b05c2j"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:tests? #f))              ; no tests in PyPI and no setup.py in GitHub
+    (propagated-inputs
+     (list python-flake8 python-pycodestyle))
+    (home-page "https://github.com/jbkahn/flake8-debugger")
+    (synopsis "@code{ipdb} and @code{pdb} statement checker plugin for flake8")
+    (description "This package provides a Flake8 plugin that checks for
+@code{ipdb} and @code{pdb} imports and set traces, as well as
+@code{from IPython.terminal.embed}, @code{import InteractiveShellEmbed}
+and @code{InteractiveShellEmbed()()}.")
+    (license license:expat)))
 
 (define-public python-flake8-implicit-str-concat
   (package
@@ -14344,6 +14454,97 @@ named for) extending the Levenberg-Marquardt method from
 enhancements to optimization and data fitting problems.")
     (license license:bsd-3)))
 
+(define-public python-bokeh
+  (package
+    (name "python-bokeh")
+    (version "2.4.3")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "bokeh" version))
+              (sha256
+               (base32
+                "00sbhya9vfdv3yi07j6mxwx1x1h9497nhd3smdjrcdxgc48q0czg"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               ;; These require selenium.
+               (delete-file "tests/unit/bokeh/io/test_export.py")
+               (delete-file "tests/unit/bokeh/io/test_webdriver.py")
+               (delete-file "tests/unit/bokeh/embed/test_standalone.py")
+
+               ;; Doesn't find ManagedServerLoop fixture
+               (delete-file "tests/unit/bokeh/test_client_server.py")
+
+               ;; This fails because of the Guix wrapper around pytest
+               (delete-file "tests/unit/bokeh/io/test_util__io.py")
+
+               ;; Fixture ipython not found.
+               (delete-file "tests/unit/bokeh/application/handlers/test_notebook__handlers.py")
+               (delete-file "tests/unit/bokeh/command/subcommands/test_info.py")
+
+               ;; pd fixture not found.
+               (delete-file "tests/unit/bokeh/models/test_mappers.py")
+               (delete-file "tests/unit/bokeh/models/util/test_structure.py")
+               (delete-file "tests/unit/bokeh/plotting/test__plot.py")
+               (delete-file "tests/unit/bokeh/plotting/test__graph.py")
+               (delete-file "tests/unit/bokeh/plotting/test_figure.py")
+               (delete-file "tests/unit/bokeh/core/test_json_encoder.py")
+               (delete-file "tests/unit/bokeh/core/property/test_bases.py")
+               (delete-file "tests/unit/bokeh/core/property/test_container.py")
+               (delete-file "tests/unit/bokeh/core/property/test_dataspec.py")
+               (delete-file "tests/unit/bokeh/core/property/test_datetime.py")
+               (delete-file "tests/unit/bokeh/core/property/test_pandas.py")
+
+               ;; nx fixture not found.
+               (delete-file "tests/unit/bokeh/plotting/test_graph.py")
+               (delete-file "tests/unit/bokeh/models/test_graphs.py")
+               (delete-file "tests/unit/bokeh/io/test_showing.py")
+               (delete-file "tests/unit/bokeh/document/test_events__document.py")
+
+               ;; These tests need external sample data
+               (delete-file-recursively "tests/unit/bokeh/sampledata/")
+
+               ;; Attempts to install something via npm.
+               (delete-file "tests/unit/bokeh/test_ext.py")
+
+               ;; More failures due to set up problems.
+               (delete-file "tests/unit/bokeh/server/test_server__server.py")
+               (delete-file "tests/unit/bokeh/server/test_tornado__server.py")
+               (delete-file "tests/unit/bokeh/util/test_serialization.py")
+               (delete-file "tests/unit/bokeh/util/test_hex.py")
+               (delete-file "tests/unit/bokeh/models/test_sources.py")
+               (delete-file "tests/unit/bokeh/embed/test_bundle.py")
+
+               (invoke "pytest" "-v")))))))
+    (propagated-inputs
+     (list node-lts
+           python-jinja2
+           python-numpy
+           python-packaging
+           python-pillow
+           python-pyyaml
+           python-tornado
+           python-typing-extensions))
+    (native-inputs
+     (list python-beautifulsoup4
+           python-dateutil
+           python-flaky
+           python-nbconvert
+           python-pandas
+           python-pytest
+           python-pytz
+           python-requests))
+    (home-page "https://github.com/bokeh/bokeh")
+    (synopsis "Interactive plots and applications in the browser from Python")
+    (description
+     "This package provides tools for interactive plots and applications in the
+browser from Python.")
+    (license license:bsd-3)))
+
 (define-public python-boto
   (package
     (name "python-boto")
@@ -17762,6 +17963,28 @@ JSON) codec.")
      Format (ELF), and debugging information in the Debugging With Attributed
      Record Format (DWARF).")
     (license license:public-domain)))
+
+(define-public python-pefile
+  (package
+    (name "python-pefile")
+    (version "2022.5.30")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/erocarrera/pefile")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1qj90a0s2gd5hn2zggypqc1077inid5dcl1fp5973b04kf2b9z8a"))))
+    (build-system python-build-system)
+    (propagated-inputs (list python-future))
+    (home-page "https://github.com/erocarrera/pefile")
+    (synopsis "Portable Executable (PE) file parser")
+    (description "This python library provides interfaces for parsing and
+working with Portable Executable (PE) files.  It makes to most information
+from the header, as well as section details and data available.")
+    (license license:expat)))
 
 (define-public python-pyev
   (package
@@ -21589,19 +21812,24 @@ and corruption checks.")
 (define-public python-requests-file
   (package
     (name "python-requests-file")
-    (version "1.4.3")
+    (version "1.5.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "requests-file" version))
        (sha256
-        (base32
-         "1yp2jaxg3v86pia0q512dg3hz6s9y5vzdivsgrba1kds05ial14g"))))
+        (base32 "13kx4k83i9zcv20h0fnmawwwdzhcmw1z97mqib1h379qsc445mq7"))))
     (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (invoke "python" "tests/test_requests_file.py")))))))
     (propagated-inputs
      (list python-requests python-six))
-    (home-page
-     "https://github.com/dashea/requests-file")
+    (home-page "https://github.com/dashea/requests-file")
     (synopsis "File transport adapter for Requests")
     (description
      "Requests-File is a transport adapter for use with the Requests Python
@@ -22143,6 +22371,34 @@ which supports the spawning of processes using the API of the standard
 library's @code{threading} module.")
     (license license:bsd-3)))
 
+(define-public python-multiprocessing-on-dill
+  (package
+    (name "python-multiprocessing-on-dill")
+    (version "3.5.0a4")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "multiprocessing_on_dill" version))
+              (sha256
+               (base32
+                "1rs5a3hx1fcpfsxxkl5kx6g06c82wqjqgdqyny5l1ggl1wq0rmfn"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "pytest" "-vv")))))))
+    (propagated-inputs (list python-dill))
+    (native-inputs (list python-check-manifest python-pytest python-wheel))
+    (home-page "https://github.com/sixty-north/multiprocessing_on_dill")
+    (synopsis "Multiprocessing using dill instead of pickle")
+    (description
+     "This package provides a friendly fork of multiprocessing which uses dill
+instead of pickle.")
+    (license license:psfl)))
+
 (define-public python-toolrack
   (package
     (name "python-toolrack")
@@ -22355,14 +22611,14 @@ data.")
 (define-public python-locket
   (package
     (name "python-locket")
-    (version "0.2.0")
+    (version "1.0.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "locket" version))
        (sha256
         (base32
-         "1d4z2zngrpqkrfhnd4yhysh66kjn4mblys2l06sh5dix2p0n7vhz"))))
+         "0cm6290zm3ba62n2x2piy3s8d41hrmffda2nw18ggfwb582lq3aw"))))
     (build-system python-build-system)
     (home-page "https://github.com/mwilliamson/locket.py")
     (synopsis "File-based locks for Python")
@@ -23553,6 +23809,23 @@ scratch and manipulate data from Intel HEX file format.  It also includes
 several convenience Python scripts, including \"classic\" hex2bin and bin2hex
 converters and more, those based on the library itself.")
     (license license:bsd-3)))
+
+(define-public python-interlap
+  (package
+    (name "python-interlap")
+    (version "0.2.7")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "interlap" version))
+              (sha256
+               (base32
+                "1jbfh00bkrf0i5psa6n75rlgmqp5389xixa9j29w8rxhah6g7r1i"))))
+    (build-system python-build-system)
+    (home-page "https://brentp.github.io/interlap")
+    (synopsis "Fast, simple interval overlap testing")
+    (description "InterLap does fast interval overlap testing with a simple Python data
+structure.")
+    (license license:expat)))
 
 (define-public python-pykwalify
   (package

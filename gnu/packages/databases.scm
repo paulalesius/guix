@@ -4258,6 +4258,132 @@ language-bindings for structure manipulation.  It also provides IPC and common
 algorithm implementations.")
     (license license:asl2.0)))
 
+(define-public apache-arrow-0.16
+  (package
+    (name "apache-arrow")
+    (version "0.16.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/apache/arrow")
+             (commit (string-append "apache-arrow-" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "15bplqy5708bxy1mynzjkd3d2g8v2wd36z8l0ap8yyyq54l3gdvy"))))
+    (build-system cmake-build-system)
+    (arguments
+     `(#:tests? #f
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'configure 'enter-source-directory
+           (lambda _
+             (chdir "cpp")
+             (substitute* "src/parquet/CMakeLists.txt"
+               (("    parquet_constants.cpp") "")
+               (("set\\(THRIFT_OUTPUT_FILES \\$\\{THRIFT_OUTPUT_FILES\\}.*") "")
+               ((".*\"\\$\\{THRIFT_OUTPUT_DIR\\}/parquet_constants.cpp\"\\).*") ""))))
+         (add-after 'unpack 'set-env
+           (lambda _
+             (setenv "BOOST_ROOT" (assoc-ref %build-inputs "boost"))
+             (setenv "BROTLI_HOME" (assoc-ref %build-inputs "brotli"))
+             (setenv "FLATBUFFERS_HOME" (assoc-ref %build-inputs "flatbuffers"))
+             (setenv "RAPIDJSON_HOME" (assoc-ref %build-inputs "rapidjson")))))
+       #:build-type "Release"
+       #:configure-flags
+       (list "-DARROW_PYTHON=ON"
+             "-DARROW_GLOG=ON"
+             "-DARROW_SSE42=OFF"
+             "-DARROW_BOOST_USE_SHARED=ON"
+             ;; Parquet options
+             "-DARROW_PARQUET=ON"
+
+             ;; The maintainers disallow using system versions of
+             ;; jemalloc:
+             ;; https://issues.apache.org/jira/browse/ARROW-3507. This
+             ;; is unfortunate because jemalloc increases performance:
+             ;; https://arrow.apache.org/blog/2018/07/20/jemalloc/.
+             "-DARROW_JEMALLOC=OFF"
+
+             ;; The CMake option ARROW_DEPENDENCY_SOURCE is a global
+             ;; option that instructs the build system how to resolve
+             ;; each dependency. SYSTEM = Finding the dependency in
+             ;; system paths using CMake's built-in find_package
+             ;; function, or using pkg-config for packages that do not
+             ;; have this feature
+             "-DARROW_DEPENDENCY_SOURCE=SYSTEM"
+
+             ;; Split output into its component packages.
+             (string-append "-DCMAKE_INSTALL_PREFIX="
+                            (assoc-ref %outputs "out"))
+             (string-append "-DCMAKE_INSTALL_RPATH="
+                            (assoc-ref %outputs "out")
+                            "/lib")
+             (string-append "-DCMAKE_INSTALL_BINDIR="
+                            (assoc-ref %outputs "out")
+                            "/bin")
+             (string-append "-DCMAKE_INSTALL_INCLUDEDIR="
+                            (assoc-ref %outputs "include")
+                            "/share/include")
+
+
+             "-DARROW_WITH_SNAPPY=ON"
+             "-DARROW_WITH_ZLIB=ON"
+             "-DARROW_WITH_ZSTD=ON"
+             "-DARROW_WITH_LZ4=ON"
+             "-DARROW_COMPUTE=ON"
+             "-DARROW_CSV=ON"
+             "-DARROW_DATASET=ON"
+             "-DARROW_FILESYSTEM=ON"
+             "-DARROW_HDFS=ON"
+             "-DARROW_JSON=ON"
+             ;; Arrow Python C++ integration library (required for
+             ;; building pyarrow). This library must be built against
+             ;; the same Python version for which you are building
+             ;; pyarrow. NumPy must also be installed. Enabling this
+             ;; option also enables ARROW_COMPUTE, ARROW_CSV,
+             ;; ARROW_DATASET, ARROW_FILESYSTEM, ARROW_HDFS, and
+             ;; ARROW_JSON.
+             "-DARROW_PYTHON=ON"
+
+             ;; Building the tests forces on all the
+             ;; optional features and the use of static
+             ;; libraries.
+             "-DARROW_BUILD_TESTS=OFF"
+             "-DBENCHMARK_ENABLE_GTEST_TESTS=OFF"
+             ;;"-DBENCHMARK_ENABLE_TESTING=OFF"
+             "-DARROW_BUILD_STATIC=OFF")))
+    (inputs
+     `(("boost" ,boost)
+       ("brotli" ,google-brotli)
+       ("double-conversion" ,double-conversion)
+       ("snappy" ,snappy)
+       ("gflags" ,gflags)
+       ("glog" ,glog)
+       ("apache-thrift" ,apache-thrift "lib")
+       ("protobuf" ,protobuf)
+       ("rapidjson" ,rapidjson)
+       ("zlib" ,zlib)
+       ("bzip2" ,bzip2)
+       ("lz4" ,lz4)
+       ("zstd" ,zstd "lib")
+       ("re2" ,re2)
+       ("grpc" ,grpc)
+       ("python-3" ,python)
+       ("python-numpy" ,python-numpy)))
+    (native-inputs
+     (list pkg-config apache-thrift))
+    (outputs '("out" "include"))
+    (home-page "https://arrow.apache.org/")
+    (synopsis "Columnar in-memory analytics")
+    (description "Apache Arrow is a columnar in-memory analytics layer
+designed to accelerate big data.  It houses a set of canonical in-memory
+representations of flat and hierarchical data along with multiple
+language-bindings for structure manipulation.  It also provides IPC and common
+algorithm implementations.")
+    (license license:asl2.0)))
+
 (define-public python-pyarrow
   (package
     (inherit apache-arrow)
@@ -4307,6 +4433,64 @@ algorithm implementations.")
        ("python-pytest" ,python-pytest)
        ("python-pytest-runner" ,python-pytest-runner)
        ("python-setuptools-scm" ,python-setuptools-scm)))
+    (outputs '("out"))
+    (home-page "https://arrow.apache.org/docs/python/")
+    (synopsis "Python bindings for Apache Arrow")
+    (description
+     "This library provides a Pythonic API wrapper for the reference Arrow C++
+implementation, along with tools for interoperability with pandas, NumPy, and
+other traditional Python scientific computing packages.")
+    (license license:asl2.0)))
+
+(define-public python-pyarrow-0.16
+  (package
+    (inherit apache-arrow-0.16)
+    (name "python-pyarrow")
+    (build-system python-build-system)
+    (arguments
+     '(#:tests? #f          ; XXX There are no tests in the "python" directory
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'build) ; XXX the build is performed again during the install phase
+         (add-after 'unpack 'enter-source-directory
+           (lambda _ (chdir "python")))
+         (add-after 'unpack 'make-git-checkout-writable
+           (lambda _
+             (for-each make-file-writable (find-files "."))))
+         (add-before 'install 'patch-cmake-variables
+           (lambda* (#:key inputs #:allow-other-keys)
+             ;; Replace cmake locations with hardcoded guix links for the
+             ;; underlying C++ library and headers.  This is a pretty awful
+             ;; hack.
+             (substitute* "cmake_modules/FindParquet.cmake"
+               (("# Licensed to the Apache Software Foundation" m)
+                (string-append "set(PARQUET_INCLUDE_DIR \""
+                               (assoc-ref inputs "apache-arrow:include")
+                               "/share/include\")\n" m))
+               (("find_package_handle_standard_args" m)
+                (string-append "set(PARQUET_LIB_DIR \""
+                               (assoc-ref inputs "apache-arrow:lib")
+                               "/lib\")\n" m)))))
+         (add-before 'install 'patch-parquet-library
+           (lambda _
+             (substitute* "CMakeLists.txt"
+               (("parquet_shared") "parquet"))))
+         (add-before 'install 'set-PYARROW_WITH_PARQUET
+           (lambda _
+             (setenv "PYARROW_WITH_PARQUET" "1"))))))
+    (propagated-inputs
+     `(("apache-arrow:lib" ,apache-arrow-0.16)
+       ("apache-arrow:include" ,apache-arrow-0.16 "include")
+       ("python-numpy" ,python-numpy)
+       ("python-pandas" ,python-pandas)
+       ("python-six" ,python-six)))
+    (native-inputs
+     (list cmake-minimal
+           pkg-config
+           python-cython
+           python-pytest
+           python-pytest-runner
+           python-setuptools-scm))
     (outputs '("out"))
     (home-page "https://arrow.apache.org/docs/python/")
     (synopsis "Python bindings for Apache Arrow")

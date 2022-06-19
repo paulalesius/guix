@@ -8871,6 +8871,27 @@ titles.")
     ;; No version of the GPL is specified.
     (license license:gpl3+)))
 
+(define-public texlive-xunicode
+  (package
+    (inherit
+     (simple-texlive-package "texlive-xunicode"
+                             (list "doc/xelatex/xunicode/"
+                                   "tex/xelatex/xunicode/")
+                             (base32
+                              "1d96i8kd2lhbykc3rxy2jjvws404f2vy1cvdcp5bdr6l9m72q1fa")
+                             #:trivial? #t))
+    (propagated-inputs (list texlive-tipa))
+    (home-page "https://ctan.org/macros/xetex/latex/xunicode")
+    (synopsis "Generate Unicode characters from accented glyphs")
+    (description
+     "The package supports XeTeX's (and other putative future similar engines')
+need for Unicode characters, in a similar way to what the fontenc does for
+8-bit (and the like) fonts: convert accent-glyph sequence to a single Unicode
+character for output.  The package also covers glyphs specified by
+packages (such as @code{tipa}) which define many commands for single text
+glyphs.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-xypic
   (let ((template (simple-texlive-package
                    "texlive-xypic"
@@ -10745,6 +10766,58 @@ can be used to process indexes for documents marked up using (La)TeX, Nroff
 family and SGML-based languages.  Xindy is highly configurable, both in markup
 terms and in terms of the collating order of the text being processed.")
     (license license:gpl2+)))
+
+(define-public texlive-fmtcount
+  (package
+    (inherit (simple-texlive-package
+              "texlive-fmtcount"
+              (list "doc/latex/fmtcount/"
+                    "scripts/fmtcount/"
+                    "source/latex/fmtcount/"
+                    "tex/latex/fmtcount/")
+              (base32
+               "1biw0g6s2arq6kq52c1yfkl0vzafja2az65c3d0syq0vgjzj9763")
+              #:trivial? #t))
+    (home-page "https://ctan.org/macros/latex/contrib/fmtcount")
+    (synopsis "Display the value of a LaTeX counter in a variety of formats")
+    (description
+     "The package provides commands that display the value of a LaTeX counter in a
+variety of formats (ordinal, text, hexadecimal, decimal, octal, binary etc).
+The package offers some multilingual support; configurations for use in English
+(both British and American usage), French (including Belgian and Swiss
+variants), German, Italian, Portuguese and Spanish documents are provided.  This
+package was originally provided as part of the author's datetime package, but is
+now distributed separately.")))
+
+(define-public texlive-inriafonts
+  (package
+    (inherit (simple-texlive-package
+              "texlive-inriafonts"
+              (list "doc/fonts/inriafonts/"
+                    "fonts/enc/dvips/inriafonts/"
+                    "fonts/map/dvips/inriafonts/"
+                    "fonts/opentype/public/inriafonts/"
+                    "fonts/tfm/public/inriafonts/"
+                    "fonts/truetype/public/inriafonts/"
+                    "fonts/type1/public/inriafonts/"
+                    "fonts/vf/public/inriafonts/"
+                    "tex/latex/inriafonts/")
+              (base32
+               "0ngbpr4pl7r82jmdhiksp32qvbvggf2nawwqq0pkb7cffp95ya49")
+              #:trivial? #t))
+    (propagated-inputs (list texlive-ly1))        ;requires LY1 font encoding
+    (home-page "https://ctan.org/fonts/inriafonts")
+    (synopsis "Inria fonts with LaTeX support")
+    (description
+     "Inria is a free font designed by Black[Foundry] for Inria, a French research
+institute.  It comes as Serif and Sans Serif, each with three weights and
+matching italics.  Using these fonts with XeLaTeX and LuaLaTeX is easy using
+the fontspec package; we refer to the documentation of fontspec for more
+information.  The present package provides a way of using them with LaTeX and
+pdfLaTeX: it provides two style files, @file{InriaSerif.sty} and
+@file{InriaSans.sty}, together with the PostScript version of the fonts and
+their associated files.  These were created using autoinst.")
+    (license (list license:lppl license:silofl1.1))))
 
 (define-public bibtool
   (package

@@ -85,6 +85,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/home/services/fontutils.scm		\
   %D%/home/services/shells.scm			\
   %D%/home/services/shepherd.scm		\
+  %D%/home/services/ssh.scm			\
   %D%/home/services/mcron.scm			\
   %D%/home/services/utils.scm			\
   %D%/home/services/xdg.scm			\
@@ -1452,9 +1453,8 @@ dist_patch_DATA =						\
   %D%/packages/patches/llvm-9-fix-bitcast-miscompilation.patch	\
   %D%/packages/patches/llvm-9-fix-lpad-miscompilation.patch	\
   %D%/packages/patches/llvm-9-fix-scev-miscompilation.patch	\
-  %D%/packages/patches/llvm-roc-3.0.0-add_libraries.patch \
   %D%/packages/patches/llvm-roc-4.0.0-remove-isystem-usr-include.patch \
-  %D%/packages/patches/llvm-roc-4.2.0-add_Object.patch \
+  %D%/packages/patches/llvm-roc-5.0.0-linkdl.patch \
   %D%/packages/patches/lm-sensors-hwmon-attrs.patch		\
   %D%/packages/patches/lrcalc-includes.patch    		\
   %D%/packages/patches/lsh-fix-x11-forwarding.patch		\
@@ -1652,6 +1652,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/psm-disable-memory-stats.patch		\
   %D%/packages/patches/psm-ldflags.patch			\
   %D%/packages/patches/psm-repro.patch				\
+  %D%/packages/patches/public-inbox-fix-spawn-test.patch	\
   %D%/packages/patches/pulseaudio-fix-mult-test.patch		\
   %D%/packages/patches/pulseaudio-longer-test-timeout.patch	\
   %D%/packages/patches/pulseview-qt515-compat.patch		\
@@ -1720,6 +1721,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/python-werkzeug-tests.patch		\
   %D%/packages/patches/python-mypy-12332.patch			\
   %D%/packages/patches/python-mypy-use-sys-path.patch		\
+  %D%/packages/patches/python-zeep-Fix-pytest_httpx-test-cases.patch	\
   %D%/packages/patches/qemu-build-info-manual.patch		\
   %D%/packages/patches/qemu-glibc-2.27.patch 			\
   %D%/packages/patches/qemu-glibc-2.30.patch 			\
@@ -1762,9 +1764,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/rnp-disable-ruby-rnp-tests.patch		\
   %D%/packages/patches/rnp-unbundle-googletest.patch		\
   %D%/packages/patches/rocm-comgr-3.1.0-dependencies.patch \
-  %D%/packages/patches/rocm-opencl-runtime-3.10.0-includes.patch \
   %D%/packages/patches/rocm-opencl-runtime-4.3-noclinfo.patch \
-  %D%/packages/patches/rocm-opencl-runtime-4.3-nocltrace.patch \
   %D%/packages/patches/rocm-opencl-runtime-4.3-noopencl.patch \
   %D%/packages/patches/ruby-mustache-1.1.1-fix-race-condition-tests.patch \
   %D%/packages/patches/ruby-sanitize-system-libxml.patch	\

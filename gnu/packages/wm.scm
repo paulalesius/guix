@@ -54,6 +54,7 @@
 ;;; Copyright © 2022 Daniel Meißner <daniel.meissner-i4k@ruhr-uni-bochum.de>
 ;;; Copyright © 2022 Pier-Hugues Pellerin <ph@heykimo.com>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022 muradm <mail@muradm.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -88,6 +89,7 @@
   #:use-module (guix utils)
   #:use-module (gnu packages)
   #:use-module (gnu packages bash)
+  #:use-module (gnu packages admin)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bison)
@@ -181,14 +183,14 @@ the leaves of a full binary tree.")
 (define-public herbstluftwm
   (package
     (name "herbstluftwm")
-    (version "0.9.3")
+    (version "0.9.4")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://herbstluftwm.org/tarballs/herbstluftwm-"
                            version ".tar.gz"))
        (sha256
-        (base32 "01f1bv9axjhw1l2gwhdwahljssj0h8q7a1bqwbpnwvln0ayv39qb"))
+        (base32 "1k03rdr6irsgnjl4w0vac0kk9nsz46qhy74iflmaycxgfv8fxy7f"))
        (file-name (string-append "herbstluftwm-" version ".tar.gz"))))
     (build-system cmake-build-system)
     (inputs
@@ -200,6 +202,7 @@ the leaves of a full binary tree.")
            xsetroot
            libx11
            libxext
+           libxfixes
            libxinerama
            libxrandr
            libxft))
@@ -258,31 +261,33 @@ or musca).
 (define-public i3status
   (package
     (name "i3status")
-    (version "2.13")
+    (version "2.14")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://i3wm.org/i3status/i3status-"
-                                  version ".tar.bz2"))
+                                  version ".tar.xz"))
               (sha256
                (base32
-                "0rhlzb96mw64z2jnhwz9nibc7pxg549626lz5642xxk5hpzwk2ff"))))
-    (build-system gnu-build-system)
+                "0929chhvyq9hg4scpcz8r9zn3s9jvbg6a86k3wqa77qg85rh4kaw"))
+              (snippet
+               ;; Delete the pregenerated man page, to be rebuilt from source.
+               '(delete-file "man/i3status.1"))))
+    (build-system meson-build-system)
     (arguments
-     `(;; XXX: Do an "out of source" build to work around
-       ;; <https://github.com/i3/i3status/issues/339>.
-       #:out-of-source? #t
-       #:tests? #f)) ; no test suite
+     (list #:configure-flags
+           '(list "-Dmans=True")
+           #:tests? #f))                ; no test suite
     (inputs
-     (list openlibm
+     (list alsa-lib
            libconfuse
-           libyajl
-           alsa-lib
-           pulseaudio
            libnl
-           libcap
-           asciidoc))
+           libyajl
+           pulseaudio))
     (native-inputs
-     (list pkg-config docbook-xsl libxml2 ;for XML_CATALOG_FILES
+     (list asciidoc
+           perl
+           pkg-config
+           docbook-xsl libxml2          ; for XML_CATALOG_FILES
            xmlto))
     (home-page "https://i3wm.org/i3status/")
     (synopsis "Status bar for i3bar, dzen2, xmobar or similar programs")
@@ -1537,7 +1542,7 @@ functionality to display information about the most commonly used services.")
            libxkbcommon
            mesa
            pixman
-           seatd
+           libseat
            wayland
            wayland-protocols
            xcb-util-errors
