@@ -5583,7 +5583,7 @@ and copy/paste text in the console and in xterm.")
                                   "btrfs-progs-v" version ".tar.xz"))
               (sha256
                (base32
-                "0mbj3j2fpjds9i9gm8kk8a20yjacc562ibd1v9a96bpmrxfag631"))))
+                "0mbj3j2fpjds9i9gm8kk8a20yjacc562ibd1v9a96bpmrxfag63f"))))
     (build-system gnu-build-system)
     (outputs '("out"
                "static"))      ; static versions of the binaries in "out"
