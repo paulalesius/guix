@@ -5575,7 +5575,7 @@ and copy/paste text in the console and in xterm.")
 (define-public btrfs-progs
   (package
     (name "btrfs-progs")
-    (version "5.18.5")
+    (version "5.18.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://kernel.org/linux/kernel/"
