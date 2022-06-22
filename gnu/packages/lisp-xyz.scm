@@ -3401,7 +3401,7 @@ is a library for creating graphical user interfaces.")
 (define-public sbcl-cl-webkit
   (package
     (name "sbcl-cl-webkit")
-    (version "3.5.1")
+    (version "3.5.3")
     (source
      (origin
        (method git-fetch)
@@ -3411,7 +3411,7 @@ is a library for creating graphical user interfaces.")
        (file-name (git-file-name "cl-webkit" version))
        (sha256
         (base32
-         "1zfqwr6vmdd9a2nx3j3ihf8y9sah354wi2rgpq7dy4dkc6wxxd48"))))
+         "076lqj8ns9s7z980g3p2llw3k6hgsqnsvw8vjjslbpas2jzf26nr"))))
     (build-system asdf-build-system/sbcl)
     (inputs
      `(("cffi" ,sbcl-cffi)
@@ -6240,6 +6240,42 @@ can and/or provide reasonable defaults.")
 
 (define-public ecl-introspect-environment
   (sbcl-package->ecl-package sbcl-introspect-environment))
+
+(define-public sbcl-compiler-macro
+  (let ((commit "7796bda64aec5af3ca175170ad3565167868789c")
+        (revision "0"))
+    (package
+      (name "sbcl-compiler-macro")
+      (version (git-version "0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/Bike/compiler-macro")
+               (commit commit)))
+         (file-name (git-file-name "cl-compiler-macro" version))
+         (sha256
+          (base32 "13sswps7s0qy6939mvj8q57hkx0qkga6rl6xjhjr7pk7by0xdsjq"))))
+      (build-system asdf-build-system/sbcl)
+      (native-inputs
+       (list sbcl-fiveam))
+      (inputs
+       (list sbcl-introspect-environment))
+      (home-page "https://github.com/Bike/compiler-macro")
+      (synopsis "Common Lisp compiler macro utilities")
+      (description "This library is a collection of utilities for writing
+compiler macros.  It is intended to make it possible to make compiler macros
+much more useful, by granting them access to lexical type information, making
+the protocol for declining expansion more convenient, and establishing some
+information for signaling optimization advice to programmers.  Some utilities
+to support this, especially for reasoning on types, are also included.")
+      (license license:cc0))))
+
+(define-public cl-compiler-macro
+  (sbcl-package->cl-source-package sbcl-compiler-macro))
+
+(define-public ecl-compiler-macro
+  (sbcl-package->ecl-package sbcl-compiler-macro))
 
 (define-public sbcl-type-i
   (let ((commit "d34440ab4ebf5a46a58deccb35950b15670e3667")
@@ -14328,10 +14364,10 @@ standard library.")
   (sbcl-package->cl-source-package sbcl-shlex))
 
 (define-public sbcl-cmd
-  (let ((commit "b0b79adf1214dbec082f3dd2274a72a0ff58efd7"))
+  (let ((commit "fda9e6bd9137ea806313151716fd87578cdbc882"))
     (package
       (name "sbcl-cmd")
-      (version (git-version "0.0.1" "5" commit))
+      (version (git-version "0.0.1" "6" commit))
       (source
        (origin
          (method git-fetch)
@@ -14340,7 +14376,7 @@ standard library.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0kk29vydmi1fyhpbwy3mrsg3bhvx0478r6r7jcsfkr3ci2h8w8a1"))))
+          (base32 "0j2yns565mp2rsiz8lc75psk7wws9qz8rh74n4vf9zdyrw16ckpf"))))
       (build-system asdf-build-system/sbcl)
       (inputs
        `(("alexandria" ,sbcl-alexandria)
@@ -20851,7 +20887,7 @@ access lexicographic data from WordNet.")
 (define-public sbcl-nfiles
   (package
    (name "sbcl-nfiles")
-   (version "0.4.1")
+   (version "0.4.2")
    (source
     (origin
      (method git-fetch)
@@ -20861,7 +20897,7 @@ access lexicographic data from WordNet.")
      (file-name (git-file-name "cl-nfiles" version))
      (sha256
       (base32
-       "05brlj99grcy2iz84dvl76inp10jxnvjyh2r262d1las112rlcrb"))))
+       "06cll4l5gbp98wrgdy04ar6z00sag0b46pr4dv4n6bs1ypfcgs01"))))
    (build-system asdf-build-system/sbcl)
    (inputs
     (list gnupg

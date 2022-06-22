@@ -182,6 +182,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/packages/cvassistant.scm			\
   %D%/packages/cybersecurity.scm		\
   %D%/packages/cyrus-sasl.scm			\
+  %D%/packages/darwin.scm			\
   %D%/packages/databases.scm			\
   %D%/packages/datamash.scm			\
   %D%/packages/datastructures.scm		\
@@ -961,6 +962,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/cling-use-shared-library.patch		\
   %D%/packages/patches/clucene-pkgconfig.patch			\
   %D%/packages/patches/cmake-curl-certificates.patch		\
+  %D%/packages/patches/cmh-support-fplll.patch      		\
   %D%/packages/patches/coda-use-system-libs.patch		\
   %D%/packages/patches/collectd-5.11.0-noinstallvar.patch		\
   %D%/packages/patches/combinatorial-blas-awpm.patch		\

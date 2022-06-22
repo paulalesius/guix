@@ -5457,7 +5457,14 @@ include_dirs = ~:*~a/include~%" #$(this-package-input "openblas"))))))
                               ;; These tests may fail on 32-bit systems (see:
                               ;; https://github.com/numpy/numpy/issues/18387).
                               "not test_float_remainder_overflow "
-                              "and not test_pareto"))))))))
+                              "and not test_pareto"
+                              ;; These tests seem to fail on machines without
+                              ;; an FPU is still under investigation upstream.
+                              ;; https://github.com/numpy/numpy/issues/20635
+                              #$@(if (target-riscv64?)
+                                   `(" and not test_float"
+                                     " and not test_fpclass")
+                                   '())))))))))
     (native-inputs
      (list python-cython
            python-hypothesis-next
@@ -6660,6 +6667,58 @@ multivalue dictionary that retains the order of insertions and deletions.")
     (description "@code{autocommand} is library to automatically generate and
 run simple @code{argparse} parsers from function signatures.")
     (license license:lgpl3+)))
+
+(define-public python-autopage
+  (package
+    (name "python-autopage")
+    (version "0.5.1")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "autopage" version))
+              (sha256
+               (base32
+                "169ixll1ncm2a2pcc86665ikjv2lrzs10p6c1w4yj55p3gk3xgh1"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; Do a manual PEP 517 style build/install procedure until the
+          ;; python-build-system overhaul is merged.
+          (replace 'build
+            (lambda _
+              ;; ZIP does not support timestamps before 1980.
+              (let ((circa-1980 (* 10 366 24 60 60)))
+                (setenv "SOURCE_DATE_EPOCH" (number->string circa-1980))
+                (invoke "python" "-m" "build" "--wheel" "--no-isolation" "."))))
+          (add-before 'check 'disable-e2e-tests
+            (lambda _
+              ;; These tests rely on KeyboardInterrupts which do not
+              ;; work in the build container.
+              (delete-file "autopage/tests/test_end_to_end.py")))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "pytest" "-vv"))))
+          (replace 'install
+            (lambda _
+              (let ((whl (car (find-files "dist" "\\.whl$"))))
+                (invoke "pip" "--no-cache-dir" "--no-input"
+                        "install" "--no-deps" "--prefix" #$output whl)))))))
+    (native-inputs
+     (list python-pypa-build
+           python-setuptools
+           python-wheel
+           ;; For tests.
+           python-fixtures
+           python-pytest
+           python-testtools))
+    (home-page "https://github.com/zaneb/autopage")
+    (synopsis "Automatic paging for console output")
+    (description
+     "Autopage is a Python library to automatically display terminal output
+from a program in a @dfn{pager} such as @command{less}.")
+    (license license:asl2.0)))
 
 (define-public python-autopep8
   (package
@@ -8291,25 +8350,24 @@ cluster down and deletes the throwaway profile.")
 (define-public python-ipython-sql
   (package
     (name "python-ipython-sql")
-    (version "0.4.0")
+    (version "0.4.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "ipython-sql" version))
        (sha256
-        (base32 "0v74ayc6vw98f4jljmwy45qpqbcbhlrb4g1qdyypq9sppxcqx21y"))))
+        (base32 "1r6rz8jgrqzhkf2flwjw75d96g8l7kykmx5wli3q1988w96391ip"))))
     (build-system python-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'fix-build
-           (lambda _
-             ;; The "NEWS.rst" file is missing from the PyPI distribution.
-             ;; (see: https://github.com/catherinedevlin/ipython-sql/issues/164)
-             (substitute* "setup.py"
-               (("NEWS = [^\n]*") "")
-               (("long_description=README \\+ '\\\\n\\\\n' \\+ NEWS,")
-                "long_description=README,")))))))
+     (list #:tests? #f                  ;must run under IPython
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'permit-newer-prettytable
+                 ;; See https://github.com/catherinedevlin/ipython-sql/issues/202
+                 (lambda _
+                   (substitute* "setup.py"
+                     (("prettytable<1")
+                      "prettytable")))))))
     (propagated-inputs
      (list python-ipython
            python-ipython-genutils
@@ -9949,7 +10007,25 @@ applications.")
        (method url-fetch)
        (uri (pypi-uri "pyzmq" version))
        (sha256
-        (base32 "0737kizh53n4rjq1xbm6nhr0bq65xflg04i1d8fcky0nwwrw1pcf"))))
+        (base32 "0737kizh53n4rjq1xbm6nhr0bq65xflg04i1d8fcky0nwwrw1pcf"))
+       (snippet
+        #~(begin
+            (use-modules (guix build utils))
+            ;; The bundled zeromq source code.
+            (delete-file-recursively "bundled")
+            ;; Delete cythonized files.
+            (for-each delete-file
+                      (list "zmq/backend/cython/constants.c"
+                            "zmq/backend/cython/context.c"
+                            "zmq/backend/cython/_device.c"
+                            "zmq/backend/cython/error.c"
+                            "zmq/backend/cython/message.c"
+                            "zmq/backend/cython/_poll.c"
+                            "zmq/backend/cython/_proxy_steerable.c"
+                            "zmq/backend/cython/socket.c"
+                            "zmq/backend/cython/utils.c"
+                            "zmq/backend/cython/_version.c"
+                            "zmq/devices/monitoredqueue.c"))))))
     (build-system python-build-system)
     (arguments
      `(#:configure-flags
@@ -11466,16 +11542,28 @@ functional languages.")
 (define-public python-prettytable
   (package
     (name "python-prettytable")
-    (version "0.7.2")
+    (version "3.3.0")
     (source
      (origin
        (method url-fetch)
-       (uri (pypi-uri "prettytable" version ".tar.bz2"))
+       (uri (pypi-uri "prettytable" version))
        (sha256
         (base32
-         "0diwsicwmiq2cpzpxri7cyl5fmsvicafw6nfqf6p6p322dji2g45"))))
+         "1c599w31i2ndzbkn85xwsgv9sd2j16r56dl922w4jh3rs97vb3hi"))))
     (build-system python-build-system)
-    (home-page "https://code.google.com/archive/p/prettytable/")
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (replace 'check
+                 (lambda* (#:key tests? #:allow-other-keys)
+                   (when tests?
+                     (invoke "pytest" "-vv")))))))
+    (native-inputs
+     (list python-pytest
+           python-pytest-lazy-fixture
+           python-setuptools-scm))
+    (propagated-inputs (list python-wcwidth))
+    (home-page "https://github.com/jazzband/prettytable")
     (synopsis "Display tabular data in an ASCII table format")
     (description
       "A library designed to represent tabular data in visually appealing ASCII
@@ -16095,7 +16183,7 @@ focus on event-based network programming and multiprotocol integration.")
 (define-public python-pika
   (package
     (name "python-pika")
-    (version "1.2.0")
+    (version "1.2.1")
     (source
       (origin
         (method git-fetch)
@@ -16105,27 +16193,29 @@ focus on event-based network programming and multiprotocol integration.")
         (file-name (git-file-name name version))
         (sha256
          (base32
-          "0cm45xydk2jigydwszwik89qlbk6l3l18sxhzppzqmxw2rdkm22s"))))
+          "0sqj3bg6jwign8vwvn337fbwy69sm684ns1vh5kbfnskq4him9i2"))))
     (build-system python-build-system)
     (arguments
      '(#:phases (modify-phases %standard-phases
-                  (add-before 'check 'disable-live-tests
+                  (add-after 'unpack 'disable-live-tests
                     (lambda _
                       ;; Disable tests that require RabbitMQ, which is not
                       ;; yet available in Guix.
-                      (substitute* "setup.cfg"
-                        (("tests/unit,tests/acceptance")
-                         "tests/unit"))
+                      (substitute* "nose2.cfg"
+                        (("tests=tests/unit,tests/acceptance")
+                         "start-dir=tests/unit"))
                       (with-directory-excursion "tests"
                         (for-each delete-file
                                 '("unit/base_connection_tests.py"
                                   "unit/threaded_test_wrapper_test.py")))))
                   (replace 'check
-                    (lambda _
-                      (invoke "nosetests"))))))
+                    (lambda* (#:key tests? #:allow-other-keys)
+                      (when tests?
+                        (setenv "PYTHONPATH" (getcwd))
+                        (invoke "nose2" "-v")))))))
     (native-inputs
      (list python-mock
-           python-nose
+           python-nose2
            ;; These are optional at runtime, and provided here for tests.
            python-gevent
            python-tornado
