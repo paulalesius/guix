@@ -779,10 +779,10 @@ information in the mode line.")
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/project-" version ".tar"))
        (sha256
-        (base32 "1x3zkbjsi04v5ny3yxqrb75vcacrj9kxmpm9mvkp0n07j5g34f68"))))
+        (base32 "0q2js8qihlhchpx2mx0f992ygslsqri2q4iv8kcl4fx31lpp7c1k"))))
     (build-system emacs-build-system)
     (propagated-inputs (list emacs-xref))
-    (home-page "http://elpa.gnu.org/packages/project.html")
+    (home-page "https://elpa.gnu.org/packages/project.html")
     (synopsis "Operations on the current project")
     (description
      "This library contains generic infrastructure for dealing with projects,
@@ -7833,8 +7833,39 @@ using @code{python-isort}.")
                (base32
                 "1bckxppfzd5gwn0aw4h86igb7igal9axqncq7j8zmflg7zppncf1"))))
     (build-system emacs-build-system)
-    (native-inputs
-     (list emacs-mocker))
+    (arguments
+     (list
+      #:imported-modules `(,@%emacs-build-system-modules
+                           (guix build python-build-system))
+      #:modules '((guix build emacs-build-system)
+                  ((guix build python-build-system) #:prefix python:)
+                  (guix build emacs-utils)
+                  (guix build utils))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'ensure-no-mtimes-pre-1980
+            (assoc-ref python:%standard-phases
+                       'ensure-no-mtimes-pre-1980))
+          (add-after 'ensure-no-mtimes-pre-1980 'relax-python-requirements
+            (lambda _
+              ;; Argparse should only be required for Python < 3.2
+              ;; (see: https://github.com/tkf/emacs-jedi/issues/365).
+              (substitute* "setup.py"
+                ((".*argparse.*") ""))))
+          (add-after 'relax-python-requirements 'python:add-install-to-pythonpath
+            (assoc-ref python:%standard-phases 'add-install-to-pythonpath))
+          (add-after 'python:add-install-to-pythonpath 'python:install
+            ;; This is needed to get the Python-built 'jediepcserver' command.
+            (assoc-ref python:%standard-phases 'install))
+          (add-after 'python:install 'python:wrap
+            (assoc-ref python:%standard-phases 'wrap))
+          (add-after 'python:wrap 'patch-jedi:server-command
+            (lambda* (#:key outputs #:allow-other-keys)
+              (emacs-substitute-variables "jedi-core.el"
+                ("jedi:server-command"
+                 (search-input-file outputs "bin/jediepcserver"))))))))
+    (native-inputs (list emacs-mocker python-wrapper))
+    (inputs (list python-wrapper python-epc python-jedi)) ;wrapped
     (propagated-inputs
      (list emacs-auto-complete emacs-python-environment emacs-epc))
     (home-page "https://github.com/tkf/emacs-jedi")
