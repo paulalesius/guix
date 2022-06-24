@@ -9160,6 +9160,35 @@ features found in other packages it also brings many improvements as
 well as completely new features.")
     (license license:gpl3+)))
 
+(define-public emacs-dumbparens
+  ;; There are no releases.
+  (let ((commit "18b668772f25e5f7b62c0a000b8169eaf7515057")
+        (revision "0"))
+    (package
+      (name "emacs-dumbparens")
+      (version (git-version "0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://github.com/raxod502/dumbparens")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0xv2yzjzq2450z007jppf86knnwzb2s3sxvqyk1yp6qs9mgrmnyp"))))
+      (build-system emacs-build-system)
+      (arguments
+       (list
+        #:tests? #t
+        #:test-command #~(list "make" "test")))
+      (home-page "https://github.com/raxod502/dumbparens/")
+      (synopsis "Minor mode that provides improvements on Smartparens")
+      (description
+       "@code{emacs-dumbparens} is a minor mode for Emacs that deals with parens
+pairs and doesn't try to be smart about it.")
+      (license license:expat))))
+
 (define-public emacs-highlight-symbol
   ;; We prefer a more recent commit that provides an option to squelch
   ;; echo-area alerts that can drown out useful information like eldoc
@@ -10071,8 +10100,9 @@ state and will work even without lispy being enabled.")
       (license license:gpl3+))))
 
 (define-public emacs-lpy
-  (let ((commit "43b401fe15f0f0d01edb189378b9498121e9f766")
-        (revision "3"))
+  ;; There is no proper release/tag.
+  (let ((commit "076ce9acb68f6ac1b39127b634a91ffd865d13d8")
+        (revision "4"))
     (package
       (name "emacs-lpy")
       (version (git-version "0.1.0" revision commit))
@@ -10084,7 +10114,7 @@ state and will work even without lispy being enabled.")
                (commit commit)))
          (sha256
           (base32
-           "0xj1r7cn1rivaxhvawvmgx9fg3xilpfw4lkf2x2aqplr4s85ijas"))
+           "10sab50wmr3zn7jgzx93201ymhmacqacn3m2qllsqkfw2gpsi6dn"))
          (file-name (git-file-name name version))))
       (propagated-inputs
        (list emacs-zoutline emacs-lispy))
@@ -16095,8 +16125,8 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
     (license license:gpl3+)))
 
 (define-public emacs-ement
-  (let ((commit "c951737dc855604aba389166bb0e7366afadc533")
-        (revision "1"))
+  (let ((commit "45b7882c8a8f28eb59113f78db0e79918f2c58ee")
+        (revision "2"))
     (package
       (name "emacs-ement")
       (version (git-version "0.1-pre" revision commit))
@@ -16108,12 +16138,15 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "00iwwz4hzg4g59wrb5df6snqz3ppvrsadhfp61w1pa8gvg2z9bvy"))))
+          (base32 "1f79h9l7chazan7kh2g73banqim5p4gz2nyx3cvp9jjfz32c4k46"))))
       (build-system emacs-build-system)
       (arguments
        `(#:emacs ,emacs))               ;need libxml support
       (propagated-inputs
-       (list emacs-plz emacs-ts))
+       (list emacs-plz
+             emacs-svg-lib
+             emacs-taxy
+             emacs-ts))
       (home-page "https://github.com/alphapapa/ement.el")
       (synopsis "Matrix client for Emacs")
       (description "Ement.el is a Matrix client for Emacs.")
@@ -31677,6 +31710,60 @@ headlines, keywords, tables and source blocks.")
       (description
 "@code{emacs-pyimport} manages python imports from Emacs via @code{python-pyflakes}.")
       (license license:gpl3+)))) ; License is in pyimport.el
+
+(define-public emacs-straight-el
+  (let ((commit "4517e118ee43f849f708025dbb2cf4f281793121")
+        (revision "0"))
+    (package
+      (name "emacs-straight-el")
+      (version (git-version "0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://github.com/raxod502/straight.el")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0idhgh203rac9c046286gir9rq0lgnlllzj4b4hrjpd3idg9v0r8"))))
+      (build-system emacs-build-system)
+      (arguments
+       (list
+        #:tests? #t
+        #:test-command
+        #~(list "emacs" "-Q" "--batch"
+                "-L" "."
+                "--load" "ert"
+                "--load" "tests/straight-test.el"
+                "--eval" "(progn (require 'straight-ert-print-hack) (ert-run-tests-batch-and-exit))")
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'unpack 'patch-git-executable
+              (lambda* (#:key inputs #:allow-other-keys)
+                (make-file-writable "straight.el")
+                (substitute* "straight.el"
+                  (("\"git\"")
+                   (string-append "\""
+                                  (search-input-file inputs "/bin/git")
+                                  "\"")))))
+            (add-after 'check 'delete-tests
+              ;; "tests" directory includes bogus ".el" files that can make
+              ;; `patch-el-files' phase fail.
+              (lambda _
+                (delete-file-recursively "tests"))))))
+      (native-inputs
+       (list texinfo))
+      (inputs
+       (list git))
+      (propagated-inputs
+       (list emacs-magit))
+      (home-page "https://github.com/raxod502/straight.el/")
+      (synopsis "Purely functional package manager for the Emacs hacker")
+      (description
+       "@code{emacs-straight-el} is a purely functional package manager for the Emacs
+hacker.")
+      (license license:expat))))
 
 (define-public emacs-osm
   (package

@@ -13089,7 +13089,7 @@ time.")
                                      texlive-zapfding))))
     (home-page "https://jupyter.org")
     (synopsis "Converting Jupyter Notebooks")
-    (description "The @code{nbconvert} tool, @{jupyter nbconvert}, converts
+    (description "The @code{nbconvert} tool, @code{jupyter nbconvert}, converts
 notebooks to various other formats via Jinja templates.  It allows you to
 convert an @code{.ipynb} notebook file into various static formats including:
 
@@ -17038,12 +17038,19 @@ scans through a file and detects issues.")
     (arguments
      `(#:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'fix-completion-test
+           (lambda _
+             ;; This resolves a failure in the 'test_completion' test (see:
+             ;; https://github.com/davidhalter/jedi/issues/1824).
+             ;; TODO: Remove after a new release is made (currently: 0.18.1).
+             (substitute* "test/completion/lambdas.py"
+               (("\\[a for a in \\[1,2\\] if lambda: 3\\]\\[0\\]")
+                "[a for a in [1,2] if (lambda: 3)][0]"))))
          (replace 'check
            (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
                (setenv "HOME" "/tmp")
-               (invoke "python" "-m" "pytest" "-vv"))
-             #t)))))
+               (invoke "python" "-m" "pytest" "-vv")))))))
     (native-inputs
      (list python-colorama python-docopt python-pytest))
     (propagated-inputs
@@ -21413,20 +21420,23 @@ time-based (TOTP) passwords.")
 (define-public python-parso
   (package
     (name "python-parso")
-    (version "0.8.2")
+    (version "0.8.3")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "parso" version))
        (sha256
-        (base32 "161k8771m7w60qakyvrwf9q62lvakmix7mpfylpy7713qs939f0j"))))
+        (base32 "185gkxq92kqiw2h5zp1cmyn04055x0lix4hmi5c077xm1clvw1wc"))))
     (native-inputs
      (list python-pytest))
     (build-system python-build-system)
     (arguments
-     `(#:phases (modify-phases %standard-phases
-                  (replace 'check
-                    (lambda _ (invoke "pytest" "-vv"))))))
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (invoke "pytest" "-vv")))))))
     (home-page "https://github.com/davidhalter/parso")
     (synopsis "Python Parser")
     (description "Parso is a Python parser that supports error recovery and
@@ -25181,23 +25191,30 @@ choose to use Base64 without the “=” padding.")
     (license license:asl2.0)))
 
 (define-public python-py-cpuinfo
-  (package
-    (name "python-py-cpuinfo")
-    (version "5.0.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "py-cpuinfo" version))
-       (sha256
-        (base32
-         "0045y6832gqjg63jmw0qj2jwyypgjwr7sfdq3lfv49b6fxpl5xic"))))
-    (build-system python-build-system)
-    (home-page "https://github.com/workhorsy/py-cpuinfo")
-    (synopsis "Get CPU info with Python")
-    (description
-     "This Python module returns the CPU info by using the best sources of
+  ;; This is the first commit where riscv64-linux support is available.
+  ;; We can move back to pypi releases with the next release.
+  (let ((commit "4d6987e5c30f2ebacb20781892c01329042cce60")
+        (revision "1"))
+    (package
+      (name "python-py-cpuinfo")
+      (version (git-version "8.0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+                (url "https://github.com/workhorsy/py-cpuinfo")
+                (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "0h5wi1bfcqqr1x3j1pa7dmkx7siprsyksbsy80fl2sdrrgpji0b0"))))
+      (build-system python-build-system)
+      (home-page "https://github.com/workhorsy/py-cpuinfo")
+      (synopsis "Get CPU info with Python")
+      (description
+       "This Python module returns the CPU info by using the best sources of
 information for your operating system.")
-    (license license:expat)))
+      (license license:expat))))
 
 (define-public python-canonicaljson
   (package

@@ -468,6 +468,8 @@ builder does not support SVG images natively (e.g. LaTeX).")
     (arguments
      ;; FIXME: Tests depend on Sphinx, which depends on this.
      `(#:tests? #f))
+    (propagated-inputs
+     (list python-sphinxcontrib-serializinghtml))
     (home-page "https://sphinx-doc.org/")
     (synopsis "Sphinx API for web applications")
     (description
@@ -817,7 +819,7 @@ enabled web server.")
 (define-public python-sphinx-autodoc-typehints
   (package
     (name "python-sphinx-autodoc-typehints")
-    (version "1.18.1")
+    (version "1.18.3")
     (source
      (origin
        (method git-fetch)               ;no tests in pypi archive
@@ -827,7 +829,7 @@ enabled web server.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "16yhpwfdmybir80a6892cnr98m58p19rklmjdlzhk3njx7di8jzp"))))
+         "049dlay21f4bccig31fkbzq2m8v0h6g63p1cn3dxay9q3h0mzgs0"))))
     (build-system python-build-system)
     (arguments
      (list
