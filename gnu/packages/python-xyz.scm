@@ -17033,7 +17033,14 @@ scans through a file and detects issues.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "07drmi3ai49jw5n23ibkambcgijqcw073ihypjgxfnks5lv4yqy1"))))
+         "07drmi3ai49jw5n23ibkambcgijqcw073ihypjgxfnks5lv4yqy1"))
+       (modules '((guix build utils)))
+       (snippet
+        ;; Adjust comprehension syntax for Python > 3.8.
+        ;; From <https://github.com/davidhalter/jedi/issues/1824>.
+        '(substitute* "test/completion/lambdas.py"
+           (("if lambda: 3")
+            "if (lambda: 3)")))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -17493,6 +17500,50 @@ multitouch applications.")
     (description
      "This package provides Kivy widgets that approximate Google's Material
 Design spec without sacrificing ease of use or application performance.")
+    (license license:expat)))
+
+(define-public python-asynckivy
+  (package
+    (name "python-asynckivy")
+    (version "0.5.3")
+    (source
+     (origin
+       (method url-fetch)
+       (uri
+        (pypi-uri "asynckivy" version))
+       (sha256
+        (base32 "0ivjvch8yn3k1ybfp7c1nm8mhc0ymg7d04mq54lly7yjvg0jvcni"))))
+    (build-system python-build-system)
+    (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (add-before 'check 'set-home
+             (lambda _
+               ;; 'kivy/__init__.py' wants to create $HOME/.kivy.
+               (setenv "HOME" (getcwd)))))))
+    (propagated-inputs (list python-kivy python-asyncgui))
+    (home-page "https://github.com/gottadiveintopython/asynckivy")
+    (synopsis "Async library for Kivy")
+    (description
+     "This package provides async versions of Kivy functions to avoid the
+callback-heavy mode of interaction typical in some Kivy applications.")
+    (license license:expat)))
+
+(define-public python-asyncgui
+  (package
+    (name "python-asyncgui")
+    (version "0.5.3")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "asyncgui" version))
+              (sha256
+               (base32
+                "0614130afg2qc1qq4p82piskvvx6lpjl4nlsakbjzdyd78xywnb7"))))
+    (build-system python-build-system)
+    (home-page "https://github.com/gottadiveintopython/asyncgui")
+    (synopsis "Enables async/await without an event loop")
+    (description "This package provides support for async/await applications
+without requiring an event loop, useful for creative responsive GUIs.")
     (license license:expat)))
 
 (define-public python-binaryornot

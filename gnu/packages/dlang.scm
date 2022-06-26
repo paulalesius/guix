@@ -3,10 +3,11 @@
 ;;; Copyright © 2015, 2018 Pjotr Prins <pjotr.guix@thebird.nl>
 ;;; Copyright © 2017 Frederick Muriithi <fredmanglis@gmail.com>
 ;;; Copyright © 2017 Ricardo Wurmus <rekado@elephly.net>
-;;; Copyright © 2017, 2019 Tobias Geerinckx-Rice <me@tobias.gr>
+;;; Copyright © 2017, 2019, 2022 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2020 Guy Fleury Iteriteka <gfleury@disroot.org>
 ;;; Copyright © 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022 ( <paren@disroot.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -28,6 +29,7 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
+  #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module ((guix build utils) #:hide (delete which))
   #:use-module (guix build-system gnu)
@@ -48,42 +50,56 @@
   #:use-module (gnu packages xorg)
   #:use-module (srfi srfi-1))
 
-(define-public rdmd
+(define-public d-tools
   (package
-    (name "rdmd")
-    (version "2.077.1")
-    (source (origin
-      (method url-fetch)
-      (uri (string-append "https://github.com/dlang/tools/archive/v" version ".tar.gz"))
-      (file-name (string-append name "-" version ".tar.gz"))
-      (sha256
-       (base32
-        "0c8w373rv6iz3xfid94w40ncv2lr2ncxi662qsr4lda4aghczmq7"))))
+    (name "d-tools")
+    (version "2.100.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/dlang/tools")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1jbn0hyskv4ykcckw0iganpyrm0bq2lggswspw21r4hgnxkmjbyw"))))
     (build-system gnu-build-system)
     (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (delete 'configure)
-         (delete 'check) ; There is no Makefile, so there's no 'make check'.
-         (replace
-          'build
-          (lambda _
-            (invoke "ldc2" "rdmd.d")))
-         (replace
-          'install
-          (lambda* (#:key outputs #:allow-other-keys)
-            (let ((bin (string-append (assoc-ref outputs "out") "/bin")))
-              (install-file "rdmd" bin)))))))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure)
+               (replace 'build
+                 (lambda _
+                   (mkdir-p "bin")
+                   (setenv "CC" #$(cc-for-target))
+                   (setenv "LD" #$(ld-for-target))
+                   (invoke "ldc2" "rdmd.d" "--of" "bin/rdmd")
+                   (apply invoke "ldc2" "--of=bin/dustmite"
+                          (find-files "DustMite" ".*\\.d"))))
+               (replace 'check
+                 (lambda* (#:key tests? #:allow-other-keys)
+                   (when tests?
+                     (invoke "bin/rdmd" "rdmd_test.d" "bin/rdmd"
+                             "--rdmd-default-compiler" "ldmd2"))))
+               (replace 'install
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out"))
+                          (bin (string-append out "/bin"))
+                          (man (string-append out "/man")))
+                     (for-each delete-file (find-files "bin" "\\.o$"))
+                     (copy-recursively "bin" bin)
+                     (copy-recursively "man" man)))))))
     (native-inputs
-     (list ldc))
-    (home-page "https://github.com/D-Programming-Language/tools/")
-    (synopsis "Specialized equivalent to 'make' for the D language")
+     (list ldc
+           (module-ref (resolve-interface
+                        '(gnu packages commencement))
+                       'ld-gold-wrapper)))
+    (home-page "https://github.com/dlang/tools")
+    (synopsis "Useful D-related tools")
     (description
-     "rdmd is a companion to the dmd compiler that simplifies the typical
-edit-compile-link-run or edit-make-run cycle to a rapid edit-run cycle.  Like
-make and other tools, rdmd uses the relative dates of the files involved to
-minimize the amount of work necessary.  Unlike make, rdmd tracks dependencies
-and freshness without requiring additional information from the user.")
+     "@code{d-tools} provides two useful tools for the D language: @code{rdmd},
+which runs D source files as scripts, and @code{dustmite}, which reduces D code
+to a minimal test case.")
     (license license:boost1.0)))
 
 ;;; The 0.17.6 version is the last release to support being bootstrapped
@@ -426,7 +442,7 @@ integration tests...\n")
 (define-public dub
   (package
     (name "dub")
-    (version "1.7.2")
+    (version "1.23.0")
     (source
      (origin
        (method git-fetch)
@@ -435,26 +451,31 @@ integration tests...\n")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "073ibvgm1gphcqs1yjrav9ryp677nh3b194nxmvicwgvdc0sb6w9"))))
+        (base32 "06a4whsl1m600k096nwif83n7za3vr7pj1xwapncy5fcad1gmady"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f ; it would have tested itself by installing some packages (vibe etc)
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)            ; no configure script
-         (replace 'build
-           (lambda _
-             (invoke "./build.sh")))
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin")))
-               (install-file "bin/dub" bin)
-               #t))))))
+     (list #:tests? #f                  ; tests try to install packages
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure)      ; no configure script
+               (replace 'build
+                 (lambda _
+                   (setenv "CC" #$(cc-for-target))
+                   (setenv "LD" #$(ld-for-target))
+                   (invoke "./build.d")))
+               (replace 'install
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out"))
+                          (bin (string-append out "/bin")))
+                     (install-file "bin/dub" bin)))))))
     (inputs
      (list curl))
     (native-inputs
-     (list ldc))
+     (list d-tools
+           ldc
+           (module-ref (resolve-interface
+                        '(gnu packages commencement))
+                       'ld-gold-wrapper)))
     (home-page "https://code.dlang.org/getting_started")
     (synopsis "Package and build manager for D projects")
     (description
