@@ -2949,6 +2949,48 @@ software.")
     (inherit (package-with-python2 scons))
     (name "scons-python2")))
 
+(define-public python-exceptiongroup
+  (package
+    (name "python-exceptiongroup")
+    (version "1.0.0rc8")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/agronholm/exceptiongroup")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0xsbpv22n51p6yvyvz231mf8zhbi1i88b4zmacaxxx31zrq5ifv4"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; XXX: PEP 517 manual build/install procedures copied from
+          ;; python-isort.
+          (replace 'build
+            (lambda _
+              (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" #$version)
+              ;; ZIP does not support timestamps before 1980.
+              (setenv "SOURCE_DATE_EPOCH" "315532800")
+              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
+          (replace 'install
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let ((whl (car (find-files "dist" "\\.whl$"))))
+                (invoke "pip" "--no-cache-dir" "--no-input"
+                        "install" "--no-deps" "--prefix" #$output whl))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "pytest" "-vv" "tests")))))))
+    (native-inputs (list python-flit-scm python-pypa-build python-pytest))
+    (home-page "https://github.com/agronholm/exceptiongroup")
+    (synopsis "PEP 654 backport from Python 3.11")
+    (description "This is a backport of the @code{BaseExceptionGroup} and
+@code{ExceptionGroup} classes from Python 3.11.")
+    (license license:expat)))
+
 (define-public python-extension-helpers
 (package
   (name "python-extension-helpers")
@@ -7813,27 +7855,6 @@ Pexpect works like Don Libes’ Expect.  Pexpect allows your script to spawn a
 child application and control it as if a human were typing commands.")
     (license license:isc)))
 
-(define-public python-setuptools-scm
-  (package
-    (name "python-setuptools-scm")
-    (version "6.3.2")
-    (source (origin
-              (method url-fetch)
-              (uri (pypi-uri "setuptools_scm" version))
-              (sha256
-               (base32 "1wm0i27siyy1yqr9rv7lqvb65agay9051yi8jzmi8dgb3q4ai6m4"))))
-    (build-system python-build-system)
-    (propagated-inputs
-     `(("python-packaging",python-packaging-bootstrap)
-       ("python-tomli" ,python-tomli)))
-    (home-page "https://github.com/pypa/setuptools_scm/")
-    (synopsis "Manage Python package versions in SCM metadata")
-    (description
-     "Setuptools_scm handles managing your Python package versions in
-@dfn{software configuration management} (SCM) metadata instead of declaring
-them as the version argument or in a SCM managed file.")
-    (license license:expat)))
-
 (define-public python-sexpdata
   (package
     (name "python-sexpdata")
@@ -11501,14 +11522,15 @@ distribution.  It is not intended as an end-user tool.")
 (define-public python-immutables
   (package
     (name "python-immutables")
-    (version "0.14")
+    (version "0.18")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "immutables" version))
        (sha256
-        (base32 "0y0aqw29g525frdnmv9paljzacpp4s21sadfbca5b137iciwr8d0"))))
+        (base32 "1x4cinh0xbl6p6p2yfm2s07mxxy3lf0zzai9gqpydk4482bwfdjk"))))
     (build-system python-build-system)
+    (native-inputs (list python-mypy python-pytest))
     (home-page "https://github.com/MagicStack/immutables")
     (synopsis "High-performance immutable mapping type for Python")
     (description
@@ -16523,6 +16545,73 @@ smaller.  Small integers are encoded into a single byte, and typical short
 strings require only one extra byte in addition to the strings themselves.")
     (license license:asl2.0)))
 
+(define-public python-cattrs
+  (package
+    (name "python-cattrs")
+    (version "22.1.0")
+    (source (origin
+              (method git-fetch)        ;for tests
+              (uri (git-reference
+                    (url "https://github.com/python-attrs/cattrs")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1n0h25gj6zd02kqyl040xpdvg4hpy1j92716sz0rg019xjqqijqb"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; XXX: PEP 517 manual build copied from python-isort.
+          (add-after 'unpack 'adjust-for-older-attrs
+            ;; Our older attrs package is using the 'attr' rather than 'attrs'
+            ;; namespace.
+            ;; TODO: Remove after python-attrs is updated to >= 21.4.0.
+            (lambda _
+              (substitute* (find-files "." "\\.py$")
+                (("from attrs\\b")
+                 "from attr"))))
+          (replace 'build
+            (lambda _
+              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
+          (replace 'install
+            (lambda _
+              (let ((whl (car (find-files "dist" "\\.whl$"))))
+                (invoke "pip" "--no-cache-dir" "--no-input"
+                        "install" "--no-deps" "--prefix" #$output whl))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                ;; Do not use the 'pytest' binary as it hard-codes an older
+                ;; python-hypothesis version near the beginning of its
+                ;; GUIX_PYTHONPATH.
+                (invoke "python" "-m" "pytest" "-vv" "-c" "/dev/null" "tests"
+                        "-n" (number->string (parallel-job-count))
+                        ;; This test requires orjson, which needs the maturin
+                        ;; build system and new Rust dependencies.
+                        "--ignore" "tests/test_preconf.py")))))))
+    (native-inputs
+     (list python-hypothesis-next
+           python-immutables
+           python-msgpack
+           python-poetry-core
+           python-pymongo               ;for the bson module
+           python-pypa-build
+           python-pytest
+           python-pytest-xdist))
+    (propagated-inputs
+     (list python-attrs
+           python-exceptiongroup
+           python-typing-extensions))
+    (home-page "https://github.com/python-attrs/cattrs")
+    (synopsis "Python library for structuring and unstructuring data")
+    (description "@code{cattrs} is an Python library for structuring and
+unstructuring data.  @code{cattrs} works best with @code{attrs} classes,
+@code{dataclasses} and the usual Python collections, but other kinds of
+classes can also be supported by manually registering converters.")
+    (license license:expat)))
+
 (define-public python-cachy
   (package
     (name "python-cachy")
@@ -17679,13 +17768,13 @@ JSON) codec.")
 (define-public python-pymongo
   (package
     (name "python-pymongo")
-    (version "3.7.2")
+    (version "4.1.1")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "pymongo" version))
               (sha256
                (base32
-                "0zis4707r9hdg5qgkhp3wss9camr9h56ixyfc8n9dxwlnnly4x4c"))))
+                "1m9hc2a4kgg10xy3g5x00z4a7rrk9s0rbf5qfypwnhq0kdfg5f6p"))))
     (build-system python-build-system)
     (propagated-inputs
      (list python-certifi))

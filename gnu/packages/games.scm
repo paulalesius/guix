@@ -1009,7 +1009,7 @@ allows users to brew while offline.")
 (define-public corsix-th
   (package
     (name "corsix-th")
-    (version "0.65.1")
+    (version "0.66")
     (source
      (origin
        (method git-fetch)
@@ -1018,7 +1018,7 @@ allows users to brew while offline.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0hw92ln9jm9v55drmbfqjng58yshgwfpv7fqynryrg3gvg8zhbvh"))))
+        (base32 "0sgsvhqgiq6v1v5am7ghja8blhlrj0y1arvq6xq1j5fwa7c59ihs"))))
     (build-system cmake-build-system)
     (arguments
      `(#:phases
@@ -8033,14 +8033,17 @@ ncurses for text display.")
 (define-public naev
   (package
     (name "naev")
-    (version "0.9.2")
+    (version "0.9.3")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append "https://github.com/naev/naev/releases/download/v"
-                           version "/naev-" version "-source.tar.xz"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/naev/naev")
+             (commit (string-append "v" version))
+             (recursive? #t))) ; for game data
+       (file-name (git-file-name name version))
        (sha256
-        (base32 "1p6424n2rgrlb0h71gvww40vxs1h583d9im8bzgmv6dhgclbg0nl"))))
+        (base32 "0hvgxzvph9s5gdzlj5kjnz2d2j7bi8s11k7i6540837mnppah18j"))))
     (build-system meson-build-system)
     (arguments
      ;; XXX: Do not add debugging symbols, which cause the build to fail.
@@ -8079,8 +8082,7 @@ of lore accompanying everything from planets to equipment.")
                    license:public-domain
                    license:expat        ;edtaa3func.c
                    license:bsd-2        ;distance_field.c
-                   license:bsd-3        ;perlin.c
-                   ))))
+                   license:bsd-3))))    ;perlin.c
 
 (define-public frotz-dumb-terminal
   (package

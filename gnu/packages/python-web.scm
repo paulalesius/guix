@@ -51,6 +51,7 @@
 ;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
 ;;; Copyright © 2022 Felix Gruber <felgru@posteo.net>
 ;;; Copyright © 2022 Peter Polidoro <peter@polidoro.io>
+;;; Copyright © 2022 Antero Mejr <antero@mailbox.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -7546,3 +7547,50 @@ resources using Web Application Description Language (WADL) files as guides.")
 @end itemize")
     (license license:expat)))
 
+(define-public python-http-client
+  (package
+    (name "python-http-client")
+    (version "3.3.7")
+    (home-page "https://github.com/sendgrid/python-http-client")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url home-page)
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0z0ziw3f4zw5fj4spiwhhs2x8qs3i5999ry2p6a5sc8b1lkkj2zi"))
+              (snippet #~(begin
+                           (use-modules (guix build utils))
+                           (delete-file "tests/profile.py")))))
+    (build-system python-build-system)
+    (synopsis "HTTP REST client for Python")
+    (description
+     "This package provides access to any RESTful or RESTful-like API.")
+    (license license:expat)))
+
+(define-public python-sendgrid
+  (package
+    (name "python-sendgrid")
+    (version "6.9.7")
+    (home-page "https://github.com/sendgrid/sendgrid-python/")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url home-page)
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0kvp4gm3bpcsj2mkv05pgvlcv1jlsfhcljcv61wz5kq9d273h7rg"))))
+    (build-system python-build-system)
+    (arguments
+     (list #:tests? #f))       ;241/340 tests fail due to attempted web access
+    (propagated-inputs (list python-http-client python-starkbank-ecdsa))
+    (synopsis "SendGrid API library for Python")
+    (description
+     "The @code{sendgrid} Python library allows access to the
+SendGrid Web API v3.  Version 3+ of the library provides full support for all
+SendGrid Web API v3 endpoints, including the new v3 /mail/send.")
+    (license license:expat)))

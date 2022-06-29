@@ -37,7 +37,7 @@
 ;;; Copyright © 2020 Marcin Karpezo <sirmacik@wioo.waw.pl>
 ;;; Copyright © 2020 EuAndreh <eu@euandre.org>
 ;;; Copyright © 2020 Michael Rohleder <mike@rohleder.de>
-;;; Copyright © 2020 Guillaume Le Vaillant <glv@posteo.net>
+;;; Copyright © 2020, 2022 Guillaume Le Vaillant <glv@posteo.net>
 ;;; Copyright © 2020 B. Wilson <elaexuotee@wilsonb.com>
 ;;; Copyright © 2020 Niklas Eklund <niklas.eklund@posteo.net>
 ;;; Copyright © 2020 Robert Smith <robertsmith@posteo.net>
@@ -55,6 +55,7 @@
 ;;; Copyright © 2022 Pier-Hugues Pellerin <ph@heykimo.com>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2022 muradm <mail@muradm.net>
+;;; Copyright © 2022 Elais Player <elais@fastmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -130,6 +131,7 @@
   #:use-module (gnu packages pretty-print)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages readline)
@@ -1819,7 +1821,7 @@ Wayland compositors supporting the wlr-output-management protocol.")
 (define-public stumpwm
   (package
     (name "stumpwm")
-    (version "20.11")
+    (version "22.05")
     (source
      (origin
        (method git-fetch)
@@ -1828,55 +1830,60 @@ Wayland compositors supporting the wlr-output-management protocol.")
              (commit version)))
        (file-name (git-file-name "stumpwm" version))
        (sha256
-        (base32 "1ghs6ihvmb3bz4q4ys1d3h6rdi96xyiw7l2ip7jh54c25049aymf"))))
+        (base32 "12hf70mpwy0ixiyvv8sf8pkwrzz8nb12a8ybvsdpibsxfjxgxnan"))))
     (build-system asdf-build-system/sbcl)
-    (native-inputs `(("fiasco" ,sbcl-fiasco)
-                     ("texinfo" ,texinfo)
+    (native-inputs
+     (list sbcl-fiasco
+           texinfo
 
-                     ;; To build the manual.
-                     ("autoconf" ,autoconf)
-                     ("automake" ,automake)))
-    (inputs `(("cl-ppcre" ,sbcl-cl-ppcre)
-              ("clx" ,sbcl-clx)
-              ("alexandria" ,sbcl-alexandria)))
+           ;; To build the manual.
+           autoconf
+           automake))
+    (inputs
+     (list sbcl-alexandria
+           sbcl-cl-ppcre
+           sbcl-clx))
     (outputs '("out" "lib"))
     (arguments
-     '(#:asd-systems '("stumpwm")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'create-asdf-configuration 'build-program
-           (lambda* (#:key outputs #:allow-other-keys)
-             (build-program
-              (string-append (assoc-ref outputs "out") "/bin/stumpwm")
-              outputs
-              #:entry-program '((stumpwm:stumpwm) 0))))
-         (add-after 'build-program 'create-desktop-file
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (xsessions (string-append out "/share/xsessions")))
-               (mkdir-p xsessions)
-               (call-with-output-file
-                   (string-append xsessions "/stumpwm.desktop")
-                 (lambda (file)
-                   (format file
-                    "[Desktop Entry]~@
-                     Name=stumpwm~@
-                     Comment=The Stump Window Manager~@
-                     Exec=~a/bin/stumpwm~@
-                     TryExec=~@*~a/bin/stumpwm~@
-                     Icon=~@
-                     Type=Application~%"
-                    out)))
-               #t)))
-         (add-after 'install 'install-manual
-           (lambda* (#:key (make-flags '()) outputs #:allow-other-keys)
-             (let* ((out  (assoc-ref outputs "out"))
-                    (info (string-append out "/share/info")))
-               (invoke "./autogen.sh")
-               (invoke "sh" "./configure" "SHELL=sh")
-               (apply invoke "make" "stumpwm.info" make-flags)
-               (install-file "stumpwm.info" info)
-               #t))))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-tests
+            (lambda _
+              (substitute* "stumpwm-tests.asd"
+                (("\"ALL-TESTS\"")
+                 "\"RUN-PACKAGE-TESTS\" :package"))))
+          (add-after 'create-asdf-configuration 'build-program
+            (lambda* (#:key outputs #:allow-other-keys)
+              (build-program
+               (string-append (assoc-ref outputs "out") "/bin/stumpwm")
+               outputs
+               #:entry-program '((stumpwm:stumpwm) 0))))
+          (add-after 'build-program 'create-desktop-file
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (xsessions (string-append out "/share/xsessions")))
+                (mkdir-p xsessions)
+                (call-with-output-file
+                    (string-append xsessions "/stumpwm.desktop")
+                  (lambda (file)
+                    (format file
+                     "[Desktop Entry]~@
+                      Name=stumpwm~@
+                      Comment=The Stump Window Manager~@
+                      Exec=~a/bin/stumpwm~@
+                      TryExec=~@*~a/bin/stumpwm~@
+                      Icon=~@
+                      Type=Application~%"
+                     out))))))
+          (add-after 'install 'install-manual
+            (lambda* (#:key (make-flags '()) outputs #:allow-other-keys)
+              (let* ((out  (assoc-ref outputs "out"))
+                     (info (string-append out "/share/info")))
+                (invoke "./autogen.sh")
+                (invoke "sh" "./configure" "SHELL=sh")
+                (apply invoke "make" "stumpwm.info" make-flags)
+                (install-file "stumpwm.info" info)))))))
     (synopsis "Window manager written in Common Lisp")
     (description "Stumpwm is a window manager written entirely in Common Lisp.
 It attempts to be highly customizable while relying entirely on the keyboard

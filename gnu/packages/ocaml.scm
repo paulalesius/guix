@@ -1939,6 +1939,30 @@ functions to the next and/or previous version.")
 ocaml-migrate-parsetree")
       (license license:expat))))
 
+(define-public ocaml-linenoise
+  (package
+    (name "ocaml-linenoise")
+    (version "1.3.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                     (url "https://github.com/ocaml-community/ocaml-linenoise")
+                     (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0s98695skz1wvrak0rdlh80w3cv6piic1dxqpn9rv1yymbklafg4"))))
+    (build-system dune-build-system)
+    (arguments
+     ;; No tests
+     `(#:tests? #f))
+    (propagated-inputs (list ocaml-result ocaml-odoc))
+    (home-page "https://github.com/ocaml-community/ocaml-linenoise")
+    (synopsis "Lightweight readline alternative")
+    (description "This package is a line-reading library for OCaml that aims
+to replace readline.")
+    (license license:bsd-2)))
+
 (define-public ocaml-bitstring
   (package
     (name "ocaml-bitstring")
@@ -1992,6 +2016,22 @@ powerful.")
       (propagated-inputs
        `(("ocaml-ppx-tools-versioned" ,ocaml4.07-ppx-tools-versioned)))
       (properties '()))))
+
+(define-public ocaml-ppx-bitstring
+  (package
+    (inherit ocaml-bitstring)
+    (name "ocaml-ppx-bitstring")
+    (arguments
+     `(#:package "ppx_bitstring"
+       ;; No tests
+       #:tests? #f))
+    (propagated-inputs (list ocaml-bitstring ocaml-ppxlib))
+    (native-inputs (list ocaml-ounit))
+    (properties `((upstream-name . "ppx_bitstring")))
+    (synopsis "PPX extension for bitstrings and bitstring matching")
+    (description
+     "This package provides a way to write bitstrings and matching over
+bitsrings in Erlang style as primitives to the language.")))
  
 (define-public ocaml-result
   (package
@@ -3989,10 +4029,52 @@ It provides a uniform interface for serializing OCaml data structures to JSON,
 XML and Protocol Buffers formats.")
     (license license:asl2.0)))
 
+(define-public ocaml-ppx-bap
+  (package
+    (name "ocaml-ppx-bap")
+    (version "0.14.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                     (url "https://github.com/BinaryAnalysisPlatform/ppx_bap")
+                     (commit (string-append "v" (version-major+minor version)))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1c6rcdp8bicdiwqc2mb59cl9l2vxlp3y8hmnr9x924fq7acly248"))))
+    (build-system dune-build-system)
+    (arguments
+     ;; No tests
+     `(#:tests? #f))
+    (propagated-inputs (list ocaml-base-quickcheck
+                             ocaml-ppx-assert
+                             ocaml-ppx-bench
+                             ocaml-ppx-bin-prot
+                             ocaml-ppx-cold
+                             ocaml-ppx-compare
+                             ocaml-ppx-enumerate
+                             ocaml-ppx-fields-conv
+                             ocaml-ppx-hash
+                             ocaml-ppx-here
+                             ocaml-ppx-optcomp
+                             ocaml-ppx-sexp-conv
+                             ocaml-ppx-sexp-value
+                             ocaml-ppx-variants-conv
+                             ocaml-ppxlib))
+    (properties `((upstream-name . "ppx_bap")))
+    (home-page "https://github.com/BinaryAnalysisPlatform/ppx_bap")
+    (synopsis "The set of ppx rewriters for BAP")
+    (description
+     "@code{ppx_bap} is the set of blessed ppx rewriters used in BAP projects.
+It fills the same role as @code{ppx_base} or @code{ppx_jane} (from which it is
+derived), but doesn't impose any style requirements and has only the minimal
+necessary set of rewriters.")
+    (license license:expat)))
+
 (define-public bap
   (package
     (name "bap")
-    (version "2.0.0")
+    (version "2.5.0-alpha")
     (home-page "https://github.com/BinaryAnalysisPlatform/bap")
     (source (origin
               (method git-fetch)
@@ -4002,58 +4084,64 @@ XML and Protocol Buffers formats.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0lb9xkfp67wjjqr75p6krivmjra7l5673236v9ny4gp0xi0755bk"))))
+                "1fw9pp0xnssc08qqfkcafffap4f46hw7zmk80gif5yc4nazga8w5"))))
    (build-system ocaml-build-system)
-   (native-inputs
-    `(("ocaml-oasis" ,(package-with-ocaml4.07 ocaml-oasis))
-      ("clang" ,clang-3.8)
-      ("ocaml-ounit" ,(package-with-ocaml4.07 ocaml-ounit))))
-   (propagated-inputs
-    `(("camlzip" ,(package-with-ocaml4.07 camlzip))
-      ("ocaml-bitstring" ,(package-with-ocaml4.07 ocaml-bitstring))
-      ("ocaml-cmdliner" ,(package-with-ocaml4.07 ocaml-cmdliner))
-      ("ocaml-core-kernel" ,ocaml4.07-core-kernel)
-      ("ocaml-ezjsonm" ,(package-with-ocaml4.07 ocaml-ezjsonm))
-      ("ocaml-fileutils" ,(package-with-ocaml4.07 ocaml-fileutils))
-      ("ocaml-frontc" ,(package-with-ocaml4.07 ocaml-frontc))
-      ("ocaml-graph" ,(package-with-ocaml4.07 ocaml-graph))
-      ("ocaml-ocurl" ,(package-with-ocaml4.07 ocaml-ocurl))
-      ("ocaml-piqi" ,(package-with-ocaml4.07 ocaml-piqi))
-      ("ocaml-ppx-jane" ,ocaml4.07-ppx-jane)
-      ("ocaml-utop" ,ocaml4.07-utop)
-      ("ocaml-uuidm" ,(package-with-ocaml4.07 ocaml-uuidm))
-      ("ocaml-uri" ,ocaml4.07-uri)
-      ("ocaml-zarith" ,(package-with-ocaml4.07 ocaml-zarith))))
-   (inputs
-    (list gmp llvm-3.8 ncurses))
    (arguments
-    `(#:use-make? #t
+    (list
+      #:use-make? #t
       #:phases
-      (modify-phases %standard-phases
-        (add-before 'configure 'fix-ncurses
-          (lambda _
-            (substitute* "oasis/llvm"
-              (("-lcurses") "-lncurses"))
-            #t))
-        (replace 'configure
-          (lambda* (#:key outputs inputs #:allow-other-keys)
-            ;; add write for user, to prevent a failure in the install phase
-            (for-each
-              (lambda (file)
-                (let ((stat (stat file)))
-                  (chmod file (+ #o200 (stat:mode stat)))))
-              (find-files "." "."))
-            (invoke "./configure" "--prefix"
-                    (assoc-ref outputs "out")
-                    "--libdir"
-                    (string-append
+      #~(modify-phases %standard-phases
+          (add-before 'configure 'fix-ncurses
+            (lambda _
+              (substitute* "oasis/llvm"
+                (("-lcurses") "-lncurses"))
+              #t))
+          (replace 'configure
+            (lambda* (#:key outputs inputs #:allow-other-keys)
+              (for-each make-file-writable (find-files "." "."))
+              ;; Package name changed
+              (substitute* "oasis/elf-loader"
+                (("bitstring.ppx") "ppx_bitstring"))
+              ;; We don't have a monolithic llvm
+              (substitute* "oasis/llvm.setup.ml.in"
+                (("llvm_static = \"true\"") "true"))
+              (invoke "./configure" "--prefix"
                       (assoc-ref outputs "out")
-                      "/lib/ocaml/site-lib")
-                    "--with-llvm-version=3.8"
-                    "--with-llvm-config=llvm-config"
-                    "--enable-everything"))))
-       #:ocaml ,ocaml-4.07
-       #:findlib ,ocaml4.07-findlib))
+                      "--libdir"
+                      (string-append
+                        (assoc-ref outputs "out")
+                        "/lib/ocaml/site-lib")
+                      (string-append "--with-llvm-version=" #$(package-version llvm))
+                      "--with-llvm-config=llvm-config"
+                      "--disable-ghidra"
+                      "--disable-llvm-static"
+                      "--enable-llvm"
+                      "--enable-everything"))))))
+   (native-inputs (list clang ocaml-oasis ocaml-ounit))
+   (propagated-inputs
+     (list
+       camlzip
+       ocaml-bitstring
+       ocaml-cmdliner
+       ocaml-core-kernel
+       ocaml-ezjsonm
+       ocaml-fileutils
+       ocaml-frontc
+       ocaml-graph
+       ocaml-linenoise
+       ocaml-ocurl
+       ocaml-piqi
+       ocaml-ppx-bap
+       ocaml-ppx-bitstring
+       ocaml-re
+       ocaml-uri
+       ocaml-utop
+       ocaml-uuidm
+       ocaml-yojson
+       ocaml-z3
+       ocaml-zarith))
+   (inputs
+    (list gmp llvm ncurses))
    (synopsis "Binary Analysis Platform")
    (description "Binary Analysis Platform is a framework for writing program
 analysis tools, that target binary files.  The framework consists of a plethora

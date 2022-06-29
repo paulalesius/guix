@@ -2576,14 +2576,14 @@ directories or regex patterns.")
 (define-public emacs-bbdb
   (package
     (name "emacs-bbdb")
-    (version "3.2.1")
+    (version "3.2.2.2")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/"
                            "bbdb-" version ".tar"))
        (sha256
-        (base32 "01vsnifs47krq1srgdkk9agbv3p2fykl9nydr4nrfjxbqpnyh3ij"))))
+        (base32 "0bf20r5xhxln6z4qp8zrlln0303dkci2ydsr74pxcj08aqgk5xxf"))))
     (build-system emacs-build-system)
     (arguments
      ;; XXX: The following file cannot be byte-compiled, because et requires
@@ -2653,14 +2653,14 @@ you can press @samp{C-M-n} to input multiple email addresses.")
 (define-public emacs-bluetooth
   (package
     (name "emacs-bluetooth")
-    (version "0.3")
+    (version "0.3.1")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/"
                            "bluetooth-" version ".tar"))
        (sha256
-        (base32 "1q27hk4j7k0q9vqgn9nq7q0vhn9jdqbygs7d9lv5gwfhdzdnl4az"))))
+        (base32 "1p10kcim5wqnbj2kiqv6hgjkzznaa48qysnnf8ym90mylsczr70z"))))
     (build-system emacs-build-system)
     (inputs
      (list bluez dbus))
@@ -2724,7 +2724,7 @@ is set.")
 (define-public emacs-ctrlf
   (package
     (name "emacs-ctrlf")
-    (version "1.4")
+    (version "1.5")
     (source
      (origin
        (method git-fetch)
@@ -2733,7 +2733,7 @@ is set.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "04w708g7d1pnsc18h8fjyqkhk08jkq853alaidriamxyycvdwk0i"))))
+        (base32 "1nd1yk86s0dyf87q77dg724f6629p270q3ar85jgp8gclw5plvyz"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/raxod502/ctrlf/")
     (synopsis "Single-buffer text search in Emacs")
@@ -2902,14 +2902,14 @@ as a library for other Emacs packages.")
 (define-public emacs-auctex
   (package
     (name "emacs-auctex")
-    (version "13.1.1")
+    (version "13.1.3")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/"
                            "auctex-" version ".tar"))
        (sha256
-        (base32 "193sqq2wiq3lg99m8hifl9rjxdazpy638r99sqvmxmkfm98cr34r"))))
+        (base32 "0v9rxwz6ngnwrgvzgdki861s136gq30lqhy2gcd9q0a36gb6zhwk"))))
     (build-system emacs-build-system)
     ;; We use 'emacs' because AUCTeX requires dbus at compile time
     ;; ('emacs-minimal' does not provide dbus).
@@ -3193,7 +3193,7 @@ of bibliographic references.")
 (define-public emacs-corfu
   (package
     (name "emacs-corfu")
-    (version "0.25")
+    (version "0.26")
     (source
      (origin
        (method git-fetch)
@@ -3202,7 +3202,7 @@ of bibliographic references.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1brq8dfn4mx5mxyqqikmhwpwlqdrfq1z0wprm6awxr89xk506g77"))))
+        (base32 "00fmw6a1pjl4paawrhvbjw2ydnds3vxl2gjgzc9i13khnbv8wdq1"))))
     (build-system emacs-build-system)
     (arguments
      `(#:phases
@@ -8566,7 +8566,7 @@ variants.")
 (define-public emacs-solarized-theme
   (package
     (name "emacs-solarized-theme")
-    (version "1.3.1")
+    (version "2.0.0")
     (source
      (origin
        (method git-fetch)
@@ -8575,7 +8575,7 @@ variants.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "15ql8xcixgm7mbs7rsbybwszanqibq057j5b5ds89a31dw7zxf1g"))))
+        (base32 "17z6cj8ids88xj2i6zs1s0mxs0fhn3gr7g5nhhy8s8khnzmyy2vj"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-dash))
@@ -11981,7 +11981,7 @@ target will call @code{compile} on it.")
 (define-public emacs-cider
   (package
     (name "emacs-cider")
-    (version "1.3.0")
+    (version "1.4.1")
     (source
      (origin
        (method git-fetch)
@@ -11990,7 +11990,7 @@ target will call @code{compile} on it.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0mxlkxpzn7rzbzpzcw2z9x2ab2zvhrwr8h21kmfn3li3dha73gf1"))))
+        (base32 "08635ln514nrglx6qyhaq1x7y7lw4mcd659ba8zs071yjiariarm"))))
     (build-system emacs-build-system)
     (arguments
      '(#:exclude                        ;don't exclude 'cider-test.el'
@@ -18831,7 +18831,7 @@ files to be expanded upon opening them.")
 (define-public emacs-ebib
   (package
     (name "emacs-ebib")
-    (version "2.34")
+    (version "2.38")
     (source
      (origin
        (method git-fetch)
@@ -18840,7 +18840,7 @@ files to be expanded upon opening them.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0al846i1dn5wrx3r0ak63m80g9j9xk2q5cpcpk63lq0l0gfdff2m"))))
+        (base32 "14pk3l0qhk219msxx6wxpf29dyx3kjcj769lcqyb5g05lclw9531"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-biblio emacs-ivy emacs-parsebib))
@@ -18887,7 +18887,7 @@ automatically fetched from well-curated sources, and formatted as BibTeX.")
 (define-public emacs-citar
   (package
     (name "emacs-citar")
-    (version "0.9")
+    (version "0.9.5")
     (source
      (origin
        (method git-fetch)
@@ -18896,7 +18896,7 @@ automatically fetched from well-curated sources, and formatted as BibTeX.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "15jhpl2j4rm97cvvqzlfzxarvxvcsg64raz068psrsd2y7y2zh4c"))))
+        (base32 "04asi5gr4p1d8llra3qwly2jp1ll3zs0hjcysrrvdcax0jcr473b"))))
     (build-system emacs-build-system)
     (arguments
      `(#:phases
@@ -18904,7 +18904,7 @@ automatically fetched from well-curated sources, and formatted as BibTeX.")
          (add-before 'build 'set-home
            (lambda _ (setenv "HOME" "/tmp"))))))
     (propagated-inputs
-     (list emacs-auctex emacs-org emacs-parsebib emacs-s))
+     (list emacs-auctex emacs-citeproc-el emacs-org emacs-parsebib emacs-s))
     (home-page "https://github.com/bdarcus/citar")
     (synopsis "Emacs package to quickly find and act on bibliographic entries")
     (description
@@ -31151,7 +31151,7 @@ and preferred services can easily be configured.")
 (define-public emacs-vertico
   (package
     (name "emacs-vertico")
-    (version "0.24")
+    (version "0.25")
     (source
      (origin
        (method git-fetch)
@@ -31160,7 +31160,7 @@ and preferred services can easily be configured.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "03p9rf80jnralxpydvxi88igs0r6qa6v41xf1fafwgsf235b49yi"))))
+        (base32 "13lgvaxbbgc08q5dc2pmagnvg1hr2vvl6c9qxvpwqcj06kw9b5ln"))))
     (build-system emacs-build-system)
     (arguments
      `(#:phases

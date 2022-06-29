@@ -1269,6 +1269,7 @@ of xmpppy.")
        ("gtk+" ,gtk+)
        ("gtksourceview" ,gtksourceview)
        ("gupnp-igd" ,gupnp-igd)
+       ("libappindicator" ,libappindicator)
        ("libnice" ,libnice)
        ("libsecret" ,libsecret)
        ("libsoup" ,libsoup)
@@ -1297,16 +1298,16 @@ and OpenPGP) and available in 29 languages.")
 (define-public gajim-omemo
   (package
     (name "gajim-omemo")
-    (version "2.8.13")
+    (version "2.8.15")
     (source
      (origin
        (method url-fetch/zipbomb)
        (uri
         (string-append
-         "https://ftp.gajim.org/plugins_releases/omemo_"
+         "https://ftp.gajim.org/plugins/master/omemo/omemo_"
          version ".zip"))
        (sha256
-        (base32 "10ym9abvlfpi6llpsqc0691xdnqp9hrwnl361fnwb1nx2zw6bjbd"))))
+        (base32 "1hf148ywr8knk5y3y5xvvwgw74ld1pcfjkp78g514ikcnzfycfcn"))))
     (build-system trivial-build-system)
     (arguments
      `(#:modules ((guix build utils))
@@ -1314,7 +1315,7 @@ and OpenPGP) and available in 29 languages.")
        (begin
          (use-modules (guix build utils))
          (let* ((out (assoc-ref %outputs "out"))
-                (share (in-vicinity out "share/gajim/plugins"))
+                (share (in-vicinity out "share/gajim/plugins/omemo"))
                 (source (assoc-ref %build-inputs "source")))
            (mkdir-p share)
            (copy-recursively source share)
@@ -1333,16 +1334,16 @@ multi-client end-to-end encryption.")
 (define-public gajim-openpgp
   (package
     (name "gajim-openpgp")
-    (version "1.4.8")
+    (version "1.4.9")
     (source
      (origin
        (method url-fetch/zipbomb)
        (uri
         (string-append
-         "https://ftp.gajim.org/plugins_releases/openpgp_"
+         "https://ftp.gajim.org/plugins/master/openpgp/openpgp_"
          version ".zip"))
        (sha256
-        (base32 "05kgcrxalxsc034kq1i6nriqjb6sdlgf3yb2mani8vk9p00v3j90"))))
+        (base32 "1xwmf6ai1z7z9x6p1ysglxji73r7d27c0gzc8ykab29cjhjyv0dq"))))
     (build-system trivial-build-system)
     (arguments
      `(#:modules ((guix build utils))
@@ -1350,7 +1351,7 @@ multi-client end-to-end encryption.")
        (begin
          (use-modules (guix build utils))
          (let* ((out (assoc-ref %outputs "out"))
-                (share (in-vicinity out "share/gajim/plugins"))
+                (share (in-vicinity out "share/gajim/plugins/openpgp"))
                 (source (assoc-ref %build-inputs "source")))
            (mkdir-p share)
            (copy-recursively source share)
