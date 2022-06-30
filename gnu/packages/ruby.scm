@@ -12763,3 +12763,116 @@ Faraday-based API wrappers.")
     (description "Bandwidth IRIS is a Ruby SDK for Bandwidth Phone Number
 Dashboard.  It is a Ruby Client library for IRIS / BBS API.")
     (license license:expat)))
+
+(define-public ruby-sentry-core
+  (package
+    (name "ruby-sentry-core")
+    (version "5.3.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (rubygems-uri "sentry-ruby-core" version))
+        (sha256
+          (base32 "141mrw8wghhsjvln9m6ld3hap3xc5v901jjiz007xywy25725hyd"))))
+    (build-system ruby-build-system)
+    (arguments
+     ;; No rakefile in gem.
+     `(#:tests? #f))
+    (propagated-inputs
+      (list ruby-concurrent
+             ruby-faraday))
+    (home-page "https://sentry.io/for/ruby/")
+    (synopsis "Client interface for the Sentry error logger")
+    (description "Sentry-Core provides a gem that provides a client
+interface for the Sentry error logger.")
+    (license license:expat)))
+
+(define-public ruby-sentry
+  (package
+    (name "ruby-sentry")
+    (version "5.3.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (rubygems-uri "sentry-ruby" version))
+        (sha256
+          (base32 "0by9mvw8rklzpyx59vfija8h3ssfvxvf5nbqxfmygfy6lm1vdngz"))))
+    (build-system ruby-build-system)
+    (arguments
+     ;; No rakefile in gem
+     `(#:tests? #f))
+    (propagated-inputs
+      (list ruby-concurrent
+             ruby-faraday
+             ruby-sentry-core))
+    (home-page "https://sentry.io/for/ruby/")
+    (synopsis "Client interface for the Sentry error logger")
+    (description "Sentry provides a gem that provides a client
+interface for the Sentry error logger.")
+    (license license:expat)))
+
+(define-public ruby-webrick
+  (package
+    (name "ruby-webrick")
+    (version "1.7.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (rubygems-uri "webrick" version))
+        (sha256
+          (base32 "1d4cvgmxhfczxiq5fr534lmizkhigd15bsx5719r5ds7k7ivisc7"))))
+    (build-system ruby-build-system)
+    (home-page "https://github.com/ruby/webrick")
+    (synopsis "HTTP server toolkit")
+    (description "WEBrick is an HTTP server toolkit that can be configured as an
+HTTPS server, a proxy server, and a virtual-host server.")
+    (license license:bsd-2)))
+
+(define-public ruby-interception
+  (package
+    (name "ruby-interception")
+    (version "0.5")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (rubygems-uri "interception" version))
+        (sha256
+          (base32 "01vrkn28psdx1ysh5js3hn17nfp1nvvv46wc1pwqsakm6vb1hf55"))))
+    (build-system ruby-build-system)
+    (native-inputs (list ruby-rspec))
+    (home-page "https://github.com/ConradIrwin/interception")
+    (synopsis "Listen to raise in Ruby")
+    (description "Interception provides a cross-platform ability to intercept all
+exceptions as they are raised.")
+    (license license:expat)))
+
+(define-public ruby-pry-rescue
+  (package
+    (name "ruby-pry-rescue")
+    (version "1.5.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (rubygems-uri "pry-rescue" version))
+        (sha256
+          (base32 "1wn72y8y3d3g0ng350ld92nyjln012432q2z2iy9lhwzjc4dwi65"))))
+    (build-system ruby-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'nuke-bad-test
+           (lambda _
+             (substitute* "spec/source_location_spec.rb"
+               (("time = Time.now") "skip")))))))
+    (native-inputs
+     (list ruby-rspec
+            ruby-pry-stack-explorer))
+    (propagated-inputs
+     (list ruby-interception
+            ruby-pry))
+    (home-page
+      "https://github.com/ConradIrwin/pry-rescue")
+    (synopsis "Start Pry session for rescue")
+    (description "Pry-Rescue allows you to wrap code, to open a pry session at
+any unhandled exceptions.")
+    (license license:expat)))

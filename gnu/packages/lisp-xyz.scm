@@ -7135,37 +7135,36 @@ cl-plumbing libraries.")
   (sbcl-package->ecl-package sbcl-cl-octet-streams))
 
 (define-public sbcl-lzlib
-  (let ((commit "cad10f5becbcfebb44b9d311a257563778803452")
-        (revision "2"))
+  (let ((commit "c8102fc8c959b7c418eb60657bd6c8b875f10ba9")
+        (revision "1"))
     (package
       (name "sbcl-lzlib")
-      (version (git-version "1.1" revision commit))
+      (version (git-version "2.0" revision commit))
       (source
        (origin
          (method git-fetch)
          (uri (git-reference
                (url "https://github.com/glv2/cl-lzlib")
                (commit commit)))
-         (file-name (git-file-name name version))
+         (file-name (git-file-name "cl-lzlib" version))
          (sha256
-          (base32 "09lp7li35h4jkls0448fj1sh6pjslr1w7ranbc4szjr8g0c2bdry"))))
+          (base32 "1glg1y1s1mqgypvxp0ss11cicrddri006wqwhy47lgq7mk5853zz"))))
       (build-system asdf-build-system/sbcl)
       (native-inputs
        (list sbcl-fiveam))
       (inputs
-       `(("cffi" ,sbcl-cffi)
-         ("cl-octet-streams" ,sbcl-cl-octet-streams)
-         ("lparallel" ,sbcl-lparallel)
-         ("lzlib" ,lzlib)))
+       (list lzlib
+             sbcl-cffi
+             sbcl-cl-octet-streams
+             sbcl-lparallel))
       (arguments
-       '(#:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'fix-paths
-             (lambda* (#:key inputs #:allow-other-keys)
-               (substitute* "src/lzlib.lisp"
-                 (("liblz\\.so")
-                  (search-input-file inputs "/lib/liblz.so")))
-               #t)))))
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 (add-after 'unpack 'fix-paths
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     (substitute* "src/lzlib.lisp"
+                       (("liblz\\.so")
+                        (search-input-file inputs "/lib/liblz.so"))))))))
       (synopsis "Common Lisp library for lzip (de)compression")
       (description
        "This Common Lisp library provides functions for lzip (LZMA)
@@ -14137,11 +14136,11 @@ library are feedforward neural networks trained using backpropagation.")
   (sbcl-package->ecl-package sbcl-simple-neural-network))
 
 (define-public sbcl-zstd
-  (let ((commit "d144582c581aaa52bac24d6686af27fa3e781e06")
+  (let ((commit "134f058eee11512cf772a8d5b64364acf56a10b8")
         (revision "1"))
     (package
       (name "sbcl-zstd")
-      (version (git-version "1.0" revision commit))
+      (version (git-version "2.0" revision commit))
       (source
        (origin
          (method git-fetch)
@@ -14150,22 +14149,22 @@ library are feedforward neural networks trained using backpropagation.")
                (commit commit)))
          (file-name (git-file-name "cl-zstd" version))
          (sha256
-          (base32 "1774jy8hzbi6nih3sq6vchk66f7g8w86dwgpbvljyfzcnkcaz6ql"))))
+          (base32 "1iqpi5v6fdm6xxc9l8zhk6kcgl8hgxiwk1ki2yx2j3j4kfvqv8j9"))))
       (build-system asdf-build-system/sbcl)
       (native-inputs
        (list sbcl-fiveam))
       (inputs
-       `(("cffi" ,sbcl-cffi)
-         ("cl-octet-streams" ,sbcl-cl-octet-streams)
-         ("zstd-lib" ,zstd "lib")))
+       (list sbcl-cffi
+             sbcl-cl-octet-streams
+             (list zstd "lib")))
       (arguments
-       '(#:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'fix-paths
-             (lambda* (#:key inputs #:allow-other-keys)
-               (substitute* "src/libzstd.lisp"
-                 (("libzstd\\.so")
-                  (search-input-file inputs "/lib/libzstd.so"))))))))
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 (add-after 'unpack 'fix-paths
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     (substitute* "src/libzstd.lisp"
+                       (("libzstd\\.so")
+                        (search-input-file inputs "/lib/libzstd.so"))))))))
       (synopsis "Common Lisp library for Zstandard (de)compression")
       (description
        "This Common Lisp library provides functions for Zstandard
@@ -20990,8 +20989,8 @@ taking inspiration from Ruby's ERb module.")
   (sbcl-package->ecl-package sbcl-cl-template))
 
 (define-public sbcl-fast-websocket
-  (let ((commit "24c0217e7c0d25b6ef6ab799452cba0b9fb58f44")
-        (revision "0"))
+  (let ((commit "baeeaddf1447015863d708f840ef9dfc5ff5b7a2")
+        (revision "1"))
     (package
      (name "sbcl-fast-websocket")
      (version (git-version "0.1" revision commit))
@@ -21004,8 +21003,7 @@ taking inspiration from Ruby's ERb module.")
              (commit commit)))
        (file-name (git-file-name "cl-fast-websoclet" version))
        (sha256
-        (base32
-         "04sacrhpdp3ixvp6wjwxls5mv47g0q6542pd16yn199xjg0drw8a"))))
+        (base32 "1j7v00gbkzx4mq2v8y44jm4jx321hgrv9igfw23cvzzlyd3dzp6y"))))
      (build-system asdf-build-system/sbcl)
      (arguments
       ;; Test system must be loaded before, otherwise tests fail with:

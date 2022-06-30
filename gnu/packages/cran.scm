@@ -35,7 +35,8 @@
 ;;; Copyright © 2020 Aniket Patil <aniket112.patil@gmail.com>
 ;;; Copyright © 2021 Marcel Schilling <marcel.schilling@uni-luebeck.de>
 ;;; Copyright © 2021 Guillaume Le Vaillant <glv@posteo.net>
-;;; Copyright © 2022 Navid Afkhami  <navid.afkhami@mdc-berlin.de>
+;;; Copyright © 2022 Navid Afkhami <navid.afkhami@mdc-berlin.de>
+;;; Copyright © 2022 Greg Hogan <code@greghogan.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -17163,17 +17164,17 @@ customizable sets, and intervals.")
 (define-public r-partitions
   (package
     (name "r-partitions")
-    (version "1.9-22")
+    (version "1.10-4")
     (source
      (origin
        (method url-fetch)
        (uri (cran-uri "partitions" version))
        (sha256
         (base32
-         "1qqy4df28wy4q0g572azrj171jlhvrnzbh7x0wr2g7v6gr20y0ns"))))
+         "1ik7cj2yfybx4v847nvnjrbkd0k66pfqqv6lkygfnlrldi0r205i"))))
     (build-system r-build-system)
     (propagated-inputs
-     (list r-gmp r-polynom r-sets))
+     (list r-gmp r-mathjaxr r-polynom r-sets))
     (home-page "https://cran.r-project.org/web/packages/partitions")
     (synopsis "Additive partitions of integers")
     (description
@@ -23940,6 +23941,35 @@ spectroscopy and analyses of environmental data: robust baseline fitting,
 finding peaks in spectra, converting humidity measures.")
     (license license:gpl3+)))
 
+(define-public r-qqconf
+  (package
+    (name "r-qqconf")
+    (version "1.2.3")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "qqconf" version))
+              (sha256
+               (base32
+                "0qnfzq2zb776kmvbwmyj9di4nlzx7dg0nz4097hfcllfx9160nwv"))))
+    (properties `((upstream-name . "qqconf")))
+    (build-system r-build-system)
+    (inputs (list fftw))
+    (propagated-inputs
+     (list r-dplyr
+           r-magrittr
+           r-mass
+           r-rcpp
+           r-rlang
+           r-robustbase))
+    (native-inputs (list pkg-config r-knitr))
+    (home-page "https://github.com/eweine/qqconf")
+    (synopsis "Create simultaneous testing bands for QQ-plots")
+    (description
+     "This package provides functionality for creating Quantile-Quantile (QQ) and
+Probability-Probability (PP) plots with simultaneous testing bands to asses
+significance of sample deviation from a reference distribution.")
+    (license license:gpl3)))
+
 (define-public r-qqman
   (package
     (name "r-qqman")
@@ -29149,18 +29179,18 @@ package also provides functions to visualize the observed data and the MLE.")
 (define-public r-metafor
   (package
     (name "r-metafor")
-    (version "2.4-0")
+    (version "3.4-0")
     (source
      (origin
        (method url-fetch)
        (uri (cran-uri "metafor" version))
        (sha256
         (base32
-         "1b599fxk7s0brkchmx698fr5k4g1kzkia2rnlvhg349ffs5nfjmn"))))
+         "0vn244xfgq7yxwl6ykvadb305z360ssc9vzva7kbcdfiqhhvrqcj"))))
     (properties `((upstream-name . "metafor")))
     (build-system r-build-system)
     (propagated-inputs
-     (list r-matrix r-nlme))
+     (list r-mathjaxr r-matrix r-metadat r-nlme r-pbapply))
     (home-page "https://cran.r-project.org/web/packages/metafor/")
     (synopsis "Meta-analysis package for R")
     (description
@@ -33438,3 +33468,69 @@ jitterplot, or half violinplot and half dotplot.")
 coefficients or scattering amplitudes, for seismological P and S-waves at an
 interface.")
     (license license:gpl2+)))
+
+(define-public r-metadat
+  (package
+    (name "r-metadat")
+    (version "1.2-0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "metadat" version))
+              (sha256
+               (base32
+                "1f7mb3pw5d0akr09jjva06ay223izhpzbr21bapnw99x1kiybk7h"))))
+    (properties `((upstream-name . "metadat")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-mathjaxr))
+    (home-page "https://github.com/wviechtb/metadat")
+    (synopsis "Meta-Analysis Datasets")
+    (description
+     "This package provides a collection of meta-analysis datasets for teaching
+purposes, illustrating/testing meta-analytic methods, and validating published
+analyses.")
+    (license license:gpl2+)))
+
+(define-public r-mathjaxr
+  (package
+    (name "r-mathjaxr")
+    (version "1.6-0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "mathjaxr" version))
+              (sha256
+               (base32
+                "0yf1sfkb2kjsplipl2v4k2gp20li9xzsynclg228sy0v243pdi7c"))
+              (modules '((guix build utils)))
+              (snippet
+               '(begin
+                  (delete-file-recursively "src/mathjax/es5/input")
+                  (delete-file-recursively "src/mathjax/es5/output")
+                  (delete-file "src/mathjax/es5/tex-chtml-full.js")))))
+    (properties `((upstream-name . "mathjaxr")))
+    (build-system r-build-system)
+    (arguments
+     (list
+      #:phases
+      `(modify-phases %standard-phases
+         (add-after 'unpack 'use-js-mathjax
+           (lambda* (#:key inputs #:allow-other-keys)
+             (symlink
+              (search-input-directory
+               inputs "/share/javascript/mathjax/es5/output")
+              "src/mathjax/es5/output")
+             (symlink
+              (search-input-directory
+               inputs "/share/javascript/mathjax/es5/input")
+              "src/mathjax/es5/input")
+             (symlink
+              (search-input-file
+               inputs "/share/javascript/mathjax/es5/tex-chtml-full.js")
+              "src/mathjax/es5/tex-chtml-full.js"))))))
+    (inputs
+     (list js-mathjax-for-r-mathjaxr))
+    (home-page "https://github.com/wviechtb/mathjaxr")
+    (synopsis "Use Mathjax in Rd Files")
+    (description
+     "This package provides MathJax and macros to enable its use within Rd files
+for rendering equations in the HTML help files.")
+    (license (list license:asl2.0 license:gpl3))))
