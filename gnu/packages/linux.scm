@@ -352,7 +352,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
 ;; The current "stable" kernels. That is, the most recently released major
 ;; versions that are still supported upstream.
 
-(define-public linux-libre-5.18-version "5.18.5")
+(define-public linux-libre-5.18-version "5.18.7")
 (define-public linux-libre-5.18-gnu-revision "gnu")
 (define deblob-scripts-5.18
   (linux-libre-deblob-scripts
@@ -362,7 +362,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "0vjpn8iw9yg39sr6jfhzyvivf159h9zfgnjamwa283zfll0h0a53")))
 (define-public linux-libre-5.18-pristine-source
   (let ((version linux-libre-5.18-version)
-        (hash (base32 "1rrll1ph9wx8szh1iv3wkjqk2n3k80qyhwmvl79rqkwr0pa32dww")))
+        (hash (base32 "0nsj44p1wn7ysckhv4a99ncj0a9xxhvi54v63w1047sspxjd18m1")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.18)))
@@ -1383,8 +1383,8 @@ network adapters.")
       (license license:gpl2))))
 
 (define-public rtl8812au-aircrack-ng-linux-module
-  (let ((commit "37e27f9165300c89607144b646545fac576ec510")
-        (revision "7"))
+  (let ((commit "6d0d9fb56d4d918012a5c7a030b9233cad039cdd")
+        (revision "8"))
     (package
       (inherit rtl8821ce-linux-module)
       (name "rtl8812au-aircrack-ng-linux-module")
@@ -1397,7 +1397,7 @@ network adapters.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "09n814pa6i0b0xkgssymcmbcdic05y9z5bsr6sxjfs40wawsk6af"))
+          (base32 "012asiy43ik13kl9p97sscdsqq5jihq73s4ws3g5wqqczqcgrsvc"))
          (modules '((guix build utils)))
          (snippet
           #~(begin
