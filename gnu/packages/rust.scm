@@ -799,10 +799,14 @@ safety and thread safety guarantees.")
    rust-1.59 "1.60.0" "1drqr0a26x1rb2w3kj0i6abhgbs3jx5qqkrcwbwdlx7n3inq5ji0"))
 
 (define rust-1.61
+  (rust-bootstrapped-package
+   rust-1.60 "1.61.0" "1drqr0a26x1rb2w3kj0i6abhgbs3jx5qqkrcwbwdlx7n3inq5ji0"))
+
+(define rust-1.62
   (let ((base-rust
          (rust-bootstrapped-package
-          rust-1.60 "1.61.0"
-          "1vfs05hkf9ilk19b2vahqn8l6k17pl9nc1ky9kgspaascx8l62xd")))
+          rust-1.61 "1.62.0"
+          "09y06qmh7ihi9kgimpp3h4nj3cmgc1zypqyaba10dlk4kf07h23x")))
     (package
       (inherit base-rust)
       (arguments
@@ -814,7 +818,7 @@ safety and thread safety guarantees.")
 ;;; intermediate rusts are built for bootstrapping purposes and should not
 ;;; be relied upon.  This is to ease maintenance and reduce the time
 ;;; required to build the full Rust bootstrap chain.
-(define-public rust rust-1.61)
+(define-public rust rust-1.62)
 
 (define-public rust-src
   ;; Disable hidden, to allow installing the src package separately
