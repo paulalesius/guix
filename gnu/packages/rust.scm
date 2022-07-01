@@ -800,7 +800,7 @@ safety and thread safety guarantees.")
 
 (define rust-1.61
   (rust-bootstrapped-package
-   rust-1.60 "1.61.0" "1drqr0a26x1rb2w3kj0i6abhgbs3jx5qqkrcwbwdlx7n3inq5ji0"))
+   rust-1.60 "1.61.0" "1vfs05hkf9ilk19b2vahqn8l6k17pl9nc1ky9kgspaascx8l62xd"))
 
 (define rust-1.62
   (let ((base-rust
