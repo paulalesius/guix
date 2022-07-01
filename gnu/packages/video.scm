@@ -1199,22 +1199,19 @@ on the Invidious instances only as a fallback method.")
 (define-public x265
   (package
     (name "x265")
-    (version "3.4")
+    (version "3.5")
     (outputs '("out" "static"))
     (source
       (origin
         (method url-fetch)
-        (uri (list (string-append "https://bitbucket.org/multicoreware/x265"
-                                  "/downloads/x265_" version ".tar.gz")
-                   (string-append "https://download.videolan.org/videolan/x265/"
-                                  "x265_" version ".tar.gz")))
+        (uri (string-append "https://bitbucket.org/multicoreware/x265_git"
+                            "/downloads/x265_" version ".tar.gz"))
         (sha256
-         (base32 "0wl62hfsdqpf3r3z3s6l9bz7pdb1rcik5ll00b3yaadplqipy162"))
+         (base32 "1s6afxj61jdwfjnn70dwiql34fbqsvn6zv10785vmjyar8sk62p7"))
         (patches (search-patches "x265-arm-flags.patch"))
         (modules '((guix build utils)))
         (snippet '(begin
-                    (delete-file-recursively "source/compat/getopt")
-                    #t))))
+                    (delete-file-recursively "source/compat/getopt")))))
     (build-system cmake-build-system)
     (native-inputs
      ;; XXX: ASM optimization fails on i686-linux, see <https://bugs.gnu.org/41768>.
@@ -1222,13 +1219,10 @@ on the Invidious instances only as a fallback method.")
          '()
          `(("nasm" ,nasm))))
     (arguments
-     `(#:tests? #f ; tests are skipped if cpu-optimized code isn't built
+     `(#:tests? #f ; tests are skipped if ENABLE_ASSEMBLY is TRUE.
        #:configure-flags
          ;; Ensure position independent code for everyone.
          (list "-DENABLE_PIC=TRUE"
-               ,@(if (target-arm?)
-                     '("-DENABLE_ASSEMBLY=OFF")
-                     '())
                (string-append "-DCMAKE_INSTALL_PREFIX="
                               (assoc-ref %outputs "out")))
        #:phases
@@ -1237,13 +1231,21 @@ on the Invidious instances only as a fallback method.")
            (lambda _
              (delete-file-recursively "build")
              (chdir "source")
-             #t))
+             ;; We're not building from a git or mercurial repository,
+             ;; so help cmake find the version number.
+             (substitute* "cmake/Version.cmake"
+               (("if\\(X265_TAG_DISTANCE STREQUAL \"0\"\\)")
+                (string-append "if(TRUE)\n"
+                               "    set(X265_LATEST_TAG \"" ,version "\")\n")))))
          (add-before 'configure 'build-12-bit
-           (lambda* (#:key (configure-flags '()) #:allow-other-keys)
+           (lambda* (#:key (configure-flags '()) #:allow-other-keys #:rest args)
              (mkdir "../build-12bit")
              (with-directory-excursion "../build-12bit"
                (apply invoke
                  "cmake" "../source"
+                 ,@(if (target-aarch64?)
+                     '("-DENABLE_ASSEMBLY=OFF")
+                     '())
                  "-DHIGH_BIT_DEPTH=ON"
                  "-DEXPORT_C_API=OFF"
                  "-DENABLE_CLI=OFF"
@@ -1251,32 +1253,35 @@ on the Invidious instances only as a fallback method.")
                  configure-flags)
                (substitute* (cons "cmake_install.cmake"
                                   (append
-                                    (find-files "CMakeFiles/x265-shared.dir" ".")
-                                    (find-files "CMakeFiles/x265-static.dir" ".")))
+                                    (find-files "CMakeFiles/x265-shared.dir")
+                                    (find-files "CMakeFiles/x265-static.dir")))
                  (("libx265") "libx265_main12"))
-               (invoke "make"))))
+               ((assoc-ref %standard-phases 'build)))))
          (add-before 'configure 'build-10-bit
-           (lambda* (#:key (configure-flags '()) #:allow-other-keys)
+           (lambda* (#:key (configure-flags '()) #:allow-other-keys #:rest args)
              (mkdir "../build-10bit")
              (with-directory-excursion "../build-10bit"
                (apply invoke
                  "cmake" "../source"
+                 ,@(if (target-aarch64?)
+                     '("-DENABLE_ASSEMBLY=OFF")
+                     '())
                  "-DHIGH_BIT_DEPTH=ON"
                  "-DEXPORT_C_API=OFF"
                  "-DENABLE_CLI=OFF"
                  configure-flags)
                (substitute* (cons "cmake_install.cmake"
                                   (append
-                                    (find-files "CMakeFiles/x265-shared.dir" ".")
-                                    (find-files "CMakeFiles/x265-static.dir" ".")))
+                                    (find-files "CMakeFiles/x265-shared.dir")
+                                    (find-files "CMakeFiles/x265-static.dir")))
                  (("libx265") "libx265_main10"))
-               (invoke "make"))))
+               ((assoc-ref %standard-phases 'build)))))
          (add-after 'install 'install-more-libs
-           (lambda _
+           (lambda args
              (with-directory-excursion "../build-12bit"
-               (invoke "make" "install"))
+               ((assoc-ref %standard-phases 'install)))
              (with-directory-excursion "../build-10bit"
-               (invoke "make" "install"))))
+               ((assoc-ref %standard-phases 'install)))))
          (add-before 'strip 'move-static-libs
            (lambda* (#:key outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out"))
@@ -1288,8 +1293,7 @@ on the Invidious instances only as a fallback method.")
                    (lambda (file)
                      (rename-file file
                                   (string-append static "/lib/" file)))
-                   (find-files "." "\\.a$"))))
-             #t)))))
+                   (find-files "." "\\.a$")))))))))
     (home-page "http://x265.org/")
     (synopsis "Library for encoding h.265/HEVC video streams")
     (description "x265 is a H.265 / HEVC video encoder application library,
