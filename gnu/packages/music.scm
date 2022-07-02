@@ -5055,45 +5055,110 @@ kit.  It provides a patch bay in flow matrix style for audio, MIDI, CV, and
 OSC connections.")
     (license license:artistic2.0)))
 
+(define-public luppp
+  (let ((revision "1")
+        ;; The last release was in 2019.  Since then some build fixes have
+        ;; been added.
+        (commit "23da1497f80dbace48b7807afd3570c57a4d5994"))
+    (package
+      (name "luppp")
+      (version (git-version "1.2.1" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/openAVproductions/openAV-Luppp")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1rjl7fwnqq1gxa3haw1z0p1mld23i194sc43m03h9isagkwxrx9d"))))
+      (build-system meson-build-system)
+      (inputs
+       (list cairo
+             ntk
+             liblo
+             jack-2
+             libsndfile
+             libsamplerate))
+      (native-inputs (list pkg-config cmake-minimal))
+      (home-page "http://openavproductions.com/luppp/")
+      (synopsis "Live performance tool")
+      (description
+       "Luppp is a music creation tool, intended for live use.  The focus is on real
+time processing and a fast and intuitive workflow.  With extensive MIDI
+mapping support, you can get looping just how you like!")
+      (license license:gpl3+))))
+
+(define-public fabla
+  (let ((revision "1")
+        ;; The last release was in 2016.  Since then a number of commits have
+        ;; been added to fix build problems.
+        (commit "10acf03046d980f96ed192d5acb9deb812f5c639"))
+    (package
+      (name "fabla")
+      (version (git-version "1.3.2" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/openAVproductions/openAV-Fabla")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0ybbzb86j1n5dfhzc6aa3cibkwi6q3x0c18b1w3anyibanmr1wmc"))))
+      (build-system cmake-build-system)
+      (arguments '(#:tests? #f)) ;there are none
+      (inputs (list ntk cairomm libsndfile))
+      (native-inputs (list pkg-config lv2 mesa))
+      (home-page "http://openavproductions.com/fabla/")
+      (synopsis "Sampler LV2 plugin")
+      (description
+       "Fabla is an LV2 drum sampler plugin instrument.  It is ideal for loading up
+your favorite sampled sounds and bashing away on a MIDI controller.")
+      (license license:gpl2+))))
+
 (define-public sorcer
-  (package
-    (name "sorcer")
-    (version "1.1.3")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://github.com/openAVproductions/"
-                                  "openAV-Sorcer/archive/release-"
-                                  version ".tar.gz"))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "07iyqj28wm0xc4arrq893bm12xjpz65db7ynrlmf6w8krg8wjmd0"))))
-    (build-system cmake-build-system)
-    (arguments
-     `(#:tests? #f                      ; no tests included
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'remove-architecture-specific-flags
-           (lambda _
-             (substitute* "CMakeLists.txt"
-               (("-msse2 -mfpmath=sse") ""))
-             #t))
-         (add-after 'unpack 'build-faust-sources
-           (lambda* (#:key inputs #:allow-other-keys)
-             (with-directory-excursion "faust"
-               (delete-file "main.cpp")
-               (invoke "faust" "-i"
-                       "-a" "lv2synth.cpp"
-                       "-o" "main.cpp" "main.dsp")))))))
-    (inputs
-     (list boost lv2 ntk))
-    (native-inputs
-     (list faust pkg-config))
-    (home-page "http://openavproductions.com/sorcer/")
-    (synopsis "Wavetable LV2 plugin synth")
-    (description "Sorcer is a wavetable LV2 plugin synthesizer, targeted at
+  (let ((revision "1")
+        ;; The last release was in 2016.  Since then a couple of commits have
+        ;; been added to fix build problems, so we take this arbitrary recent
+        ;; commit.
+        (commit "cc7f6f58af3188a8620b90fdad6e8ca5d026f543"))
+    (package
+      (name "sorcer")
+      (version (git-version "1.1.3" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/openAVproductions/openAV-Sorcer")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0ryaglp2pzln2bm0pwc5p9lb2nk0x4wmrs4c4cp6d2m2hhk82yk7"))
+                (snippet
+                 '(delete-file "faust/main.cpp"))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:tests? #f                    ;no tests included
+         #:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'remove-architecture-specific-flags
+             (lambda _
+               (substitute* "CMakeLists.txt"
+                 (("-msse2 -mfpmath=sse") ""))))
+           (add-after 'unpack 'build-faust-sources
+             (lambda* (#:key inputs #:allow-other-keys)
+               (with-directory-excursion "faust"
+                 (invoke "faust" "-i"
+                         "-a" "lv2synth.cpp"
+                         "-o" "main.cpp" "main.dsp")))))))
+      (inputs (list boost lv2 ntk))
+      (native-inputs (list faust-0.9.67 pkg-config))
+      (home-page "http://openavproductions.com/sorcer/")
+      (synopsis "Wavetable LV2 plugin synth")
+      (description "Sorcer is a wavetable LV2 plugin synthesizer, targeted at
 the electronic or dubstep genre.")
-    (license license:gpl3+)))
+      (license license:gpl3+))))
 
 (define-public sonivox-eas
   (package

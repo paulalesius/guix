@@ -33534,3 +33534,162 @@ analyses.")
      "This package provides MathJax and macros to enable its use within Rd files
 for rendering equations in the HTML help files.")
     (license (list license:asl2.0 license:gpl3))))
+
+(define-public r-spacetime
+  (package
+    (name "r-spacetime")
+    (version "1.2-7")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "spacetime" version))
+              (sha256
+               (base32
+                "0zpaib69dbdvgj36x807ci3m5jkyc0hp2j5722xkwvl1faynjlhf"))))
+    (properties `((upstream-name . "spacetime")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-lattice r-sp r-zoo r-xts r-intervals))
+    (home-page "https://github.com/edzer/spacetime/")
+    (synopsis "Classes and methods for spatio-temporal data")
+    (description
+     "@command{spacetime} provides classes and methods for spatio-temporal
+data, including space-time regular lattices, sparse lattices, irregular data,
+and trajectories; utility functions for plotting data as map sequences (lattice
+or animation) or multiple time series; methods for spatial and temporal
+matching or aggregation, retrieving coordinates, print, summary, etc.")
+    (license license:gpl2+)))
+
+(define-public r-gstat
+  (package
+    (name "r-gstat")
+    (version "2.0-9")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "gstat" version))
+              (sha256
+               (base32
+                "19m4zcj1qvg6gs8yjr5ijvd6rrv4av5yp5rmhnb88f0m5qn06b0j"))))
+    (properties `((upstream-name . "gstat")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-lattice r-sp r-zoo r-spacetime r-fnn))
+    (home-page "https://github.com/r-spatial/gstat/")
+    (synopsis "Spatial and spatio-temporal geostatistical modelling,
+prediction and simulation")
+    (description
+     "This package enables variogram modelling, including: simple, ordinary and
+universal point or block (co)kriging; spatio-temporal kriging; and sequential
+Gaussian or indicator (co)simulation.  It includes variogram and variogram map
+plotting utility functions, and supports @command{sf} and @command{stars}.")
+    (license license:gpl2+)))
+
+(define-public r-automap
+  (package
+    (name "r-automap")
+    (version "1.0-16")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "automap" version))
+              (sha256
+               (base32
+                "0jz0p28gmx9cpzv4cz0xhbml3w1inf2nsd2ynbhmfxg5rm2f7dca"))))
+    (properties `((upstream-name . "automap")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-ggplot2
+                             r-gstat
+                             r-lattice
+                             r-maptools
+                             r-reshape
+                             r-sp))
+    (home-page "https://cran.r-project.org/package=automap")
+    (synopsis "Automatic interpolation package")
+    (description
+     "@command{automap} performs an automatic interpolation by automatically
+estimating the variogram and then calling @command{gstat}.")
+    (license (list license:gpl2+ license:gpl3+))))
+
+(define-public r-cartogram
+  (package
+    (name "r-cartogram")
+    (version "0.2.2")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "cartogram" version))
+              (sha256
+               (base32
+                "0kz8hwdr5n8llkylwaixnb66f4pzaxxniz57spxhqizmi6qay7yd"))))
+    (properties `((upstream-name . "cartogram")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-packcircles r-sf))
+    (home-page "https://github.com/sjewo/cartogram/")
+    (synopsis "Create cartograms with R")
+    (description "This package enables construction of continuous and
+non-contiguous area cartograms.")
+    (license license:gpl3)))
+
+(define-public r-measurements
+  (package
+    (name "r-measurements")
+    (version "1.4.0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "measurements" version))
+              (sha256
+               (base32
+                "1kihavs9vgxwqjm9z1zjjngkmcwfsv8dg7nn9nrv5r06k5hv8bz6"))))
+    (properties `((upstream-name . "measurements")))
+    (build-system r-build-system)
+    (home-page "https://cran.r-project.org/web/packages/measurements/")
+    (synopsis "Tools for units of measurement")
+    (description
+     "This package provides a collection of tools to make working with physical
+measurements easier.  One can convert between metric and imperial units, or
+calculate a dimension's unknown value from other dimensions' measurements.")
+    (license license:gpl3)))
+
+(define-public r-sungeo
+  (package
+    (name "r-sungeo")
+    (version "0.2.288")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "SUNGEO" version))
+              (sha256
+               (base32
+                "0c8y0ngx1020rw2v00rxmq8syd72f41ckik5sg7gigg7d80gi31w"))
+              (modules '((guix build utils)))
+              (snippet '(begin
+                          ;; Fortunately, the package does not actually use
+                          ;; rmapshaper, which has got a js/node dependency.
+                          ;; The only occurrence is in R/point2poly_tess.R,
+                          ;; where it is commented out.
+                          (substitute* "DESCRIPTION"
+                            (("rmapshaper,") ""))
+                          (substitute* "NAMESPACE"
+                            (("importFrom\\(rmapshaper,ms_dissolve\\)
+") ""))
+                          #t))))
+    (properties `((upstream-name . "SUNGEO")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-automap
+                             r-cartogram
+                             r-data-table
+                             r-dplyr
+                             r-fasterize
+                             r-httr
+                             r-jsonlite
+                             r-measurements
+                             r-packcircles
+                             r-purrr
+                             r-rann
+                             r-raster
+                             r-rcpp
+                             r-rcurl
+                             r-rlang
+                             r-sf
+                             r-sp
+                             r-spdep))
+    (home-page "https://github.com/zhukovyuri/SUNGEO/")
+    (synopsis "Sub-National Geospatial Data Archive: Geoprocessing Toolkit")
+    (description
+     "Tools for integrating spatially-misaligned GIS datasets.  Part of the
+Sub-National Geospatial Data Archive System.")
+    (license license:gpl2)))

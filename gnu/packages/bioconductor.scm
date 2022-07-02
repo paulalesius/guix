@@ -2063,6 +2063,36 @@ This allows @code{AMARETTO} to identify novel cancer driver genes directing
 canonical cancer pathways.")
     (license license:asl2.0)))
 
+(define-public r-anaquin
+  (package
+    (name "r-anaquin")
+    (version "2.20.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "Anaquin" version))
+              (sha256
+               (base32
+                "1jgpnls2djl1yzvnk64qc83mljmlci7wflwkza3wr0sv6r47b0dd"))))
+    (properties `((upstream-name . "Anaquin")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-deseq2
+           r-ggplot2
+           r-knitr
+           r-locfit
+           r-plyr
+           r-qvalue
+           r-rocr))
+    (native-inputs (list r-knitr))
+    (home-page "https://www.sequinstandards.com/")
+    (synopsis "Statistical analysis of sequins")
+    (description
+     "The project is intended to support the use of @dfn{sequins}(synthetic
+sequencing spike-in controls) owned and made available by the Garvan Institute
+of Medical Research.  The goal is to provide a standard open source library for
+quantitative analysis, modelling and visualization of spike-in controls.")
+    (license license:bsd-3)))
+
 (define-public r-aneufinder
   (package
     (name "r-aneufinder")
@@ -2103,6 +2133,94 @@ canonical cancer pathways.")
     (description "This package implements functions for copy number variant
 calling, plotting, export and analysis from whole-genome single cell
 sequencing data.")
+    (license license:artistic2.0)))
+
+(define-public r-anf
+  (package
+    (name "r-anf")
+    (version "1.18.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "ANF" version))
+              (sha256
+               (base32
+                "1fa2pbdapymrpz01ws0m2fbzf11d723x6rbsys29v06is57f5lpj"))))
+    (properties `((upstream-name . "ANF")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biobase
+           r-igraph
+           r-mass
+           r-rcolorbrewer
+           r-survival))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/ANF")
+    (synopsis "Affinity network fusion for complex patient clustering")
+    (description
+     "The package @dfn{ANF}(Affinity Network Fusion) provides methods for affinity
+matrix construction and fusion as well as spectral clustering.  This package is
+used for complex patient clustering by integrating multi-omic data through affinity
+network fusion.")
+    (license license:gpl3)))
+
+(define-public r-annmap
+  (package
+    (name "r-annmap")
+    (version "1.38.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "annmap" version))
+              (sha256
+               (base32
+                "0ywqbb8jia7rrkzcsf6a11kqf8dnx96z8n8xw7067mahycykbixv"))))
+    (properties `((upstream-name . "annmap")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biobase
+           r-biocgenerics
+           r-dbi
+           r-digest
+           r-genefilter
+           r-genomicranges
+           r-iranges
+           r-lattice
+           r-rmysql
+           r-rsamtools))
+    (home-page "https://github.com/cruk-mi/annmap")
+    (synopsis
+     "Genome annotation and visualisation for Affymetrix arrays and NGS analysis")
+    (description
+     "This package @code{annmap} provides annotation mappings for Affymetrix exon
+arrays and coordinate based queries to support deep sequencing data analysis.
+Database access is hidden behind the API which provides a set of functions such
+as @code{genesInRange()}, @code{geneToExon()}, @code{exonDetails()}, etc.
+Functions to plot gene architecture and BAM file data are also provided.")
+    (license license:gpl2)))
+
+(define-public r-antiprofiles
+  (package
+    (name "r-antiprofiles")
+    (version "1.36.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "antiProfiles" version))
+              (sha256
+               (base32
+                "1277kg5xpyb2yriyjy18p437q5lj22h4al7z7pygkzxzywxv9g40"))))
+    (properties `((upstream-name . "antiProfiles")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-locfit
+           r-matrixstats))
+    (home-page "https://github.com/HCBravoLab/antiProfiles")
+    (synopsis "Implementation of gene expression anti-profiles")
+    (description
+     "This package implements the gene expression anti-profiles method.
+Anti-profiles are a new approach for developing cancer genomic signatures that
+specifically take advantage of gene expression heterogeneity.  They explicitly
+model increased gene expression variability in cancer to define robust and
+reproducible gene expression signatures capable of accurately distinguishing
+tumor samples from healthy controls.")
     (license license:artistic2.0)))
 
 (define-public r-biocversion
