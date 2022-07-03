@@ -3325,7 +3325,8 @@ for dealing with different structured file formats.")
     (outputs '("out" "doc" "debug"))
     (arguments
      ;; Tests fail to pass for whatever reason with rust-1.62
-     `(#:rust ,rust-1.61
+     `(
+       ;;#:rust ,rust-1.61
        #:install-source? #f
        #:modules
        ((guix build cargo-build-system)
@@ -3453,7 +3454,7 @@ for dealing with different structured file formats.")
                 (string-append "#[ignore] " all)))
              (substitute* "rsvg_internals/Cargo.toml"
                ;; Disable doc tests for rsvg_internals
-               (("[lib]" all)
+               (("name = \"rsvg_internals\"" all)
                 (string-append all "\ndoctest = false")))))
          (replace 'check
            (lambda* args
