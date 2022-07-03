@@ -786,7 +786,7 @@ safety and thread safety guarantees.")
                             `("procps" ,procps)
                             (package-native-inputs base-rust))))))
 
-(define public rust-1.58
+(define-public rust-1.58
   (rust-bootstrapped-package
    rust-1.57 "1.58.1" "1iq7kj16qfpkx8gvw50d8rf7glbm6s0pj2y1qkrz7mi56vfsyfd8"))
 
@@ -810,7 +810,7 @@ safety and thread safety guarantees.")
          ((#:tests? _ #f)
           #f))))))
 
-(define-public rust-1.62
+(define rust-1.62
   (let ((base-rust
          (rust-bootstrapped-package
           rust-1.61 "1.62.0"
