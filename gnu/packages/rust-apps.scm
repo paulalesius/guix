@@ -1554,8 +1554,7 @@ support for Rust.")
           "0fwdxhdj2963xr6xfqr56i7hikhsdv562vgxq2dj3h2mi3dil1k6"))))
     (build-system cargo-build-system)
     (arguments
-     `(#:rust rust-1.61
-       #:cargo-inputs
+     `(#:cargo-inputs
        (("rust-cbindgen" ,rust-cbindgen-0.19)
         ("rust-cargo" ,rust-cargo-0.53) ;
         ("rust-anyhow" ,rust-anyhow-1)
@@ -1568,7 +1567,8 @@ support for Rust.")
         ("rust-serde" ,rust-serde-1)
         ("rust-serde-derive" ,rust-serde-derive-1)
         ("rust-serde-json" ,rust-serde-json-1)
-        ("rust-regex" ,rust-regex-1))))
+        ("rust-regex" ,rust-regex-1))
+       #:rust ,rust-1.61))
     (native-inputs
      (list pkg-config))
     (inputs
@@ -1791,3 +1791,4 @@ It will then write @code{fixup!} commits for each of those changes.")
 track of the directories you use most frequently, and uses a ranking algorithm
 to navigate to the best match.")
     (license license:expat)))
+
