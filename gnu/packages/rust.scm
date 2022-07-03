@@ -798,7 +798,7 @@ safety and thread safety guarantees.")
   (rust-bootstrapped-package
    rust-1.59 "1.60.0" "1drqr0a26x1rb2w3kj0i6abhgbs3jx5qqkrcwbwdlx7n3inq5ji0"))
 
-(define rust-1.61
+(define-public rust-1.61
   (let ((base-rust
          (rust-bootstrapped-package
           rust-1.60 "1.61.0"
