@@ -724,7 +724,8 @@ bar.  It is also compatible with sway.")
          "1gv4imhjgxmyxaa996yshcjlakmrjw9pf4rycp90pq675cn9sz7k"))))
     (build-system cargo-build-system)
     (arguments
-     `(#:cargo-inputs
+     `(#:rust ,rust-1.61
+       #:cargo-inputs
        (("rust-bstr" ,rust-bstr-0.2)
         ("rust-clap" ,rust-clap-2)
         ("rust-grep" ,rust-grep-0.2)
