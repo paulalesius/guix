@@ -826,13 +826,14 @@ safety and thread safety guarantees.")
 ;;; intermediate rusts are built for bootstrapping purposes and should not
 ;;; be relied upon.  This is to ease maintenance and reduce the time
 ;;; required to build the full Rust bootstrap chain.
-(define-public rust rust-1.61)
+(define-public rust rust-1.62)
 
 (define-public rust-src
   ;; Disable hidden, to allow installing the src package separately
   ;;(hidden-package
    (package
-     (inherit rust-1.62)
+     ;; Follow the latest version
+     (inherit rust)
      (name "rust-src")
      (build-system copy-build-system)
      (native-inputs '())
