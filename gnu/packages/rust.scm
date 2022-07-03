@@ -832,7 +832,7 @@ safety and thread safety guarantees.")
   ;; Disable hidden, to allow installing the src package separately
   ;;(hidden-package
    (package
-     (inherit rust)
+     (inherit rust-1.62)
      (name "rust-src")
      (build-system copy-build-system)
      (native-inputs '())
