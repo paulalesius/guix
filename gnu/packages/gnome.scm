@@ -3325,7 +3325,8 @@ for dealing with different structured file formats.")
     (outputs '("out" "doc" "debug"))
     (arguments
      ;; Tests fail to pass for whatever reason with rust-1.62
-     `(#:install-source? #f
+     `(#:rust ,rust-1.61
+       #:install-source? #f
        #:modules
        ((guix build cargo-build-system)
         (guix build utils)
