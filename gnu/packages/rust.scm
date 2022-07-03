@@ -786,19 +786,19 @@ safety and thread safety guarantees.")
                             `("procps" ,procps)
                             (package-native-inputs base-rust))))))
 
-(define rust-1.58
+(define public rust-1.58
   (rust-bootstrapped-package
    rust-1.57 "1.58.1" "1iq7kj16qfpkx8gvw50d8rf7glbm6s0pj2y1qkrz7mi56vfsyfd8"))
 
-(define rust-1.59
+(define-public rust-1.59
   (rust-bootstrapped-package
    rust-1.58 "1.59.0" "1yc5bwcbmbwyvpfq7zvra78l0r8y3lbv60kbr62fzz2vx2pfxj57"))
 
-(define rust-1.60
+(define-public rust-1.60
   (rust-bootstrapped-package
    rust-1.59 "1.60.0" "1drqr0a26x1rb2w3kj0i6abhgbs3jx5qqkrcwbwdlx7n3inq5ji0"))
 
-(define rust-1.61
+(define-public rust-1.61
   (let ((base-rust
          (rust-bootstrapped-package
           rust-1.60 "1.61.0"
@@ -810,7 +810,7 @@ safety and thread safety guarantees.")
          ((#:tests? _ #f)
           #f))))))
 
-(define rust-1.62
+(define-public rust-1.62
   (let ((base-rust
          (rust-bootstrapped-package
           rust-1.61 "1.62.0"
