@@ -153,11 +153,13 @@ tunneling, and so on.")
                                   version ".tar.xz"))
               (sha256
                (base32
-                "1f2xgj0wvys9xw50h7vcbaraavjr9rxx9n06x2xfbgs7ym1qn49d"))))
+                "1f2xgj0wvys9xw50h7vcbaraavjr9rxx9n06x2xfbgs7ym1qn49d"))
+              (patches (append (origin-patches (package-source curl))
+                               (search-patches "curl-easy-lock.patch")))))
     (arguments (substitute-keyword-arguments (package-arguments curl)
                  ((#:phases phases)
                   (cond
-                   ((target-x86-32?)
+                   ((not (target-64bit?))
                     #~(modify-phases #$phases
                         (add-after 'unpack 'skip-failing-tests
                           (lambda _
