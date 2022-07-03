@@ -466,7 +466,8 @@ also knows about symlinks, extended attributes, and Git.")
          "124a5r8hpk2phs1288jybh34d48yxy44wr7gv5ggchs272gs2jam"))))
     (build-system cargo-build-system)
     (arguments
-     `(#:cargo-inputs
+     `(#:rust ,rust-1.61
+       #:cargo-inputs
        (("rust-ansi-term" ,rust-ansi-term-0.12)
         ("rust-anyhow" ,rust-anyhow-1)
         ("rust-atty" ,rust-atty-0.2)
@@ -1792,4 +1793,3 @@ It will then write @code{fixup!} commits for each of those changes.")
 track of the directories you use most frequently, and uses a ranking algorithm
 to navigate to the best match.")
     (license license:expat)))
-
