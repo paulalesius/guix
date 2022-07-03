@@ -902,7 +902,7 @@ Git-friendly development workflow.")
 (define-public ocaml-camlp-streams
   (package
     (name "ocaml-camlp-streams")
-    (version "5.0")
+    (version "5.0.1")
     (source
       (origin
         (method git-fetch)
@@ -911,7 +911,7 @@ Git-friendly development workflow.")
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-          (base32 "1wd5k0irzwi841b27pbx0n5fdybbgx97184zm8cjajizd2j8w0g5"))))
+          (base32 "0r3wvffkzyyk4als78akirxanzbib5hvc3kvwxpk36mlmc38aywh"))))
     (build-system dune-build-system)
     (arguments
      ;; No tests
@@ -1704,7 +1704,7 @@ full_split, cut, rcut, etc..")
 (define dune-bootstrap
   (package
     (name "dune")
-    (version "3.2.0")
+    (version "3.3.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1713,7 +1713,7 @@ full_split, cut, rcut, etc..")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0fa8fkj2piis8b56phl6p77pl1na81krdnmmvyw16hq45zbmm9rk"))))
+                "0wdja70l7y1cj1d0sijm0q0cbics8xd9wqka7zyb29y1cc57pasa"))))
     (build-system ocaml-build-system)
     (arguments
      `(#:tests? #f; require odoc
@@ -1868,18 +1868,18 @@ module of this library is parameterised by the type of S-expressions.")
 (define-public ocaml-migrate-parsetree
   (package
     (name "ocaml-migrate-parsetree")
-    (version "2.3.0")
+    (version "2.4.0")
     (home-page "https://github.com/ocaml-ppx/ocaml-migrate-parsetree")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url home-page)
-             (commit (string-append "v" version))))
+             (commit version)))
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1nqmhsc72xmgm865nn8q0hngklhvqav281hgnx1gf5ns49a0n3ig"))))
+         "0a1qy0ik36j8hpqxvh3fxf4aibjqax989mihj73jncchv8qv4ynq"))))
     (build-system dune-build-system)
     (arguments `(#:tests? #f))
     (propagated-inputs
@@ -2597,7 +2597,7 @@ for mapping files in memory.  This function is the same as the
 (define-public ocaml-lwt
   (package
     (name "ocaml-lwt")
-    (version "5.5.0")
+    (version "5.6.1")
     (source
       (origin
         (method git-fetch)
@@ -2606,7 +2606,7 @@ for mapping files in memory.  This function is the same as the
                (commit version)))
         (file-name (git-file-name name version))
         (sha256 (base32
-                 "1jbjz2rsz3j56k8vh5qlmm87hhkr250bs2m3dvpy9vsri8rkzj9z"))))
+                 "0cfmhw4nsnwba49p06l9fbnbcq75w9fd3kvrr615ihjc9frlmjsy"))))
     (build-system dune-build-system)
     (arguments
      `(#:package "lwt"))
@@ -2628,17 +2628,17 @@ locks or other synchronization primitives.")
   (package
     (inherit ocaml-lwt)
     (name "ocaml-lwt-react")
-    (version "1.1.5")
+    (version "1.2.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
                      (url "https://github.com/ocsigen/lwt")
                      ;; Version from opam
-                     (commit "5.5.0")))
+                     (commit "5.6.0")))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1jbjz2rsz3j56k8vh5qlmm87hhkr250bs2m3dvpy9vsri8rkzj9z"))))
+                "12sglfwdx4anfslj437g7gxchklgzfvba6i4p478kmqr56j2xd0c"))))
     (arguments
      `(#:package "lwt_react"))
     (properties `((upstream-name . "lwt_react")))

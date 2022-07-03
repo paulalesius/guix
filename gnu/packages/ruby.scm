@@ -12921,3 +12921,66 @@ any unhandled exceptions.")
     (description "Braintree provides resources and tools for developers to
 integrate Braintree's global payments platform.")
     (license license:expat)))
+
+(define-public ruby-niceogiri
+  (package
+   (name "ruby-niceogiri")
+   (version "1.1.2")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (rubygems-uri "niceogiri" version))
+     (sha256
+      (base32 "1ha93211bc9cvh23s9w89zz7rq8irpf64ccd9arvg8v1sxg2798a"))))
+   (build-system ruby-build-system)
+   (arguments
+    `(#:test-target "spec"
+      #:phases
+      (modify-phases %standard-phases
+        (add-after 'extract-gemspec 'less-strict-dependencies
+          (lambda _
+            (substitute* "niceogiri.gemspec"
+              (("2\\.7") "3.8")      ;rspec
+              ((".*dependency.*bundler.*") "\n")
+              ((".*dependency.*guard-rspec.*") "\n")))))))
+   (native-inputs
+    (list ruby-rspec
+           ruby-yard))
+   (propagated-inputs (list ruby-nokogiri))
+   (home-page "https://github.com/benlangfeld/Niceogiri")
+   (synopsis "Supplement for Nokogiri")
+   (description "Niceogiri provides wrappers and helpers for XML manipulation
+using Nokogiri.")
+   (license license:expat)))
+
+(define-public ruby-blather
+  (package
+    (name "ruby-blather")
+    (version "2.0.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (rubygems-uri "blather" version))
+        (sha256
+          (base32 "05ry2x835fj4pzk61282pcz86n018cr39zbgwbi213md74i90s7c"))))
+    (build-system ruby-build-system)
+    (arguments
+     ;; XXX: Tests require too old version of rspec.
+     `(#:tests? #f))
+    (native-inputs
+     (list ruby-countdownlatch
+            ruby-mocha
+            ruby-rb-fsevent
+            ruby-rspec
+            ruby-yard))
+    (propagated-inputs
+     (list ruby-activesupport
+            ruby-eventmachine
+            ruby-niceogiri
+            ruby-nokogiri
+            ruby-sucker-punch))
+    (home-page "https://github.com/adhearsion/blather")
+    (synopsis "XMPP Domain Specific Language for Ruby")
+    (description "Blather is a XMPP DSL for Ruby written on top of EventMachine
+and Nokogiri.")
+    (license license:expat)))

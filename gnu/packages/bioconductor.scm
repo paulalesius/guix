@@ -3922,14 +3922,14 @@ CAGE.")
 (define-public r-ensembldb
   (package
     (name "r-ensembldb")
-    (version "2.20.1")
+    (version "2.20.2")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "ensembldb" version))
        (sha256
         (base32
-         "183rs74ngfvn9xz36csch495pqaash90yhhikm73m7b2bc37ziwz"))))
+         "12n21dcimdhgyjzk33m6xbv0m9ihgyzcf66vr1jr5ycv3rq2s7xc"))))
     (build-system r-build-system)
     (propagated-inputs
      (list r-annotationdbi
@@ -4476,13 +4476,13 @@ Binomial data via estimation of latent structure in the natural parameter.")
 (define-public r-limma
   (package
     (name "r-limma")
-    (version "3.52.1")
+    (version "3.52.2")
     (source (origin
               (method url-fetch)
               (uri (bioconductor-uri "limma" version))
               (sha256
                (base32
-                "193l3z2jv0kr91nl4r64p3jzb2rai9k8akx1zw7303nsnwpiiaay"))))
+                "0m8p8pqmf48f2zdf3qs66hmychbc58g2hfg1wyxzsv180m6xkk65"))))
     (build-system r-build-system)
     (home-page "http://bioinf.wehi.edu.au/limma")
     (synopsis "Package for linear models for microarray and RNA-seq data")
@@ -4799,14 +4799,14 @@ previously been used in XCMS.")
 (define-public r-organismdbi
   (package
     (name "r-organismdbi")
-    (version "1.38.0")
+    (version "1.38.1")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "OrganismDbi" version))
        (sha256
         (base32
-         "1xklaiyd4mv9sf9211flq1s68fhdn53y2i4l1k2ib39a4l6y9cyr"))))
+         "0mxnxj8x4hc21psz39mf7qwvh1fsn6qyjgl5qffk1xxmasf69619"))))
     (properties `((upstream-name . "OrganismDbi")))
     (build-system r-build-system)
     (propagated-inputs
@@ -5170,14 +5170,14 @@ tab-delimited (tabix) files.")
 (define-public r-restfulr
   (package
     (name "r-restfulr")
-    (version "0.0.14")
+    (version "0.0.15")
     (source
      (origin
        (method url-fetch)
        (uri (cran-uri "restfulr" version))
        (sha256
         (base32
-         "1sdlz8zl4xvd7cpn1gm86q7jv9v7561gg4wk6y7zybiw37pxghq6"))))
+         "14p6h0gjknqy5z2fprxw7waf4p0cd2qmp18s7qig4ylqn8gqzzs0"))))
     (properties `((upstream-name . "restfulr")))
     (build-system r-build-system)
     (propagated-inputs
@@ -5191,13 +5191,13 @@ tab-delimited (tabix) files.")
 (define-public r-rtracklayer
   (package
     (name "r-rtracklayer")
-    (version "1.56.0")
+    (version "1.56.1")
     (source (origin
               (method url-fetch)
               (uri (bioconductor-uri "rtracklayer" version))
               (sha256
                (base32
-                "1d9sak1xrrkcvj0q3vnp6w2k0nx2k2ajhsbq0dyb4nhcghp5w8fd"))))
+                "10qy9s6253mgj871qfqn03i8yw10mz7id4cxfyf67qxczz2xmjls"))))
     (build-system r-build-system)
     (arguments
      `(#:phases
@@ -5483,14 +5483,14 @@ ungapped alignment formats.")
 (define-public r-simplifyenrichment
   (package
     (name "r-simplifyenrichment")
-    (version "1.6.0")
+    (version "1.6.1")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "simplifyEnrichment" version))
        (sha256
         (base32
-         "1g3kfa17p60jkk4l34vc5hdq83w082qsxbjvpqw7r9rdd8d79z2q"))))
+         "0qblgdxmr7zc981529cca3ykakql618q1im6gaxw8pwws5jgpyk6"))))
     (properties
      `((upstream-name . "simplifyEnrichment")))
     (build-system r-build-system)
@@ -6147,13 +6147,13 @@ libraries for systems that do not have these available via other means.")
 (define-public r-zellkonverter
   (package
     (name "r-zellkonverter")
-    (version "1.6.2")
+    (version "1.6.3")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "zellkonverter" version))
        (sha256
-        (base32 "0s1n3impm4k55pac8mr18czylsc30yqcvdfdki4sawk74b2rkx8c"))))
+        (base32 "0l6v7a2zyxpq2w3vm85z439ldi3ld3pkc3wx95a1vxzbr31cpdzz"))))
     (properties `((upstream-name . "zellkonverter")))
     (build-system r-build-system)
     (propagated-inputs
@@ -6675,13 +6675,13 @@ enrichedGO (addGeneIDs).")
 (define-public r-matrixgenerics
   (package
    (name "r-matrixgenerics")
-   (version "1.8.0")
+   (version "1.8.1")
    (source (origin
             (method url-fetch)
             (uri (bioconductor-uri "MatrixGenerics" version))
             (sha256
              (base32
-              "0s7s39v9lqniirjgp8lbmffw0c8rsp6bndgzy1zlyh5vivfih0f5"))))
+              "1liblnpziyyjxzrhdd5d89ilvfqqhbl87h3hsmdm0kwnmc73r37f"))))
    (properties
     `((upstream-name . "MatrixGenerics")))
    (build-system r-build-system)
@@ -7812,14 +7812,14 @@ multiplication and calculation of row/column sums or means.")
 (define-public r-batchelor
   (package
     (name "r-batchelor")
-    (version "1.12.1")
+    (version "1.12.3")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "batchelor" version))
        (sha256
         (base32
-         "1zyvjr9nwfh0cdqk4kwmr30yhh05picyab1hpnpn737xvn525jfi"))))
+         "00ix3hvhgalxg63qnynv2waa273jk336lg47k72qwxfzimsxfjxc"))))
     (properties `((upstream-name . "batchelor")))
     (build-system r-build-system)
     (propagated-inputs
@@ -8942,14 +8942,14 @@ All the visualization methods are developed based on ggplot2 graphics.")
 (define-public r-clusterprofiler
   (package
     (name "r-clusterprofiler")
-    (version "4.4.2")
+    (version "4.4.4")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "clusterProfiler" version))
        (sha256
         (base32
-         "07fbc3d06990qy1qcaqqgm5ma2l0h08bwfkqrnlfd9f2xcppdywd"))))
+         "0k5jhry0j6wa7779n3hrw4ld4bvyahpgpbwi2a0g704m3dd3mqp5"))))
     (properties
      `((upstream-name . "clusterProfiler")))
     (build-system r-build-system)
@@ -9489,14 +9489,14 @@ type and symbol colors.")
 (define-public r-genomicscores
   (package
     (name "r-genomicscores")
-    (version "2.8.0")
+    (version "2.8.2")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "GenomicScores" version))
        (sha256
         (base32
-         "0zq9k4189dlc14f9rknsc1ffhpjzb2f4fzdaszfdbnd4rr43b79i"))))
+         "12rcxw69an1d5q7ar58xy8s871l47imw2nm08j054ivxslx8597j"))))
     (properties `((upstream-name . "GenomicScores")))
     (build-system r-build-system)
     (propagated-inputs
@@ -9510,6 +9510,7 @@ type and symbol colors.")
            r-genomeinfodb
            r-genomicranges
            r-hdf5array
+           r-httr
            r-iranges
            r-rhdf5
            r-s4vectors
@@ -10904,17 +10905,20 @@ packages.")
 (define-public r-ropls
   (package
     (name "r-ropls")
-    (version "1.28.0")
+    (version "1.28.2")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "ropls" version))
        (sha256
         (base32
-         "1i9g32mjknrd2lbz2nisc7nr0gk9byx9aik1i7xdwmq4ndxf8rf7"))))
+         "07gpx15r8c3wljiwxnff2zp7wxbhzz9r7njk8zg8hpy2q5qm3i6c"))))
     (build-system r-build-system)
     (propagated-inputs
-     (list r-biobase r-multidataset))
+     (list r-biobase
+           r-multiassayexperiment
+           r-multidataset
+           r-summarizedexperiment))
     (native-inputs
      (list r-knitr)) ; for vignettes
     (home-page "https://dx.doi.org/10.1021/acs.jproteome.5b00354")
@@ -10941,17 +10945,23 @@ coefficients).")
 (define-public r-biosigner
   (package
     (name "r-biosigner")
-    (version "1.24.0")
+    (version "1.24.2")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "biosigner" version))
        (sha256
         (base32
-         "11w28nlz0f06idbna5k9xs891w516401l1zab5gg7s0z3xxaki4f"))))
+         "0vdv2by3qv7y8vzr8qgg7apwwgsa0fhlfrhzns7g3nas7883c89m"))))
     (build-system r-build-system)
     (propagated-inputs
-     (list r-biobase r-e1071 r-multidataset r-randomforest r-ropls))
+     (list r-biobase
+           r-e1071
+           r-multiassayexperiment
+           r-multidataset
+           r-randomforest
+           r-ropls
+           r-summarizedexperiment))
     (native-inputs
      (list r-knitr))
     (home-page "https://bioconductor.org/packages/biosigner/")
@@ -11011,14 +11021,14 @@ annotations.")
 (define-public r-rsubread
   (package
     (name "r-rsubread")
-    (version "2.10.2")
+    (version "2.10.4")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "Rsubread" version))
        (sha256
         (base32
-         "1pvyx8nxv10s816hgxrnw60hp9rlqjdgjq3ajpzqxgxmmlhnk0v0"))))
+         "155h25gbagqns7wpriil17li0jkdd1z1pcz0dlnikdqj4saf97rl"))))
     (properties `((upstream-name . "Rsubread")))
     (build-system r-build-system)
     (inputs (list zlib))
@@ -14878,14 +14888,14 @@ by Ernst and Kellis.")
 (define-public r-ggbio
   (package
     (name "r-ggbio")
-    (version "1.44.0")
+    (version "1.44.1")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "ggbio" version))
        (sha256
         (base32
-         "1lvms07ba99nzf10gpn50wjca84nj5jrb6902z069p2bfi4xyd27"))))
+         "0iyhjalwq1jmldpn20iv8l2kmz6sm20ddry2yz2zn7yq0wszp3vg"))))
     (build-system r-build-system)
     (arguments
      `(#:phases
@@ -15562,14 +15572,14 @@ all RNA-Seq libraries of each species integrated in Bgee.")
 (define-public r-bgeedb
   (package
     (name "r-bgeedb")
-    (version "2.22.0")
+    (version "2.22.3")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "BgeeDB" version))
        (sha256
         (base32
-         "093zk43x8i9ajaqsdhndkyal3dizllr3g85ziavb3k73dzvarzsc"))))
+         "1f6lrazaibbz21sqvj59rq6ps9m1riw2y0kyidbn29mxf4ibwh3k"))))
     (properties `((upstream-name . "BgeeDB")))
     (build-system r-build-system)
     (propagated-inputs
@@ -16031,14 +16041,14 @@ scoring subnetwork.")
 (define-public r-bionetstat
   (package
     (name "r-bionetstat")
-    (version "1.16.0")
+    (version "1.16.1")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "BioNetStat" version))
        (sha256
         (base32
-         "0f387j35lj32ryiw48jz8gc08al2lmmv9zvbbgyjq9wmqlca3dfb"))))
+         "0zs6pymvxb95sji0rnnzaz3whj7hsvj2kl4n4gzj7w1q0prbfpb2"))))
     (properties `((upstream-name . "BioNetStat")))
     (build-system r-build-system)
     (propagated-inputs
@@ -16368,13 +16378,13 @@ estimates, etc.")
 (define-public r-tcgabiolinks
   (package
     (name "r-tcgabiolinks")
-    (version "2.24.1")
+    (version "2.24.3")
     (source
      (origin
        (method url-fetch)
        (uri (bioconductor-uri "TCGAbiolinks" version))
        (sha256
-        (base32 "0kw4lrg8xm0ipj7f7h1rwfj7a8mknkril1pn05x08mx13f7p5p14"))))
+        (base32 "0visvfhzaf0p1rb5vjkmw1c91zfxpks8nl9nbl9xlnpm8lkmmkms"))))
     (properties `((upstream-name . "TCGAbiolinks")))
     (build-system r-build-system)
     (propagated-inputs
