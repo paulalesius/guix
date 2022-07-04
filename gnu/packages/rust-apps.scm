@@ -466,8 +466,7 @@ also knows about symlinks, extended attributes, and Git.")
          "124a5r8hpk2phs1288jybh34d48yxy44wr7gv5ggchs272gs2jam"))))
     (build-system cargo-build-system)
     (arguments
-     `(#:rust ,rust-1.61
-       #:cargo-inputs
+     `(#:cargo-inputs
        (("rust-ansi-term" ,rust-ansi-term-0.12)
         ("rust-anyhow" ,rust-anyhow-1)
         ("rust-atty" ,rust-atty-0.2)
@@ -725,8 +724,7 @@ bar.  It is also compatible with sway.")
          "1gv4imhjgxmyxaa996yshcjlakmrjw9pf4rycp90pq675cn9sz7k"))))
     (build-system cargo-build-system)
     (arguments
-     `(#:rust ,rust-1.61
-       #:cargo-inputs
+     `(#:cargo-inputs
        (("rust-bstr" ,rust-bstr-0.2)
         ("rust-clap" ,rust-clap-2)
         ("rust-grep" ,rust-grep-0.2)
@@ -827,8 +825,7 @@ rebase.")
           "0673pq96hs7waavkv58v2pakpxpsfyjvbraa5kyl2b44phgdzcid"))))
     (build-system cargo-build-system)
     (arguments
-     `(#:rust ,rust-1.61
-       #:cargo-inputs
+     `(#:cargo-inputs
        (("clap" ,rust-clap-2)
         ("log" ,rust-log-0.4)
         ("proc-macro2" ,rust-proc-macro2-1)
@@ -1570,8 +1567,7 @@ support for Rust.")
         ("rust-serde" ,rust-serde-1)
         ("rust-serde-derive" ,rust-serde-derive-1)
         ("rust-serde-json" ,rust-serde-json-1)
-        ("rust-regex" ,rust-regex-1))
-       #:rust ,rust-1.61))
+        ("rust-regex" ,rust-regex-1))))
     (native-inputs
      (list pkg-config))
     (inputs
