@@ -178,7 +178,7 @@ rates.")
 (define-public pulseaudio
   (package
     (name "pulseaudio")
-    (version "16.0")
+    (version "16.1")
     (source (origin
              (method url-fetch)
              (uri (string-append
@@ -186,7 +186,7 @@ rates.")
                    name "-" version ".tar.xz"))
              (sha256
               (base32
-               "0iwzi2xva1pp6sbwdinmz2xgl3bhgxa5cl0n7y08c6haj5qn5v5l"))
+               "1r2aa0g7al9jhrrbrnih6i3bfznd73kkbafrbzwpjyflj7735vwf"))
              (modules '((guix build utils)))
              (snippet
               ;; Disable console-kit support by default since it's deprecated
@@ -549,4 +549,3 @@ application you like and simply select the NoiseTorch Virtual Microphone as
 input to torch the sound of your mechanical keyboard, computer fans, trains
 and the likes.")
     (license l:gpl3)))
-
