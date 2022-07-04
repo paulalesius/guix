@@ -50,6 +50,8 @@
 ;;; Copyright © 2021 Jean-Baptiste Volatier <jbv@pm.me>
 ;;; Copyright © 2021 Guillaume Le Vaillant <glv@posteo.net>
 ;;; Copyright © 2021 Pierre-Antoine Bouttier <pierre-antoine.bouttier@univ-grenoble-alpes.fr>
+;;; Copyright © 2022 Zhu Zihao <all_but_last@163.com>
+;;; Copyright © 2022 Sharlatan Hellseher <sharlatanus@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -1090,6 +1092,31 @@ from the command line, using @command{gnuplot}.  It can read data from
 a pipe or file, make a variety of transformations, and render the result
 in the terminal or with an external viewer.")
     (license license:gpl1+))) ;any version
+
+(define-public giza
+  (package
+    (name "giza")
+    (version "1.3.2")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/danieljprice/giza")
+             (commit (string-append "v" version))))
+       (sha256
+        (base32 "1clklh3nzgwrwg80h3k5x65gdymbvcc84c44nql7m4bv9b8rqfsq"))
+       (file-name (git-file-name name version))))
+    (build-system gnu-build-system)
+    (native-inputs
+     (list perl pkg-config))
+    (inputs
+     (list cairo freetype gfortran))
+    (home-page "https://danieljprice.github.io/giza/")
+    (synopsis "Scientific plotting library for C/Fortran")
+    (description
+     "Giza is a lightweight scientific plotting library built on top of
+@code{cairo} that provides uniform output to multiple devices.")
+    (license license:gpl2+)))
 
 (define-public gnuplot
   (package
@@ -5819,7 +5846,7 @@ as equations, scalars, vectors, and matrices.")
 (define-public z3
   (package
     (name "z3")
-    (version "4.8.9")
+    (version "4.8.17")
     (home-page "https://github.com/Z3Prover/z3")
     (source (origin
               (method git-fetch)
@@ -5828,54 +5855,51 @@ as equations, scalars, vectors, and matrices.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1hnbzq10d23drd7ksm3c1n2611c3kd0q0yxgz8y78zaafwczvwxx"))))
-    (build-system gnu-build-system)
+                "1vvb09q7w7zd29qc4qjysrrhyylszm1wf6azkff004ixwn026b05"))))
+    (build-system cmake-build-system)
     (arguments
-     `(#:imported-modules ((guix build python-build-system)
-                           ,@%gnu-build-system-modules)
-       #:modules (((guix build python-build-system) #:select (site-packages))
-                  (guix build gnu-build-system)
-                  (guix build utils))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'enable-bytecode-determinism
-           (lambda _
-             (setenv "PYTHONHASHSEED" "0")
-             #t))
-         (add-after 'unpack 'fix-compatability
-           ;; Versions after 4.8.3 have immintrin.h IFDEFed for Windows only.
-           (lambda _
-             (substitute* "src/util/mpz.cpp"
-               (("#include <immintrin.h>") ""))
-             #t))
-         (add-before 'configure 'bootstrap
-           (lambda _
-             (invoke "python" "scripts/mk_make.py")))
-         ;; work around gnu-build-system's setting --enable-fast-install
-         ;; (z3's `configure' is a wrapper around the above python file,
-         ;; which fails when passed --enable-fast-install)
-         (replace 'configure
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (invoke "./configure"
-                     "--python"
-                     (string-append "--prefix=" (assoc-ref outputs "out"))
-                     (string-append "--pypkgdir=" (site-packages inputs outputs)))))
-         (add-after 'configure 'change-directory
-           (lambda _
-             (chdir "build")
-             #t))
-         (add-before 'check 'make-test-z3
-           (lambda _
-             ;; Build the test suite executable.
-             (invoke "make" "test-z3" "-j"
-                     (number->string (parallel-job-count)))))
-         (replace 'check
-           (lambda _
-             ;; Run all the tests that don't require arguments.
-             (invoke "./test-z3" "/a"))))))
+     (list
+      #:imported-modules `((guix build python-build-system)
+                           ,@%cmake-build-system-modules)
+      #:modules '((guix build cmake-build-system)
+                  (guix build utils)
+                  ((guix build python-build-system) #:select (site-packages)))
+      #:configure-flags
+      #~(list "-DZ3_BUILD_PYTHON_BINDINGS=ON"
+              "-DZ3_LINK_TIME_OPTIMIZATION=ON"
+              (string-append
+               "-DCMAKE_INSTALL_PYTHON_PKG_DIR="
+               #$output "/lib/python"
+               #$(version-major+minor (package-version python-wrapper))
+               "/site-packages"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'check
+            (lambda* (#:key parallel-build? tests? #:allow-other-keys)
+              (when tests?
+                (invoke "make" "test-z3"
+                        (format #f "-j~a"
+                                (if parallel-build?
+                                    (parallel-job-count)
+                                    1)))
+                (invoke "./test-z3" "/a"))))
+          (add-after 'install 'compile-python-modules
+            (lambda _
+              (setenv "PYTHONHASHSEED" "0")
+
+              (invoke "python" "-m" "compileall"
+                      "--invalidation-mode=unchecked-hash"
+                      #$output)))
+          ;; This step is missing in the CMake build system, do it here.
+          (add-after 'compile-python-modules 'fix-z3-library-path
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (let* ((dest (string-append (site-packages inputs outputs)
+                                          "/z3/lib/libz3.so"))
+                     (z3-lib (string-append #$output "/lib/libz3.so")))
+                (mkdir-p (dirname dest))
+                (symlink z3-lib dest)))))))
     (native-inputs
-     `(("which" ,which)
-       ("python" ,python-wrapper)))
+     (list which python-wrapper))
     (synopsis "Theorem prover")
     (description "Z3 is a theorem prover and @dfn{satisfiability modulo
 theories} (SMT) solver.  It provides a C/C++ API, as well as Python bindings.")
@@ -5885,6 +5909,7 @@ theories} (SMT) solver.  It provides a C/C++ API, as well as Python bindings.")
   (package
     (inherit z3)
     (name "ocaml-z3")
+    (build-system gnu-build-system)
     (arguments
      `(#:imported-modules ((guix build python-build-system)
                            ,@%gnu-build-system-modules)

@@ -1005,6 +1005,61 @@ variables.")
 ")
     (license license:gpl2+)))
 
+(define-public r-ggprism
+  (package
+    (name "r-ggprism")
+    (version "1.0.3")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "ggprism" version))
+              (sha256
+               (base32
+                "09dh0r8r5s61i5dbk6rswajc2vm7k8wvlqyvzq8wr160676lycjp"))))
+    (properties `((upstream-name . "ggprism")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-digest
+           r-ggplot2
+           r-glue
+           r-gtable
+           r-rlang
+           r-scales
+           r-tibble))
+    (native-inputs (list r-knitr))
+    (home-page "https://csdaw.github.io/ggprism/")
+    (synopsis "ggplot2 extension inspired by GraphPad Prism")
+    (description
+     "This package provides various themes, palettes, and other functions that are
+used to customise ggplots to look like they were made in GraphPad Prism.  The
+Prism-look is achieved with @code{theme_prism()} and
+@code{scale_fill|colour_prism()}, axes can be changed with custom guides like
+@code{guide_prism_minor()}, and significance indicators added with
+@code{add_pvalue()}.")
+    (license license:gpl3+)))
+
+(define-public r-ggrastr
+  (package
+    (name "r-ggrastr")
+    (version "1.0.1")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "ggrastr" version))
+              (sha256
+               (base32
+                "07sx5wlawfyb0zy5am2q1ajhkdym5r9ih47p57l8bv4dlc7ykml2"))))
+    (properties `((upstream-name . "ggrastr")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-cairo r-ggbeeswarm r-ggplot2 r-png r-ragg))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/VPetukhov/ggrastr")
+    (synopsis "Rasterize layers for ggplot2")
+    (description
+     "Rasterize only specific layers of a ggplot2 plot while simultaneously keeping
+all labels and text in vector format.  This allows users to keep plots within
+the reasonable size limit without losing vector properties of the
+scale-sensitive information.")
+    (license license:expat)))
+
 (define-public r-lmds
   (package
     (name "r-lmds")
@@ -3644,6 +3699,28 @@ inspired by Python's Literal String Interpolation (PEP-0498) and
 Docstrings (PEP-0257) and Julia's Triple-Quoted String Literals.")
     (license license:expat)))
 
+(define-public r-paletteer
+  (package
+    (name "r-paletteer")
+    (version "1.4.0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "paletteer" version))
+              (sha256
+               (base32
+                "1m0h1p0cbmmi0rk157qyrgcz57pw0syadskrnfa4vs7hm1rndp3m"))))
+    (properties `((upstream-name . "paletteer")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-prismatic r-rematch2 r-rlang r-rstudioapi))
+    (home-page "https://github.com/EmilHvitfeldt/paletteer")
+    (synopsis "Comprehensive collection of color palettes")
+    (description
+     "The choices of color palettes in R can be quite overwhelming with palettes
+spread over many packages with many different API's.  This package aims to
+collect all color palettes across the R ecosystem under the same package with
+a streamlined API.")
+    (license license:gpl3)))
+
 (define-public r-palmerpenguins
   (package
     (name "r-palmerpenguins")
@@ -4328,6 +4405,26 @@ quantities.")
    (description "This package provides procedures for fitting a principal
 curve to a data matrix in arbitrary dimensions.")
    (license license:gpl2)))
+
+(define-public r-prismatic
+  (package
+    (name "r-prismatic")
+    (version "1.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "prismatic" version))
+              (sha256
+               (base32
+                "1f6k11hcll33g2wbadjhm91pm5h4khg4zd8g9fzs3m9xlqpfaywh"))))
+    (properties `((upstream-name . "prismatic")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-farver))
+    (home-page "https://github.com/EmilHvitfeldt/prismatic")
+    (synopsis "Color manipulation tools")
+    (description
+     "Manipulate and visualize colors in a intuitive, low-dependency and functional
+way.")
+    (license license:expat)))
 
 (define-public r-reshape
   (package
@@ -28898,6 +28995,46 @@ final SQL translation of the algorithm.  It currently supports @code{lm()},
 novels, ready for text analysis.  These novels are \"Sense and Sensibility\",
 \"Pride and Prejudice\", \"Mansfield Park\", \"Emma\", \"Northanger Abbey\",
 and \"Persuasion\".")
+    (license license:expat)))
+
+(define-public r-janitor
+  (package
+    (name "r-janitor")
+    (version "2.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "janitor" version))
+              (sha256
+               (base32
+                "09nqm957m2f54y2l30619b58x4i7gxwvr2lwg5kly5xy1ya1a1nn"))))
+    (properties `((upstream-name . "janitor")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-dplyr
+           r-lifecycle
+           r-lubridate
+           r-magrittr
+           r-purrr
+           r-rlang
+           r-snakecase
+           r-stringi
+           r-stringr
+           r-tidyr
+           r-tidyselect))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/sfirke/janitor")
+    (synopsis "Simple tools for examining and cleaning dirty data")
+    (description
+     "The main janitor functions can: perfectly format @code{data.frame column}
+names; provide quick counts of variable combinations (i.e., frequency tables
+and crosstabs); and isolate duplicate records.  Other janitor functions nicely
+format the tabulation results.  These tabulate-and-report functions
+approximate popular features of SPSS and Excel.  This package follows the
+principles of the \"tidyverse\" and works well with the pipe function
+@code{%>%}.  janitor was built with beginning-to-intermediate R users in mind
+and is optimized for user-friendliness.  Advanced R users can already do
+everything covered here, but with janitor they can do it faster and save their
+thinking for the fun stuff.")
     (license license:expat)))
 
 (define-public r-tokenizers
