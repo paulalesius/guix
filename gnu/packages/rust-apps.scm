@@ -827,7 +827,8 @@ rebase.")
           "0673pq96hs7waavkv58v2pakpxpsfyjvbraa5kyl2b44phgdzcid"))))
     (build-system cargo-build-system)
     (arguments
-     `(#:cargo-inputs
+     `(#:rust ,rust-1.61
+       #:cargo-inputs
        (("clap" ,rust-clap-2)
         ("log" ,rust-log-0.4)
         ("proc-macro2" ,rust-proc-macro2-1)
