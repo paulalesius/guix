@@ -272,6 +272,16 @@ included in the output.
 Lists longer than LONG-LIST are written as one element per line.  Comments are
 passed through FORMAT-COMMENT before being emitted; a useful value for
 FORMAT-COMMENT is 'canonicalize-comment'."
+  (define (list-of-lists? head tail)
+    ;; Return true if HEAD and TAIL denote a list of lists--e.g., a list of
+    ;; 'let' bindings.
+    (match head
+      ((thing _ ...)                              ;proper list
+       (and (not (memq thing
+                       '(quote quasiquote unquote unquote-splicing)))
+            (pair? tail)))
+      (_ #f)))
+
   (let loop ((indent indent)
              (column indent)
              (delimited? #t)                  ;true if comes after a delimiter
@@ -436,7 +446,8 @@ FORMAT-COMMENT is 'canonicalize-comment'."
               (column    (if overflow?
                              (+ indent 1)
                              (+ column (if delimited? 1 2))))
-              (newline?  (newline-form? head context))
+              (newline?  (or (newline-form? head context)
+                             (list-of-lists? head tail))) ;'let' bindings
               (context   (cons head context)))
          (if overflow?
              (begin
@@ -798,15 +809,26 @@ PACKAGE."
                 (lambda args
                   (show-help)
                   (exit 0)))
+        (option '(#\l "list-stylings") #f #f
+                (lambda args
+                  (show-stylings)
+                  (exit 0)))
         (option '(#\V "version") #f #f
                 (lambda args
                   (show-version-and-exit "guix style")))))
+
+(define (show-stylings)
+  (display (G_ "Available styling rules:\n"))
+  (display (G_ "- format: Format the given package definition(s)\n"))
+  (display (G_ "- inputs: Rewrite package inputs to the “new style”\n")))
 
 (define (show-help)
   (display (G_ "Usage: guix style [OPTION]... [PACKAGE]...
 Update package definitions to the latest style.\n"))
   (display (G_ "
   -S, --styling=RULE     apply RULE, a styling rule"))
+  (display (G_ "
+  -l, --list-stylings   display the list of available style rules"))
   (newline)
   (display (G_ "
   -n, --dry-run          display files that would be edited but do nothing"))

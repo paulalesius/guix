@@ -2371,28 +2371,28 @@ incrementally confined in Isearch manner.")
 (define emacs-emms-print-metadata
   (package
     (name "emacs-emms-print-metadata")
-    (version "10")
+    (version "11")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/"
                            "emms-" version ".tar"))
        (sha256
-        (base32 "1lgjw9p799sl7nqnl2sk4g67ra10z2ldygx9kb8pmxjrx64mi3qm"))))
+        (base32 "000lqhsafyh1n293ksnlyavxv1pzl5pazds4sgxjcqd45lyn55ii"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:make-flags '("emms-print-metadata")
-       #:tests? #f                      ; No tests.
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out")))
-               (install-file "src/emms-print-metadata"
-                             (string-append out "/bin"))
-               (install-file "emms-print-metadata.1"
-                             (string-append out "/share/man/man1"))))))))
+     (list
+      #:make-flags #~(list "emms-print-metadata")
+      #:tests? #f                       ; No tests.
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (replace 'install
+            (lambda _
+              (install-file "src/emms-print-metadata"
+                            (string-append #$output "/bin"))
+              (install-file "emms-print-metadata.1"
+                            (string-append #$output "/share/man/man1")))))))
     (inputs
      (list taglib))
     (home-page "https://www.gnu.org/software/emms/")
@@ -5046,40 +5046,39 @@ result.")
     (license license:gpl2+)))
 
 (define-public emacs-rg
-  (let ((commit "444a8ccfea0b38452a0bc4c390a8ee01cfe30017")
-        (revision "0"))
-    (package
-      (name "emacs-rg")
-      (version (git-version "2.2.0" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/dajva/rg.el")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "1nxzplpk5cf6hhr2v85bmg68i6am96shi2zq7m83fs96bilhwsp5"))))
-      (build-system emacs-build-system)
-      (arguments
-       '(#:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'remove-rg-path
-             ;; Remove the path to ripgrep so that it works on remote systems.
-             (lambda _
-               (let ((file "rg.el"))
-                 (chmod file #o644)
-                 (emacs-substitute-sexps file
-                   ("(defcustom rg-executable" "rg"))))))))
-      (propagated-inputs
-       (list emacs-s emacs-transient emacs-wgrep ripgrep))
-      (home-page "https://rgel.readthedocs.io/en/latest/")
-      (synopsis "Search tool based on @code{ripgrep}")
-      (description
-       "@code{rg} is an Emacs search package based on the @code{ripgrep} command
+  (package
+    (name "emacs-rg")
+    (version "2.2.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/dajva/rg.el")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1nxzplpk5cf6hhr2v85bmg68i6am96shi2zq7m83fs96bilhwsp5"))))
+    (build-system emacs-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'remove-rg-path
+            ;; Remove the path to ripgrep so that it works on remote systems.
+            (lambda _
+              (let ((file "rg.el"))
+                (make-file-writable file)
+                (emacs-substitute-sexps file
+                  ("(defcustom rg-executable" "rg"))))))))
+    (propagated-inputs
+     (list emacs-s emacs-transient emacs-wgrep ripgrep))
+    (home-page "https://rgel.readthedocs.io/en/latest/")
+    (synopsis "Search tool based on @code{ripgrep}")
+    (description
+     "@code{rg} is an Emacs search package based on the @code{ripgrep} command
 line tool.  It allows one to interactively search based on the editing context
 then refine or modify the search results.")
-      (license license:gpl3+))))
+    (license license:gpl3+)))
 
 (define-public emacs-inf-ruby
   (package
@@ -12226,10 +12225,10 @@ inside the source file.")
       (license license:gpl3+))))
 
 (define-public emacs-sly-stepper
-  (let ((commit "ec3c0a7f3c8b82926882e5fcfdacf67b86d989f8"))
+  (let ((commit "da84e3bba8466c2290c2dc7c27d7f4c48c27b39e"))
     (package
       (name "emacs-sly-stepper")
-      (version (git-version "0.0.0" "1" commit))
+      (version (git-version "0.0.0" "2" commit))
       (home-page "https://github.com/joaotavora/sly-stepper")
       (source
        (origin
@@ -12240,7 +12239,7 @@ inside the source file.")
          (file-name (git-file-name name version))
          (sha256
           (base32
-           "1hxniaxifdw3m4y4yssgy22xcmmf558wx7rpz66wy5hwybjslf7b"))
+           "07p0k797fagn1qha191p6g2b55hsqqkcj59mh0ms9id0ildydil0"))
          (modules '((guix build utils)))
          (snippet
           '(begin
@@ -18811,7 +18810,7 @@ files to be expanded upon opening them.")
 (define-public emacs-parsebib
   (package
     (name "emacs-parsebib")
-    (version "3.1")
+    (version "4.1")
     (source
      (origin
        (method git-fetch)
@@ -18820,7 +18819,7 @@ files to be expanded upon opening them.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "08vrkadjxaw1w1bx8dg12kxxkvgl65p0d7gkpfhwpvv35k0d9z3y"))))
+        (base32 "1bsxhizwhri8ayryfq59ghkybrql611q2bnjd45hpj7armwq3s8m"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/joostkremers/parsebib")
     (synopsis "Library for parsing @file{.bib} files")
@@ -18887,24 +18886,28 @@ automatically fetched from well-curated sources, and formatted as BibTeX.")
 (define-public emacs-citar
   (package
     (name "emacs-citar")
-    (version "0.9.5")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/bdarcus/citar")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "04asi5gr4p1d8llra3qwly2jp1ll3zs0hjcysrrvdcax0jcr473b"))))
+    (version "0.9.6")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/bdarcus/citar")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0f2q9y5il5in400s1wn4q8baxl0fnrq53rnq30qy8caca9zbrpz8"))))
     (build-system emacs-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'set-home
-           (lambda _ (setenv "HOME" "/tmp"))))))
-    (propagated-inputs
-     (list emacs-auctex emacs-citeproc-el emacs-org emacs-parsebib emacs-s))
+     `(#:phases (modify-phases %standard-phases
+                  (add-before 'build 'set-home
+                    (lambda _
+                      (setenv "HOME" "/tmp"))))))
+    (propagated-inputs (list emacs-auctex
+                             emacs-citeproc-el
+                             emacs-embark
+                             emacs-org
+                             emacs-parsebib
+                             emacs-s))
     (home-page "https://github.com/bdarcus/citar")
     (synopsis "Emacs package to quickly find and act on bibliographic entries")
     (description
