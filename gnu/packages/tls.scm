@@ -507,7 +507,7 @@ OpenSSL for TARGET."
   (package
     (inherit openssl)
     (name "openssl")
-    (version "1.1.1p")
+    (version "1.1.1q")
     (source (origin
               (method url-fetch)
               (uri (list (string-append "https://www.openssl.org/source/openssl-"
@@ -520,12 +520,12 @@ OpenSSL for TARGET."
               (patches (search-patches "openssl-1.1-c-rehash-in.patch"))
               (sha256
                (base32
-                "0vyfibydji26wk1fmm0piz0810mfr7j4vaa2k5iwgiv6m8mbcqdz"))))))
+                "1jhhzp4gh6ymidxm1ckjk948l583awp0w3y2nvqdz7022kk9r4yp"))))))
 
 (define-public openssl-3.0
   (package
     (inherit openssl)
-    (version "3.0.4")
+    (version "3.0.5")
     (source (origin
               (method url-fetch)
               (uri (list (string-append "https://www.openssl.org/source/openssl-"
@@ -538,7 +538,7 @@ OpenSSL for TARGET."
               (patches (search-patches "openssl-3.0-c-rehash-in.patch"))
               (sha256
                (base32
-                "03y0q2pzpkpgfgf74x4pf8gyar9d7pb0l0p7g2s0m2k6k8z88c98"))))
+                "0yja085lygkdxbf4k4rckkj9r24p8dgix8avqljnbbbixydqszda"))))
     (arguments
      (substitute-keyword-arguments (package-arguments openssl)
        ((#:phases phases '%standard-phases)
