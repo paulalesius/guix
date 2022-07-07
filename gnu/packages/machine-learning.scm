@@ -2821,8 +2821,8 @@ and Darknet.")
 (define-public xnnpack
   ;; There's currently no tag on this repo.
   (let ((version "0.0")
-        (commit "bbe88243aba847f6a3dd86defec0fea4a0e415a1")
-        (revision "1"))
+        (commit "ae108ef49aa5623b896fc93d4298c49d1750d9ba")
+        (revision "2"))
     (package
       (name "xnnpack")
       (version (git-version version revision commit))
@@ -2833,7 +2833,7 @@ and Darknet.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "19j605x1l2h95mjhcj90zwjh1153pdgmqggl35ya5w0wll628iiz"))
+                  "0q68q2jxiiiblx45q4337k13ppgh5vqjwrwznchcnpb8hawjj3zl"))
                 (patches (search-patches "xnnpack-system-libraries.patch"))))
       (build-system cmake-build-system)
       (arguments
@@ -2870,7 +2870,7 @@ TensorFlow.js, PyTorch, and MediaPipe.")
 (define-public python-pytorch
   (package
     (name "python-pytorch")
-    (version "1.11.0")
+    (version "1.12.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2880,7 +2880,7 @@ TensorFlow.js, PyTorch, and MediaPipe.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1zbk7y74r0ycsfa7x59jnhwhs1gj5rs3n89p15y0212iszgbljq8"))
+                "0pdqi91qzgyx947zv4pw2fdj9vpqvdhfzw1ydjd4mpqm8g5njgnz"))
               (patches (search-patches "python-pytorch-system-libraries.patch"
                                        "python-pytorch-runpath.patch"))
               (modules '((guix build utils)))
@@ -2910,6 +2910,10 @@ TensorFlow.js, PyTorch, and MediaPipe.")
                       ;; want to use "system libraries" instead of the bundled
                       ;; ones.
                       (setenv "USE_SYSTEM_LIBS" "1")
+
+                      (substitute* "cmake/Dependencies.cmake"
+                        (("if\\(USE_SYSTEM_BIND11\\)")
+                         "if(TRUE)"))
 
                       ;; XXX: Disable that for simplicity for now.
                       (setenv "USE_FBGEMM" "0")))
@@ -3008,13 +3012,47 @@ PyTorch when needed.
 Note: currently this package does not provide GPU support.")
     (license license:bsd-3)))
 
-(define-public python-pytorch-for-r-torch python-pytorch)
+(define-public python-pytorch-for-r-torch
+  (package
+    (inherit python-pytorch)
+    (name "python-pytorch")
+    (version "1.11.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/pytorch/pytorch")
+                    (commit (string-append "v" version))
+                    (recursive? #t)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1zbk7y74r0ycsfa7x59jnhwhs1gj5rs3n89p15y0212iszgbljq8"))
+              (patches (search-patches "python-pytorch-system-libraries.patch"
+                                       "python-pytorch-runpath.patch"))
+              (modules '((guix build utils)))
+              (snippet
+               '(begin
+                  ;; XXX: Let's be clear: this package is a bundling fest.  We
+                  ;; delete as much as we can, but there's still a lot left.
+                  (for-each (lambda (directory)
+                              (delete-file-recursively
+                               (string-append "third_party/" directory)))
+                            '("benchmark" "cpuinfo" "eigen"
+
+                              ;; FIXME: QNNPACK (of which XNNPACK is a fork)
+                              ;; needs these.
+                              ;; "FP16" "FXdiv" "gemmlowp" "psimd"
+
+                              "gloo" "googletest" "ios-cmake" "NNPACK"
+                              "onnx" "protobuf" "pthreadpool"
+                              "pybind11" "python-enum" "python-peachpy"
+                              "python-six" "tbb" "XNNPACK" "zstd"))))))))
 
 ;; Keep this in sync with python-pytorch
 (define-public python-torchvision
   (package
     (name "python-torchvision")
-    (version "0.12.0")
+    (version "0.13.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3024,7 +3062,7 @@ Note: currently this package does not provide GPU support.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0chjd6zs46136sg65z1c2g07a534dg72xpy20s3bx1prwmvyxp5v"))))
+                "19f6s3ffwkdvjjbvib18c8n7vhysg58smxzq3rvii1c0z4g3b0cw"))))
     (build-system python-build-system)
     (arguments
      `(#:tests? #false ;the test suite is expensive and there is no easy way
