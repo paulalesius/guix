@@ -2292,10 +2292,41 @@ writing code that contains string literals that contain code themselves.")
              (url "https://github.com/slime/slime/")
              (commit (string-append "v" version))))
        (sha256
-        (base32 "1s5mbljlz22pb90gwbd380nighkz6gdxl77hc08gri7wwr5gy5n2"))))
+        (base32 "1s5mbljlz22pb90gwbd380nighkz6gdxl77hc08gri7wwr5gy5n2"))
+       (modules '((guix build utils)))
+         (snippet
+          ;; The doc folder drags `gawk' into the closure.  Doc is already
+          ;; provided by emacs-slime.
+          `(begin
+             (delete-file-recursively "doc")
+             #t))))
     (build-system asdf-build-system/sbcl)
     (arguments
-     '(#:asd-systems '("swank")))
+     '(#:asd-systems '("swank")
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'set-fasl-directory
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (lib-dir (string-append out "/lib/common-lisp/"
+                                            (%lisp-type)
+                                            "/slime-swank/")))
+               ;; Use the ASDF registry instead of Swank's default that places
+               ;; the .fasl files in ~/.slime.
+               (substitute* "swank.asd"
+                 (("\\(load \\(asdf::component-pathname f\\)\\)" all)
+                  (string-append
+                   all "\n"
+                   "(setf (symbol-value"
+                   "(read-from-string \"swank-loader::*fasl-directory*\"))"
+                   "\"" lib-dir "\")")))
+               (substitute* "swank-loader.lisp"
+                 (("\\(probe-file fasl\\)" all)
+                  ;; Do not try to delete Guix store files.
+                  (string-append
+                   all "\n"
+                   " (not (equal (subseq (pathname-directory fasl) 1 3)"
+                   " '(\"gnu\" \"store\"))) ; XXX: GUIX PATCH")))))))))
     (home-page "https://github.com/slime/slime")
     (synopsis "Common Lisp Swank server")
     (description
@@ -2305,7 +2336,21 @@ processes that doesn't run under Emacs.  Lisp processes created by
     (license (list license:gpl2+ license:public-domain))))
 
 (define-public cl-slime-swank
-  (sbcl-package->cl-source-package sbcl-slime-swank))
+  (let ((pkg (sbcl-package->cl-source-package sbcl-slime-swank)))
+    (package
+      (inherit pkg)
+      (arguments
+       (substitute-keyword-arguments (package-arguments pkg)
+         ((#:phases phases)
+          `(modify-phases ,phases
+             (add-after 'install 'revert-asd-patch
+               ;; We do not want to include the Guix patch in the cl- package
+               ;; since it would include the sbcl- package in the closure.
+               (lambda* (#:key outputs #:allow-other-keys)
+                 (let* ((out (assoc-ref outputs "out"))
+                        (source-path (string-append out "/share/common-lisp/source/")))
+                   (substitute* (string-append source-path "/cl-slime-swank/swank.asd")
+                     ((".*fasl-directory.*") ""))))))))))))
 
 (define-public ecl-slime-swank
   (sbcl-package->ecl-package sbcl-slime-swank))
@@ -2706,7 +2751,13 @@ utilities that make it even easier to manipulate text in Common Lisp.  It has
                (commit commit)))
          (file-name (git-file-name "puri" version))
          (sha256
-          (base32 "0gq2rsr0aihs0z20v4zqvmdl4szq53b52rh97pvnmwrlbn4mapmd"))))
+          (base32 "0gq2rsr0aihs0z20v4zqvmdl4szq53b52rh97pvnmwrlbn4mapmd"))
+         (modules '((guix build utils)))
+         (snippet
+          ;; The useless bundled debian folder drags `make' into the closure.
+          `(begin
+             (delete-file-recursively "debian")
+             #t))))
       (build-system asdf-build-system/sbcl)
       (native-inputs
        (list sbcl-ptester))
@@ -3840,7 +3891,9 @@ client and server.")
            "0apkgqrscylw3hhm5x2vs0z3hz6h7zd7dl5y3wr2zl8qjpvpc80k"))))
       (build-system asdf-build-system/sbcl)
       (inputs
-       (list xclip))
+       ;; Pick xsel instead of xclip because its closure size is slightly
+       ;; smaller.
+       (list xsel))
       (native-inputs
        (list sbcl-fiveam))
       (arguments
@@ -3849,8 +3902,8 @@ client and server.")
            (add-after 'unpack 'fix-paths
              (lambda* (#:key inputs #:allow-other-keys)
                (substitute* "src/text.lisp"
-                 (("\"xclip\"")
-                  (string-append "\"" (assoc-ref inputs "xclip") "/bin/xclip\""))))))))
+                 (("\"xsel\"")
+                  (string-append "\"" (assoc-ref inputs "xsel") "/bin/xsel\""))))))))
       (home-page "https://github.com/snmsts/trivial-clipboard")
       (synopsis "Access system clipboard in Common Lisp")
       (description
@@ -4050,7 +4103,13 @@ Development into CL+SSL was done by David Lichteblau.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "06gx04mah5nc8w78s0j8628divbf1s5w7af8w7pvzb2d5mgvrbd2"))))
+          (base32 "06gx04mah5nc8w78s0j8628divbf1s5w7af8w7pvzb2d5mgvrbd2"))
+         (modules '((guix build utils)))
+         (snippet
+          ;; The useless bundled debian folder drags `make' into the closure.
+          `(begin
+             (delete-file-recursively "debian")
+             #t))))
       (build-system asdf-build-system/sbcl)
       (inputs
        (list sbcl-rt))
@@ -4080,7 +4139,13 @@ Rosenberg's Common Lisp packages.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "12jj54h0fs6n237cvnp8v6hn0imfksammq22ys6pi0gwz2w47rbj"))))
+          (base32 "12jj54h0fs6n237cvnp8v6hn0imfksammq22ys6pi0gwz2w47rbj"))
+         (modules '((guix build utils)))
+         (snippet
+          ;; The useless bundled debian folder drags `make' into the closure.
+          `(begin
+             (delete-file-recursively "debian")
+             #t))))
       (build-system asdf-build-system/sbcl)
       (native-inputs                    ; For tests.
        (list sbcl-ptester sbcl-kmrcl))
@@ -4770,8 +4835,8 @@ CCL.")
   (sbcl-package->ecl-package sbcl-jonathan))
 
 (define-public sbcl-http-body
-  (let ((commit "dd01dc4f5842e3d29728552e5163acce8386eb73")
-        (revision "1"))
+  (let ((commit "3e4bedd6a9d9bc4e1dc0a45e5b55360ae30fd388")
+        (revision "2"))
     (package
      (name "sbcl-http-body")
      (version (git-version "0.1.0" revision commit))
@@ -4783,14 +4848,21 @@ CCL.")
              (commit commit)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1jd06snjvxcprhapgfq8sx0y5lrldkvhf206ix6d5a23dd6zcmr0"))))
+        (base32 "0kcg43l5674drzid9cj938q0ki5z25glx296rl239dm7yfmxlzz2"))))
      (build-system asdf-build-system/sbcl)
      (arguments
       '(#:asd-systems '("http-body-test" "http-body")))
      (native-inputs
-      (list sbcl-prove sbcl-trivial-utf-8))
+      (list sbcl-assoc-utils sbcl-prove sbcl-trivial-utf-8))
      (inputs
-      (list sbcl-fast-http sbcl-jonathan sbcl-quri))
+      (list sbcl-babel
+            sbcl-cl-ppcre
+            sbcl-fast-http
+            sbcl-flexi-streams
+            sbcl-jonathan
+            sbcl-trivial-gray-streams
+            sbcl-cl-utilities
+            sbcl-quri))
      (home-page "https://github.com/fukamachi/http-body")
      (synopsis "HTTP POST data parser")
      (description
@@ -6093,15 +6165,15 @@ cookie headers, cookie creation, cookie jar creation and more.")
              sbcl-trivial-gray-streams
              sbcl-trivial-mimes
              sbcl-usocket))
-      (native-inputs
-       (list sbcl-alexandria
-             sbcl-babel
-             sbcl-cl-ppcre
-             sbcl-clack
-             sbcl-lack
-             sbcl-local-time
-             sbcl-prove
-             sbcl-trivial-features))
+      ;; These native-inputs are for tests only, which are disabled.
+      ;; Leave them commented since they add a lot to the closure size.
+      ;; (native-inputs
+      ;;  (list sbcl-cl-ppcre
+      ;;        sbcl-clack
+      ;;        sbcl-lack
+      ;;        sbcl-local-time
+      ;;        sbcl-prove
+      ;;        sbcl-trivial-features))
       (arguments
        ;; TODO: Circular dependency: tests depend on clack-test which depends on dexador.
        `(#:tests? #f
@@ -10329,7 +10401,13 @@ interface for MySQL, PostgreSQL and SQLite.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1hqszvz0a3wk4s9faa83sc3vjxcb5rxmjclyr17yzwg55z733kry"))))
+        (base32 "1hqszvz0a3wk4s9faa83sc3vjxcb5rxmjclyr17yzwg55z733kry"))
+       (modules '((guix build utils)))
+         (snippet
+          ;; The useless bundled debian folder drags `make' into the closure.
+          `(begin
+             (delete-file-recursively "debian")
+             #t))))
     (build-system asdf-build-system/sbcl)
     (arguments
      `(#:tests? #f ; TODO: Fix use of deprecated ASDF functions
@@ -10371,8 +10449,25 @@ interface for MySQL, PostgreSQL and SQLite.")
        (file-name (git-file-name name version))
        (sha256
         (base32 "1v1k3s5bsy3lgd9gk459bzpb1r0kdjda25s29samxw4gsgf1fqvp"))
+       (modules '((guix build utils)))
        (snippet
         '(begin
+           ;; The useless bundled debian folder drags `make' into the closure.
+           (delete-file-recursively "debian")
+           ;; Other Makefiles that drag `make'.
+           (for-each delete-file
+                     '("Makefile"
+                       "db-db2/Makefile"
+                       "db-mysql/Makefile"
+                       "db-odbc/Makefile"
+                       "db-oracle/Makefile"
+                       "db-sqlite/Makefile"
+                       "doc/Makefile"
+                       "examples/sqlite3/init-func/Makefile"
+                       "sql/Makefile"
+                       "tests/Makefile"
+                       "uffi/Makefile"
+                       "uffi/Makefile.32+64bits"))
            ;; Remove precompiled libraries.
            (delete-file "db-mysql/clsql_mysql.dll")
            (delete-file "uffi/clsql_uffi.dll")
@@ -10809,6 +10904,16 @@ compliance control.")
                (substitute* "lift-standard.config"
                  ((":relative-to lift-test")
                   ":relative-to moptilities-test"))
+               #t))
+           (add-after 'install 'remove-test-results
+             ;; Otherwise the drag the SBCL package into the closure of the CL
+             ;; package.
+             (lambda* (#:key outputs #:allow-other-keys)
+               (let* ((out (assoc-ref outputs "out"))
+                      (source-path (string-append out "/share/common-lisp/"
+                                                  (%lisp-type) "/moptilities/")))
+                 (delete-file-recursively
+                  (string-append source-path "/test-results")))
                #t)))))
       (synopsis "Compatibility layer for Common Lisp MOP implementation differences")
       (description
@@ -10834,7 +10939,12 @@ MOP easier to use.")
                (commit commit)))
          (file-name (git-file-name "cl-osicat" version))
          (sha256
-          (base32 "1ilag0b0xn97acc0m1q93vwp2y3md9a586858zfx04d8wpbvk8sz"))))
+          (base32 "1ilag0b0xn97acc0m1q93vwp2y3md9a586858zfx04d8wpbvk8sz"))
+         (snippet
+          '(begin
+             ;; The useless release.sh drags `bash' into the closure.
+             (delete-file "scripts/release.sh")
+             #t))))
       (build-system asdf-build-system/sbcl)
       (inputs
        (list sbcl-alexandria sbcl-cffi sbcl-trivial-features))
@@ -11263,6 +11373,21 @@ sequences of objects.")
       (build-system asdf-build-system/sbcl)
       (inputs
        (list sbcl-acclimation sbcl-clump))
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (add-after 'install 'unpatch-shebangs
+             (lambda* (#:key outputs #:allow-other-keys)
+               ;; The documentation Makefile rely on shell scripts.
+               ;; TODO: Build it!
+               ;; In the mean time, remove the shabang as it adds bash to the
+               ;; closure.
+               (let* ((out (assoc-ref outputs "out"))
+                      (build-aux (string-append
+                                  out "/share/")))
+                 (substitute* (find-files build-aux)
+                   (("^#!.*/bin/sh") "#!/bin/sh")
+                   (("^#!.*/bin/bash") "#!/bin/bash"))))))))
       (home-page "https://github.com/robert-strandh/cluffer")
       (synopsis "Common Lisp library providing a protocol for text-editor buffers")
       (description "Cluffer is a library for representing the buffer of a text
@@ -18293,7 +18418,13 @@ language).")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0wv3j13fj73gigriw5r9vi920hz05ld7zllsvbxdxvmyfy9k1kly"))))
+          (base32 "0wv3j13fj73gigriw5r9vi920hz05ld7zllsvbxdxvmyfy9k1kly"))
+         (modules '((guix build utils)))
+         (snippet
+          ;; The useless bundled debian folder drags `make' into the closure.
+          `(begin
+             (delete-file-recursively "debian")
+             #t))))
       (build-system asdf-build-system/sbcl)
       (inputs
        (list sbcl-aserve sbcl-kmrcl sbcl-xmls))
@@ -20795,8 +20926,8 @@ rendering of the XML Infoset.")
   (sbcl-package->ecl-package sbcl-asd-generator))
 
 (define-public sbcl-cl-gopher
-  (let ((commit "62cfd180378f56e7e8b57e4302b183810c86e337")
-        (revision "2"))
+  (let ((commit "0899e7fa2134206f9d9778c7d53c49b7a59ff070")
+        (revision "3"))
     (package
       (name "sbcl-cl-gopher")
       (version (git-version "0.0.0" revision commit))
@@ -20808,7 +20939,15 @@ rendering of the XML Infoset.")
                (commit commit)))
          (file-name (git-file-name "cl-gopher" version))
          (sha256
-          (base32 "0szz29d83fk2cxn5j1zlf4v0154qnf9cy1ix5p4jjpsql1a8xiwg"))))
+          (base32 "1ky4s33m5d0wvdaqji12pxr93qqfl5x62zjp3m4ihbdj0ws3yw2f"))
+         (snippet
+          '(begin
+             ;; These files are mostly examples (that assume Quicklisp) which
+             ;; drag the SBCL package into the CL package.
+             (for-each delete-file
+                       '("cl-gopher-network.lsh"
+                         "cl-gopher-start.lsh"))
+             #t))))
       (build-system asdf-build-system/sbcl)
       (inputs
        (list sbcl-bordeaux-threads
@@ -22507,3 +22646,32 @@ the Processing language and shares some of the API.")
 
 (define-public ecl-sketch
   (sbcl-package->ecl-package sbcl-sketch))
+
+(define-public sbcl-binary-types
+  (let ((commit "9ec42042a50403961c08179a892ae3de725b1d7a"))
+    (package
+      (name "sbcl-binary-types")
+      (version (git-version "1.2" "1" commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/frodef/binary-types/")
+               (commit commit)))
+         (file-name (git-file-name "binary-types" version))
+         (sha256
+          (base32 "0kp4xwblfxh7gmgqc38k9xzrqlcr0q1jm5167ma1pajdxd3182j8"))))
+      (build-system asdf-build-system/sbcl)
+      (home-page "https://github.com/frodef/binary-types/")
+      (synopsis "Read and write binary records for Common Lisp")
+      (description
+       "Binary-types is a Common Lisp package for reading and writing binary
+files.  Binary-types provides macros that are used to declare the mapping
+between Lisp objects and some binary (i.e. octet-based) representation.")
+      (license license:bsd-3))))
+
+(define-public cl-binary-types
+  (sbcl-package->cl-source-package sbcl-binary-types))
+
+(define-public ecl-binary-types
+  (sbcl-package->ecl-package sbcl-binary-types))

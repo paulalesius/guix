@@ -452,12 +452,23 @@ denoting a specific output of a package."
          packages)
     manifest-entry=?)))
 
-(define (manifest->gexp manifest)
-  "Return a representation of MANIFEST as a gexp."
+(define %manifest-format-version
+  ;; The current manifest format version.
+  4)
+
+(define* (manifest->gexp manifest #:optional
+                         (format-version %manifest-format-version))
+  "Return a representation in FORMAT-VERSION of MANIFEST as a gexp."
   (define (optional name value)
-    (if (null? value)
-        #~()
-        #~((#$name #$value))))
+    (match format-version
+      (4
+       (if (null? value)
+           #~()
+           #~((#$name #$value))))
+      (3
+       (match name
+         ('properties #~((#$name #$@value)))
+         (_           #~((#$name #$value)))))))
 
   (define (entry->gexp entry)
     ;; Maintain in state monad a vhash of visited entries, indexed by their
@@ -467,10 +478,11 @@ denoting a specific output of a package."
     ;; the presence of propagated inputs, where we could otherwise end up
     ;; repeating large trees.
     (mlet %state-monad ((visited (current-state)))
-      (if (match (vhash-assq (manifest-entry-item entry) visited)
-            ((_ . previous-entry)
-             (manifest-entry=? previous-entry entry))
-            (#f #f))
+      (if (and (= format-version 4)
+               (match (vhash-assq (manifest-entry-item entry) visited)
+                 ((_ . previous-entry)
+                  (manifest-entry=? previous-entry entry))
+                 (#f #f)))
           (return #~(repeated #$(manifest-entry-name entry)
                               #$(manifest-entry-version entry)
                               (ungexp (manifest-entry-item entry)
@@ -500,41 +512,20 @@ denoting a specific output of a package."
                                               search-paths))
                             #$@(optional 'properties properties))))))))))
 
+  (unless (memq format-version '(3 4))
+    (raise (formatted-message
+            (G_ "cannot emit manifests formatted as version ~a")
+            format-version)))
+
   (match manifest
     (($ <manifest> (entries ...))
-     #~(manifest (version 4)
+     #~(manifest (version #$format-version)
                  (packages #$(run-with-state
                                  (mapm %state-monad entry->gexp entries)
                                vlist-null))))))
 
-(define (find-package name version)
-  "Return a package from the distro matching NAME and possibly VERSION.  This
-procedure is here for backward-compatibility and will eventually vanish."
-  (define find-best-packages-by-name              ;break abstractions
-    (module-ref (resolve-interface '(gnu packages))
-                'find-best-packages-by-name))
-
-   ;; Use 'find-best-packages-by-name' and not 'find-packages-by-name'; the
-   ;; former traverses the module tree only once and then allows for efficient
-   ;; access via a vhash.
-   (match (find-best-packages-by-name name version)
-     ((p _ ...) p)
-     (_
-      (match (find-best-packages-by-name name #f)
-        ((p _ ...) p)
-        (_ #f)))))
-
 (define (sexp->manifest sexp)
   "Parse SEXP as a manifest."
-  (define (infer-search-paths name version)
-    ;; Infer the search path specifications for NAME-VERSION by looking up a
-    ;; same-named package in the distro.  Useful for the old manifest formats
-    ;; that did not store search path info.
-    (let ((package (find-package name version)))
-      (if package
-          (package-native-search-paths package)
-          '())))
-
   (define (infer-dependency item parent)
     ;; Return a <manifest-entry> for ITEM.
     (let-values (((name version)
@@ -620,44 +611,7 @@ procedure is here for backward-compatibility and will eventually vanish."
              (return entry)))))))
 
   (match sexp
-    (('manifest ('version 0)
-                ('packages ((name version output path) ...)))
-     (manifest
-      (map (lambda (name version output path)
-             (manifest-entry
-               (name name)
-               (version version)
-               (output output)
-               (item path)
-               (search-paths (infer-search-paths name version))))
-           name version output path)))
-
-    ;; Version 1 adds a list of propagated inputs to the
-    ;; name/version/output/path tuples.
-    (('manifest ('version 1)
-                ('packages ((name version output path deps) ...)))
-     (manifest
-      (map (lambda (name version output path deps)
-             ;; Up to Guix 0.7 included, dependencies were listed as ("gmp"
-             ;; "/gnu/store/...-gmp") for instance.  Discard the 'label' in
-             ;; such lists.
-             (let ((deps (match deps
-                           (((labels directories) ...)
-                            directories)
-                           ((directories ...)
-                            directories))))
-               (letrec* ((deps* (map (cute infer-dependency <> (delay entry))
-                                     deps))
-                         (entry (manifest-entry
-                                  (name name)
-                                  (version version)
-                                  (output output)
-                                  (item path)
-                                  (dependencies deps*)
-                                  (search-paths
-                                   (infer-search-paths name version)))))
-                 entry)))
-           name version output path deps)))
+    ;; Versions 0 and 1 are no longer produced since 2015.
 
     ;; Version 2 adds search paths and is slightly more verbose.
     (('manifest ('version 2 minor-version ...)
@@ -1946,6 +1900,7 @@ MANIFEST."
                              (allow-unsupported-packages? #f)
                              (allow-collisions? #f)
                              (relative-symlinks? #f)
+                             (format-version %manifest-format-version)
                              system target)
   "Return a derivation that builds a profile (aka. 'user environment') with
 the given MANIFEST.  The profile includes additional derivations returned by
@@ -2031,7 +1986,7 @@ are cross-built for TARGET."
 
             #+(if locales? set-utf8-locale #t)
 
-            (build-profile #$output '#$(manifest->gexp manifest)
+            (build-profile #$output '#$(manifest->gexp manifest format-version)
                            #:extra-inputs '#$extra-inputs
                            #:symlink #$(if relative-symlinks?
                                            #~symlink-relative
@@ -2070,19 +2025,23 @@ are cross-built for TARGET."
   (allow-collisions?  profile-allow-collisions?   ;Boolean
                       (default #f))
   (relative-symlinks? profile-relative-symlinks?  ;Boolean
-                      (default #f)))
+                      (default #f))
+  (format-version     profile-format-version      ;integer
+                      (default %manifest-format-version)))
 
 (define-gexp-compiler (profile-compiler (profile <profile>) system target)
   "Compile PROFILE to a derivation."
   (match profile
     (($ <profile> name manifest hooks
-                  locales? allow-collisions? relative-symlinks?)
+                  locales? allow-collisions? relative-symlinks?
+                  format-version)
      (profile-derivation manifest
                          #:name name
                          #:hooks hooks
                          #:locales? locales?
                          #:allow-collisions? allow-collisions?
                          #:relative-symlinks? relative-symlinks?
+                         #:format-version format-version
                          #:system system #:target target))))
 
 (define* (profile-search-paths profile

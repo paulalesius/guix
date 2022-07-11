@@ -279,10 +279,10 @@ output.  Experimental backends include OpenGL, BeOS, OS/2, and DirectFB.")
                        "See 'COPYING' in the distribution."))
    (home-page "https://www.freedesktop.org/wiki/Software/HarfBuzz/")))
 
-(define-public harfbuzz-3.0
+(define-public harfbuzz-3
   (package
     (inherit harfbuzz)
-    (version "3.0.0")
+    (version "3.4.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/harfbuzz/harfbuzz"
@@ -290,7 +290,20 @@ output.  Experimental backends include OpenGL, BeOS, OS/2, and DirectFB.")
                                   "/harfbuzz-" version ".tar.xz"))
               (sha256
                (base32
-                "1ngk8vn06rryx3s4v5pbl91bw1j1pd4431n77rw3j5a533hhwsq3"))))))
+                "0lprrl8iih8ji1n17xwm5llz05a1hv4g04b7a3y229dq9myahn3i"))))))
+
+(define-public harfbuzz-4
+  (package
+    (inherit harfbuzz)
+    (version "4.3.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/harfbuzz/harfbuzz"
+                                  "/releases/download/" version
+                                  "/harfbuzz-" version ".tar.xz"))
+              (sha256
+               (base32
+                "0c5mzwgz43d37h75p4b6cgjg4v24jdd96i7gjpgxirn8qks2i5m4"))))))
 
 (define-public libdatrie
   (package
@@ -454,6 +467,29 @@ handling for GTK+-2.x.")
                      (substitute* "tests/Makefile"
                        (("test-layout\\$\\(EXEEXT\\)") ""))
                      #t)))))))
+
+(define-public pango-1.90
+  (package
+    (inherit pango)
+    (name "pango")
+    (version "1.90.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnome/sources/pango/"
+                                  (version-major+minor version) "/"
+                                  name "-" version ".tar.xz"))
+              (patches (search-patches "pango-skip-libthai-test.patch"))
+              (sha256
+               (base32
+                "1zqif72jxa819bwi4jv2vgac574qas3w37f7qvn8l31rm1jgjf7i"))
+              (modules '((guix build utils)))
+              (snippet
+               #~(begin
+                   (substitute* "pango/pangocairo-font.c"
+                     (("cairo_user_font_face_set_render_color_glyph_func")
+                      "cairo_user_font_face_set_render_glyph_func"))))))
+    (inputs (modify-inputs (package-inputs pango)
+               (prepend harfbuzz-4)))))
 
 (define-public pangox-compat
   (package

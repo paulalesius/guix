@@ -469,7 +469,7 @@ from any network device in any of three ASCII graph formats.")
 (define-public srt
   (package
     (name "srt")
-    (version "1.4.3")
+    (version "1.4.4")
     (source
      (origin
        (method git-fetch)
@@ -479,7 +479,7 @@ from any network device in any of three ASCII graph formats.")
          (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1f60vlfxhh9bhafws82c3301whjlz5gy92jz9a9ymwfg5h53bv1j"))))
+        (base32 "1zr1l9zkai7rpw9cn5j9h4zrv08hgpfmwscwyscf2j4cgwf0rxrr"))))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags
@@ -490,9 +490,7 @@ from any network device in any of three ASCII graph formats.")
         "-DENABLE_STATIC=OFF"
         "-DENABLE_UNITTESTS=ON")))
     (native-inputs
-     `(("gtest" ,googletest)
-       ("pkg-config" ,pkg-config)
-       ("tclsh" ,tcl)))
+     (list googletest pkg-config tcl))
     (propagated-inputs
      (list openssl))
     (synopsis "Secure Reliable Transport")
@@ -500,24 +498,6 @@ from any network device in any of three ASCII graph formats.")
 performance across unpredictable networks, such as the Internet.")
     (home-page "https://www.srtalliance.org/")
     (license license:mpl2.0)))
-
-;; FFmpeg, GStreamer, and VLC don't support SRT 1.4.2 yet.
-(define-public srt-1.4.1
-  (package
-    (inherit srt)
-    (name "srt")
-    (version "1.4.1")
-    (source
-     (origin
-       (method git-fetch)
-       (uri
-        (git-reference
-         (url "https://github.com/Haivision/srt")
-         (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "01xaq44j95kbgqfl41pnybvqy0yq6wd4wdw88ckylzf0nzp977xz"))))))
 
 (define-public lksctp-tools
   (package

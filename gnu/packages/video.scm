@@ -1761,14 +1761,14 @@ audio/video codec library.")
 (define-public ffmpeg-3.4
   (package
     (inherit ffmpeg-4)
-    (version "3.4.9")
+    (version "3.4.11")
     (source (origin
              (method url-fetch)
              (uri (string-append "https://ffmpeg.org/releases/ffmpeg-"
                                  version ".tar.xz"))
              (sha256
               (base32
-               "0d8nkd9c85rkjlgsq1hidmykkrksi883ygqzhhj6wh4nqflv8vs9"))))
+               "1rijdvcx8xjqwh084qchwz91vcj8wsvb4diax0g8miywpir00ccw"))))
     (arguments
      (substitute-keyword-arguments (package-arguments ffmpeg-4)
        ((#:modules modules %gnu-build-system-modules)
@@ -1786,14 +1786,14 @@ audio/video codec library.")
 (define-public ffmpeg-2.8
   (package
     (inherit ffmpeg-3.4)
-    (version "2.8.18")
+    (version "2.8.20")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://ffmpeg.org/releases/ffmpeg-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "0k6dq7b8rpjvdl5ncf1135qwc36x0x9va8v83aggvbfhy5d97vwn"))))
+                "1ivnfqmfnp3zmn1q2dxy4p85427y3r6d3jbnl5kprr7lqckf6rl5"))))
     (arguments
      `(#:tests? #f               ; XXX: Enable them later, if required
        #:configure-flags
@@ -1902,87 +1902,84 @@ videoformats depend on the configuration flags of ffmpeg.")
                 "0cs1vnv91mg7p6253v6wms3zlz91xzphpwaw14dmrd2gibc64nlc"))))
     (build-system gnu-build-system)
     (native-inputs
-     `(("flex" ,flex)
-       ("bison" ,bison)
-       ("gettext" ,gettext-minimal)
-       ("pkg-config" ,pkg-config)))
+     (list flex bison gettext-minimal pkg-config))
     ;; FIXME: Add optional inputs once available.
     (inputs
-     `(("alsa-lib" ,alsa-lib)
-       ("avahi" ,avahi)
-       ("dav1d" ,dav1d)
-       ("dbus" ,dbus)
-       ("eudev" ,eudev)
-       ("flac" ,flac)
-       ("ffmpeg" ,ffmpeg)
-       ("fontconfig" ,fontconfig)
-       ("freetype" ,freetype)
-       ("fribidi" ,fribidi)
-       ("gnutls" ,gnutls)
-       ("liba52" ,liba52)
-       ("libarchive" ,libarchive)
-       ("libass" ,libass)
-       ("libavc1394" ,libavc1394)
-       ("libbluray" ,libbluray)
-       ("libcaca" ,libcaca)
-       ("libcddb" ,libcddb)
-       ("libdca" ,libdca)
-       ("libdvbpsi" ,libdvbpsi)
-       ("libdvdnav" ,libdvdnav)
-       ("libdvdread" ,libdvdread)
-       ("libebml" ,libebml)
-       ("libgcrypt" ,libgcrypt)
-       ("libidn" ,libidn)
-       ("libkate" ,libkate)
-       ("libmad" ,libmad)
-       ("libmatroska" ,libmatroska)
-       ("libmicrodns" ,libmicrodns)
-       ("libmodplug" ,libmodplug)
-       ("libmpeg2" ,libmpeg2)
-       ("libogg" ,libogg)
-       ("libpng" ,libpng)
-       ("libraw1394" ,libraw1394)
-       ("librsvg" ,(librsvg-for-system))
-       ("libsamplerate" ,libsamplerate)
-       ("libsecret" ,libsecret)
-       ("libssh2" ,libssh2)
-       ("libupnp" ,libupnp)
-       ("libva" ,libva)
-       ("libvdpau" ,libvdpau)
-       ("libvorbis" ,libvorbis)
-       ("libvpx" ,libvpx)
-       ("libtheora" ,libtheora)
-       ("libx264" ,libx264)
-       ("libxext" ,libxext)
-       ("libxi" ,libxi)
-       ("libxinerama" ,libxinerama)
-       ("libxml2" ,libxml2)
-       ("libxpm" ,libxpm)
-       ("livemedia-utils" ,livemedia-utils)
-       ("lua" ,lua-5.2)
-       ("mesa" ,mesa)
-       ("opus" ,opus)
-       ("perl" ,perl)
-       ("pulseaudio" ,pulseaudio)
-       ("protobuf" ,protobuf)
-       ("python" ,python-wrapper)
-       ("qtbase" ,qtbase-5)
-       ("qtsvg" ,qtsvg)
-       ("qtx11extras" ,qtx11extras)
-       ("samba" ,samba)
-       ("sdl" ,sdl)
-       ("sdl-image" ,sdl-image)
-       ("speex" ,speex)
-       ("speexdsp" ,speexdsp)
-       ;; VLC is not yet compatible with SRT > 1.4.1.
-       ("srt" ,srt-1.4.1)
-       ("taglib" ,taglib)
-       ("twolame" ,twolame)
-       ("unzip" ,unzip)
-       ("wayland" ,wayland)
-       ("wayland-protocols" ,wayland-protocols)
-       ("x265" ,x265)
-       ("xcb-util-keysyms" ,xcb-util-keysyms)))
+     (list alsa-lib
+           avahi
+           bash-minimal
+           dav1d
+           dbus
+           eudev
+           ffmpeg
+           flac
+           fontconfig
+           freetype
+           fribidi
+           gnutls
+           liba52
+           libarchive
+           libass
+           libavc1394
+           libbluray
+           libcaca
+           libcddb
+           libdca
+           libdvbpsi
+           libdvdnav
+           libdvdread
+           libebml
+           libgcrypt
+           libidn
+           libkate
+           libmad
+           libmatroska
+           libmicrodns
+           libmodplug
+           libmpeg2
+           libogg
+           libpng
+           libraw1394
+           (librsvg-for-system)
+           libsamplerate
+           libsecret
+           libssh2
+           libtheora
+           libupnp
+           libva
+           libvdpau
+           libvorbis
+           libvpx
+           libx264
+           libxext
+           libxi
+           libxinerama
+           libxml2
+           libxpm
+           livemedia-utils
+           lua-5.2
+           mesa
+           opus
+           perl
+           protobuf
+           pulseaudio
+           python-wrapper
+           qtbase-5
+           qtsvg
+           qtx11extras
+           samba
+           sdl
+           sdl-image
+           speex
+           speexdsp
+           srt
+           taglib
+           twolame
+           unzip
+           wayland
+           wayland-protocols
+           x265
+           xcb-util-keysyms))
     (arguments
      `(#:configure-flags
        `("BUILDCC=gcc"

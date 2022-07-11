@@ -692,21 +692,28 @@ Emacs package archive}.")
     (license license:gpl3+)))
 
 (define-public emacs-paredit
-  (package
-    (name "emacs-paredit")
-    (version "24")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "http://mumble.net/~campbell/emacs/paredit-"
-                                  version ".el"))
-              (sha256
-               (base32
-                "0pp3n8q6kc70blqsaw0zlzp6bc327dpgdrjr0cnh7hqg1lras7ka"))))
-    (build-system emacs-build-system)
-    (home-page "http://mumble.net/~campbell/emacs/paredit/")
-    (synopsis "Emacs minor mode for editing parentheses")
-    (description
-     "ParEdit (paredit.el) is a minor mode for performing structured editing
+  ;; The last tagged release is from 2014; use the latest commit, which
+  ;; includes many fixes such as honoring the 'fill-paragraph-function'
+  ;; variable.
+  (let ((commit "d0b1a2f42fb47efc8392763d6487fd027e3a2955")
+        (revision "1"))
+    (package
+      (name "emacs-paredit")
+      (version (git-version "24" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://mumble.net/~campbell/git/paredit.git")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1x91xxvwb3r3h61ff1kknlaakxm1a40r7zg2lck9j52yiza4f191"))))
+      (build-system emacs-build-system)
+      (home-page "http://mumble.net/~campbell/emacs/paredit/")
+      (synopsis "Emacs minor mode for editing parentheses")
+      (description
+       "ParEdit (paredit.el) is a minor mode for performing structured editing
 of S-expression data.  The typical example of this would be Lisp or Scheme
 source code.
 
@@ -714,7 +721,7 @@ ParEdit helps **keep parentheses balanced** and adds many keys for moving
 S-expressions and moving around in S-expressions.  Its behavior can be jarring
 for those who may want transient periods of unbalanced parentheses, such as
 when typing parentheses directly or commenting out code line by line.")
-    (license license:gpl3+)))
+      (license license:gpl3+))))
 
 (define-public emacs-puni
   ;; No tagged release upstream
@@ -5755,6 +5762,30 @@ method and constant name completion.")
      "This major mode facilitates editing Robot Framework source files with
 features such as syntax highlighting, comments, finding keywords, completing
 keywords and smart indentation.")
+    (license license:gpl3+)))
+
+(define-public emacs-robot-log
+  (package
+    (name "emacs-robot-log")
+    (version "0.1.3")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://git.sr.ht/~apteryx/emacs-robot-log")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0pv0kljx2n2n7ql6rfw1x63mbd1k2qwbq3zkw452lb8jmnp7dr3y"))))
+    (build-system emacs-build-system)
+    (native-inputs (list python-robotframework))
+    (arguments (list #:tests? #t))
+    (home-page "https://sr.ht/~apteryx/emacs-robot-log/")
+    (synopsis "Emacs major mode for viewing RobotFramework debug log files")
+    (description "@code{robot-log} is an Emacs major mode that allows more
+easily viewing and navigating RobotFramework debug log files.  It provides
+syntax highlighting and convenient shortcuts to move from one keyword to the
+next, or locate errors.")
     (license license:gpl3+)))
 
 (define-public emacs-robots-txt-mode
@@ -13828,7 +13859,7 @@ been adapted to also work with mu4e.")
 (define-public emacs-tempel
   (package
     (name "emacs-tempel")
-    (version "0.3")
+    (version "0.4")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -13837,7 +13868,7 @@ been adapted to also work with mu4e.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1cq7gg4fh105229my57wbb7v72l8mx957pvsg8k3zc1l0hbc796i"))))
+                "0iyh6wxchqg83gpwvg6lz4qy4c2qh25iqjpjm56kif52346a99d2"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/minad/tempel")
     (synopsis "Simple templates for Emacs")
@@ -17969,8 +18000,8 @@ and can be consulted and modified.")
 (define-public emacs-psc-ide
   ;; There is no proper release.  The base version is extracted from the
   ;; "Version" keyword in the main file.
-  (let ((commit "7fc2b841be25f5bc5e1eb7d0634436181c38b3fe")
-        (revision "1"))
+  (let ((commit "ce97d719458ea099b40c02f05b6609601c727e66")
+        (revision "2"))
     (package
       (name "emacs-psc-ide")
       (version (git-version "0.1.0" revision commit))
@@ -17983,7 +18014,7 @@ and can be consulted and modified.")
            (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0r0fymyai30jimm34z1cmav4wgij8ci6s1d9y7qigygfbbfrdsmj"))))
+          (base32 "0xfw93pdf744h2yswc53qwyawfzkc31rv8dmha3irq7k1nklhq6y"))))
       (build-system emacs-build-system)
       (propagated-inputs
        (list emacs-company emacs-dash emacs-flycheck emacs-let-alist

@@ -73,6 +73,7 @@
   #:use-module (gnu packages image)
   #:use-module (gnu packages image-processing)
   #:use-module (gnu packages imagemagick)
+  #:use-module (gnu packages jupyter)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages llvm)
@@ -3092,6 +3093,26 @@ Note: currently this package does not provide GPU support.")
 and common image transformations for computer vision.")
     (license license:bsd-3)))
 
+(define-public python-torchfile
+  (package
+    (name "python-torchfile")
+    (version "0.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "torchfile" version))
+              (sha256
+               (base32
+                "0vhklj6krl9r0kdynb4kcpwp8y1ihl2zw96byallay3k9c9zwgd5"))))
+    (build-system python-build-system)
+    (arguments '(#:tests? #false)) ;there are no tests
+    (propagated-inputs
+     (list python-numpy))
+    (home-page "https://github.com/bshillingford/python-torchfile")
+    (synopsis "Torch7 binary serialized file parser")
+    (description "This package enables you to deserialize Lua torch-serialized objects from
+Python.")
+    (license license:bsd-3)))
+
 (define-public python-hmmlearn
   (package
     (name "python-hmmlearn")
@@ -3190,3 +3211,166 @@ of Hidden Markov Models.")
     (description
      "Lantern provides a C API to the libtorch machine learning library.")
     (license license:expat)))
+
+(define-public python-lap
+  (package
+    (name "python-lap")
+    (version "0.4.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "lap" version))
+              (sha256
+               (base32
+                "0fqfxpq4jg9h4wxjw540gjmvfg1ccc1nssk7i9njg7qfdybxknn4"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'build
+           (lambda* (#:key inputs #:allow-other-keys)
+             (invoke "python" "setup.py" "build"
+                     "--cpu-baseline=sse2")))
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               ;; The tests must be run from elsewhere.
+               (mkdir-p "/tmp/test")
+               (copy-recursively "lap/tests" "/tmp/test")
+               (with-directory-excursion "/tmp/test"
+                 (invoke "pytest" "-vv"))))))))
+    (propagated-inputs
+     (list python-numpy
+           python-scipy))
+    (native-inputs
+     (list python-cython python-pytest))
+    (home-page "https://github.com/gatagat/lap")
+    (synopsis "Linear Assignment Problem solver (LAPJV/LAPMOD).")
+    (description "Lap is a linear assignment problem solver using Jonker-Volgenant
+algorithm for dense (LAPJV) or sparse (LAPMOD) matrices.")
+    (license license:bsd-2)))
+
+(define-public python-visdom
+  (package
+    (name "python-visdom")
+    (version "0.1.8.9")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "visdom" version))
+              (sha256
+               (base32
+                "09kiczx2i5asqsv214fz7sx8wlyldgbqvxwrd0alhjn24cvx4fn7"))))
+    (build-system python-build-system)
+    (propagated-inputs
+     (list python-jsonpatch
+           python-numpy
+           python-pillow
+           python-pyzmq
+           python-requests
+           python-scipy
+           python-six
+           python-torchfile
+           python-tornado
+           python-websocket-client))
+    (home-page "https://github.com/fossasia/visdom")
+    (synopsis "Visualizations of live, rich data for Torch and Numpy")
+    (description
+     "This package provides a tool for visualizing live, rich data for Torch
+and Numpy.")
+    (license license:asl2.0)))
+
+(define-public python-pyro-api
+  (package
+    (name "python-pyro-api")
+    (version "0.1.2")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "pyro-api" version))
+              (sha256
+               (base32
+                "086r2h6x9i5d9ayl1x65lx6p84rlydzsn8xingxc588ab3ch1fd1"))))
+    (build-system python-build-system)
+    (arguments '(#:tests? #false)) ;requires pyro
+    (native-inputs
+     (list python-flake8
+           python-ipython
+           python-pytest
+           python-sphinx
+           python-sphinx-rtd-theme))
+    (home-page "https://github.com/pyro-ppl/pyro-api")
+    (synopsis "Generic API for dispatch to Pyro backends.")
+    (description "This package provides a generic API for dispatch to Pyro backends.")
+    (license license:asl2.0)))
+
+(define-public python-pyro-ppl
+  (package
+    (name "python-pyro-ppl")
+    (version "1.8.1")
+    ;; The sources on pypi don't include tests.
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/pyro-ppl/pyro")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0ns20mr8qgjshzbplrfzaz1xhb9ldbgvrj2rzlsxvns2bi1ddyl5"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             ;; This tests features that are only implemented when non-free
+             ;; software is available (Intel MKL or CUDA).
+             (for-each delete-file
+                       (list "tests/distributions/test_spanning_tree.py"
+                             "tests/infer/mcmc/test_mcmc_api.py"))
+
+             ;; Four test_gamma_elbo tests fail with bad values for unknown
+             ;; reasons.
+             (delete-file "tests/distributions/test_rejector.py")
+             ;; This test fails sometimes.
+             (delete-file "tests/optim/test_optim.py")
+             (invoke "pytest" "-vv" "--stage=unit"))))))
+    (propagated-inputs
+     (list python-numpy
+           python-opt-einsum
+           python-pyro-api
+           python-pytorch
+           python-tqdm))
+    (native-inputs
+     (list ninja
+           jupyter
+           python-black
+           python-flake8
+           python-graphviz
+           python-isort
+           python-lap
+           python-matplotlib
+           python-mypy
+           python-nbformat
+           python-nbsphinx
+           python-nbstripout
+           python-nbval
+           python-pandas
+           python-pillow
+           python-pypandoc
+           python-pytest
+           python-pytest-cov
+           python-pytest-xdist
+           python-scikit-learn
+           python-scipy
+           python-seaborn
+           python-sphinx
+           python-sphinx-rtd-theme
+           python-torchvision
+           python-visdom
+           python-wget
+           python-yapf))
+    (home-page "https://pyro.ai")
+    (synopsis "Python library for probabilistic modeling and inference")
+    (description
+     "This package provides a Python library for probabilistic modeling and
+inference.")
+    (license license:asl2.0)))

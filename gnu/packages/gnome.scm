@@ -4398,7 +4398,7 @@ targeting the GNOME stack simple.")
 (define-public vte
   (package
     (name "vte")
-    (version "0.64.2")
+    (version "0.68.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/vte/"
@@ -4406,21 +4406,20 @@ targeting the GNOME stack simple.")
                                   "vte-" version ".tar.xz"))
               (sha256
                (base32
-                "063ys3330cvhbz1dln9irhciavb2prw098lvhpcc2rx6cl5q4g1b"))))
+                "0j8pvn225ybzx9p33ill838bzp8kkdn28383h0vs65m2kiwd9rqk"))))
     (build-system meson-build-system)
     (arguments
-     `(#:configure-flags
-       '("-Dvapi=true"
-         "-D_systemd=false")))
+     (list #:configure-flags #~(list "-Dvapi=true"
+                                     "-D_systemd=false")))
     (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("gettext" ,gettext-minimal)
-       ("vala" ,vala)
-       ("gobject-introspection" ,gobject-introspection)
-       ("glib" ,glib "bin")             ; for glib-genmarshal, etc.
-       ("gperf" ,gperf)
-       ("python" ,python)
-       ("xmllint" ,libxml2)))
+     (list pkg-config
+           gettext-minimal
+           vala
+           gobject-introspection
+           `(,glib "bin")               ; for glib-genmarshal, etc.
+           gperf
+           python
+           libxml2))
     (propagated-inputs
      (list gtk+ ; required by vte-2.91.pc
            gnutls ; ditto
@@ -6132,25 +6131,25 @@ discovery protocols.")
 (define-public totem
   (package
     (name "totem")
-    (version "3.38.1")
+    (version "42.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "mirror://gnome/sources/totem/"
-                           (version-major+minor version) "/"
+                           (version-major version) "/"
                            "totem-" version ".tar.xz"))
        (sha256
-        (base32 "02510lvzvxvmpcs64k6sqix8ysl7sihhhwvp0vmfv7521ryczylg"))))
+        (base32 "1az6ay7zhz2naqrzcfldx1yv2ylw1yjx76g3mqrqppwmvcflkw2a"))))
     (build-system meson-build-system)
     (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("desktop-file-utils" ,desktop-file-utils)
-       ("gettext" ,gettext-minimal)
-       ("gobject-introspection" ,gobject-introspection)
-       ("glib:bin" ,glib "bin")                   ;for 'glib-mkenums'
-       ("itstool" ,itstool)
-       ("xmllint" ,libxml2)
-       ("xorg-server" ,xorg-server-for-tests)))
+     (list pkg-config
+           desktop-file-utils
+           gettext-minimal
+           gobject-introspection
+           `(,glib "bin")               ;for 'glib-mkenums'
+           itstool
+           libxml2
+           xorg-server-for-tests))
     (propagated-inputs
      (list dconf))
     (inputs
@@ -6159,9 +6158,6 @@ discovery protocols.")
            atk
            cairo
            dbus-glib
-           clutter
-           clutter-gtk
-           clutter-gst
            xorgproto
            libxxf86vm
            libxtst
@@ -6170,7 +6166,7 @@ discovery protocols.")
            libsoup
            libpeas
            librsvg
-           lirc
+           libhandy
            gnome-desktop
            gstreamer
            gst-plugins-base
@@ -6184,47 +6180,41 @@ discovery protocols.")
            grilo-plugins
            vala))
     (arguments
-     `(#:glib-or-gtk? #t
-
-       ;; Disable automatic GStreamer plugin installation via PackageKit and
-       ;; all that.
-       #:configure-flags '("-D" "enable-easy-codec-installation=no"
-
-                           ;; Do not build .a files for the plugins, it's
-                           ;; completely useless.  This saves 2 MiB.
-                           "--default-library" "shared")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'skip-gtk-update-icon-cache
-           ;; Don't create 'icon-theme.cache'.
+     (list
+      #:glib-or-gtk? #t
+      ;; Disable automatic GStreamer plugin installation via PackageKit and
+      ;; all that.
+      #:configure-flags #~(list "-Denable-easy-codec-installation=no"
+                                ;; Do not build .a files for the plugins, it's
+                                ;; completely useless.  This saves 2 MiB.
+                                "--default-library" "shared")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'skip-gtk-update-icon-cache
+            ;; Don't create 'icon-theme.cache'.
+            (lambda _
+              (substitute* "meson_post_install.py"
+                (("gtk-update-icon-cache") "true"))))
+         (add-before 'install 'disable-cache-generation
            (lambda _
-             (substitute* "meson_post_install.py"
-               (("gtk-update-icon-cache") "true"))
-             #t))
-         (add-before
-          'install 'disable-cache-generation
-          (lambda _
-            (setenv "DESTDIR" "/")
-            #t))
-         (add-before
-          'check 'pre-check
-          (lambda _
-            ;; Tests require a running X server.
-            (system "Xvfb :1 &")
-            (setenv "DISPLAY" ":1")
-            #t))
-         (add-after
-          'install 'wrap-totem
-          (lambda* (#:key inputs outputs #:allow-other-keys)
-            (let ((out             (assoc-ref outputs "out"))
-                  (gst-plugin-path (getenv "GST_PLUGIN_SYSTEM_PATH"))
-                  (grl-plugin-path (getenv "GRL_PLUGIN_PATH")))
-              (wrap-program (string-append out "/bin/totem")
-                `("GST_PLUGIN_SYSTEM_PATH" ":" prefix (,gst-plugin-path))
-                `("GRL_PLUGIN_PATH"        ":" prefix (,grl-plugin-path)))
-              (wrap-program (string-append out "/bin/totem-video-thumbnailer")
-                `("GST_PLUGIN_SYSTEM_PATH" ":" prefix (,gst-plugin-path))))
-            #t)))))
+             (setenv "DESTDIR" "/")))
+         (add-before 'check 'pre-check
+           (lambda _
+             ;; Tests require a running X server.
+             (system "Xvfb :1 &")
+             (setenv "DISPLAY" ":1")))
+         (add-after 'install 'wrap-totem
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             (let ((out             (assoc-ref outputs "out"))
+                   (gi-typelib-path (getenv "GI_TYPELIB_PATH"))
+                   (gst-plugin-path (getenv "GST_PLUGIN_SYSTEM_PATH"))
+                   (grl-plugin-path (getenv "GRL_PLUGIN_PATH")))
+               (wrap-program (string-append out "/bin/totem")
+                 `("GI_TYPELIB_PATH"        ":" suffix (,gi-typelib-path))
+                 `("GST_PLUGIN_SYSTEM_PATH" ":" prefix (,gst-plugin-path))
+                 `("GRL_PLUGIN_PATH"        ":" prefix (,grl-plugin-path)))
+               (wrap-program (string-append out "/bin/totem-video-thumbnailer")
+                 `("GST_PLUGIN_SYSTEM_PATH" ":" prefix (,gst-plugin-path)))))))))
     (home-page "https://wiki.gnome.org/Apps/Videos")
     (synopsis "Simple media player for GNOME based on GStreamer")
     (description "Totem is a simple yet featureful media player for GNOME

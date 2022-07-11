@@ -179,6 +179,14 @@ and the maven-build-system."))
         "A group of mentors who chaperone contributions by newcomers."))
 
 
+(define-member (person "Thiago Jung Bauermann"
+                       "bauermann@kolabnow.com")
+  embedded-bootstrap translations)
+
+(define-member (person "Lars-Dominik Braun"
+                       "lars@6xq.net")
+  python haskell)
+
 (define-member (person "Ludovic Courtès"
                        "ludo@gnu.org")
   core home embedded-bootstrap mentors)
@@ -187,6 +195,10 @@ and the maven-build-system."))
                        "andreas@enge.fr")
   science)
 
+(define-member (person "Björn Höfling"
+                       "bjoern.hoefling@bjoernhoefling.de")
+  java)
+
 (define-member (person "Leo Famulari"
                        "leo@famulari.name")
   kernel)
@@ -194,6 +206,10 @@ and the maven-build-system."))
 (define-member (person "Efraim Flashner"
                        "efraim@flashner.co.il")
   embedded-bootstrap julia rust science)
+
+(define-member (person "jgart"
+                       "jgart@dismail.de")
+  python lisp mentors)
 
 (define-member (person "Julien Lepiller"
                        "julien@lepiller.eu")
@@ -210,6 +226,10 @@ and the maven-build-system."))
 (define-member (person "Ricardo Wurmus"
                        "rekado@elephly.net")
   r core mentors)
+
+(define-member (person "Christopher Baines"
+                       "mail@cbaines.net")
+  core mentors ruby)
 
 
 (define (find-team name)
