@@ -11,7 +11,7 @@
 ;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015, 2016, 2017, 2018, 2021 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015 David Thompson <davet@gnu.org>
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015-2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2017, 2018 Rene Saavedra <pacoon@protonmail.com>
 ;;; Copyright © 2016 Jochem Raat <jchmrt@riseup.net>
 ;;; Copyright © 2016, 2017, 2019 Kei Kebreau <kkebreau@posteo.net>
@@ -1584,15 +1584,15 @@ sharing to the masses.")
 (define-public sushi
   (package
     (name "sushi")
-    (version "3.38.1")
+    (version "42.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
-                                  (version-major+minor version) "/"
+                                  (version-major version) "/"
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "1sc8i0vrw6bn43rklnwp2fl1gq0r0xfd3bszcqxd0a2mh46d3rpk"))))
+                "0848gidl0ab8i5pa70mv8jzchmd9kqa8sn1lg977hyasyixdpn25"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
@@ -1608,27 +1608,28 @@ sharing to the masses.")
                  `("GI_TYPELIB_PATH" suffix
                    (,(getenv "GI_TYPELIB_PATH"))))))))))
     (native-inputs
-     `(("glib:bin" ,glib "bin")
-       ("gettext" ,gettext-minimal)
-       ("gobject-introspection" ,gobject-introspection)
-       ("pkg-config" ,pkg-config)))
+     (list `(,glib "bin")
+           gettext-minimal
+           gobject-introspection
+           pkg-config))
     (inputs
-     `(("clutter" ,clutter)
-       ("clutter-gst" ,clutter-gst)
-       ("clutter-gtk" ,clutter-gtk)
-       ("evince" ,evince)                         ; For file previewing.
-       ("freetype" ,freetype)
-       ("gdk-pixbuf" ,gdk-pixbuf)
-       ("gjs" ,gjs)
-       ("gst-plugins-base" ,gst-plugins-base)
-       ("gstreamer" ,gstreamer)
-       ("gtksourceview" ,gtksourceview)
-       ("harfbuzz" ,harfbuzz)
-       ("libepoxy" ,libepoxy)
-       ("libmusicbrainz" ,libmusicbrainz)
-       ("libxml2" ,libxml2)
-       ("neon" ,neon)
-       ("webkitgtk" ,webkitgtk-with-libsoup2)))
+     (list bash-minimal
+           clutter
+           clutter-gst
+           clutter-gtk
+           evince                       ; For file previewing.
+           freetype
+           gdk-pixbuf
+           gjs
+           gst-plugins-base
+           gstreamer
+           gtksourceview
+           harfbuzz
+           libepoxy
+           libmusicbrainz
+           libxml2
+           neon
+           webkitgtk))
     (synopsis "File previewer for the GNOME desktop")
     (description "Sushi is a DBus-activated service that allows applications
 to preview files on the GNOME desktop.")
@@ -1765,14 +1766,14 @@ configuration files for the GNOME menu, as well as a simple menu editor.")
 (define-public deja-dup
   (package
     (name "deja-dup")
-    (version "42.8")
+    (version "43.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://gitlab.gnome.org/World/deja-dup/-/archive/"
                                   version "/deja-dup-" version ".tar.bz2"))
               (sha256
                (base32
-                "0d1jnlxpk52x56aqxz1g2xb4y4sm24h08p2di8mc1k8n8b52rpi4"))))
+                "1mr2g009w0zm5rj8dg1k77c7zdwylih2yszm8vh8wkw6al6bzfh3"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
@@ -1786,7 +1787,7 @@ configuration files for the GNOME menu, as well as a simple menu editor.")
          (add-after 'unpack 'patch-paths
            (lambda* (#:key inputs #:allow-other-keys)
              (let ((python (assoc-ref inputs "python")))
-               (substitute* '("libdeja/tools/duplicity/DuplicityInstance.vala"
+               (substitute* '("libdeja/duplicity/DuplicityInstance.vala"
                               "libdeja/tests/scripts/instance-error.test")
                  (("/bin/rm")
                   (which "rm")))
@@ -1801,14 +1802,7 @@ configuration files for the GNOME menu, as well as a simple menu editor.")
              (let ((libgpg-error (assoc-ref inputs "libgpg-error")))
                (substitute* "meson.build"
                  (("(gpgerror_libs = ).*" _ var)
-                  (format #f "~a '-L~a/lib -lgpg-error'\n" var libgpg-error))))
-             #t))
-         (add-after 'unpack 'skip-gtk-update-icon-cache
-           ;; Don't create 'icon-theme.cache'.
-           (lambda _
-             (substitute* "data/post-install.sh"
-               (("gtk-update-icon-cache") "true"))
-             #t))
+                  (format #f "~a '-L~a/lib -lgpg-error'\n" var libgpg-error))))))
          (add-after 'install 'wrap-program
            (lambda* (#:key inputs outputs #:allow-other-keys)
              ;; Add duplicity to the search path
@@ -1817,28 +1811,30 @@ configuration files for the GNOME menu, as well as a simple menu editor.")
                `("PATH" ":" prefix
                  (,(string-append (assoc-ref inputs "duplicity") "/bin")))))))))
     (inputs
-     `(("bash-minimal" ,bash-minimal)
-       ("duplicity" ,duplicity)
-       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("gtk+" ,gtk+)
-       ("json-glib" ,json-glib)
-       ("libgpg-error" ,libgpg-error)
-       ("libnotify" ,libnotify)
-       ("libsecret" ,libsecret)
-       ("libsoup" ,libsoup-minimal-2)
-       ("libhandy" ,libhandy)
-       ("packagekit" ,packagekit)
-       ("python" ,python)
-       ("python-pygobject" ,python-pygobject)))
+     (list bash-minimal
+           duplicity
+           gsettings-desktop-schemas
+           gtk
+           json-glib
+           libadwaita
+           libgpg-error
+           libnotify
+           libsecret
+           libsoup
+           libhandy
+           packagekit
+           python
+           python-pygobject))
     (native-inputs
-     `(("appstream-glib" ,appstream-glib)
-       ("desktop-file-utils" ,desktop-file-utils)
-       ("gettext" ,gettext-minimal)
-       ("glib" ,glib "bin")             ; for glib-compile-schemas.
-       ("gobject-introspection" ,gobject-introspection)
-       ("itstool" ,itstool)
-       ("pkg-config" ,pkg-config)
-       ("vala" ,vala)))
+     (list appstream-glib
+           desktop-file-utils
+           gettext-minimal
+           `(,glib "bin")               ;for glib-compile-schemas
+           gobject-introspection
+           `(,gtk "bin")                ;for gtk-update-icon-cache
+           itstool
+           pkg-config
+           vala))
     (home-page "https://wiki.gnome.org/Apps/DejaDup")
     (synopsis "Simple backup tool, for regular encrypted backups")
     (description
@@ -6460,7 +6456,7 @@ part of udev-extras, then udev, then systemd.  It's now a project on its own.")
 (define-public gvfs
   (package
     (name "gvfs")
-    (version "1.48.1")
+    (version "1.50.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/gvfs/"
@@ -6468,51 +6464,51 @@ part of udev-extras, then udev, then systemd.  It's now a project on its own.")
                                   "gvfs-" version ".tar.xz"))
               (sha256
                (base32
-                "1hlxl6368h6nyqp1888szxs9hnpcw98k3h23dgqi29xd38klzsmj"))))
+                "0pmc0vda1ksm9l7v64h4bm8qnv16amb7nifgy0882hzg2n62pmq3"))))
     (build-system meson-build-system)
     (arguments
-     `(#:glib-or-gtk? #t
-       #:configure-flags
-       (list "-Dsystemduserunitdir=no"
-             "-Dtmpfilesdir=no"
-             ;; Otherwise, the RUNPATH will lack the final path component.
-             (string-append "-Dc_link_args=-Wl,-rpath="
-                            (assoc-ref %outputs "out") "/lib/gvfs"))))
+     (list #:glib-or-gtk? #t
+           #:configure-flags
+           #~(list "-Dsystemduserunitdir=no"
+                   "-Dtmpfilesdir=no"
+                   ;; Otherwise, the RUNPATH will lack the final path component.
+                   (string-append "-Dc_link_args=-Wl,-rpath="
+                                  #$output "/lib/gvfs"))))
     (native-inputs
-     `(("glib:bin" ,glib "bin")         ;for glib-genmarshal, etc.
-       ("gettext" ,gettext-minimal)
-       ("gtk-doc" ,gtk-doc/stable)
-       ("pkg-config" ,pkg-config)
-       ("xsltproc" ,libxslt)))
+     (list `(,glib "bin")               ;for glib-genmarshal, etc.
+           gettext-minimal
+           gtk-doc/stable
+           pkg-config
+           libxslt))
     (inputs
-     `(("avahi" ,avahi)
-       ("docbook-xml" ,docbook-xml-4.2)
-       ("docbook-xsl" ,docbook-xsl)
-       ("dbus" ,dbus)
-       ("elogind" ,elogind)
-       ("fuse" ,fuse-3)
-       ("gcr" ,gcr)
-       ("glib" ,glib)
-       ("gnome-online-accounts" ,gnome-online-accounts)
-       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("libarchive" ,libarchive)
-       ("libbluray" ,libbluray)
-       ("libcap" ,libcap)
-       ("libcdio-paranoia" ,libcdio-paranoia)
-       ("libgcrypt" ,libgcrypt)
-       ("libgdata" ,libgdata)
-       ("libgphoto2" ,libgphoto2)
-       ("libgudev" ,libgudev)
-       ("libimobiledevice" ,libimobiledevice)
-       ("libmtp" ,libmtp)
-       ("libnfs" ,libnfs)
-       ("libsecret" ,libsecret)
-       ("libsmbclient" ,samba)
-       ("libsoup" ,libsoup)
-       ("libxml2" ,libxml2)
-       ("openssh" ,openssh)
-       ("polkit" ,polkit)
-       ("udisks" ,udisks)))
+     (list avahi
+           docbook-xml-4.2
+           docbook-xsl
+           dbus
+           elogind
+           fuse-3
+           gcr
+           glib
+           gnome-online-accounts
+           gsettings-desktop-schemas
+           libarchive
+           libbluray
+           libcap
+           libcdio-paranoia
+           libgcrypt
+           libgdata
+           libgphoto2
+           libgudev
+           libimobiledevice
+           libmtp
+           libnfs
+           libsecret
+           samba
+           libsoup
+           libxml2
+           openssh
+           polkit
+           udisks))
     (home-page "https://wiki.gnome.org/gvfs/")
     (synopsis "Userspace virtual file system for GIO")
     (description
@@ -8805,7 +8801,7 @@ easy, safe, and automatic.")
 (define-public tracker
   (package
     (name "tracker")
-    (version "3.1.2")
+    (version "3.3.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/tracker/"
@@ -8813,7 +8809,7 @@ easy, safe, and automatic.")
                                   "tracker-" version ".tar.xz"))
               (sha256
                (base32
-                "13zcc07wd51sz7kglk3xbjrsq7d835cxfr7iwjr7nn2xcri8jdns"))))
+                "1lkf353xvwc0hfyi03aq2qjikx3zmva7r56nxiavy7kqjyygbmjs"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
@@ -8844,28 +8840,31 @@ easy, safe, and automatic.")
                (invoke "dbus-run-session" "--" "meson" "test"
                        "--print-errorlogs")))))))
     (native-inputs
-     `(("glib:bin" ,glib "bin")
-       ("gobject-introspection" ,gobject-introspection)
-       ("docbook-xsl" ,docbook-xsl)
-       ("docbook-xml-4.5" ,docbook-xml)
-       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("asciidoc" ,asciidoc)
-       ("xsltproc" ,libxslt)
-       ("cmake-minimal" ,cmake-minimal)
-       ("python-pygobject" ,python-pygobject)
-       ("gtk-doc" ,gtk-doc/stable)
-       ("intltool" ,intltool)
-       ("dbus" ,dbus)
-       ("pkg-config" ,pkg-config)
-       ("python" ,python)
-       ("vala" ,vala)))
+     (list `(,glib "bin")
+           gobject-introspection
+           docbook-xsl
+           docbook-xml
+           gsettings-desktop-schemas
+           asciidoc
+           libxslt
+           cmake-minimal
+           python-pygobject
+           gtk-doc/stable
+           intltool
+           dbus
+           pkg-config
+           python
+           vala))
     (inputs
-     `(("dbus" ,dbus)
-       ("sqlite" ,sqlite)
-       ("libxml2" ,libxml2)
-       ("icu4c" ,icu4c)                 ; libunistring gets miner-miner-fs test to fail.
-       ("json-glib" ,json-glib)
-       ("libsoup" ,libsoup-minimal-2))) ; tracker-miners requires the same version.
+     (list dbus
+           libsoup))
+    (propagated-inputs
+     ;; These are in Requires or Requires.private of tracker-sparql-3.0.pc.
+     (list glib
+           icu4c                ;libunistring gets miner-miner-fs test to fail
+           json-glib
+           libxml2
+           sqlite))
     (synopsis "Metadata database, indexer and search tool")
     (home-page "https://wiki.gnome.org/Projects/Tracker")
     (description
@@ -8898,7 +8897,7 @@ endpoint and it understands SPARQL.")
 (define-public tracker-miners
   (package
     (name "tracker-miners")
-    (version "3.1.2")
+    (version "3.3.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/tracker-miners/"
@@ -8906,12 +8905,12 @@ endpoint and it understands SPARQL.")
                                   "/tracker-miners-" version ".tar.xz"))
               (sha256
                (base32
-                "0fpd69lgm8cckbamcf9c2q57glxf0s3jcfwkq8p3s4lfsvdclmd0"))))
+                "151w6ljq1gk9idqfq9qs3w16vms91jnxy59c9kx6jaf0fb9cdp9y"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
        #:configure-flags
-       (list "-Dminer_rss=false" ; libgrss is required.
+       (list "-Dminer_rss=false"        ; libgrss is required.
              ;; Ensure the RUNPATH contains all installed library locations.
              (string-append "-Dc_link_args=-Wl,-rpath="
                             (assoc-ref %outputs "out")
@@ -8943,58 +8942,62 @@ endpoint and it understands SPARQL.")
                 "foreach example_name: []"))
              ;; Disable this test that is failing randomly:
              ;; https://gitlab.gnome.org/GNOME/tracker-miners/-/issues/170.
-            (substitute* "tests/libtracker-miner/meson.build"
+             (substitute* "tests/libtracker-miner/meson.build"
                (("'miner-fs'.*")
                 ""))))
-        (replace 'check
+         (replace 'check
            (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
                ;; Some tests expect to write to $HOME.
                (setenv "HOME" "/tmp")
                (setenv "LANG" "en_US.UTF-8")
                (invoke "dbus-run-session" "--" "meson" "test"
-                       "--print-errorlogs")))))))
+                       "--print-errorlogs"
+                       ;; Do not run the slow test, which fail (see:
+                       ;; https://gitlab.gnome.org/GNOME/tracker-miners
+                       ;; /-/issues/226).
+                       "--no-suite" "slow")))))))
     (native-inputs
-     `(("dbus" ,dbus)
-       ("intltool" ,intltool)
-       ("glib:bin" ,glib "bin")
-       ("docbook-xsl" ,docbook-xsl)
-       ("docbook-xml-4.5" ,docbook-xml)
-       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("asciidoc" ,asciidoc)
-       ("xsltproc" ,libxslt)
-       ("gobject-introspection" ,gobject-introspection)
-       ("pkg-config" ,pkg-config)
-       ("python-pygobject" ,python-pygobject)))
+     (list dbus
+           intltool
+           `(,glib "bin")
+           docbook-xsl
+           docbook-xml
+           gsettings-desktop-schemas
+           asciidoc
+           libxslt
+           gobject-introspection
+           pkg-config
+           python-pygobject))
     (inputs
-     `(("exempi" ,exempi)
-       ("ffmpeg" ,ffmpeg)
-       ("flac" ,flac)
-       ("giflib" ,giflib)
-       ("glib" ,glib)
-       ("gstreamer" ,gstreamer)
-       ("icu4c" ,icu4c)
-       ("json-glib" ,json-glib)
-       ("libcue" ,libcue)
-       ("libexif" ,libexif)
-       ("libgsf" ,libgsf)
-       ("libgxps" ,libgxps)
-       ("libiptcdata" ,libiptcdata)
-       ("libjpeg" ,libjpeg-turbo)
-       ("libosinfo" ,libosinfo)
-       ("libpng" ,libpng)
-       ("libseccomp" ,libseccomp)
-       ("libsoup" ,libsoup-minimal-2) ; because tracker requires this version.
-       ("libtiff" ,libtiff)
-       ("libvorbis" ,libvorbis)
-       ("libxml2" ,libxml2)
-       ("poppler" ,poppler)
-       ("shared-mime-info" ,shared-mime-info)
-       ("taglib" ,taglib)
-       ("totem-pl-parser" ,totem-pl-parser)
-       ("tracker" ,tracker)
-       ("upower" ,upower)
-       ("zlib" ,zlib)))
+     (list exempi
+           ffmpeg
+           flac
+           giflib
+           glib
+           gstreamer
+           icu4c
+           json-glib
+           libcue
+           libexif
+           libgsf
+           libgxps
+           libiptcdata
+           libjpeg-turbo
+           libosinfo
+           libpng
+           libseccomp
+           libsoup
+           libtiff
+           libvorbis
+           libxml2
+           poppler
+           shared-mime-info
+           taglib
+           totem-pl-parser
+           tracker
+           upower
+           zlib))
     (synopsis "Metadata database, indexer and search tool")
     (home-page "https://wiki.gnome.org/Projects/Tracker")
     (description
@@ -11944,7 +11947,10 @@ It uses pandoc as back-end for parsing Markdown.")
     (arguments
      `(#:configure-flags
        (list "-Dsystemd=false"
-             "-Dlogind-provider=elogind")
+             "-Dlogind-provider=elogind"
+             ,@(if (not (package? (this-package-native-input "valgrind")))
+                 `("-Dtests=false")     ; Some tests still run.
+                 `()))
        #:phases
        (modify-phases %standard-phases
          (add-after 'install 'wrap
@@ -11964,7 +11970,11 @@ It uses pandoc as back-end for parsing Markdown.")
                  python-wrap)
                #t))))))
     (native-inputs
-     (list check pkg-config swig valgrind))
+     (append
+       (list check pkg-config swig)
+       (if (member (%current-system) (package-supported-systems valgrind))
+         (list valgrind)
+         '())))
     (inputs
      `(("glib" ,glib)
        ("json-glib" ,json-glib)
@@ -12602,7 +12612,9 @@ Document Analysis and Recognition program.")
        ("xvfb" ,xorg-server-for-tests)
        ("gettext" ,gettext-minimal)))
     (inputs
-     (list gtk gobject-introspection libportal))
+     (list gobject-introspection libportal))
+    (propagated-inputs
+     (list gtk))                        ;libadwaita-1.pc 'Requires' it
     (home-page "https://gnome.pages.gitlab.gnome.org/libadwaita/")
     (synopsis "Building blocks for GNOME applications")
     (description

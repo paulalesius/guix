@@ -6455,7 +6455,7 @@ toolkits.")
                          (string-append info "/matplotlib-figures"))))))))
     (native-inputs
      (list graphviz
-           inkscape
+           inkscape/stable
            python-colorspacious
            python-mpl-sphinx-theme
            python-scipy
@@ -13148,7 +13148,7 @@ time.")
                            "and not test_execute_widgets_from_nbconvert "
                            "and not test_execute_multiple_notebooks ")))))))))
     (inputs
-     (list inkscape pandoc))
+     (list inkscape/stable pandoc))
     (native-inputs
      (list python-ipykernel
            ;; Adding ipywidgets would create a cycle.
@@ -19000,6 +19000,15 @@ from the header, as well as section details and data available.")
     (build-system python-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
+                  ,@(if (target-riscv64?)
+                      ;; TODO: Remove the conditional on staging.
+                      `((add-after 'unpack 'remove-test-hypothesis-deadlines
+                          (lambda _
+                            (substitute* "tests/test_make.py"
+                              (("assume, given") "assume, given, settings")
+                              (("( +)@given" all spaces)
+                               (string-append spaces "@settings(deadline=None)\n" all))))))
+                      '())
                   (replace 'check
                     (lambda* (#:key tests? #:allow-other-keys)
                       (when tests?

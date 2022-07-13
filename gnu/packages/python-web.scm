@@ -2073,9 +2073,10 @@ connection to each user.")
      '(#:phases
        (modify-phases %standard-phases
          (replace 'check
-           (lambda _
-             (invoke "python" "-m" "tornado.test.runtests")
-             #t)))))
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (setenv "ASYNC_TEST_TIMEOUT" "25")   ; Like in tox.ini.
+               (invoke "python" "-m" "tornado.test.runtests")))))))
     (native-inputs
      (list python-certifi))
     (home-page "https://www.tornadoweb.org/")

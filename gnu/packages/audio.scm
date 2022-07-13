@@ -1952,7 +1952,7 @@ also play midifiles using a Soundfont.")
 (define-public faust-2
   (package
     (inherit faust)
-    (version "2.5.23")
+    (version "2.41.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/grame-cncm/faust/"
@@ -1960,15 +1960,29 @@ also play midifiles using a Soundfont.")
                                   "/faust-" version ".tar.gz"))
               (sha256
                (base32
-                "1yz5jnr76hh7rmxkpdi7gyrw1wp4gyqfpq8zyl97qdi5ga5gjznq"))))
-    (build-system gnu-build-system)
+                "0gk8ifxrbykq7ay0nvjns8fjryhp0wfhv5npgrl8xpgw9wfmw53j"))))
+    (build-system cmake-build-system)
     (arguments
-     (substitute-keyword-arguments (package-arguments faust)
-       ((#:make-flags flags)
-        `(list (string-append "prefix=" (assoc-ref %outputs "out"))
-               "world"))))
+     `(#:tests? #f ; no tests
+       #:phases
+       (modify-phases %standard-phases
+         ;; The upstream package uses make to run cmake during the build stage.
+         ;; Here we ignore the Makefile and call cmake directly.
+         (replace 'configure
+           (lambda _
+             (chdir "build")
+             (invoke "cmake" "-C" "backends/all.cmake"
+                     (string-append "-DCMAKE_INSTALL_PREFIX="
+                      (assoc-ref %outputs "out")))))
+         ;; The sound2faust tool would be built in the Makefile's "world" target
+         (add-after 'install 'sound2faust
+           (lambda _
+             (chdir "../tools/sound2faust")
+             (setenv "PREFIX" (assoc-ref %outputs "out"))
+             (invoke "make")
+             (invoke "make" "install"))))))
     (native-inputs
-     `(("llvm" ,llvm-3.8)
+     `(("llvm" ,llvm)
        ("which" ,which)
        ("xxd" ,xxd)
        ("ctags" ,emacs-minimal)  ; for ctags
@@ -2783,6 +2797,38 @@ add functionality to support the needs of increasingly powerful audio
 software.")
     (license license:isc)))
 
+(define-public ttl2c
+  (package
+    (name "ttl2c")
+    (version "1.0.0")
+    (source (origin
+             (method git-fetch)
+             (uri (git-reference
+                   (url "https://github.com/lvtk/ttl2c")
+                   (commit version)))
+             (file-name (git-file-name name version))
+             (sha256
+              (base32
+               "0aybx8i5i0sridi9130a3937xgmfmjkk8m48f9whvhlhbzwy3xbl"))))
+    (build-system waf-build-system)
+    (arguments
+     (list
+      #:tests? #false  ;no check target
+      #:phases
+      `(modify-phases %standard-phases
+         (add-before 'configure 'setup-waf
+           (lambda* (#:key inputs #:allow-other-keys)
+             (let ((waf (assoc-ref inputs "python-waf")))
+               (copy-file (string-append waf "/bin/waf") "waf")))))))
+    (inputs (list boost))
+    (native-inputs (list python-waf))
+    (home-page "https://github.com/lvtk/ttl2c")
+    (synopsis "Turtle to C header conversion utility for LV2 plugins")
+    (description
+     "This package provides a conversion utility for LV2 Plugin developers to
+generate C headers from Turtle files.")
+    (license license:gpl3+)))
+
 (define-public lv2-mda-piano
   (package
     (name "lv2-mda-piano")
@@ -2806,7 +2852,7 @@ software.")
     (inputs
      (list lv2 lvtk))
     (native-inputs
-     (list pkg-config))
+     (list pkg-config ttl2c))
     (native-search-paths
      (list (search-path-specification
             (variable "LV2_PATH")
@@ -2829,14 +2875,14 @@ software.")
     (synopsis "LV2 port of the mda EPiano plugin")
     (description "An LV2 port of the mda EPiano VSTi.")))
 
-(define-public lvtk
+(define-public lvtk-2
   ;; Use the latest commit, as the latest release was made in 2014 and depends
   ;; on Python 2.
   (let ((commit "a73feabe772f9650aa071e6a4df660e549ab7c48")
         (revision "0"))
     (package
       (name "lvtk")
-      (version (git-version "1.2.0" revision commit))
+      (version (git-version "2" revision commit))
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
@@ -2857,6 +2903,49 @@ software.")
 extensions into easy to use C++ classes.  It is the successor of
 lv2-c++-tools.")
       (license license:isc))))
+
+(define-public lvtk-1
+  ;; Use the latest commit, as the latest release was made in 2014 and depends
+  ;; on Python 2.
+  (let ((commit "23dd99531d88d7821b69f6f0d60516ef322a6729")
+        (revision "0"))
+    (package
+      (name "lvtk")
+      (version (git-version "1.2.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/lvtk/lvtk")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0iw7skvsn3whw69dhcxbbdns7mssaf6z6iyzxjav53607ibyfr8d"))))
+      (build-system waf-build-system)
+      (arguments
+       (list
+        #:tests? #false                 ;no check target
+        #:configure-flags
+        #~(list (string-append "--boost-includes="
+                               #$(this-package-input "boost")
+                               "/include"))
+        #:phases
+        `(modify-phases %standard-phases
+           (add-before 'configure 'setup-waf
+             (lambda* (#:key inputs #:allow-other-keys)
+               (let ((waf (assoc-ref inputs "python-waf")))
+                 (copy-file (string-append waf "/bin/waf") "waf")))))))
+      (inputs (list boost gtkmm lv2))
+      (native-inputs (list pkg-config python-waf))
+      (home-page "https://github.com/lvtk/lvtk")
+      (synopsis "C++ libraries for LV2 plugins")
+      (description
+       "The LV2 Toolkit (LVTK) contains libraries that wrap the LV2 C API and
+extensions into easy to use C++ classes.  It is the successor of
+lv2-c++-tools.")
+      (license license:isc))))
+
+(define-public lvtk lvtk-1)
 
 (define-public openal
   (package

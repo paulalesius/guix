@@ -3537,13 +3537,12 @@ compressed, transparent to other programs, without decompressing them.")
                 "1xngddsph43bxljywahi9d44fxr022slsap4hh91w8xnq54d2sw2"))))
     (build-system gnu-build-system)
     (arguments
-     '(;; There's a 'test' target, but it requires NUMA support in the kernel
+     `(,@(if (target-riscv64?)
+           `(#:make-flags (list "LDFLAGS=-latomic"))
+           '())
+       ;; There's a 'test' target, but it requires NUMA support in the kernel
        ;; to run, which we can't assume to have.
        #:tests? #f))
-
-    ;; NUMA is apparently not supported on armhf, see
-    ;; http://www.spinics.net/lists/linux-numa/msg01157.html
-    (supported-systems (delete "armhf-linux" %supported-systems))
     (home-page "https://github.com/numactl/numactl")
     (synopsis "Tools for non-uniform memory access (NUMA) machines")
     (description
