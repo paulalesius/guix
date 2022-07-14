@@ -5132,7 +5132,7 @@ by the Xorg server.")
 (define-public xorg-server
   (package
     (name "xorg-server")
-    (version "21.1.3")
+    (version "21.1.4")
     (source
      (origin
        (method url-fetch)
@@ -5140,7 +5140,7 @@ by the Xorg server.")
                            "/xserver/xorg-server-" version ".tar.xz"))
        (sha256
         (base32
-         "1rgbrld7spg7plkv3c3bbnlnszpflk5z1mqbjrmi2ymlnvasmmk1"))
+         "11y5w6z3rz3i4jyv0wc3scd2jh3bsmcklq0fm7a5invywj7bxi2w"))
        (patches
         (list
          ;; See:
