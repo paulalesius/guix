@@ -2439,7 +2439,7 @@ from Subversion to any supported Distributed Version Control System (DVCS).")
 (define-public tig
   (package
     (name "tig")
-    (version "2.5.5")
+    (version "2.5.6")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -2447,7 +2447,12 @@ from Subversion to any supported Distributed Version Control System (DVCS).")
                     version "/tig-" version ".tar.gz"))
               (sha256
                (base32
-                "04skfsw5wkf6p47lis7x4xyfbpjik3id1km75q0fd2g8xa5jrfi4"))))
+                "0pwn7mlfnd5ngcbagjs9vsr7jgmia8676p0i91vvfl4v6qrmzfsh"))
+              (modules '((guix build utils)))
+              (snippet
+               '(begin
+                  ;; TODO: Delete and rebuild doc/*.(1|5|7).
+                  (for-each delete-file (find-files "doc" "\\.html$"))))))
     (build-system gnu-build-system)
     (native-inputs
      (list asciidoc xmlto))
@@ -2458,7 +2463,17 @@ from Subversion to any supported Distributed Version Control System (DVCS).")
        (modify-phases %standard-phases
          (add-after 'install 'install-doc
            (lambda _
-             (invoke "make" "install-doc"))))
+             (invoke "make" "install-doc")))
+         (add-after 'install 'install-completions
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out   (assoc-ref outputs "out"))
+                    (share (string-append out "/share")))
+               (mkdir-p (string-append share "/bash-completion/completions"))
+               (mkdir-p (string-append share "/zsh/site-functions"))
+               (copy-file "contrib/tig-completion.bash"
+                          (string-append share "/bash-completion/completions/tig"))
+               (copy-file "contrib/tig-completion.zsh"
+                          (string-append share "/zsh/site-functions/_tig"))))))
        #:test-target "test"
        #:tests? #f))                    ; tests require access to /dev/tty
     (home-page "https://jonas.github.io/tig/")
