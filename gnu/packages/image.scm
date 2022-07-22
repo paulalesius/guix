@@ -1814,7 +1814,7 @@ parsing, viewing, modifying, and saving this metadata.")
 (define-public flameshot
   (package
     (name "flameshot")
-    (version "11.0.0")
+    (version "12.1.0")
     (source
      (origin
        (method git-fetch)
@@ -1824,7 +1824,7 @@ parsing, viewing, modifying, and saving this metadata.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0qw1fq8mrk525wpr07id81i9q0r95hk66c17s8jxi1fldmfw8naa"))))
+         "1p7gqs5vqzbddlgl38lbanchwb14m6lx8f2cn2c5p0vyqwvqqv52"))))
     (build-system qt-build-system)
     (native-inputs
      (list qttools))

@@ -4756,14 +4756,14 @@ isolation or root privileges.")
 (define-public hdparm
   (package
     (name "hdparm")
-    (version "9.63")
+    (version "9.64")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/hdparm/hdparm/"
                                   "hdparm-" version ".tar.gz"))
               (sha256
                (base32
-                "14cni5r116k07zqj0565byjhv6gf3ns6hd8jkjl7fn5sxgm5sy3h"))))
+                "16l5mc6dpqkzhwsljyzks05pq89l2lw09qkx50ks1zn3a5lranri"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags
@@ -7807,26 +7807,27 @@ available in the kernel Linux.")
 (define-public cpuid
   (package
     (name "cpuid")
-    (version "20220224")
+    (version "20220620")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://www.etallen.com/cpuid/cpuid-"
                                   version ".src.tar.gz"))
               (sha256
                (base32
-                "178zv8jclzg3hqm3g5bpjnsp898rbbxfq6ydavw49vla24mdw6aa"))))
+                "06nb69vlv1szdzq1dp784pgbr9z2py050v1hlrn4rr56jp0a2nci"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:make-flags
-       (list (string-append "CC=" ,(cc-for-target)))
-       #:tests? #f                      ; no tests
-       #:phases (modify-phases %standard-phases
-                  (delete 'configure)   ; no configure script
-                  (add-before 'install 'fix-makefile
-                    (lambda* (#:key outputs #:allow-other-keys)
-                      (substitute* "Makefile"
-                        (("\\$\\(BUILDROOT\\)/usr")
-                         (assoc-ref outputs "out"))))))))
+     (list #:make-flags
+           #~(list (string-append "CC=" #$(cc-for-target)))
+           #:tests? #f                  ; no tests
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure)      ; no configure script
+               (add-before 'install 'fix-makefile
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (substitute* "Makefile"
+                     (("\\$\\(BUILDROOT\\)/usr")
+                      (assoc-ref outputs "out"))))))))
     (inputs (list perl))
     (supported-systems '("i686-linux" "x86_64-linux"))
     (home-page "http://www.etallen.com/cpuid.html")

@@ -7521,6 +7521,32 @@ to a key in your preferred mode.")
 SuperCollider is a platform for audio synthesis and algorithmic composition.")
       (license license:gpl2+))))
 
+(define-public emacs-soothe-theme
+  ;; There is no named branch.
+  (let ((commit "0786fe70c6c1b4ddcfb932fdc6862b9611cfc09b")
+	(revision "0"))
+    (package
+     (name "emacs-soothe-theme")
+     (version (git-version "20141027.2233" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/emacsfodder/emacs-soothe-theme")
+	     (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 "10gh1hvxq9gm29r6qzlnva7vjidd7n4kih4z2ihyvbvy9za20xqw"))))
+     (build-system emacs-build-system)
+     (home-page "https://github.com/emacsfodder/emacs-soothe-theme")
+     (synopsis "Colorful, but muted theme for Emacs, dark background with light text")
+     (description
+      "Soothe theme is an amalgam of muted color tones and highlighted
+backgrounds.  It has builtin support for Rainbow delimiters, Org mode,
+Whitespace mode, ECB, Flyspell, Ido, Linum, highlight indentation, Show Paren
+mode.")
+     (license license:gpl3))))
+
 (define-public emacs-company-auctex
   (let ((commit "48c42c58ce2f0e693301b0cb2d085055410c1b25")
         (revision "1"))
@@ -15497,14 +15523,14 @@ one if it fails.")
 (define-public emacs-eldoc
   (package
     (name "emacs-eldoc")
-    (version "1.12.0")
+    (version "1.13.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append
              "https://elpa.gnu.org/packages/eldoc-" version ".tar"))
        (sha256
-        (base32 "1npggpisqnfkc3gx7dr3pjnif7gf571z7s9g7n6vnb213353qskk"))))
+        (base32 "0c05dzrs7vrhibj46jpz625482ah6xywji7way6wcvwc711y74fz"))))
     (build-system emacs-build-system)
     (home-page "http://elpa.gnu.org/packages/eldoc.html")
     (synopsis "Show function arglist or variable docstring in echo area")
@@ -27813,7 +27839,7 @@ contains a track position, playback will start at the specified position.")
 (define-public emacs-org-jira
   (package
    (name "emacs-org-jira")
-   (version "4.3.2")
+   (version "4.3.3")
    (source
     (origin
      (method git-fetch)
@@ -27823,7 +27849,7 @@ contains a track position, playback will start at the specified position.")
      (file-name (git-file-name name version))
      (sha256
       (base32
-       "1hsfkkm3ykdf7n8a6k0mpzilhjpy7vllwrl2s4rfb9mhnaq5yb8y"))))
+       "0awfz4c70pxfj401p4h4j1lxic4pqpgigkldy9wvdkcyhqbphswj"))))
    (build-system emacs-build-system)
    (propagated-inputs
     (list emacs-request emacs-s emacs-dash emacs-org))
@@ -31678,7 +31704,7 @@ Fennel code within Emacs.")
 (define-public emacs-org-modern
   (package
    (name "emacs-org-modern")
-   (version "0.3")
+   (version "0.4")
    (source
      (origin
        (method git-fetch)
@@ -31686,7 +31712,7 @@ Fennel code within Emacs.")
              (url "https://github.com/minad/org-modern")
              (commit version)))
        (sha256
-        (base32 "187fxw2rg0kw1d2binpa32ckp67r4v10j6ypr077g9qn6nkmyvvn"))
+        (base32 "0af9dzp9n3882kvsp3q4008hffq1mp9hjl964mlp5j8vay3x7qbz"))
        (file-name (git-file-name name version))))
    (build-system emacs-build-system)
    (home-page "https://github.com/minad/org-modern")
