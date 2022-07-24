@@ -815,8 +815,8 @@ safety and thread safety guarantees.")
 (define-public rust-1.62
   (let ((base-rust
          (rust-bootstrapped-package
-          rust-1.61 "1.62.0"
-          "09y06qmh7ihi9kgimpp3h4nj3cmgc1zypqyaba10dlk4kf07h23x")))
+          rust-1.61 "1.62.1"
+          "0gqkg34ic77dcvsz69qbdng6g3zfhl6hnhx7ha1mjkyrzipvxb3j")))
     (package
       (inherit base-rust)
       (arguments
