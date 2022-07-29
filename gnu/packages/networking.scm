@@ -906,14 +906,14 @@ residing in IPv4-only networks, even when they are behind a NAT device.")
 (define-public ndisc6
   (package
     (name "ndisc6")
-    (version "1.0.5")
+    (version "1.0.6")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://www.remlab.net/files/ndisc6/ndisc6-"
                                   version ".tar.bz2"))
               (sha256
                (base32
-                "0lgkbnnll8nrr7h63ywd42sg8fiv6jhhymd7rnml8a3yqjgjz4rn"))))
+                "1yrw8maj1646d498ax8xi0jmzk80idrc5x0913x5rwg1kc7224x7"))))
     (build-system gnu-build-system)
     (home-page "https://www.remlab.net/ndisc6/")
     (synopsis "IPv6 diagnostic tools")
@@ -3045,7 +3045,7 @@ networks using zeromq.  It has these key characteristics:
 (define-public libsocketcan
   (package
     (name "libsocketcan")
-    (version "0.0.11")
+    (version "0.0.12")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3054,8 +3054,13 @@ networks using zeromq.  It has these key characteristics:
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "17z2y2r9xkixhr9bxr50m77fh710afl30s7jdhbxrvf56vmal2jr"))))
+                "0nrav2yqxgb7jwnhrwirnxs9ycqqh90sqgv5a8lns837jf385jvq"))))
     (build-system gnu-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               ;; Upstream already puts (more) files in share/doc/libsocketcan.
+               (delete 'install-license-files))))
     (native-inputs
      (list autoconf automake libtool))
     (home-page "https://git.pengutronix.de/cgit/tools/libsocketcan")
@@ -3175,20 +3180,19 @@ Features:
 (define-public net-snmp
   (package
     (name "net-snmp")
-    (version "5.9.1")
+    (version "5.9.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/net-snmp/net-snmp/"
                                   version "/net-snmp-" version ".tar.gz"))
               (sha256
                (base32
-                "0gwcyi9qk707jgfsgmdr9w2w3r892fnqaam9v7zxpkg69njd8zzb"))
+                "02pgl89s8qll5zhdp61rbn6vpl084gx55bjb1cqg3wqvgsdz55r0"))
               (modules '((guix build utils)))
               (snippet
                '(begin
                   ;; Drop bundled libraries.
-                  (delete-file-recursively "snmplib/openssl")
-                  #t))))
+                  (delete-file-recursively "snmplib/openssl")))))
     (build-system gnu-build-system)
     (arguments
      `(#:test-target "test"
@@ -3218,8 +3222,7 @@ Features:
              ;; These tests require network access.
              (for-each delete-file
                        '("testing/fulltests/default/T070com2sec_simple"
-                         "testing/fulltests/default/T071com2sec6_simple"))
-             #t))
+                         "testing/fulltests/default/T071com2sec6_simple"))))
          (add-after 'unpack 'patch-Makefile.PL
            (lambda* (#:key outputs #:allow-other-keys)
              (substitute* "Makefile.in"
@@ -3227,8 +3230,7 @@ Features:
                 (string-append "Makefile.PL PREFIX="
                                (assoc-ref outputs "out")
                                " INSTALLDIRS=site" " NO_PERLLOCAL=1"
-                               " -NET")))
-             #t)))))
+                               " -NET"))))))))
     (inputs
      (list libnl ncurses ; for the ‘apps’
            openssl perl))
@@ -3507,8 +3509,8 @@ and targeted primarily for asynchronous processing of HTTP-requests.")
               ;; on, introducing nondeterminism (see:
               ;; https://github.com/savoirfairelinux/opendht/issues/626).
               (substitute* "tests/Makefile.am"
-                (("tests/dhtrunnertester.(h|cpp)$" all)
-                 (string-append "# " all)))))
+                (("\\bdhtrunnertester\\.(h|cpp)\\b")
+                 ""))))
           (add-after 'unpack 'fix-python-installation-prefix
             ;; Specify the installation prefix for the compiled Python module
             ;; that would otherwise attempt to installs itself to Python's own
@@ -3803,18 +3805,19 @@ service is available at @url{https://pagekite.net/}, or you can run your own.")
 (define-public ipcalc
   (package
     (name "ipcalc")
-    (version "0.41")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "http://jodies.de/ipcalc-archive/"
-                                  name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "12if9sm8h2ac0pgwkw835cgyqjxm6h27k4kfn2vfas9krrqwbafx"))))
-    (inputs `(("perl" ,perl)
-              ("tar" ,tar)
-              ("gzip" ,gzip)
-              ("tarball" ,source)))
+    (version "0.51")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             ;; This is the IPv6-capable continuation of the unmaintained
+             ;; <https://jodies.de/ipcalc-archive/>.
+             (url "https://github.com/kjokjo/ipcalc")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0cnygb69vjmp3by75jcd2z4y3ybp1s7x4nl3d32xa49h8lkhdbfv"))))
+    (inputs `(("perl" ,perl)))
     (build-system trivial-build-system) ;no Makefile.PL
     (arguments
      `(#:modules ((guix build utils))
@@ -3825,25 +3828,21 @@ service is available at @url{https://pagekite.net/}, or you can run your own.")
          (let* ((source (assoc-ref %build-inputs "source"))
                 (perl (string-append (assoc-ref %build-inputs "perl")
                                      "/bin"))
-                (tar (assoc-ref %build-inputs "tar"))
-                (gz  (assoc-ref %build-inputs "gzip"))
                 (out (assoc-ref %outputs "out"))
                 (bin (string-append out "/bin"))
                 (doc (string-append out "/share/doc/ipcalc")))
-           (setenv "PATH" (string-append gz "/bin"))
-           (invoke (string-append tar "/bin/tar") "xvf" source)
-           (chdir (string-append ,name "-" ,version))
+           (copy-recursively source "source")
+           (chdir "source")
 
            (install-file "ipcalc" bin)
-           (patch-shebang (string-append bin "/ipcalc") (list perl))
-           #t))))
+           (patch-shebang (string-append bin "/ipcalc") (list perl))))))
     (synopsis "Simple IP network calculator")
     (description "ipcalc takes an IP address and netmask and calculates the
 resulting broadcast, network, Cisco wildcard mask, and host range.  By giving
 a second netmask, you can design subnets and supernets.  It is also intended
 to be a teaching tool and presents the subnetting results as
 easy-to-understand binary values.")
-    (home-page "http://jodies.de/ipcalc")
+    (home-page "https://github.com/kjokjo/ipcalc")
     (license license:gpl2+)))
 
 (define-public tunctl
@@ -4022,32 +4021,30 @@ thousands of connections is clearly realistic with today's hardware.")
 (define-public lldpd
   (package
     (name "lldpd")
-    (version "1.0.13")
+    (version "1.0.14")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://media.luffy.cx/files/lldpd/lldpd-"
                            version ".tar.gz"))
        (sha256
-        (base32 "00a7v24qhxw80yk2v79wrkfn7br4r8pcajyrpz8j0xx2v1zq4ffn"))
+        (base32 "1s0j5p0mjh1pda1aq5wm4hd41fh1m864jgbs82y5sshi9whijj57"))
        (modules '((guix build utils)))
        (snippet
         '(begin
            ;; Drop bundled library.
-           (delete-file-recursively "libevent")
-           #t))))
+           (delete-file-recursively "libevent")))))
     (arguments
-     `(#:configure-flags
-       (list
-        "--with-privsep-user=nobody"
-        "--with-privsep-group=nogroup"
-        "--localstatedir=/var"
-        "--enable-pie"
-        "--disable-static"
-        "--without-embedded-libevent"
-        (string-append "--with-systemdsystemunitdir="
-                       (assoc-ref %outputs "out")
-                       "/lib/systemd/system"))))
+     (list #:configure-flags
+           #~(list
+              "--with-privsep-user=nobody"
+              "--with-privsep-group=nogroup"
+              "--localstatedir=/var"
+              "--enable-pie"
+              "--disable-static"
+              "--without-embedded-libevent"
+              (string-append "--with-systemdsystemunitdir="
+                             #$output "/lib/systemd/system"))))
     (build-system gnu-build-system)
     (inputs
      (list libevent libxml2 openssl readline))
@@ -4112,14 +4109,14 @@ stamps.")
 (define-public nbd
   (package
     (name "nbd")
-    (version "3.23")
+    (version "3.24")
     (source
       (origin
         (method url-fetch)
         (uri (string-append "mirror://sourceforge/nbd/nbd/" version
                             "/nbd-" version ".tar.xz"))
         (sha256
-         (base32 "1d2phi0m9x32p9zddv9fpkhj1rbhlvq93wsn9niy7i3aavn71x6y"))))
+         (base32 "036ib2d5722sx9nn7jydqfpl5ici5if2z7g8xrskzcx74dniaxv8"))))
     (build-system gnu-build-system)
     (inputs
      (list glib))

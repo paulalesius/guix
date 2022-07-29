@@ -6264,7 +6264,7 @@ subsequent visualization, annotation and storage of results.")
 (define-public plink-ng
   (package (inherit plink)
     (name "plink-ng")
-    (version "2.00a3-20220315")
+    (version "2.00a3.3")
     (source
      (origin
        (method git-fetch)
@@ -6273,12 +6273,14 @@ subsequent visualization, annotation and storage of results.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "19inr47jwddkjb9kfb14yxc7xb16c73lkhgxj9sncb0fsiskb4x8"))))
+        (base32 "0m8wkyvbgvcr5kzc284w8fbhpxwglh2c1xq0yc3yv00a53gs7rv0"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags
        ,#~(list "BLASFLAGS=-llapack -lopenblas"
-                "CFLAGS=-Wall -O2 -DDYNAMIC_ZLIB=1"
+                (string-append "CFLAGS=-Wall -O2 -DDYNAMIC_ZLIB=1"
+                               " -I" (search-input-directory
+                                       %build-inputs "include/simde"))
                 "ZLIB=-lz"
                 "BIN=plink prettify"
                 (string-append "CC=" #$(cc-for-target))
@@ -6305,7 +6307,7 @@ subsequent visualization, annotation and storage of results.")
     (inputs
      (list lapack openblas zlib))
     (native-inputs
-     (list diffutils plink python)) ; for tests
+     (list diffutils plink python simde)) ; for tests
     (home-page "https://www.cog-genomics.org/plink/")
     (license license:gpl3+)))
 
