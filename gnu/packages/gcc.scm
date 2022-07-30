@@ -970,7 +970,7 @@ as the 'native-search-paths' field."
 
 (define-public libgccjit
   (package
-    (inherit gcc-9)
+    (inherit gcc-12)
     (name "libgccjit")
     (outputs (delete "lib" (package-outputs gcc)))
     (properties (alist-delete 'hidden? (package-properties gcc)))
@@ -1382,3 +1382,4 @@ to be a tutorial of the language.  Rather, it outlines all of the constructs
 of the language.  Library functions are not included.")
     (home-page "https://www.gnu.org/software/gnu-c-manual/")
     (license fdl1.3+)))
+
