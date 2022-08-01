@@ -232,8 +232,8 @@ XMPP-based sessions.")
        ("libidn" ,libidn)
        ("qca" ,qca)
        ("qtbase" ,qtbase-5)
-       ("qtmultimedia" ,qtmultimedia)
-       ("qtsvg" ,qtsvg)
+       ("qtmultimedia-5" ,qtmultimedia-5)
+       ("qtsvg-5" ,qtsvg-5)
        ("qtwebkit" ,qtwebkit)
        ("qtx11extras" ,qtx11extras)
        ("x11" ,libx11)
@@ -1476,12 +1476,12 @@ default.")
     (inputs (list kirigami
                   knotifications
                   qtbase-5
-                  qtdeclarative
+                  qtdeclarative-5
                   qtgraphicaleffects
                   qtlocation
-                  qtquickcontrols2
-                  qtsvg
-                  qtmultimedia
+                  qtquickcontrols2-5
+                  qtsvg-5
+                  qtmultimedia-5
                   qtxmlpatterns
                   qqc2-desktop-style
                   qxmpp
@@ -1810,7 +1810,7 @@ instant messenger with audio and video chat capabilities.")
                          ,(list (search-input-directory
                                  inputs "lib/qt5/plugins/"))))))))))
     (native-inputs
-     (list pkg-config qttools))
+     (list pkg-config qttools-5))
     (inputs
      (list ffmpeg
            filteraudio
@@ -1826,7 +1826,7 @@ instant messenger with audio and video chat capabilities.")
            openal
            qrencode
            qtbase-5
-           qtsvg
+           qtsvg-5
            sqlcipher))
     (home-page "https://qtox.github.io/")
     (synopsis "Tox chat client using Qt")
@@ -2325,7 +2325,7 @@ notifications, and Python scripting support.")
         (base32 "0gkwr3yw6k2m0j8cc085b5p2q788rf5nhp1p5hc5d55pc7mci2qs"))))
     (build-system cmake-build-system)
     (inputs
-     (list qtbase-5 qtmultimedia))
+     (list qtbase-5 qtmultimedia-5))
     (arguments
      `(#:configure-flags (list "-DBUILD_SHARED_LIBS=ON")
        #:tests? #f))                    ; no tests
@@ -2457,18 +2457,18 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
            mtxclient
            openssl
            qtbase-5
-           qtdeclarative
+           qtdeclarative-5
            qtkeychain
            qtgraphicaleffects
-           qtmultimedia
-           qtquickcontrols2
-           qtsvg
+           qtmultimedia-5
+           qtquickcontrols2-5
+           qtsvg-5
            spdlog
            single-application-qt5
            xcb-util-wm
            zlib))
     (native-inputs
-     (list asciidoc doxygen graphviz pkg-config qttools))
+     (list asciidoc doxygen graphviz pkg-config qttools-5))
     (home-page "https://github.com/Nheko-Reborn/nheko")
     (synopsis "Desktop client for Matrix using Qt and C++14")
     (description "@code{Nheko} want to provide a native desktop app for the
@@ -2497,12 +2497,12 @@ notification, emojis, E2E encryption, and voip calls.")
     (inputs
      (list libqmatrixclient
            qtbase-5
-           qtdeclarative
-           qtmultimedia
-           qtquickcontrols
-           qtquickcontrols2
-           qtsvg
-           qttools
+           qtdeclarative-5
+           qtmultimedia-5
+           qtquickcontrols-5
+           qtquickcontrols2-5
+           qtsvg-5
+           qttools-5
            xdg-utils))
     (arguments
      `(#:tests? #f))                    ; no tests
@@ -2911,9 +2911,9 @@ as phones, embedded computers or microcontrollers.")
                   "\"../build"))
                #t)))))
       (inputs
-       (list qtbase-5 qtdeclarative qtwebchannel))
+       (list qtbase-5 qtdeclarative-5 qtwebchannel-5))
       (propagated-inputs
-       (list qtwebengine))
+       (list qtwebengine-5))
       (home-page "https://movim.eu/")
       (synopsis "Desktop Application for Movim")
       (description
@@ -3040,8 +3040,8 @@ social and chat platform.")
        ("qite" ,qite)
        ("qtbase" ,qtbase-5)
        ("qtkeychain" ,qtkeychain)
-       ("qtmultimedia" ,qtmultimedia)
-       ("qtsvg" ,qtsvg)
+       ("qtmultimedia-5" ,qtmultimedia-5)
+       ("qtsvg-5" ,qtsvg-5)
        ("qtx11extras" ,qtx11extras)
        ("usrsctp" ,usrsctp)
        ("x11" ,libx11)

@@ -1346,7 +1346,7 @@ channels.")
         (base32 "1qm6bvj28l42km009nc60gffn1qhngc0m2wjlhf90si3mcc8d99m"))))
     (build-system cmake-build-system)
     (arguments
-     '(#:test-target "tests"
+     `(#:test-target "tests"
        #:configure-flags (list "-DEXIV2_BUILD_UNIT_TESTS=ON"
                                ;; darktable needs BMFF to support
                                ;; CR3 files.
@@ -1357,7 +1357,19 @@ channels.")
            (lambda* (#:key outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
                     (lib (string-append out "/lib")))
-               (for-each delete-file (find-files lib "\\.a$"))))))))
+               (for-each delete-file (find-files lib "\\.a$")))))
+
+         ,@(if (or (target-ppc64le?) (target-aarch64?))
+               '((add-after 'unpack 'adjust-tests
+                   (lambda _
+                     ;; Adjust test on ppc64 and aarch64, where no exception
+                     ;; is raised and thus the return value is different.  See
+                     ;; <https://github.com/Exiv2/exiv2/issues/365> and
+                     ;; <https://github.com/Exiv2/exiv2/issues/933>.
+                     (substitute* "tests/bugfixes/github/test_CVE_2018_12265.py"
+                       (("\\$uncaught_exception \\$addition_overflow_message\n") "")
+                       (("retval = \\[1\\]") "retval = [0]")))))
+               '()))))
     (propagated-inputs
      (list expat zlib))
     (native-inputs
@@ -1828,9 +1840,9 @@ parsing, viewing, modifying, and saving this metadata.")
          "1p7gqs5vqzbddlgl38lbanchwb14m6lx8f2cn2c5p0vyqwvqqv52"))))
     (build-system qt-build-system)
     (native-inputs
-     (list qttools))
+     (list qttools-5))
     (inputs
-     (list qtbase-5 qtsvg))
+     (list qtbase-5 qtsvg-5))
     (arguments
      `(#:tests? #f))                    ;no tests
     (home-page "https://github.com/flameshot-org/flameshot")

@@ -1830,18 +1830,15 @@ at once based on a Perl regular expression.")
                     (lambda* (#:key inputs #:allow-other-keys)
                       (substitute* "rc/weekly"
                         (("/bin/kill")
-                         (string-append (assoc-ref inputs "coreutils*")
-                                        "/bin/kill"))
+                         (search-input-file inputs "/bin/kill"))
                         (("syslogd\\.pid")
                          ;; The file is called 'syslog.pid' (no 'd').
-                         "syslog.pid"))
-                      #t))
+                         "syslog.pid"))))
                   (add-after 'install 'install-info
                     (lambda _
                       (invoke "make" "install-info"))))))
     (native-inputs (list texinfo automake util-linux)) ; for 'cal'
-    (inputs `(("coreutils*" ,coreutils)
-              ("mailutils" ,mailutils)))
+    (inputs (list coreutils mailutils))
     (home-page "https://www.gnu.org/software/rottlog/")
     (synopsis "Log rotation and management")
     (description
@@ -2140,7 +2137,7 @@ command.")
     (inherit wpa-supplicant)
     (name "wpa-supplicant-gui")
     (inputs (modify-inputs (package-inputs wpa-supplicant)
-              (prepend qtbase-5 qtsvg)))
+              (prepend qtbase-5 qtsvg-5)))
     (native-inputs
      ;; For icons.
      (modify-inputs (package-native-inputs wpa-supplicant)
@@ -2160,7 +2157,7 @@ command.")
                   (replace 'install
                     (lambda* (#:key inputs outputs #:allow-other-keys)
                       (let ((out (assoc-ref outputs "out"))
-                            (qt '("qtbase" "qtsvg")))
+                            (qt '("qtbase" "qtsvg-5")))
                         (install-file "wpa_gui" (string-append out "/bin"))
                         (install-file "wpa_gui.desktop"
                                       (string-append out "/share/applications"))

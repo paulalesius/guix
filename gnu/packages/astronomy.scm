@@ -607,7 +607,7 @@ deconvolution).  Such post-processing is not performed by Stackistry.")
     (inputs
      (list qtbase-5
            qtlocation
-           qtmultimedia
+           qtmultimedia-5
            qtscript
            qtserialport
            zlib))
@@ -615,7 +615,7 @@ deconvolution).  Such post-processing is not performed by Stackistry.")
      `(("gettext" ,gettext-minimal)     ; xgettext is used at compile time
        ("perl" ,perl)                   ; for pod2man
        ("qtbase" ,qtbase-5)               ; Qt MOC is needed at compile time
-       ("qttools" ,qttools)))
+       ("qttools-5" ,qttools-5)))
     (arguments
      `(#:test-target "test"
        #:configure-flags (list "-DENABLE_TESTING=1"
@@ -1131,6 +1131,48 @@ Mechanics, Astrometry and Astrodynamics library.")
     (license (list license:lgpl2.0+
                    license:gpl2+)))) ; examples/transforms.c & lntest/*.c
 
+(define-public libsep
+  (package
+    (name "libsep")
+    (version "1.2.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/kbarbary/sep")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0sag96am6r1ffh9860yq40js874362v3132ahlm6sq7padczkicf"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                           (string-append "PREFIX=" #$output))
+      #:phases #~(modify-phases %standard-phases
+                   (replace 'check
+                     (lambda* (#:key tests? #:allow-other-keys)
+                       (when tests?
+                         (chdir "../source")
+                         (invoke "make"
+                                 (string-append "CC=" #$(cc-for-target))
+                                 "test")))))))
+    (native-inputs
+     (list python-wrapper))
+    (home-page "https://github.com/kbarbary/sep")
+    (synopsis "Astronomical source extraction and photometry library")
+    (description
+     "SEP makes the core algorithms of
+@url{https://www.astromatic.net/software/sextractor/, sextractor} available as a
+library of stand-alone functions and classes.  These operate directly on
+in-memory arrays (no FITS files or configuration files).  The code is derived
+from the Source Extractor code base (written in C) and aims to produce results
+compatible with Source Extractor whenever possible.  SEP consists of a C library
+with no dependencies outside the standard library, and a Python module that
+wraps the C library in a Pythonic API.  The Python wrapper operates on NumPy
+arrays with NumPy as its only dependency.")
+    (license (list license:expat license:lgpl3+ license:bsd-3))))
+
 (define-public libskry
   (package
     (name "libskry")
@@ -1608,27 +1650,18 @@ functions, so that they can be called with scalar or array inputs.")
 
 (define-public python-sep
   (package
+    (inherit libsep)
     (name "python-sep")
-    (version "1.1.1")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "sep" version))
-       (sha256
-        (base32 "0wxdqn92q1grv8k7xi7h88ac6wnznw4xh5bdlz1vz6za2dgsyj4m"))))
     (build-system python-build-system)
+    (arguments
+     (strip-keyword-arguments
+      '(#:make-flags) (package-arguments libsep)))
     (native-inputs
-     (list python-cython python-pytest))
-    (inputs
-     (list python-numpy))
-    (home-page "https://github.com/kbarbary/sep")
-    (synopsis "Astronomical source extraction and photometry library")
-    (description
-     "SEP makes the core algorithms of Source Extractor available as a library
-of stand-alone functions and classes.")
-    (license (list license:bsd-3
-                   license:expat
-                   license:lgpl3+))))
+     (modify-inputs (package-inputs libsep)
+       (prepend python-cython)))
+    (propagated-inputs
+     (modify-inputs (package-inputs libsep)
+       (prepend python-numpy)))))
 
 (define-public python-asdf
   (package

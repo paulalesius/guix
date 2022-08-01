@@ -78,7 +78,7 @@
                 "0hcdysw8ibr66vk8i7v56l0v5ijvhlq67v4460mc2xf2910g2m72"))))
     (build-system qt-build-system)
     (native-inputs
-     (list extra-cmake-modules pkg-config qttools))
+     (list extra-cmake-modules pkg-config qttools-5))
     (inputs
      (list elogind
            glib
@@ -86,14 +86,14 @@
            libxkbcommon
            linux-pam
            qtbase-5
-           qtdeclarative
+           qtdeclarative-5
            ;; Some user-defined themes use QtQuick components internally.  Adding
            ;; QtQuick & co. here; they end up in QML2_IMPORT_PATH thanks to
            ;; 'wrap-qt-program'.
            qtgraphicaleffects
-           qtquickcontrols
-           qtquickcontrols2
-           qtsvg
+           qtquickcontrols-5
+           qtquickcontrols2-5
+           qtsvg-5
            shadow
            wayland))
     (arguments
