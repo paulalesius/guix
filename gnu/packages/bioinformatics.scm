@@ -12102,14 +12102,14 @@ allowing the insertion of arbitrary types into the tree.")
 (define-public python-intervaltree
   (package
     (name "python-intervaltree")
-    (version "3.0.2")
+    (version "3.1.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "intervaltree" version))
        (sha256
         (base32
-         "0wz234g6irlm4hivs2qzmnywk0ss06ckagwh15nflkyb3p462kyb"))))
+         "0bcm6c6r4ck9nfj9xwz4rm2swc5lrjvmw3lyl6rgj639jf41nawh"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -12473,6 +12473,35 @@ efficiently.")
 juicer) and single-resolution or multi-resolution @code{.cool} files (for
 cooler).  Both @code{hic} and @code{cool} files describe Hi-C contact
 matrices.")
+    (license license:expat)))
+
+(define-public python-scanorama
+  (package
+    (name "python-scanorama")
+    (version "1.7.2")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "scanorama" version))
+              (sha256
+               (base32
+                "0il7bf4c7vli2dm2jx7dskh3ymgv8nmk0y90jzgfrnqjzh250x5w"))))
+    (build-system python-build-system)
+    (propagated-inputs
+     (list python-annoy
+           python-fbpca
+           python-geosketch
+           python-intervaltree
+           python-matplotlib
+           python-numpy
+           python-scikit-learn
+           python-scipy))
+    (home-page "https://github.com/brianhie/scanorama")
+    (synopsis "Panoramic stitching of heterogeneous single cell transcriptomic data")
+    (description
+     "Scanorama enables batch-correction and integration of heterogeneous
+scRNA-seq datasets, which is described in the paper \"Efficient integration of
+heterogeneous single-cell transcriptomes using Scanorama\" by Brian Hie, Bryan
+Bryson, and Bonnie Berger.")
     (license license:expat)))
 
 (define-public r-pore

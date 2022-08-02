@@ -13484,6 +13484,38 @@ regressions).  NOTE: Weighted partial correlation calculations pulled to
 address a bug.")
   (license license:gpl2+)))
 
+(define-public r-rcppalgos
+  (package
+    (name "r-rcppalgos")
+    (version "2.5.3")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "RcppAlgos" version))
+              (sha256
+               (base32
+                "1ndibdf3k02bpcgackzviczramzkay9idn071nix3dhs5miq1ai8"))))
+    (properties `((upstream-name . "RcppAlgos")))
+    (build-system r-build-system)
+    (inputs (list gmp))
+    (propagated-inputs (list r-cpp11 r-gmp))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/jwood000/RcppAlgos")
+    (synopsis
+     "High performance tools for combinatorics and computational mathematics")
+    (description
+     "This package provides optimized functions and flexible combinatorial
+iterators implemented in C++ for solving problems in combinatorics and
+computational mathematics.  It utilizes the @code{RMatrix} class from
+@code{RcppParallel} for thread safety.  There are combination/permutation
+functions with constraint parameters that allow for generation of all results
+of a vector meeting specific criteria.  It is capable of generating specific
+combinations/permutations which sets up nicely for parallelization as well as
+random sampling.  Gmp support permits exploration where the total number of
+results is large.  Additionally, there are several high performance number
+theoretic functions that are useful for problems common in computational
+mathematics.")
+    (license license:gpl2+)))
+
 (define-public r-rcppannoy
   (package
     (name "r-rcppannoy")
@@ -14591,6 +14623,27 @@ library which allows parsing of NEXUS, Newick and other phylogenetic tree
     (description "This package provides a base @code{S4} class for comparative
 methods, incorporating one or more trees and trait data.")
     (license license:gpl2+)))
+
+(define-public r-phylotools
+  (package
+    (name "r-phylotools")
+    (version "0.2.2")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "phylotools" version))
+              (sha256
+               (base32
+                "1dhk1ncp5zi4zl1xfnjz64v983dm7bq7iimfjin80j0bdcpps44w"))))
+    (properties `((upstream-name . "phylotools")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-ape))
+    (home-page "https://github.com/helixcn/phylotools")
+    (synopsis "Phylogenetic tools for eco-phylogenetics")
+    (description
+     "This package provides a collection of tools for building RAxML
+supermatrix using PHYLIP or aligned FASTA files.  These functions will be
+useful for building large phylogenies using multiple markers.")
+    (license license:gpl2)))
 
 (define-public r-rnexml
   (package
