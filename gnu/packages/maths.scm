@@ -5152,111 +5152,119 @@ revised simplex and the branch-and-bound methods.")
         (base32 "0fnwlhzsh85qj38cq3igbs8nm1b2jdgr2z734sapmyyzsy21mkgp"))))
     (build-system cmake-build-system)
     (native-inputs
-     `(("gfortran" ,gfortran)
-       ;; Trilinos's repository contains several C-shell scripts, but adding
-       ;; tcsh to the native inputs does not result in the check phase running
-       ;; any more tests than without it (nor is tcsh required to build
-       ;; Trilinos).
-       ;; It seems that Trilinos has replaced its use of C-shell test scripts
-       ;; with CMake's testing facilities.
-       ;; For example,
-       ;; packages/zoltan/doc/Zoltan_html/dev_html/dev_test_script.html [1]
-       ;; states that Zoltan's C-shell test script
-       ;; packages/zoltan/test/test_zoltan has been obsoleted by the tests now
-       ;; performed through CMake.
-       ;;
-       ;; Perl is required for some Zoltan tests and Python 2 for one ML test.
-       ;;
-       ;; [1]: https://cs.sandia.gov/zoltan/dev_html/dev_test_script.html
-       ("perl" ,perl)
-       ("python" ,python-2)))
+     (list
+      ;; The build fails with the current gcc.
+      ;; Use the version from when Trilinos was added.
+      gcc-7
+      gfortran
+      ;; Trilinos's repository contains several C-shell scripts, but adding
+      ;; tcsh to the native inputs does not result in the check phase running
+      ;; any more tests than without it (nor is tcsh required to build
+      ;; Trilinos).
+      ;; It seems that Trilinos has replaced its use of C-shell test scripts
+      ;; with CMake's testing facilities.
+      ;; For example,
+      ;; packages/zoltan/doc/Zoltan_html/dev_html/dev_test_script.html [1]
+      ;; states that Zoltan's C-shell test script
+      ;; packages/zoltan/test/test_zoltan has been obsoleted by the tests now
+      ;; performed through CMake.
+      ;;
+      ;; Perl is required for some Zoltan tests and Python 2 for one ML test.
+      ;;
+      ;; [1]: https://cs.sandia.gov/zoltan/dev_html/dev_test_script.html
+      perl
+      python-2))
     (inputs
-     `(("blas" ,openblas)
-       ("lapack" ,lapack)
-       ("mumps" ,mumps-openmpi)
-       ("scalapack" ,scalapack)))
+     (list openblas
+           lapack
+           mumps-openmpi
+           scalapack))
     (propagated-inputs
-     `(("mpi" ,openmpi)))
+     (list openmpi))
     (arguments
-     `(#:build-type "Release"
-       #:configure-flags
-       `("-DBUILD_SHARED_LIBS=ON"
-         ;; Obtain the equivalent of RelWithDebInfo but with -O3 (the Release
-         ;; default) rather than -O2 (the RelWithDebInfo default), to conform
-         ;; to candi's trilinos.package's compilation flags, which are -g -O3.
-         "-DCMAKE_C_FLAGS=-g"
-         "-DCMAKE_CXX_FLAGS=-g"
-         "-DCMAKE_Fortran_FLAGS=-g"
+     (list #:build-type "Release"
+           #:configure-flags
+           #~(list "-DBUILD_SHARED_LIBS=ON"
+                   ;; Obtain the equivalent of RelWithDebInfo but with -O3
+                   ;; (the Release default) rather than -O2 (the
+                   ;; RelWithDebInfo default), to conform to candi's
+                   ;; trilinos.package's compilation flags, which are -g -O3.
+                   "-DCMAKE_C_FLAGS=-g"
+                   "-DCMAKE_CXX_FLAGS=-g"
+                   "-DCMAKE_Fortran_FLAGS=-g"
 
-         ;; Trilinos libraries that deal.II can interface with.
-         "-DTrilinos_ENABLE_Amesos=ON"
-         "-DTrilinos_ENABLE_AztecOO=ON"
-         "-DTrilinos_ENABLE_Epetra=ON"
-         "-DTrilinos_ENABLE_EpetraExt=ON"
-         "-DTrilinos_ENABLE_Ifpack=ON"
-         "-DTrilinos_ENABLE_ML=ON"
-         "-DTrilinos_ENABLE_MueLu=ON"
-         "-DTrilinos_ENABLE_ROL=ON"
-         ;; Optional; required for deal.II's GridIn::read_exodusii, but
-         ;; depends on netcdf.
-         ;; Enable if and when someone needs it.
-         ;;"-DTrilinos_ENABLE_SEACAS=ON"
-         "-DTrilinos_ENABLE_Sacado=ON"
-         "-DTrilinos_ENABLE_Teuchos=ON"
-         "-DTrilinos_ENABLE_Tpetra=ON"
-         "-DTrilinos_ENABLE_Zoltan=ON"
+                   ;; Trilinos libraries that deal.II can interface with.
+                   "-DTrilinos_ENABLE_Amesos=ON"
+                   "-DTrilinos_ENABLE_AztecOO=ON"
+                   "-DTrilinos_ENABLE_Epetra=ON"
+                   "-DTrilinos_ENABLE_EpetraExt=ON"
+                   "-DTrilinos_ENABLE_Ifpack=ON"
+                   "-DTrilinos_ENABLE_ML=ON"
+                   "-DTrilinos_ENABLE_MueLu=ON"
+                   "-DTrilinos_ENABLE_ROL=ON"
+                   ;; Optional; required for deal.II's GridIn::read_exodusii,
+                   ;; but depends on netcdf.
+                   ;; Enable if and when someone needs it.
+                   ;;"-DTrilinos_ENABLE_SEACAS=ON"
+                   "-DTrilinos_ENABLE_Sacado=ON"
+                   "-DTrilinos_ENABLE_Teuchos=ON"
+                   "-DTrilinos_ENABLE_Tpetra=ON"
+                   "-DTrilinos_ENABLE_Zoltan=ON"
 
-         ;; Third-party libraries (TPLs) that Trilinos can interface with.
-         "-DBLAS_LIBRARY_NAMES=openblas"
-         "-DTPL_ENABLE_MPI=ON"
-         "-DTPL_ENABLE_MUMPS=ON"
-         "-DTPL_ENABLE_SCALAPACK=ON"
+                   ;; Third-party libraries (TPLs) that Trilinos can interface
+                   ;; with.
+                   "-DBLAS_LIBRARY_NAMES=openblas"
+                   "-DTPL_ENABLE_MPI=ON"
+                   "-DTPL_ENABLE_MUMPS=ON"
+                   "-DTPL_ENABLE_SCALAPACK=ON"
 
-         ;; Enable the tests but not the examples (which are enabled by
-         ;; default when enabling tests).
-         ;; Although some examples are run as tests, they are otherwise
-         ;; unnecessary since this is a private package meant for
-         ;; dealii-openmpi.
-         ;; Besides, some MueLu and ROL examples require a lot of memory to
-         ;; compile.
-         ;;
-         ;; (For future reference, note that some ROL and SEACAS examples
-         ;; require removing gfortran from CPLUS_INCLUDE_PATH as in the
-         ;; dune-istl, dune-localfunctions and dune-alugrid packages.)
-         "-DTrilinos_ENABLE_TESTS=ON"
-         "-DTrilinos_ENABLE_EXAMPLES=OFF"
-         ;; MueLu tests require considerably more time and memory to compile
-         ;; than the rest of the tests.
-         "-DMueLu_ENABLE_TESTS=OFF"
+                   ;; Enable the tests but not the examples (which are enabled
+                   ;; by default when enabling tests).
+                   ;; Although some examples are run as tests, they are
+                   ;; otherwise unnecessary since this is a private package
+                   ;; meant for dealii-openmpi.
+                   ;; Besides, some MueLu and ROL examples require a lot of
+                   ;; memory to compile.
+                   ;;
+                   ;; (For future reference, note that some ROL and SEACAS
+                   ;; examples require removing gfortran from
+                   ;; CPLUS_INCLUDE_PATH as in the dune-istl,
+                   ;; dune-localfunctions and dune-alugrid packages.)
+                   "-DTrilinos_ENABLE_TESTS=ON"
+                   "-DTrilinos_ENABLE_EXAMPLES=OFF"
+                   ;; MueLu tests require considerably more time and memory to
+                   ;; compile than the rest of the tests.
+                   "-DMueLu_ENABLE_TESTS=OFF"
 
-         ;; The following options were gleaned from candi's trilinos.package.
-         ;; (We do not enable the complex instantiations, which are anyway
-         ;; provided only as an option in trilinos.package, because they are
-         ;; costly in compilation time and memory usage, and disk space [1].)
-         ;;
-         ;; [1]: https://www.docs.trilinos.org/files/TrilinosBuildReference.html#enabling-float-and-complex-scalar-types
-         "-DTrilinos_ENABLE_Ifpack2=OFF"
-         "-DTeuchos_ENABLE_FLOAT=ON"
-         "-DTpetra_INST_INT_LONG=ON"
-         "-DTPL_ENABLE_Boost=OFF")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'configure 'fix-kokkos-config
-           (lambda _
-             ;; GNU Make 4.3 accidentally leaves the backslash preceding the
-             ;; number sign in strings containing a literal backslash–number
-             ;; sign (\#) [1, 2].
-             ;; This is still an issue in Trilinos 13.0.1, but should be fixed
-             ;; in the following version.
-             ;; (The latest versions of Kokkos incorporate the fix [2].)
-             ;;
-             ;; [1]: https://github.com/GEOSX/thirdPartyLibs/issues/136
-             ;; [2]: https://github.com/kokkos/kokkos/blob/3.4.00/Makefile.kokkos#L441
-             (substitute* "KokkosCore_config.h"
-               (("\\\\#") "#"))
-             #t))
-         (add-before 'check 'mpi-setup
-           ,%openmpi-setup))))
+                   ;; The following options were gleaned from candi's
+                   ;; trilinos.package.
+                   ;; (We do not enable the complex instantiations, which are
+                   ;; anyway provided only as an option in trilinos.package,
+                   ;; because they are costly in compilation time and memory
+                   ;; usage, and disk space [1].)
+                   ;;
+                   ;; [1]: https://www.docs.trilinos.org/files/TrilinosBuildReference.html#enabling-float-and-complex-scalar-types
+                   "-DTrilinos_ENABLE_Ifpack2=OFF"
+                   "-DTeuchos_ENABLE_FLOAT=ON"
+                   "-DTpetra_INST_INT_LONG=ON"
+                   "-DTPL_ENABLE_Boost=OFF")
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'configure 'fix-kokkos-config
+                 (lambda _
+                   ;; GNU Make 4.3 accidentally leaves the backslash preceding
+                   ;; the number sign in strings containing a literal
+                   ;; backslash–number sign (\#) [1, 2].
+                   ;; This is still an issue in Trilinos 13.0.1, but should be
+                   ;; fixed in the following version.
+                   ;; (The latest versions of Kokkos incorporate the fix [2].)
+                   ;;
+                   ;; [1]: https://github.com/GEOSX/thirdPartyLibs/issues/136
+                   ;; [2]: https://github.com/kokkos/kokkos/blob/3.4.00/Makefile.kokkos#L441
+                   (substitute* "KokkosCore_config.h"
+                     (("\\\\#") "#"))))
+               (add-before 'check 'mpi-setup
+                 #$%openmpi-setup))))
     (home-page "https://trilinos.github.io/")
     (synopsis "Algorithms for engineering and scientific problems")
     (description
@@ -5272,18 +5280,18 @@ A unique design feature of Trilinos is its focus on packages.")
 (define-public dealii
   (package
     (name "dealii")
-    (version "9.3.3")
+    (version "9.4.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/dealii/dealii/releases/"
                            "download/v" version "/dealii-" version ".tar.gz"))
        (sha256
-        (base32 "0a8s4yxcbvzmfgv5qcg27h2ss4fcnyhrhhs35glqj59l9cbmkysx"))
+        (base32 "0v73q6f35f2yrjihaq6vh9lma07qc4cdv75nwmc3c5yrdh07g1i3"))
        (modules '((guix build utils)))
        (snippet
         ;; Remove bundled boost, muparser, TBB and UMFPACK.
-        '(delete-file-recursively "bundled"))))
+        #~(delete-file-recursively "bundled"))))
     (build-system cmake-build-system)
     (outputs '("out" "doc"))
     (native-inputs
@@ -5307,36 +5315,39 @@ A unique design feature of Trilinos is its focus on packages.")
      (list boost
            hdf5
            suitesparse                  ; For UMFPACK.
-           ;; SUNDIALS 6.0.0 and later will be supported in deal.II 9.4.0.
-           sundials-5
+           sundials
            tbb))
     (arguments
-     `(#:build-type "DebugRelease" ; Supports only Debug, Release and DebugRelease.
-       ;; The tests take too long and must be explicitly enabled with "make
-       ;; setup_tests".
-       ;; See https://www.dealii.org/developer/developers/testsuite.html.
-       ;; (They can also be run for an already installed deal.II.)
-       #:tests? #f
-       #:configure-flags
-       (let ((doc (string-append (assoc-ref %outputs "doc")
-                                 "/share/doc/" ,name "-" ,version)))
-         `("-DDEAL_II_COMPONENT_DOCUMENTATION=ON"
-           ,(string-append "-DDEAL_II_DOCREADME_RELDIR=" doc)
-           ,(string-append "-DDEAL_II_DOCHTML_RELDIR=" doc "/html")
-           ;; Don't compile the examples because the source and CMakeLists.txt
-           ;; are installed anyway, allowing users to do so for themselves.
-           "-DDEAL_II_COMPILE_EXAMPLES=OFF"
-           ,(string-append "-DDEAL_II_EXAMPLES_RELDIR=" doc "/examples")))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'remove-build-logs
-           ;; These build logs leak the name of the build directory by storing
-           ;; the values of CMAKE_SOURCE_DIR and CMAKE_BINARY_DIR.
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((doc (string-append (assoc-ref outputs "doc")
-                                       "/share/doc/" ,name "-" ,version)))
-               (for-each delete-file (map (lambda (f) (string-append doc "/" f))
-                                          '("detailed.log" "summary.log")))))))))
+     (list #:build-type "DebugRelease"  ; Only Debug, Release or DebugRelease.
+           ;; The tests take too long and must be explicitly enabled with
+           ;; "make setup_tests".
+           ;; See https://www.dealii.org/developer/developers/testsuite.html.
+           ;; (They can also be run for an already installed deal.II.)
+           #:tests? #f
+           #:configure-flags
+           #~(let ((doc (string-append #$output:doc "/share/doc/"
+                                       #$name "-" #$version)))
+               (list "-DDEAL_II_COMPONENT_DOCUMENTATION=ON"
+                     (string-append "-DDEAL_II_DOCREADME_RELDIR=" doc)
+                     (string-append "-DDEAL_II_DOCHTML_RELDIR=" doc "/html")
+                     ;; Don't compile the examples because the source and
+                     ;; CMakeLists.txt are installed anyway, allowing users to
+                     ;; do so for themselves.
+                     "-DDEAL_II_COMPILE_EXAMPLES=OFF"
+                     (string-append "-DDEAL_II_EXAMPLES_RELDIR=" doc
+                                    "/examples")))
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'install 'remove-build-logs
+                 ;; These build logs leak the name of the build directory by
+                 ;; storing the values of CMAKE_SOURCE_DIR and
+                 ;; CMAKE_BINARY_DIR.
+                 (lambda _
+                   (let ((doc (string-append #$output:doc "/share/doc/"
+                                             #$name "-" #$version)))
+                     (for-each delete-file
+                               (map (lambda (f) (string-append doc "/" f))
+                                    '("detailed.log" "summary.log")))))))))
     (home-page "https://www.dealii.org/")
     (synopsis "Finite element library")
     (description
@@ -5364,12 +5375,12 @@ in finite element programs.")
                 p4est-openmpi
                 petsc-openmpi
                 slepc-openmpi
-                sundials-openmpi-5
+                sundials-openmpi
                 trilinos-for-dealii-openmpi)))
     (arguments
      (substitute-keyword-arguments (package-arguments dealii)
        ((#:configure-flags flags)
-        `(cons "-DDEAL_II_WITH_MPI=ON" ,flags))))
+        #~(cons "-DDEAL_II_WITH_MPI=ON" #$flags))))
     (synopsis "Finite element library (with MPI support)")))
 
 (define-public flann
