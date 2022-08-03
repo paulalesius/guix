@@ -50,6 +50,7 @@
 # Copyright © 2022 Daniel Meißner <daniel.meissner-i4k@ruhr-uni-bochum.de>
 # Copyright © 2022 Remco van 't Veer <remco@remworks.net>
 # Copyright © 2022 Artyom V. Poptsov <poptsov.artyom@gmail.com>
+# Copyright © 2022 John Kehayias <john.kehayias@protonmail.com>
 #
 # This file is part of GNU Guix.
 #
@@ -301,6 +302,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/packages/haskell-crypto.scm		\
   %D%/packages/haskell-web.scm			\
   %D%/packages/haskell-xyz.scm			\
+  %D%/packages/haxe.scm				\
   %D%/packages/heads.scm			\
   %D%/packages/hexedit.scm			\
   %D%/packages/hugs.scm				\
@@ -1550,7 +1552,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/nginx-socket-cloexec.patch		\
   %D%/packages/patches/nnpack-system-libraries.patch		\
   %D%/packages/patches/nsis-env-passthru.patch			\
-  %D%/packages/patches/nsis-source-date-epoch.patch		\
   %D%/packages/patches/nss-getcwd-nonnull.patch			\
   %D%/packages/patches/nss-increase-test-timeout.patch		\
   %D%/packages/patches/nss-3.56-pkgconfig.patch			\

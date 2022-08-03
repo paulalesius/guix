@@ -50,6 +50,7 @@
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Liliana Marie Prikler <liliana.prikler@gmail.com>
 ;;; Copyright © 2022 Jose G Perez Taveras <josegpt27@gmail.com>
+;;; Copyright © 2022 Hilton Chain <hako@ultrarare.space>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -2709,3 +2710,40 @@ This package contains the following outputs:
 icon is designed on a 24x24 grid with an emphasis on simplicity, consistency,
 and readability.  This package bundles those icons into a font.")
       (license license:expat))))
+
+(define-public font-lxgw-wenkai
+  (package
+    (name "font-lxgw-wenkai")
+    (version "1.235.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/lxgw/LxgwWenKai/releases/download/v"
+                    version "/lxgw-wenkai-v" version ".tar.gz"))
+              (sha256
+               (base32
+                "17li3xry4j4ccdnwz2pcnf0gv7c5mwq0h5fwvl7ar28brn2qgdbk"))))
+    (build-system font-build-system)
+    (home-page "https://lxgw.github.io/2021/01/28/Klee-Simpchin/")
+    (synopsis "LXGW Wenkai / 霞鹜文楷")
+    (description
+     "An open-source Chinese font derived from Fontworks' Klee One.")
+    (license license:silofl1.1)))
+
+(define-public font-lxgw-wenkai-tc
+  (package
+    (name "font-lxgw-wenkai-tc")
+    (version "0.920")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/lxgw/LxgwWenKaiTC/releases/download/v"
+                    version "/lxgw-wenkai-tc-v" version ".tar.gz"))
+              (sha256
+               (base32
+                "1kysqzi19ldd1a3pd9axmggcbm1719myq6i6q6fdb1afscn272cp"))))
+    (build-system font-build-system)
+    (home-page "https://github.com/lxgw/LxgwWenKaitc")
+    (synopsis "LXGW WenKai TC / 霞鶩文楷 TC")
+    (description "The Traditional Chinese Version of LXGW WenKai.")
+    (license license:silofl1.1)))

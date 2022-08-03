@@ -850,7 +850,7 @@ features of Stow with some extensions.")
 (define-public rpm
   (package
     (name "rpm")
-    (version "4.17.0")
+    (version "4.17.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://ftp.rpm.org/releases/rpm-"
@@ -858,7 +858,7 @@ features of Stow with some extensions.")
                                   version ".tar.bz2"))
               (sha256
                (base32
-                "0sjyqs6hc57k46f45b68dfxnp985s0gar0fi1s0ig6vl4h5j439f"))))
+                "0pbfj94ha59lbnd8dk0aqyxjv37xixfdcazq3y2mhwkf8s9vf48c"))))
     (build-system gnu-build-system)
     (arguments
      '(#:configure-flags '("--with-external-db" ;use the system's bdb
@@ -887,11 +887,13 @@ features of Stow with some extensions.")
            lua
            nspr
            nss
-           popt
            python
            sqlite
            xz
            zlib))
+    (propagated-inputs
+     ;; popt is listed in the 'Requires' of rpm.pc.
+     (list popt))
     (home-page "https://rpm.org/")
     (synopsis "The RPM Package Manager")
     (description
