@@ -1579,7 +1579,7 @@ programming.  Iosevka is completely generated from its source code.")
 (define-public font-sarasa-gothic
   (package
     (name "font-sarasa-gothic")
-    (version "0.36.0")
+    (version "0.36.6")
     (source
      (origin
        (method url-fetch)
@@ -1587,7 +1587,7 @@ programming.  Iosevka is completely generated from its source code.")
                            "/releases/download/v" version
                            "/sarasa-gothic-ttc-" version ".7z"))
        (sha256
-        (base32 "0rr6qrf49zx3cl1pv7063l12nnj2nm9p4di3frp0p4ci9l7b4xmw"))))
+        (base32 "1sns6589h3wwppykqgz5w9jy4n9cbkwk56cc4gz3j3zm8wqsn0jq"))))
     (build-system font-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
@@ -2746,4 +2746,44 @@ and readability.  This package bundles those icons into a font.")
     (home-page "https://github.com/lxgw/LxgwWenKaitc")
     (synopsis "LXGW WenKai TC / 霞鶩文楷 TC")
     (description "The Traditional Chinese Version of LXGW WenKai.")
+    (license license:silofl1.1)))
+
+(define-public font-chiron-sung-hk
+  (package
+    (name "font-chiron-sung-hk")
+    (version "1.005")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/chiron-fonts/chiron-sung-hk")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0iqlnb7825kisg2avhr9hwwvb4jw8f642vvmms5dw6m9czzydpgw"))))
+    (build-system font-build-system)
+    (home-page "https://chiron-fonts.github.io/")
+    (synopsis "昭源宋體")
+    (description
+     "Chiron Sung HK (昭源宋體) is a Traditional Chinese serif
+ typeface based on Adobe’s Source Han Serif (a.k.a. Google’s Noto Sans CJK).")
+    (license license:silofl1.1)))
+
+(define-public font-chiron-hei-hk
+  (package
+    (name "font-chiron-hei-hk")
+    (version "2.502")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/chiron-fonts/chiron-hei-hk")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0wk1yladmwflkwrmj374avpml8shyrgd622f7mbvw5ln7fi70d2l"))))
+    (build-system font-build-system)
+    (home-page "https://chiron-fonts.github.io/")
+    (synopsis "昭源黑體")
+    (description "The complementary sans-serif typeface for Chiron Sung HK.")
     (license license:silofl1.1)))

@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2015, 2016 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2014 Eric Bavier <bavier@member.fsf.org>
 ;;; Copyright © 2014, 2015, 2016 Alex Kost <alezost@gmail.com>
-;;; Copyright © 2013, 2015, 2017, 2018, 2019, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2013, 2015, 2017-2019, 2021-2022 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
 ;;; Copyright © 2015 Alexander I.Grafov <grafov@gmail.com>
 ;;; Copyright © 2015 Andy Wingo <wingo@igalia.com>
@@ -1627,7 +1627,7 @@ less if you are working in front of the screen at night.")
 (define-public xscreensaver
   (package
     (name "xscreensaver")
-    (version "5.45")
+    (version "6.04")
     (source
      (origin
        (method url-fetch)
@@ -1635,7 +1635,15 @@ less if you are working in front of the screen at night.")
         (string-append "https://www.jwz.org/xscreensaver/xscreensaver-"
                        version ".tar.gz"))
        (sha256
-        (base32 "03fmyjlwjinzv7mih6n07glmys8s877snd8zijk2c0ds6rkxy5kh"))))
+        (base32 "0lmiyvp3qs2gngd53f191jmlizs9l04i2gnrqbn96mqckyr18w3q"))
+       (modules '((guix build utils)))
+       (snippet
+        ;; 'configure.ac' checks for $ac_unrecognized_opts and exits if it's
+        ;; non-empty.  Since the default 'configure' phases passes options
+        ;; that may or may not be recognized, such as '--enable-fast-install',
+        ;; these need to be tolerated, hence this snippet.
+        '(substitute* "configure"
+           (("exit 2") "true")))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f                      ; no check target
@@ -1647,7 +1655,13 @@ less if you are working in front of the screen at night.")
                (("@GTK_DATADIR@") "@datadir@")
                (("@PO_DATADIR@") "@datadir@"))
              #t)))
-       #:configure-flags '("--with-pam" "--with-proc-interrupts"
+       #:configure-flags '("--with-pam"
+
+                           ;; Don't check /proc/interrupts in the build
+                           ;; environment to avoid non-deterministic failures
+                           ;; of the 'configure' script.
+                           "--without-proc-interrupts"
+
                            "--without-readdisplay")
        #:make-flags (list (string-append "AD_DIR="
                                          (assoc-ref %outputs "out")
@@ -1655,26 +1669,27 @@ less if you are working in front of the screen at night.")
     (native-inputs
      (list pkg-config intltool))
     (inputs
-     `(("libx11" ,libx11)
-       ("libxext" ,libxext)
-       ("libxi" ,libxi)
-       ("libxt" ,libxt)
-       ("libxft" ,libxft)
-       ("libxmu" ,libxmu)
-       ("libxpm" ,libxpm)
-       ("libglade" ,libglade)
-       ("libxml2" ,libxml2)
-       ("libsm" ,libsm)
-       ("libjpeg" ,libjpeg-turbo)
-       ("linux-pam" ,linux-pam)
-       ("pango" ,pango)
-       ("gtk+" ,gtk+)
-       ("perl" ,perl)
-       ("cairo" ,cairo)
-       ("bc" ,bc)
-       ("libxrandr" ,libxrandr)
-       ("glu" ,glu)
-       ("glib" ,glib)))
+     (list libx11
+           libxext
+           libxi
+           libxt
+           libxft
+           libxmu
+           libxpm
+           libglade
+           libxml2
+           libsm
+           libjpeg-turbo
+           linux-pam
+           pango
+           gdk-pixbuf-xlib
+           gtk+
+           perl
+           cairo
+           bc
+           libxrandr
+           glu
+           glib))
     (home-page "https://www.jwz.org/xscreensaver/")
     (synopsis "Classic screen saver suite supporting screen locking")
     (description

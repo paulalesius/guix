@@ -21,6 +21,7 @@
 ;;; Copyright © 2021 Julien Lepiller <julien@lepiller.eu>
 ;;; Copyright © 2021 Thiago Jung Bauermann <bauermann@kolabnow.com>
 ;;; Copyright © 2022 Jack Hill <jackhill@jackhill.us>
+;;; Copyright © 2022 Fabio Natali <me@fabionatali.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -11082,3 +11083,209 @@ to Norsk of standard “LaTeX names”.")
 Danish in @code{babel}.  It provides all the necessary macros, definitions and
 settings to typeset Danish documents.")
       (license license:lppl1.3c+))))
+
+(define-public texlive-mdframed
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-mdframed"
+      (list
+       "doc/latex/mdframed/"
+       "source/latex/mdframed/"
+       "tex/latex/mdframed/")
+      (base32 "1i5rm946wg43rjckxlfhx79zfx5cgd3bxk71206hd1dqkrgpdpa8")
+      #:trivial? #t))
+    (home-page "https://ctan.org/pkg/mdframed")
+    (synopsis "Framed environments that can split at page boundaries")
+    (description
+     "The @code{mdframed} package develops the facilities of @code{framed} in
+providing breakable framed and coloured boxes.  The user may instruct the
+package to perform its operations using default LaTeX commands, PStricks or
+TikZ.")
+    (license license:lppl)))
+
+(define-public texlive-setspace
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-setspace"
+      (list "doc/latex/setspace/" "tex/latex/setspace/")
+      (base32 "00ik8qgkw3ivh3z827zjf7gbwkbsmdcmv22c6ap543mpgaqqjcfm")
+      #:trivial? #t))
+    (home-page "https://ctan.org/pkg/setspace")
+    (synopsis "Set space between lines")
+    (description
+     "The @code{setspace} package provides support for setting the spacing between
+lines in a document.  Package options include @code{singlespacing},
+@code{onehalfspacing}, and @code{doublespacing}.  Alternatively the spacing
+can be changed as required with the @code{\\singlespacing},
+@code{\\onehalfspacing}, and @code{\\doublespacing} commands.  Other size
+spacings also available.")))
+
+(define-public texlive-pgfgantt
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-pgfgantt"
+      (list
+       "doc/latex/pgfgantt/"
+       "source/latex/pgfgantt/"
+       "tex/latex/pgfgantt/")
+      (base32 "0bm034iizk4sd7p5x7vkj7v57dc0bf2lswpsb32s4qlg4s7h6jqz")
+      #:trivial? #t))
+    (propagated-inputs (list texlive-pgf))
+    (home-page "https://ctan.org/graphics/pgf/contrib/pgfgantt")
+    (synopsis "Draw Gantt charts with TikZ")
+    (description
+     "The @code{pgfgantt} package provides an environment for drawing Gantt charts
+that contain various elements (titles, bars, milestones, groups and links).
+Several keys customize the appearance of the chart elements.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pdflscape
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-pdflscape"
+      (list "doc/latex/pdflscape/"
+            "source/latex/pdflscape/"
+            "tex/latex/pdflscape/")
+      (base32 "05vvmwd8vlzs2x2rm6pfzlvrrihqf924d7krlrkvc6giiwyfsic4")
+      #:trivial? #t))
+    (home-page "https://ctan.org/pkg/pdflscape")
+    (synopsis "Make landscape pages display as landscape")
+    (description
+     "The @code{pdflscape} package adds PDF support to the @code{landscape}
+environment of package @code{lscape}, by setting the PDF @code{/Rotate} page
+attribute.  Pages with this attribute will be displayed in landscape
+orientation by conforming PDF viewers.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-datetime2
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-datetime2"
+      (list "doc/latex/datetime2/"
+            "source/latex/datetime2/"
+            "tex/latex/datetime2/")
+      (base32 "0yjkpfic1ni4j2g61rrjj5hjyd43shc9c0sg1aivbbsmqh30dn33")
+      #:trivial? #t))
+    (home-page "https://ctan.org/pkg/datetime2")
+    (synopsis "Formats for dates, times and time zones")
+    (description
+     "The @code{datetime2} package provides commands for formatting dates, times
+and time zones and redefines @code{\\today} to use the same formatting style.
+In addition to @code{\\today}, you can also use
+@code{\\DTMcurrenttime} (current time) or @code{\\DTMnow} (current date and
+time).  Dates and times can be saved for later use.  The accompanying
+@code{datetime2-calc} package can be used to convert date-times to UTC+00:00.
+Language and regional support is provided by independently maintained and
+installed modules.  The @code{datetime2-calc} package uses the
+@code{pgfcalendar} package (part of the PGF/TikZ bundle).  This package
+replaces @code{datetime.sty} which is now obsolete.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-tracklang
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-tracklang"
+      (list "doc/generic/tracklang/"
+            "source/latex/tracklang/"
+            "tex/generic/tracklang/"
+            "tex/latex/tracklang/")
+      (base32 "1386sg25y6zb4ixvrbdv6n1gp54h18mjd984bnwwqda6jafxx4zr")
+      #:trivial? #t))
+    (home-page "https://ctan.org/macros/generic/tracklang")
+    (synopsis "Language and dialect tracker")
+    (description
+     "The @code{tracklang} package is provided for package developers who want a
+simple interface to find out which languages the user has requested through
+packages such as @code{babel} or @code{polyglossia}.  This package does not
+provide any translations!  Its purpose is simply to track which languages have
+been requested by the user.  Generic TeX code is in @code{tracklang.tex} for
+non-LaTeX users.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ltablex
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-ltablex"
+      (list "doc/latex/ltablex/" "tex/latex/ltablex/")
+      (base32 "14lmgj820j6zwj1xnd6ad38kzb9w132kp7sp55cv5bk9vhx3621w")
+      #:trivial? #t))
+    (home-page "https://ctan.org/pkg/ltablex")
+    (synopsis "Table package extensions")
+    (description
+     "The @code{ltablex} package modifies the @code{tabularx} environment to
+combine the features of the @code{tabularx} package (auto-sized columns in a
+fixed-width table) with those of the @code{longtable} package (multi-page
+tables).")
+    (license license:lppl)))
+
+(define-public texlive-ragged2e
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-ragged2e"
+      (list "doc/latex/ragged2e/"
+            "source/latex/ragged2e/"
+            "tex/latex/ragged2e/")
+      (base32 "1cxj5jdgvr3xk1inrb3yzpm3l386jjawgpqiwsz53k6yshb6yfml")
+      #:trivial? #t))
+    (home-page "https://ctan.org/pkg/ragged2e")
+    (synopsis "Alternative versions of \"ragged\"-type commands")
+    (description
+     "The @code{ragged2e} package defines new commands @code{\\Centering}, @code{\\RaggedLeft},
+and @code{\\RaggedRight} and new environments @code{Center}, @code{FlushLeft},
+and @code{FlushRight}, which set ragged text and are easily configurable to
+allow hyphenation (the corresponding commands in LaTeX, all of whose names are
+lower-case, prevent hyphenation altogether).")
+    (license license:lppl1.3c)))
+
+(define-public texlive-everysel
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-everysel"
+      (list "doc/latex/everysel/"
+            "source/latex/everysel/"
+            "tex/latex/everysel/")
+      (base32 "0skzm2qsk5vpjxgslclp4pvbbcrrnm1w3df8xfvfq252dyd7w8s5")
+      #:trivial? #t))
+    (home-page "https://ctan.org/pkg/everysel")
+    (synopsis "Provides hooks into @code{\\selectfont}")
+    (description
+     "The @code{everysel} package provided hooks whose arguments are executed just
+after LaTeX has loaded a new font by means of @code{\\selectfont}.  It has
+become obsolete with LaTeX versions 2021/01/05 or newer, since LaTeX now
+provides its own hooks to fulfill this task.  For newer versions of LaTeX
+@code{everysel} only provides macros using LaTeX's hook management due to
+compatibility reasons.  See @code{lthooks-doc.pdf} for instructions how to use
+@code{lthooks} instead of @code{everysel}.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-everyshi
+  (package
+    (inherit
+     (simple-texlive-package
+      "texlive-everyshi"
+      (list "doc/latex/everyshi/"
+            "source/latex/everyshi/"
+            "tex/latex/everyshi/")
+      (base32 "11y6xazv1nk0m2hzsainjr8ijn5cff04xfccm6a65hzg7ipggraj")
+      #:trivial? #t))
+    (home-page "https://ctan.org/pkg/everyshi")
+    (synopsis "Take action at every @code{\\shipout}")
+    (description
+     "The @code{everyshi} package provides hooks into @code{\\sshipout} called
+@code{\\EveryShipout} and @code{\\AtNextShipout} analogous to
+@code{\\AtBeginDocument}.  With the introduction of the LaTeX hook management
+this package became obsolete in 2020 and is only provided for backwards
+compatibility.  For current versions of LaTeX it is only mapping the hooks to
+the original @code{everyshi} macros.  In case you use an older LaTeX format,
+@code{everyshi} will automatically fall back to its old implementation by
+loading @code{everyshi-2001-05-15}.")
+    (license license:lppl1.3c)))
