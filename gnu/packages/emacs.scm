@@ -22,6 +22,7 @@
 ;;; Copyright © 2019 Amin Bandali <bandali@gnu.org>
 ;;; Copyright © 2020 Jack Hill <jackhill@jackhill.us>
 ;;; Copyright © 2020 Morgan Smith <Morgan.J.Smith@outlook.com>
+;;; Copyright © 2022 Zhu Zihao <all_but_last@163.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -69,6 +70,7 @@
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages selinux)
+  #:use-module (gnu packages sqlite)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages web)       ; for jansson
@@ -339,7 +341,10 @@ languages.")
          (file-name (git-file-name name version))
          (sha256
           (base32
-           "049bw2viwsf3aa18hcq33azbi5y47wcvj6q2ynbj6g6d926b8gik"))))
+           "0dqmrawkvbypxp8gcnspnhhmfamzp3l62gfgp1pw2l6svz58v991"))))
+      (inputs
+       (modify-inputs (package-inputs emacs)
+         (prepend sqlite)))
       (native-inputs
        (modify-inputs (package-native-inputs emacs)
          (prepend autoconf))))))

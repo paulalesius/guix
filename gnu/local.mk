@@ -858,6 +858,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/antiword-CVE-2014-8123.patch			\
   %D%/packages/patches/antlr3-3_1-fix-java8-compilation.patch	\
   %D%/packages/patches/antlr3-3_3-fix-java8-compilation.patch	\
+  %D%/packages/patches/aoflagger-use-system-provided-pybind11.patch \
   %D%/packages/patches/apr-skip-getservbyname-test.patch	\
   %D%/packages/patches/ark-skip-xar-test.patch			\
   %D%/packages/patches/aspell-default-dict-dir.patch		\
@@ -888,6 +889,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/awesome-4.3-fno-common.patch		\
   %D%/packages/patches/aws-c-auth-install-private-headers.patch	\
   %D%/packages/patches/azr3.patch				\
+  %D%/packages/patches/barony-fix-textures.patch		\
   %D%/packages/patches/bash-completion-directories.patch	\
   %D%/packages/patches/bash-linux-pgrp-pipe.patch		\
   %D%/packages/patches/bastet-change-source-of-unordered_set.patch	\
@@ -1780,6 +1782,9 @@ dist_patch_DATA =						\
   %D%/packages/patches/rocm-comgr-3.1.0-dependencies.patch \
   %D%/packages/patches/rocm-opencl-runtime-4.3-noclinfo.patch \
   %D%/packages/patches/rocm-opencl-runtime-4.3-noopencl.patch \
+  %D%/packages/patches/ruby-anystyle-data-immutable-install.patch	\
+  %D%/packages/patches/ruby-anystyle-fix-dictionary-populate.patch	\
+  %D%/packages/patches/ruby-latex-decode-fix-test.patch		\
   %D%/packages/patches/ruby-mustache-1.1.1-fix-race-condition-tests.patch \
   %D%/packages/patches/ruby-sanitize-system-libxml.patch	\
   %D%/packages/patches/rustc-1.39.0-src.patch			\
