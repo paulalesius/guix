@@ -99,6 +99,20 @@ an empty directory if ORIGIN could not be disassembled."
   (directory-union "disarchive-collection"
                    (filter-map (lambda (origin)
                                  (and (tarball-origin? origin)
+
+                                      ;; Dismiss origins with (sha256 #f) such
+                                      ;; as that of IceCat.
+                                      (and=> (origin-hash origin)
+                                             content-hash-value)
+
+                                      ;; FIXME: Exclude the Chromium tarball
+                                      ;; because it's huge and "disarchive
+                                      ;; disassemble" exceeds the max-silent
+                                      ;; timeout.
+                                      (not (string-prefix?
+                                            "chromium-"
+                                            (origin-actual-file-name origin)))
+
                                       (origin->disarchive origin)))
                                origins)
                    #:copy? #t))

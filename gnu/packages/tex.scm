@@ -22,6 +22,7 @@
 ;;; Copyright © 2021 Thiago Jung Bauermann <bauermann@kolabnow.com>
 ;;; Copyright © 2022 Jack Hill <jackhill@jackhill.us>
 ;;; Copyright © 2022 Fabio Natali <me@fabionatali.com>
+;;; Copyright © 2022 Philip McGrath <philip@philipmcgrath.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -11289,3 +11290,226 @@ the original @code{everyshi} macros.  In case you use an older LaTeX format,
 @code{everyshi} will automatically fall back to its old implementation by
 loading @code{everyshi-2001-05-15}.")
     (license license:lppl1.3c)))
+
+(define-public texlive-abstract
+  (let ((template (simple-texlive-package
+                   "texlive-abstract"
+                   '("doc/latex/abstract/"
+                     "source/latex/abstract/"
+                     "tex/latex/abstract/")
+                   (base32
+                    "1axm78qgrpml09pkh252g1hsjx9c2w7mbdrm9rdl4yqh5ppwq4y9"))))
+    (package
+      (inherit template)
+      (arguments
+       (substitute-keyword-arguments (package-arguments template)
+         ((#:tex-directory _ #f)
+          "latex/abstract")
+         ((#:build-targets _ #t)
+          #~(list "abstract.ins"))
+         ((#:phases std-phases)
+          #~(modify-phases #$std-phases
+              (add-after 'unpack 'chdir
+                (lambda args
+                  (chdir "source/latex/abstract")))
+              (add-before 'copy-files 'unchdir
+                (lambda args
+                  (chdir "../../..")))
+              (add-after 'copy-files 'remove-extra-files
+                (lambda args
+                  (delete-file-recursively
+                   (string-append #$output
+                                  "/share/texmf-dist"
+                                  "/source/latex/abstract/build"))))))))
+      (home-page "https://ctan.org/pkg/abstract")
+      (synopsis "Control the typesetting of the abstract environment")
+      (description "The abstract package gives you control over the typesetting
+of the abstract environment, and in particular provides for a one column
+abstract in a two column paper.")
+      (license license:lppl))))
+
+(define-public texlive-breqn
+  (let ((template (simple-texlive-package
+                   "texlive-breqn"
+                   '("/doc/latex/breqn/"
+                     "/source/latex/breqn/")
+                   (base32
+                    "186cypxiyf30fq6dxvvlbwn5yx7c8d4cd243wvvb3243n5l4rpl3"))))
+    (package
+      (inherit template)
+      (arguments
+       (substitute-keyword-arguments (package-arguments template)
+         ((#:tex-directory _ #f)
+          "latex/breqn")
+         ((#:build-targets _ #t)
+          #~(list "breqnbundle.ins"))
+         ((#:phases std-phases)
+          #~(modify-phases #$std-phases
+              (add-after 'unpack 'chdir
+                (lambda args
+                  (chdir "source/latex/breqn")))
+              (add-before 'copy-files 'unchdir
+                (lambda args
+                  (chdir "../../..")))
+              (add-after 'copy-files 'remove-extra-files
+                (lambda args
+                  (delete-file-recursively
+                   (string-append #$output
+                                  "/share/texmf-dist"
+                                  "/source/latex/breqn/build"))))))))
+      (home-page "https://wspr.io/breqn/")
+      (synopsis "Automatic line breaking of displayed equations")
+      (description "This package provides solutions to a number of common
+difficulties in writing displayed equations and getting high-quality output.
+The single most ambitious goal of the package is to support automatic
+linebreaking of displayed equations.  Such linebreaking cannot be done without
+substantial changes under the hood in the way formulae are processed; the code
+must be watched carefully, keeping an eye on possible glitches.  The bundle
+also contains the @code{flexisym} and @code{mathstyle} packages, which are
+both designated as support for @code{breqn}.")
+      (license license:lppl1.3+))))
+
+(define-public texlive-comment
+  (package
+    (inherit (simple-texlive-package
+              "texlive-comment"
+              '("/doc/latex/comment/"
+                "/tex/latex/comment/")
+              (base32
+               "1c1mqziwxyf1bqzpw6ji65n7ypygm3lyknblxmf0c70w0ivw76pa")
+              #:trivial? #t))
+    (home-page "https://ctan.org/pkg/comment")
+    (synopsis "Selectively include/exclude portions of text")
+    (description "This package provides environments for selectively including
+or excluding pieces of text, allowing the user to define new, separately
+controlled comment versions.")
+    (license license:gpl2+)))
+
+(define-public texlive-datatool
+  (let ((template (simple-texlive-package
+                   "texlive-datatool"
+                   '("/bibtex/bst/datatool/"
+                     "/doc/latex/datatool/"
+                     "/source/latex/datatool/")
+                   (base32
+                    "0hh2623zlwgq8zb2lv4d8yfaqwzrz54dqhc1xk0jd1k4fp281kl5"))))
+    (package
+      (inherit template)
+      (arguments
+       (substitute-keyword-arguments (package-arguments template)
+         ((#:tex-directory _ #f)
+          "latex/datatool")
+         ((#:build-targets _ #t)
+          #~(list "datatool.ins"))
+         ((#:phases std-phases)
+          #~(modify-phases #$std-phases
+              (add-after 'unpack 'chdir
+                (lambda args
+                  (chdir "source/latex/datatool")))
+              (add-before 'copy-files 'unchdir
+                (lambda args
+                  (chdir "../../..")))
+              (add-after 'copy-files 'remove-extra-files
+                (lambda args
+                  (delete-file-recursively
+                   (string-append #$output
+                                  "/share/texmf-dist"
+                                  "/source/latex/datatool/build"))))))))
+      (home-page "https://ctan.org/pkg/datatool")
+      (synopsis "Tools to load and manipulate data")
+      (description "This package provides tools to create databases using LaTeX
+commands or by importing external files.  Databases may be sorted, filtered,
+and visualized using several kinds of configurable plots.  Particular support
+is provided for mail merging, indexing, creating glossaries, manipulating
+bibliographies, and displaying personal pronouns.")
+      (license license:lppl1.3+))))
+
+(define-public texlive-physics
+  (package
+    (inherit (simple-texlive-package
+              "texlive-physics"
+              '("/doc/latex/physics/"
+                "/tex/latex/physics/")
+              (base32
+               "1wy58wwcv1pv18xs1n71abnm73dqnxqijxvhfxk0rcmvbc6wvwrb")
+              #:trivial? #t))
+    (home-page "https://ctan.org/pkg/physics")
+    (synopsis "Macros supporting the Mathematics of Physics")
+    (description "The package defines simple and flexible macros for
+typesetting equations in the languages of vector calculus and linear
+algebra, using Dirac notation.")
+    (license license:lppl)))
+
+(define-public texlive-sourcesanspro
+  (package
+    (inherit (simple-texlive-package
+              "texlive-sourcesanspro"
+              '("/doc/latex/sourcesanspro/"
+                "/fonts/enc/dvips/sourcesanspro/"
+                "/fonts/map/dvips/sourcesanspro/"
+                "/fonts/opentype/adobe/sourcesanspro/"
+                ;; ^ It would be tempting to use our
+                ;; font-adobe-source-sans-pro for these, but the version in
+                ;; texlive could differ from our version: probably the
+                ;; difference would be small, but debugging would not be fun.
+                ;; If the files are really identical, Guix will hard-link them
+                ;; anyway.
+                "/fonts/tfm/adobe/sourcesanspro/"
+                "/fonts/type1/adobe/sourcesanspro/"
+                "/fonts/vf/adobe/sourcesanspro/"
+                "/tex/latex/sourcesanspro/")
+              (base32
+               "18z7ln8dyh0sp6v0vdvc6qqxnpg3h3ix0f5magjcjbpay54kl0i3")
+              #:trivial? #t))
+    (home-page "https://ctan.org/pkg/sourcesanspro")
+    (synopsis "Use Source Sans Pro with TeX(-alike) systems")
+    (description "This package provides the Source Sans Pro font family from
+Adobe in both Adobe Type 1 and OpenType formats, plus macros supporting the
+use of the fonts in LaTeX (Type 1) and XeLaTeX/LuaLaTeX (OTF).")
+    (license (list license:lppl1.3+ license:silofl1.1))))
+
+(define-public texlive-sourceserifpro
+  (package
+    (inherit (simple-texlive-package
+              "texlive-sourceserifpro"
+              '("/doc/latex/sourceserifpro/"
+                "/fonts/enc/dvips/sourceserifpro/"
+                "/fonts/map/dvips/sourceserifpro/"
+                "/fonts/opentype/adobe/sourceserifpro/"
+                ;; ^ see comment on texlive-sourcesanspro
+                "/fonts/tfm/adobe/sourceserifpro/"
+                "/fonts/type1/adobe/sourceserifpro/"
+                "/fonts/vf/adobe/sourceserifpro/"
+                "/tex/latex/sourceserifpro/")
+              (base32
+               "18xxncg8ybv86r46zq5mvgkrfnvlhx93n55fy8nkk8vdmminrh8w")
+              #:trivial? #t))
+    (home-page "https://ctan.org/pkg/sourceserifpro")
+    (synopsis "Use Source Serif Pro with TeX(-alike) systems")
+    (description "This package provides the Source Serif Pro font family from
+Adobe in both Adobe Type 1 and OpenType formats, plus macros supporting the
+use of the fonts in LaTeX (Type 1) and XeLaTeX/LuaLaTeX (OTF).")
+    (license (list license:lppl1.3+ license:silofl1.1))))
+
+(define-public texlive-sourcecodepro
+  (package
+    (inherit (simple-texlive-package
+              "texlive-sourcecodepro"
+              '("/doc/latex/sourcecodepro/"
+                "/fonts/enc/dvips/sourcecodepro/"
+                "/fonts/map/dvips/sourcecodepro/"
+                "/fonts/opentype/adobe/sourcecodepro/"
+                ;; ^ see comment on texlive-sourcesanspro
+                "/fonts/tfm/adobe/sourcecodepro/"
+                "/fonts/type1/adobe/sourcecodepro/"
+                "/fonts/vf/adobe/sourcecodepro/"
+                "/tex/latex/sourcecodepro/")
+              (base32
+               "009v9y7d3vsljgq9nw5yx4kzyqavxbwrlvwhfjj83s6rmb9xcrmh")
+              #:trivial? #t))
+    (home-page "https://ctan.org/pkg/sourcecodepro")
+    (synopsis "Use Source Code Pro with TeX(-alike) systems")
+    (description "This package provides the Source Code Pro font family from
+Adobe in both Adobe Type 1 and OpenType formats, plus macros supporting the
+use of the fonts in LaTeX (Type 1) and XeLaTeX/LuaLaTeX (OTF).")
+    (license (list license:lppl1.3+ license:silofl1.1))))

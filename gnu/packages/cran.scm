@@ -1376,6 +1376,34 @@ naming conventions as distance methods of existing R packages.")
 control over dimensions and appearance.")
     (license license:gpl2+)))
 
+(define-public r-philentropy
+  (package
+    (name "r-philentropy")
+    (version "0.6.0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "philentropy" version))
+              (sha256
+               (base32
+                "1dpf4hfflp4mcql4na46wzcq1flabkipiwyycz9wj5xbxlmcz2hk"))))
+    (properties `((upstream-name . "philentropy")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-kernsmooth r-poorman r-rcpp))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/drostlab/philentropy")
+    (synopsis
+     "Similarity and distance quantification between probability functions")
+    (description
+     "This package computes optimized distance and similarity measures for
+comparing probability functions (Drost (2018) <doi:10.21105/joss.00765>).
+These comparisons between probability functions have their foundations in a
+broad range of scientific disciplines from mathematics to ecology.  The aim of
+this package is to provide a core framework for clustering, classification,
+statistical inference, goodness-of-fit, non-parametric statistics, information
+theory, and machine learning tasks that are based on comparing univariate or
+multivariate probability functions.")
+    (license license:gpl2)))
+
 (define-public r-pnwcolors
   (package
     (name "r-pnwcolors")
@@ -1447,6 +1475,26 @@ with default R plot functions.")
 qualitative palettes with many (20-30 or more) colors.  See Coombes and
 colleagues (2019) @url{https://doi:10.18637/jss.v090.c01}.")
     (license license:asl2.0)))
+
+(define-public r-poorman
+  (package
+    (name "r-poorman")
+    (version "0.2.5")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "poorman" version))
+              (sha256
+               (base32
+                "05h7rjgri0b5a1jd0388p7lqvvg0y8z6g42f9bxc80jg1z730axr"))))
+    (properties `((upstream-name . "poorman")))
+    (build-system r-build-system)
+    (native-inputs (list r-knitr))
+    (home-page "https://nathaneastwood.github.io/poorman/")
+    (synopsis "Dependency-free recreation of dplyr")
+    (description
+     "This package provides a replication of key functionality from
+@code{dplyr} and the wider @code{tidyverse} using only @code{base}.")
+    (license license:expat)))
 
 (define-public r-ecp
   (package

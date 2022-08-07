@@ -10395,7 +10395,7 @@ Bluefish supports many programming and markup languages.")
 (define-public gnome-system-monitor
   (package
     (name "gnome-system-monitor")
-    (version "41.0")
+    (version "42.0")
     (source
      (origin
        (method url-fetch)
@@ -10404,7 +10404,7 @@ Bluefish supports many programming and markup languages.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "0pwy2c95rm0ym3x5pr6rqg7zh58crjxyns4r52q99ds937349z67"))))
+         "1p3mq32pfd9260aql5nys806g0c4nrswacwqs8ms40920ci9s8qk"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
@@ -12444,7 +12444,7 @@ profiler via Sysprof, debugging support, and more.")
 (define-public komikku
   (package
     (name "komikku")
-    (version "0.39.0")
+    (version "0.40.0")
     (source
      (origin
        (method git-fetch)
@@ -12454,7 +12454,7 @@ profiler via Sysprof, debugging support, and more.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1g765kbgimfpvma67j1gscj046n2q9a9nr2pczlw65qwlm0418c5"))))
+         "12l6qks4kwi75ss61yx1f515nb30d987qw3yhi4a36w5xz721p5z"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t

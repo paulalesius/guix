@@ -126,6 +126,7 @@
 ;;; Copyright © 2022 Jean-Pierre De Jesus DIAZ <me@jeandudey.tech>
 ;;; Copyright © 2022 Philip McGrath <philip@philipmcgrath.com>
 ;;; Copyright © 2022 Marek Felšöci <marek@felsoci.sk>
+;;; Copyright © 2022 Hilton Chain <hako@ultrarare.space>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -29631,6 +29632,38 @@ sorted by priority and queues that are emptied in a round-robin
 fashion.")
     (license license:bsd-3)))
 
+(define-public python-posix-ipc
+  (package
+    (name "python-posix-ipc")
+    (version "1.0.5")
+    (source
+     (origin
+       ;; The source distributed on PyPI is prebuild.
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/osvenskan/posix_ipc")
+             (commit (string-append "rel" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "17y4d0pmvp199c5hbs602ailhlh9f9zv89kmpbd8jhyl6rgaxsvs"))))
+    (build-system python-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'patch-cc-path
+                 (lambda _
+                   (substitute* "prober.py"
+                     (("cmd = .cc")
+                      (string-append "cmd = \"" #$(cc-for-target)))))))))
+    (native-inputs
+     (list python-unittest2))
+    (home-page "http://semanchuk.com/philip/posix_ipc/")
+    (synopsis "POSIX IPC primitives for Python")
+    (description
+     "This package provides POSIX IPC primitives - semaphores, shared memory and
+message queues for Python.")
+    (license license:bsd-3))) ; BSD like Copyright (c) 2018, Philip Semanchuk
+
 (define-public python-itemadapter
   (package
     (name "python-itemadapter")
@@ -30273,3 +30306,50 @@ compatible with BibTeX's own parser.")
       ;; N.B. It seems the parser was translated from WEB by hand: this
       ;; package does not contain any generated files.
       (license license:expat))))
+
+(define-public python-i3ipc
+  (package
+    (name "python-i3ipc")
+    (version "2.2.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/altdesktop/i3ipc-python")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "13bzs9dcv27czpnnbgz7a037lm8h991c8gk0qzzk5mq5yak24715"))))
+    (build-system python-build-system)
+    (arguments (list #:tests? #f))      ;FIXME: some tests are unable to run
+    (propagated-inputs (list python-xlib))
+    (home-page "https://github.com/altdesktop/i3ipc-python")
+    (synopsis "Python library for controlling i3 and Sway")
+    (description
+     "This package provides a Python library for controlling the i3 and Sway
+window managers.")
+    (license license:bsd-3)))
+
+(define-public i3-autotiling
+  (package
+    (name "i3-autotiling")
+    (version "1.6")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/nwg-piotr/autotiling")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1hjlvg7095s322gb43r9g7mqlsy3pj13l827jpnbn5x0918rq9rr"))))
+    (build-system python-build-system)
+    (arguments (list #:tests? #f))      ;no tests
+    (native-inputs (list python-wheel))
+    (propagated-inputs (list python-i3ipc))
+    (home-page "https://github.com/nwg-piotr/autotiling")
+    (synopsis "Automatically tile windows in i3 and Sway")
+    (description
+     "Script for Sway and i3 to automatically switch the horizontal/vertical
+ window split orientation.")
+    (license license:gpl3)))

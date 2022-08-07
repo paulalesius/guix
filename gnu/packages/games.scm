@@ -8003,7 +8003,7 @@ open-source FPS of its kind.")
 (define-public frotz
   (package
     (name "frotz")
-    (version "2.44")
+    (version "2.54")
     (source (origin
               (method url-fetch)
               (uri (list (string-append
@@ -8014,28 +8014,25 @@ open-source FPS of its kind.")
                           "frotz/frotz-" version ".tar.gz")))
               (sha256
                (base32
-                "1v735xr3blznac8fnwa27s1vhllx4jpz7kw7qdw1bsfj6kq21v3k"))))
+                "1vsfq9ryyb4nvzxpnnn40k423k9pdy8k67i8390qz5h0vmxw0fds"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f                      ; there are no tests
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)
-         (add-before 'build 'curses
-           (lambda _
-             (substitute* "Makefile"
-               (("lcurses") "lncurses"))
-             #t))
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin"))
-                    (man (string-append out "/share/man/man6")))
-               (install-file "frotz" bin)
-               (mkdir-p man)
-               (install-file "doc/frotz.6" man)
-               #t))))))
-    (inputs (list libmodplug libsamplerate libsndfile libvorbis ncurses))
+     (list #:tests? #f                  ; there are no tests
+           #:make-flags
+           #~(list (string-append "CC=" #$(cc-for-target)))
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure)      ; no configure-script
+               (replace 'install
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out"))
+                          (bin (string-append out "/bin"))
+                          (man (string-append out "/share/man/man6")))
+                     (install-file "frotz" bin)
+                     (mkdir-p man)
+                     (install-file "doc/frotz.6" man)))))))
+    (native-inputs (list pkg-config which))
+    (inputs (list ao libmodplug libsamplerate libsndfile libvorbis ncurses))
     (synopsis "Portable Z-machine interpreter (ncurses version) for text adventure games")
     (description "Frotz is an interpreter for Infocom games and other Z-machine
 games in the text adventure/interactive fiction genre.  This version of Frotz
@@ -9794,54 +9791,51 @@ Skorl.  Maybe it would be an idea to try and escape...")
                            file-prefix release ".zip"))
        (sha256
         (base32 hash))))
-    (build-system trivial-build-system)
+    (build-system copy-build-system)
     (arguments
-     `(#:modules ((guix build utils))
-       #:builder
-       (begin
-         (use-modules (guix build utils))
-         (let* ((out (assoc-ref %outputs "out"))
-                (share (string-append out "/share"))
-                (data (string-append share "/" ,name))
-                (apps (string-append share "/applications"))
-                (bin (string-append out "/bin"))
-                (executable (string-append bin "/" ,name))
-                (scummvm (assoc-ref %build-inputs "scummvm")))
-           (let ((unzip (search-input-file %build-inputs "/bin/unzip")))
-             (invoke unzip "-j" (assoc-ref %build-inputs "source")))
-           (let ((doc (string-append share "/doc/" ,name "-" ,version)))
-             (install-file "readme.txt" doc))
-           (install-file "queen.1c" data)
-           (mkdir-p bin)
-           (let ((bash (assoc-ref %build-inputs "bash")))
-             (with-output-to-file executable
-               (lambda ()
-                 (format #t "#!~a/bin/bash~%" bash)
-                 (format #t "exec ~a/bin/scummvm -q fr -p ~a queen~%"
-                         scummvm data))))
-           (chmod executable #o755)
-           ;; Create desktop file.  There is no dedicated
-           ;; icon for the game, so we borrow SCUMMVM's.
-           (mkdir-p apps)
-           (with-output-to-file (string-append apps "/" ,name ".desktop")
-             (lambda _
-               (format #t
-                       "[Desktop Entry]~@
-                       Name=Flight of the Amazon Queen~@
-                       GenericName=Queen~@
-                       Comment=Embark on a quest to rescue a kidnapped princess and in the process, discover the true sinister intentions of a suspiciously located Lederhosen company~@
-                       Comment[de]=Begib dich auf ein Abenteuer, um eine entführte Prinzessin zu retten und entdecke die wahren, finsteren Absichten eines verdächtig erscheinenden Lederhosen-Unternehmens~@
-                       Type=Application~@
-                       Exec=~a~@
-                       Icon=~a/share/icons/hicolor/scalable/apps/scummvm.svg~@
-                       Categories=AdventureGame;Game;RolePlaying;~@
-                       Keywords=adventure;game;roleplaying;fantasy;~%"
-                       executable scummvm))))
-         #t)))
-    (native-inputs
-     (list unzip))
-    (inputs
-     (list bash scummvm))
+     (list
+      #:install-plan
+      #~'(("queen.1c" #$(string-append "share/" name "/"))
+          (#$name "bin/")
+          (#$(string-append name ".desktop") "share/applications/")
+          ("." #$(string-append "share/doc/" name "-" version)
+           #:include-regexp ("README" "readme")))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'install 'build
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (with-output-to-file #$name
+                (lambda ()
+                  (format #t "#!~a~%" (search-input-file inputs "bin/sh"))
+                  (format #t "exec ~a -q ~a -p ~a queen~%"
+                          (search-input-file inputs "bin/scummvm")
+                          #$language
+                          (string-append (assoc-ref outputs "out")
+                                         "/share/" #$name))))
+              (chmod #$name #o755)
+              (with-output-to-file #$(string-append name ".desktop")
+                (lambda ()
+                  (format
+                   #t
+                   "[Desktop Entry]~@
+                    Name=Flight of the Amazon Queen~@
+                    GenericName=Queen~@
+                    Comment=Embark on a quest to rescue a kidnapped princess~
+                    and in the process, discover the true sinister intentions~
+                    of a suspiciously located Lederhosen company~@
+                    Comment[de]=Begib dich auf ein Abenteuer, um eine entführte~
+                    Prinzessin zu retten und entdecke die wahren, finsteren~
+                    Absichten eines verdächtig erscheinenden~
+                    Lederhosen-Unternehmens~@
+                    Type=Application~@
+                    Exec=~a~@
+                    Icon=~a/share/icons/hicolor/scalable/apps/scummvm.svg~@
+                    Categories=AdventureGame;Game;RolePlaying;~@
+                    Keywords=adventure;game;roleplaying;fantasy;~%"
+                   (string-append (assoc-ref outputs "out") "/bin/" #$name)
+                   (search-input-file inputs "bin/scummvm")))))))))
+    (native-inputs (list unzip))
+    (inputs (list bash scummvm))
     (home-page "https://www.scummvm.org/")
     (synopsis "Classic 2D point and click adventure game")
     (description "Flight of the Amazon Queen is a 2D point-and-click
