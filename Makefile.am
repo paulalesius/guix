@@ -130,6 +130,7 @@ MODULES =					\
   guix/cve.scm					\
   guix/workers.scm				\
   guix/least-authority.scm			\
+  guix/read-print.scm				\
   guix/ipfs.scm					\
   guix/platform.scm                             \
   guix/platforms/arm.scm                        \
@@ -524,6 +525,7 @@ SCM_TESTS =					\
   tests/profiles.scm				\
   tests/publish.scm				\
   tests/pypi.scm				\
+  tests/read-print.scm				\
   tests/records.scm				\
   tests/scripts.scm				\
   tests/search-paths.scm			\
@@ -578,6 +580,7 @@ SH_TESTS =					\
   tests/guix-package.sh				\
   tests/guix-package-aliases.sh			\
   tests/guix-package-net.sh			\
+  tests/guix-style.sh				\
   tests/guix-system.sh				\
   tests/guix-home.sh				\
   tests/guix-archive.sh				\
