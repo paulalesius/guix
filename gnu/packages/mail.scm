@@ -1721,14 +1721,14 @@ addons which can add many functionalities to the base client.")
 (define-public msmtp
   (package
     (name "msmtp")
-    (version "1.8.20")
+    (version "1.8.22")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://marlam.de/msmtp/releases"
                            "/msmtp-" version ".tar.xz"))
        (sha256
-        (base32 "04di9qs2bwiwidnhk3afif5mh05q3ggr9cyhr5ysyj0gzjmf4fnr"))))
+        (base32 "1rx3ksvwdfrwahsd2lwf52vnhhq72ygb0kjy6ci2df55hri2010v"))))
     (build-system gnu-build-system)
     (inputs
      (list libsecret gnutls zlib gsasl))
@@ -1736,26 +1736,24 @@ addons which can add many functionalities to the base client.")
      (list pkg-config))
     (home-page "https://marlam.de/msmtp/")
     (arguments
-     `(#:configure-flags (list "--with-libgsasl"
-                               "--with-libidn"
-                               "--with-tls=gnutls")
+     (list
+       #:configure-flags
+       #~(list "--with-libgsasl"
+               "--with-libidn"
+               "--with-tls=gnutls")
        #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'install-additional-files
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin"))
-                    (doc (string-append out "/share/doc/msmtp"))
-                    (msmtpq "scripts/msmtpq")
-                    (vimfiles (string-append out "/share/vim/vimfiles/syntax")))
-               (install-file (string-append msmtpq "/msmtpq") bin)
-               (install-file (string-append msmtpq "/msmtp-queue") bin)
-               (install-file (string-append msmtpq "/README.msmtpq") doc)
-               (install-file "scripts/vim/msmtp.vim" vimfiles)
-               ;; Don't rely on netcat being in the PATH to test for a
-               ;; connection, instead look up and ping debian.org.
-               (substitute* (string-append bin "/msmtpq")
-                 (("EMAIL_CONN_TEST=n") "EMAIL_CONN_TEST=p"))))))))
+       #~(modify-phases %standard-phases
+           (add-after 'install 'install-additional-files
+             (lambda* (#:key outputs #:allow-other-keys)
+               (let* ((out #$output)
+                      (bin (string-append out "/bin"))
+                      (doc (string-append out "/share/doc/msmtp"))
+                      (msmtpq "scripts/msmtpq")
+                      (vimfiles (string-append out "/share/vim/vimfiles/syntax")))
+                 (install-file (string-append msmtpq "/msmtpq") bin)
+                 (install-file (string-append msmtpq "/msmtp-queue") bin)
+                 (install-file (string-append msmtpq "/README.msmtpq") doc)
+                 (install-file "scripts/vim/msmtp.vim" vimfiles)))))))
     (properties
      '((release-monitoring-url . "https://marlam.de/msmtp/download/")))
     (synopsis
