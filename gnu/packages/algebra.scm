@@ -413,13 +413,13 @@ or text interfaces) or as a C++ library.")
 (define-public flint
   (package
    (name "flint")
-   (version "2.8.4")
+   (version "2.9.0")
    (source
     (origin
       (method url-fetch)
       (uri (string-append "http://flintlib.org/flint-" version ".tar.gz"))
       (sha256
-       (base32 "1gp4wm2s8c27g2hh53d09cys62da1bsxfwbcsj9cd7cfikm95pv1"))))
+       (base32 "0sp79ixaawjzna79afrlwlx9hg55jxil03f1wq435j9k23ar1h1g"))))
    (build-system gnu-build-system)
    (inputs
     (list ntl))
@@ -466,7 +466,7 @@ fast arithmetic.")
 (define-public arb
   (package
     (name "arb")
-    (version "2.22.1")
+    (version "2.23.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -475,7 +475,7 @@ fast arithmetic.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0qcyf8a7w95yxap0r3sb7xibk53nbs5kkidja3ljvqpbpk5xvpax"))))
+                "1m9vskyf857gbm0cbh3z8c8m6cqkqa765wb9hqmsv7yzfmklzpvn"))))
     (build-system gnu-build-system)
     (propagated-inputs
      (list flint))               ; flint.h is included by arf.h
@@ -540,14 +540,14 @@ these types and other mathematical functions.")
 (define-public ntl
   (package
    (name "ntl")
-   (version "11.4.4")
+   (version "11.5.1")
    (source (origin
             (method url-fetch)
             (uri (string-append "https://shoup.net/ntl/ntl-"
                                 version ".tar.gz"))
             (sha256
              (base32
-              "1nr1h27j2gdz6badzz9lk2pknxhdijqdxqhd3haryh0sw616wzwx"))
+              "12ka3hym4skg63mp8vgkin79svbpdk2m6i41yvmcdjq62g1hc391"))
             (modules '((guix build utils)))
             (snippet
              '(begin
@@ -923,7 +923,7 @@ algorithms from the FORTRAN library MINPACK.")
 (define-public symengine
   (package
     (name "symengine")
-    (version "0.6.0")
+    (version "0.9.0")
     (source
      (origin
        (method git-fetch)
@@ -932,7 +932,7 @@ algorithms from the FORTRAN library MINPACK.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "129iv9maabmb42ylfdv0l0g94mcbf3y4q3np175008rcqdr8z6h1"))))
+        (base32 "17b6byrhk0bgvarqmg92nrrqhzll9as6x1smghmyq2h9xc373ap4"))))
     (build-system cmake-build-system)
     (arguments
      '(#:configure-flags
@@ -1589,16 +1589,16 @@ of M4RI from F_2 to F_{2^e}.")
 (define-public eclib
   (package
     (name "eclib")
-    (version "20190909")
+    (version "20220621")
     (source (origin
               (method git-fetch)
               (uri (git-reference
                     (url "https://github.com/JohnCremona/eclib/")
-                    (commit (string-append "v" version))))
+                    (commit version)))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1gw27lqc3f525n8qdcmr2nyn16y9g10z9f6dnmckyyxcdzvhq35n"))))
+                "07wbkzmn6w0hrv2vim7f0il7k59ccc66x5vnn623xkmhfw32b3nz"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf automake libtool))
