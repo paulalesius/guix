@@ -54,6 +54,7 @@
 ;;; Copyright © 2022 Sharlatan Hellseher <sharlatanus@gmail.com>
 ;;; Copyright © 2022 Philip McGrath <philip@philipmcgrath.com>
 ;;; Copyright © 2022 Marek Felšöci <marek@felsoci.sk>
+;;; Copyright © 2022 vicvbcun <guix@ikherbers.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -75,6 +76,7 @@
   #:use-module (ice-9 match)
   #:use-module (gnu packages)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
@@ -724,18 +726,31 @@ integer programming problems and computes Markov bases for statistics.")
 (define-public cddlib
   (package
     (name "cddlib")
-    (version "0.94i")
+    (version "0.94m")
     (source
      (origin
-      (method url-fetch)
-      (uri (string-append "ftp://ftp.math.ethz.ch/users/fukudak/cdd/cddlib-"
-                          (string-delete #\. version) ".tar.gz"))
+      (method git-fetch)
+      (uri (git-reference
+            (url "https://github.com/cddlib/cddlib")
+            (commit version)))
       (sha256
        (base32
-        "00zdgiqb91vx6gd2103h3ijij0llspsxc6zz3iw2bll39fvkl4xq"))))
+        "09s8323h5w9j6mpl1yc6lm770dkskfxd2ayyafkcjllmnncxzfa0"))))
     (build-system gnu-build-system)
     (inputs
      (list gmp))
+    (native-inputs (list autoconf
+                         automake
+                         libtool
+                         texlive-amsfonts
+                         texlive-dvips-l3backend
+                         texlive-latex-graphics
+                         texlive-latex-l3backend
+                         texlive-tiny))
+    (arguments
+     (list #:configure-flags
+             #~(list (string-append "--docdir=" #$output
+                                    "/share/doc/" #$name "-" #$version))))
     (home-page "https://www.inf.ethz.ch/personal/fukudak/cdd_home/index.html")
     (synopsis "Library for convex hulls and extreme rays of polyhedra")
     (description
@@ -4329,7 +4344,7 @@ to BMP, JPEG or PNG image formats.")
 (define-public maxima
   (package
     (name "maxima")
-    (version "5.45.1")
+    (version "5.46.0")
     (source
      (origin
        (method url-fetch)
@@ -4337,7 +4352,7 @@ to BMP, JPEG or PNG image formats.")
                            version "-source/" name "-" version ".tar.gz"))
        (sha256
         (base32
-         "1p77nk5sz1qfkn5zr97szpbi8ib4b22k8i52l4ag5gkhd4kid47y"))
+         "01wbm8jj43p7gpdj4h55aij0b44bjydn4bwb7q1wjrfs91mz143k"))
        (patches (search-patches "maxima-defsystem-mkdir.patch"))))
     (build-system gnu-build-system)
     (inputs
@@ -4420,7 +4435,11 @@ to BMP, JPEG or PNG image formats.")
                ;; components at runtime.
                (wrap-program (string-append out "/bin/maxima")
                  `("PATH" prefix (,binutils))))
-             #t)))))
+             #t))
+         ;; The Maxima command ‘describe’ allows to pick the relevant portions
+         ;; from Maxima’s Texinfo docs.  However it does not support reading
+         ;; gzipped info files.
+         (delete 'compress-documentation))))
     (home-page "https://maxima.sourceforge.io")
     (synopsis "Numeric and symbolic expression manipulation")
     (description "Maxima is a system for the manipulation of symbolic and
@@ -4437,7 +4456,7 @@ point numbers.")
 (define-public wxmaxima
   (package
     (name "wxmaxima")
-    (version "21.05.2")
+    (version "22.05.0")
     (source
      (origin
        (method git-fetch)
@@ -4446,7 +4465,7 @@ point numbers.")
              (commit (string-append "Version-" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0h7ryykh2dapcyvpp4f1j1b3vrrz80x9k8nkci2yxifgdb29vyhw"))))
+        (base32 "1va56v9dys97yln4m1z3fz3k90lpy8i3kvcq0v1cbg36689aghm5"))))
     (build-system cmake-build-system)
     (native-inputs
      `(("gettext" ,gettext-minimal)))

@@ -3241,14 +3241,14 @@ tools, XML authoring components, and an extensible plug-in based API.")
 (define-public v4l-utils
   (package
     (name "v4l-utils")
-    (version "1.20.0")
+    (version "1.22.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://linuxtv.org/downloads/v4l-utils"
                                   "/v4l-utils-" version ".tar.bz2"))
               (sha256
                (base32
-                "1xr66y6w422hil6s7n8d61a2vhwh4im8l267amf41jvw7xqihqcm"))))
+                "0cafp64b7ylxhjnp47hxm59r0b0v5hc2gc23qh2s2k5463lgpik5"))))
     (build-system gnu-build-system)
     ;; Separate graphical tools in order to save almost 1 GiB on the closure
     ;; for the common case.
@@ -3287,12 +3287,12 @@ tools, XML authoring components, and an extensible plug-in based API.")
     (native-inputs
      (list perl pkg-config))
     (inputs
-     `(("alsa-lib" ,alsa-lib)
-       ("glu" ,glu)
-       ("libjpeg" ,libjpeg-turbo)
-       ("libx11" ,libx11)
-       ("qtbase" ,qtbase-5)
-       ("eudev" ,eudev)))
+     (list alsa-lib
+           glu
+           libjpeg-turbo
+           libx11
+           qtbase-5
+           eudev))
     (synopsis "Realtime video capture utilities for Linux")
     (description "The v4l-utils provide a series of libraries and utilities to
 be used for realtime video capture via Linux-specific APIs.")
@@ -3939,7 +3939,7 @@ post-processing of video formats like MPEG2, H.264/AVC, and VC-1.")
 (define-public openh264
   (package
     (name "openh264")
-    (version "2.1.1")
+    (version "2.3.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3948,17 +3948,20 @@ post-processing of video formats like MPEG2, H.264/AVC, and VC-1.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0ffav46pz3sbj92nipd62z03fibyqgclfq9w8lgr80s6za6zdk5s"))))
+                "1yr6nsjpnazq4z6dvjfyanljwgwnyjh3ddxa0sq6hl9qc59yq91r"))))
     (build-system gnu-build-system)
     (native-inputs
      (list nasm python))
     (arguments
-     '(#:make-flags (list (string-append "PREFIX=" (assoc-ref %outputs "out"))
-                          "CC=gcc")
-       #:test-target "test"
-       #:phases (modify-phases %standard-phases
-                  ;; no configure script
-                  (delete 'configure))))
+     (list
+      #:make-flags
+      #~(list (string-append "PREFIX=" #$output)
+                             "CC=gcc")
+      #:test-target "test"
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; no configure script
+          (delete 'configure))))
     (home-page "https://www.openh264.org/")
     (synopsis "H264 decoder library")
     (description

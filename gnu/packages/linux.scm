@@ -5201,16 +5201,15 @@ arrays when needed.")
 (define-public multipath-tools
   (package
     (name "multipath-tools")
-    (version "0.8.5")
+    (version "0.9.0")
+    (home-page "https://github.com/opensvc/multipath-tools")
     (source (origin
               (method git-fetch)
-              (uri (git-reference
-                    (url "https://git.opensvc.com/multipath-tools/.git")
-                    (commit version)))
+              (uri (git-reference (url home-page) (commit version)))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0gipg0z79h76j0f449cx4wcrfsv69ravjlpphsac11h302g3nrvg"))
+                "09m3vs798qb3xk0v7s3hy0nhw0dznkxjb56671kqj961h7zhg47b"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -5219,80 +5218,64 @@ arrays when needed.")
                   (substitute* '("multipathd/main.c"
                                  "libmultipath/debug.c")
                     (("#include \"../third-party/")
-                     "#include \""))
-                  #t))))
+                     "#include \""))))))
     (build-system gnu-build-system)
     (arguments
-     '(#:test-target "test"
-       #:parallel-build? #f             ;XXX: broken in 0.8.4
-       #:make-flags (list "CC=gcc"
-                          (string-append "DESTDIR="
-                                         (assoc-ref %outputs "out"))
-                          ;; Install Udev rules below this directory, relative
-                          ;; to the prefix.
-                          "SYSTEMDPATH=lib"
-                          (string-append "LDFLAGS=-Wl,-rpath="
-                                         (assoc-ref %outputs "out")
-                                         "/lib"))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-source
-           (lambda* (#:key inputs #:allow-other-keys)
-             (let ((lvm2 (assoc-ref inputs "lvm2"))
-                   (udev (assoc-ref inputs "udev")))
-               (substitute* "Makefile.inc"
-                 (("\\$\\(prefix\\)/usr") "$(prefix)")
-                 ;; Do not save timestamp to avoid gzip "timestamp
-                 ;; out-of-range" warnings.
-                 (("gzip -9") "gzip -9n"))
-               (substitute* '("kpartx/Makefile" "libmultipath/Makefile")
-                 (("/usr/include/libdevmapper.h")
-                  (string-append lvm2 "/include/libdevmapper.h"))
-                 (("/usr/include/libudev.h")
-                  (string-append udev "/include/libudev.h")))
-               #t)))
-         (add-after 'unpack 'fix-maybe-uninitialized-variable
-           (lambda _
-             ;; This variable gets initialized later if needed, but GCC 7
-             ;; fails to notice.  Should be fixed for > 0.8.4.
-             ;; https://www.redhat.com/archives/dm-devel/2020-March/msg00137.html
-             (substitute* "libmultipath/structs_vec.c"
-               (("bool is_queueing;")
-                "bool is_queueing = false;"))
-             #t))
-         (add-after 'unpack 'fix-linking-tests
-           (lambda _
-             ;; Add missing linker flag for -lmpathcmd.  This should be fixed
-             ;; for versions > 0.8.4.
-             (substitute* "tests/Makefile"
-               (("-lmultipath -lcmocka")
-                "-lmultipath -L$(mpathcmddir) -lmpathcmd -lcmocka"))
-             #t))
-         (add-after 'unpack 'skip-failing-tests
-           (lambda _
-             ;; This test and the module's setup() test an arbitrary block
-             ;; device node name, but the build environment has none.
-             (substitute* "tests/devt.c"
-               (("return get_one_devt.*") "return 0;\n")
-               (("cmocka_unit_test\\(test_devt2devname_devt_good\\),") ""))
-             ;; The above triggers -Werror=unused-function.  Ignore it.
-             (substitute* "tests/Makefile"
-               (("CFLAGS \\+= " match)
-                (string-append match "-Wno-error=unused-function ")))
-             #t))
-         (delete 'configure))))         ; no configure script
+     (list
+      #:test-target "test"
+      #:parallel-build? #f              ;XXX: broken since 0.8.4
+      #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                           (string-append "DESTDIR=" #$output)
+                           ;; Install Udev rules below this directory, relative
+                           ;; to the prefix.
+                           "SYSTEMDPATH=lib")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-source
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((libdevmapper.h
+                     (search-input-file inputs "include/libdevmapper.h"))
+                    (libudev.h
+                     (search-input-file inputs "include/libudev.h")))
+                (substitute* "Makefile.inc"
+                  (("/bin/echo") "echo")
+                  (("\\$\\(prefix\\)/usr") "$(prefix)")
+                  ;; Do not save timestamp to avoid gzip "timestamp
+                  ;; out-of-range" warnings.
+                  (("gzip -9") "gzip -9n"))
+                (substitute* '("kpartx/Makefile" "libmultipath/Makefile")
+                  (("/usr/include/libdevmapper.h") libdevmapper.h)
+                  (("/usr/include/libudev.h") libudev.h)))))
+          (add-after 'unpack 'skip-failing-tests
+            (lambda _
+              ;; This test and the module's setup() test an arbitrary block
+              ;; device node name, but the build environment has none.
+              (substitute* "tests/devt.c"
+                (("return get_one_devt.*") "return 0;\n")
+                (("cmocka_unit_test\\(test_devt2devname_devt_good\\),") ""))
+              ;; The above triggers -Werror=unused-function.  Ignore it.
+              (substitute* "tests/Makefile"
+                (("CFLAGS \\+= " match)
+                 (string-append match "-Wno-error=unused-function ")))))
+          (delete 'configure)           ;no configure script
+          (add-before 'build 'set-LDFLAGS
+            (lambda _
+              ;; Note: this cannot be passed as a make flag because that will
+              ;; override the build system LDFLAGS.
+              (setenv "LDFLAGS"
+                      (string-append "-Wl,-rpath=" #$output "/lib")))))))
+
     (native-inputs
      (list perl pkg-config valgrind
            ;; For tests.
            cmocka))
     (inputs
-     `(("json-c" ,json-c)
-       ("libaio" ,libaio)
-       ("liburcu" ,liburcu)
-       ("lvm2" ,lvm2)
-       ("readline" ,readline)
-       ("udev" ,eudev)))
-    (home-page "http://christophe.varoqui.free.fr/")
+     (list json-c
+           libaio
+           liburcu
+           lvm2
+           readline
+           eudev))
     (synopsis "Access block devices through multiple paths")
     (description
      "This package provides the following binaries to drive the
@@ -5304,8 +5287,8 @@ Linux Device Mapper multipathing driver:
 @code{dm} multipath devices.
 @item @command{kpartx} - Create device maps from partition tables.
 @end enumerate")
-    (license (list license:gpl2+             ; main distribution
-                   license:lgpl2.0+))))      ; libmpathcmd/mpath_cmd.h
+    (license (list license:gpl2+        ;main distribution
+                   license:lgpl2.0+)))) ;libmpathcmd/mpath_cmd.h
 
 (define-public libaio
   (package
@@ -8919,7 +8902,7 @@ persistent over reboots.")
 (define-public libbpf
   (package
     (name "libbpf")
-    (version "0.1.1")
+    (version "0.8.1")
     (source
      (origin
        (method git-fetch)
@@ -8929,28 +8912,26 @@ persistent over reboots.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0ilnnm4q22f8fagwp8kb37licy4ks861i2iqh2djsypqhnxvx3fv"))))
+         "1zzpkk4x3f20483dzw43b3ml03d63vvkmqf4j8y3b61b67wm59bm"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
     (propagated-inputs
      ;; In Requires.private of libbpf.pc.
-     (list libelf zlib))
+     (list elfutils zlib))
     (arguments
      `(#:tests? #f                      ; no tests
        #:make-flags
        (list
         (string-append "PREFIX=" (assoc-ref %outputs "out"))
         (string-append "LIBDIR=$(PREFIX)/lib")
-        (string-append
-         "CC=" (assoc-ref %build-inputs "gcc") "/bin/gcc"))
+        (string-append "CC=" ,(cc-for-target)))
        #:phases
        (modify-phases %standard-phases
          (delete 'configure)
          (add-before 'build 'pre-build
            (lambda _
-             (chdir "src")
-             #t)))))
+             (chdir "src"))))))
     (home-page "https://github.com/libbpf/libbpf")
     (synopsis "BPF CO-RE (Compile Once – Run Everywhere)")
     (description
@@ -8962,7 +8943,7 @@ headers.")
 (define-public bcc
   (package
     (name "bcc")
-    (version "0.16.0")
+    (version "0.24.0")
     (source
      (origin
        (method git-fetch)
@@ -8972,7 +8953,7 @@ headers.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1367c0bzrpclvjvmk0sxgi49rh7j2f9izqk5a7g3yvawh1fmvvjh"))))
+         "1i6xikkxf2nasfkqa91hjzdq0a88mgyzrvia4fi2i2v1d8pbmnp4"))))
     (build-system cmake-build-system)
     (native-inputs
      (list bison flex))
@@ -9042,7 +9023,7 @@ and above.")
 (define-public bpftrace
   (package
     (name "bpftrace")
-    (version "0.11.4")
+    (version "0.15.0")
     (source
      (origin
        (method git-fetch)
@@ -9051,13 +9032,13 @@ and above.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0y4qgm2cpccrsm20rnh92hqplddqsc5q5zhw9nqn2igm3h9i0z7h"))
+        (base32 "022fg0kiz0liahj82wvlxmivkwyp86shs5fwr2v4blx7lh05k9zm"))
        (patches (search-patches "bpftrace-disable-bfd-disasm.patch"))))
     (build-system cmake-build-system)
     (native-inputs
      (list bison flex))
     (inputs
-     (list bcc clang-toolchain-9 elfutils libbpf))
+     (list bcc clang-toolchain-9 elfutils libbpf cereal))
     (arguments
      `(#:tests? #f ;Tests require googletest sources.
        #:configure-flags
@@ -9147,7 +9128,7 @@ then IP sets may be the proper tool for you.")
 (define-public liburing
   (package
     (name "liburing")
-    (version "0.7")
+    (version "2.2")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -9156,7 +9137,7 @@ then IP sets may be the proper tool for you.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "15z44l7y4c6s6dlf7v8lq4znlsjbja2r4ifbni0l8cdcnq0w3zh3"))))
+                "1677zqqbd9nw9hrdaxqbd1zwy54cxfsv2z0bjipn23mrkz2xzy1k"))))
     (build-system gnu-build-system)
     (arguments
      `(;; Tests are dependent on kernel version and features

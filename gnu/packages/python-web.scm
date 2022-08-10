@@ -13,7 +13,7 @@
 ;;; Copyright © 2014, 2015 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015 Cyril Roelandt <tipecaml@gmail.com>
 ;;; Copyright © 2015, 2016, 2017, 2019 Leo Famulari <leo@famulari.name>
-;;; Copyright © 2016, 2019 Hartmut Goebel <h.goebel@crazy-compilers.com>
+;;; Copyright © 2016, 2019, 2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;; Copyright © 2016–2021 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2015, 2017 Ben Woodcroft <donttrustben@gmail.com>
 ;;; Copyright © 2015, 2016 Christine Lemmer-Webber <cwebber@dustycloud.org>
@@ -2804,6 +2804,25 @@ APIs.")
      "Requests is a Python HTTP client library.  It aims to be easier to use
 than Python’s urllib2 library.")
     (license license:asl2.0)))
+
+(define-public python-requests-kerberos
+  (package
+    (name "python-requests-kerberos")
+    (version "0.14.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "requests-kerberos" version))
+              (sha256
+               (base32
+                "1lbgjs779cjxhz07lfl9dbyp3qfh8a3ir2393042wfg518jd3afd"))))
+    (build-system python-build-system)
+    (propagated-inputs (list python-cryptography python-pyspnego
+                             python-requests))
+    (home-page "https://github.com/requests/requests-kerberos")
+    (synopsis "Kerberos authentication handler for python-requests")
+    (description "This package provides a Kerberos authentication handler for
+python-requests.")
+    (license license:isc)))
 
 (define-public python-requests-unixsocket
   (package
@@ -7666,3 +7685,29 @@ resources using Web Application Description Language (WADL) files as guides.")
 SendGrid Web API v3.  Version 3+ of the library provides full support for all
 SendGrid Web API v3 endpoints, including the new v3 /mail/send.")
     (license license:expat)))
+
+(define-public python-starlette
+  (package
+    (name "python-starlette")
+    (version "0.20.4")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "starlette" version))
+              (sha256
+               (base32
+                "112hmwk4fh4dl21nlr2xd37h43xzxpjxfnic7v7fz3wr5w9g7z22"))))
+    (build-system python-build-system)
+    (propagated-inputs (list python-anyio
+                             python-typing-extensions
+                             ;; [all] extra dependencies:
+                             python-itsdangerous
+                             python-jinja2
+                             python-multipart
+                             python-pyyaml
+                             python-requests))
+    (home-page "https://github.com/encode/starlette")
+    (synopsis "Little ASGI library")
+    (description
+     "Starlette is a lightweight ASGI (Asynchronous Server Gateway
+Interface) framework/toolkit for building async web services in Python.")
+    (license license:bsd-3)))

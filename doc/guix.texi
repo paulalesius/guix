@@ -9568,6 +9568,19 @@ with @code{build-expression->derivation} (@pxref{Derivations,
 @code{build-expression->derivation}}).
 @end defvr
 
+@defvr {Scheme Variable} channel-build-system
+This variable is exported by @code{(guix build-system channel)}.
+
+This build system is meant primarily for internal use.  A package using
+this build system must have a channel specification as its @code{source}
+field (@pxref{Channels}); alternatively, its source can be a directory
+name, in which case an additional @code{#:commit} argument must be
+supplied to specify the commit being built (a hexadecimal string).
+
+The resulting package is a Guix instance of the given channel, similar
+to how @command{guix time-machine} would build it.
+@end defvr
+
 @node Build Phases
 @section Build Phases
 
@@ -16408,8 +16421,9 @@ include @code{read-only}, @code{bind-mount}, @code{no-dev} (disallow
 access to special files), @code{no-suid} (ignore setuid and setgid
 bits), @code{no-atime} (do not update file access times),
 @code{strict-atime} (update file access time), @code{lazy-time} (only
-update time on the in-memory version of the file inode), and
-@code{no-exec} (disallow program execution).
+update time on the in-memory version of the file inode),
+@code{no-exec} (disallow program execution), and @code{shared} (make the
+mount shared).
 @xref{Mount-Unmount-Remount,,, libc, The GNU C Library Reference
 Manual}, for more information on these flags.
 
@@ -21020,7 +21034,7 @@ List of GNOME Shell assets needed by GDM: icon theme, fonts, etc.
 @item @code{xorg-configuration} (default: @code{(xorg-configuration)})
 Configuration of the Xorg graphical server.
 
-@item @code{xsession} (default: @code{(xinitrc)})
+@item @code{x-session} (default: @code{(xinitrc)})
 Script to run before starting a X session.
 
 @item @code{dbus-daemon} (default: @code{dbus-daemon-wrapper})
@@ -22428,7 +22442,7 @@ their default values are:
 @item handle-lid-switch-docked
 @code{ignore}
 @item handle-lid-switch-external-power
-@code{ignore}
+@code{*unspecified*}
 @item power-key-ignore-inhibited?
 @code{#f}
 @item suspend-key-ignore-inhibited?
@@ -37486,6 +37500,10 @@ using the @option{--share} and @option{--expose} options:
 guix system container my-config.scm \
    --expose=$HOME --share=$HOME/tmp=/exchange
 @end example
+
+The @option{--share} and @option{--expose} options can also be passed to
+the generated script to bind-mount additional directories into the
+container.
 
 @quotation Note
 This option requires Linux-libre 3.19 or newer.

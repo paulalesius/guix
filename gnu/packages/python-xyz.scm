@@ -693,6 +693,32 @@ project documentation.  Documentation source files are written in Markdown, and
 configured with a single YAML configuration file.")
     (license license:bsd-3)))
 
+(define-public python-mkdocs-markdownextradata-plugin
+  (package
+    (name "python-mkdocs-markdownextradata-plugin")
+    (version "0.2.5")
+    (source (origin
+       ;; Use git, as there are some test files missing from the PyPI release,
+       ;; see https://github.com/rosscdh/mkdocs-markdownextradata-plugin/issues/41.
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/rosscdh/mkdocs-markdownextradata-plugin")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1a3868s9m7pzyfncpjbjsa9vw5nihssl2v47pxj7h6qa67kvlk3g"))))
+    (build-system python-build-system)
+    (native-inputs (list python-pytest))
+    (propagated-inputs (list python-mkdocs python-pyyaml))
+    (home-page "https://github.com/rosscdh/mkdocs-markdownextradata-plugin/")
+    (synopsis "Inject mkdocs.yml extra variables into the MkDocs markdown
+template")
+    (description
+     "This package provides a MkDocs plugin that injects the mkdocs.yml extra
+variables into the markdown template")
+    (license license:expat)))
+
 (define-public python-pymdown-extensions
   (package
     (name "python-pymdown-extensions")
@@ -3763,34 +3789,23 @@ memory usage and transliteration quality.")
 (define-public python-pyjwt
   (package
     (name "python-pyjwt")
-    (version "1.7.1")
+    (version "2.4.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "PyJWT" version))
        (sha256
         (base32
-         "15hflax5qkw1v6nssk1r0wkj83jgghskcmn875m3wgvpzdvajncd"))
-       (modules '((guix build utils)))
-       (snippet
-        '(begin
-           (for-each delete-file-recursively
-                     (find-files "." "\\.pyc$"))
-           #t))))
+         "1fmbcwfw1463wjzwbcgg3s16rad6kfb1mc5y7jbkp6v9ihh0hafl"))))
     (build-system python-build-system)
     (arguments
      '(#:phases (modify-phases %standard-phases
                   (replace 'check
-                    (lambda _
-                      ;; Mimic upstream commit 3a20892442b34c7 to get
-                      ;; rid of dependency on pytest-runner < 5.0.
-                      ;; Remove substitution for PyJWT > 1.7.1.
-                      (substitute* "setup.py"
-                        ((".*pytest-runner.*")
-                         ""))
-                      (invoke "pytest" "-vv"))))))
+                    (lambda* (#:key tests? #:allow-other-keys)
+                      (when tests?
+                        (invoke "pytest" "-vv")))))))
     (native-inputs
-     (list python-pytest python-pytest-cov))
+     (list python-cryptography python-pytest))
     (home-page "https://github.com/progrium/pyjwt")
     (synopsis "JSON Web Token implementation in Python")
     (description
@@ -4600,7 +4615,7 @@ to deprecate classes, functions or methods.")
 (define-public python-pygithub
   (package
     (name "python-pygithub")
-    (version "1.54.1")
+    (version "1.55")
     (source
      ;; We fetch from the Git repo because there are no tests in the PyPI
      ;; archive.
@@ -4611,7 +4626,7 @@ to deprecate classes, functions or methods.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1nl74bp5ikdnrc8xq0qr25ryl1mvarf0xi43k8w5jzlrllhq0nkq"))))
+        (base32 "082bxffpy4h97dsay3l75cpgfjj10kywkvicnm6xscwvah285q9y"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -4623,7 +4638,7 @@ to deprecate classes, functions or methods.")
              #t)))))
     (propagated-inputs
      (list python-cryptography python-deprecated python-pyjwt
-           python-requests))
+           python-pynacl python-requests))
     (native-inputs
      (list python-httpretty python-pytest))
     (home-page "https://pygithub.readthedocs.io/en/latest/")
@@ -5742,15 +5757,17 @@ the Texinfo, HTML, and PDF formats.")))
 (define-public python-munch
   (package
     (name "python-munch")
-    (version "2.0.4")
+    (version "2.5.0")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "munch" version))
         (sha256
          (base32
-          "1cmqg91xnqx8gvnh4pmp0bfl1dfcm65d5p9mg73zz8pkjhx6h80l"))))
+          "1lnvlic9g68hcmgdnv5bzp0nx2bf1kjclj54gx0s7nyl4ipmywrd"))))
     (build-system python-build-system)
+    (native-inputs (list python-pbr python-pytest))
+    (propagated-inputs (list python-six))
     (home-page "https://github.com/Infinidat/munch")
     (synopsis "Dot-accessible dictionary")
     (description "Munch is a dot-accessible dictionary similar to JavaScript
@@ -9940,13 +9957,13 @@ function signatures.")
 (define-public python-sympy
   (package
     (name "python-sympy")
-    (version "1.7.1")
+    (version "1.10.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "sympy" version))
        (sha256
-        (base32 "0bkb4jf24yv5i4kjpsmg1xjjccfhqyi0syv0p0xvhdbmx5hr5pm3"))))
+        (base32 "0yvqb2fhrm81skl8s9znbkkjfb1a09n64qqlc1r225cyvzzywfar"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -10883,6 +10900,42 @@ extensions, and several HTML output formats.  A command line wrapper
 markdown_py is also provided to convert Markdown files to HTML.")
     (license license:bsd-3)))
 
+(define-public python-mdx-include
+  (package
+    (name "python-mdx-include")
+    (version "1.4.1")
+    (source (origin
+              ;; Use git, as there are some test files missing from the PyPI
+              ;; release, see https://github.com/neurobin/mdx_include/issues/9
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/neurobin/mdx_include")
+                    ;; Releases are not tagged on github, see
+                    ;; https://github.com/neurobin/mdx_include/issues/10
+                    (commit "683e6be7a00a1ef4d673ad0294458fa61bc97286")))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0qpzgln4ybd7pl0m9s19dv60aq9cvwrk7x3yz96kjhcywaa5w386"))))
+    (build-system python-build-system)
+    (arguments
+     '(#:phases
+       (modify-phases %standard-phases
+         (add-before 'check 'disable-test-requiring-network
+           (lambda _
+             (substitute* "mdx_include/test/test.py"
+               (("(\\s+def )test_(cache|config|default)\\(" _ pre post)
+                (string-append pre "__off__test_" post "("))))))))
+    (propagated-inputs (list python-cyclic python-markdown python-rcslice))
+    (home-page "https://github.com/neurobin/mdx_include")
+    (synopsis "Python Markdown extension to include local or remote files")
+    (description "Include extension for Python Markdown.  It lets you include
+local or remote (downloadable) files into your markdown at arbitrary
+positions.
+
+This project is motivated by markdown-include and provides the same
+functionalities with some extras.")
+    (license license:bsd-3)))
 
 (define-public python-ptyprocess
   (package
@@ -12455,32 +12508,41 @@ $ rm -rf /tmp/env
 (define-public python-tlsh
   (package
     (name "python-tlsh")
-    (version "3.4.5")
+    (version "4.11.2")
     (home-page "https://github.com/trendmicro/tlsh")
     (source
      (origin
        (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/trendmicro/tlsh")
-             (commit (string-append "v" version))))
+       (uri (git-reference (url home-page) (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1ydliir308xn4ywy705mmsh7863ldlixdvpqwdhbipzq9vfpmvll"))))
+        (base32 "1gb5j73nw3nmx030rf8pm75rns5syxhv44zxr6i74kjicyly1i9w"))))
     (build-system cmake-build-system)
     (arguments
-     '(#:out-of-source? #f
-       #:phases (modify-phases %standard-phases
-                  (replace
-                   'install
-                   (lambda* (#:key outputs #:allow-other-keys)
-                     ;; Build and install the Python bindings.  The underlying
-                     ;; C++ library is apparently not meant to be installed.
-                     (let ((out (assoc-ref outputs "out")))
-                       (with-directory-excursion "py_ext"
-                         (and (system* "python" "setup.py" "build")
-                              (system* "python" "setup.py" "install"
-                                       (string-append "--prefix=" out))))))))))
-    (inputs `(("python" ,python-wrapper)))        ;for the bindings
+     (list #:out-of-source? #f
+           #:phases
+           #~(modify-phases %standard-phases
+               (replace 'install
+                 (lambda _
+                   ;; Build and install the Python bindings.  The underlying
+                   ;; C++ library is apparently not meant to be installed.
+                   (with-directory-excursion "py_ext"
+                     (and (system* "python" "setup.py" "build")
+                          (system* "python" "setup.py" "install"
+                                   (string-append "--prefix=" #$output))))))
+               ;; Delay tests until the phase above has run.
+               (delete 'check)
+               (add-after 'install 'check
+                 (lambda* (#:key tests? #:allow-other-keys)
+                   (substitute* "Testing/python_test.sh"
+                     ;; The script sets up a working PYTHONPATH, but does not
+                     ;; export it for all subsequent test commands.  Fix that.
+                     (("^PYTHONPATH=\".*" all)
+                      (string-append all "\nexport PYTHONPATH\n")))
+                   (when tests?
+                     (with-directory-excursion "Testing"
+                       (invoke "./python_test.sh"))))))))
+    (inputs (list python-wrapper))      ;for the bindings
     (synopsis "Fuzzy matching library for Python")
     (description
      "Trend Micro Locality Sensitive Hash (TLSH) is a fuzzy matching library.
@@ -30353,3 +30415,70 @@ window managers.")
      "Script for Sway and i3 to automatically switch the horizontal/vertical
  window split orientation.")
     (license license:gpl3)))
+
+(define-public python-cyclic
+  (package
+    (name "python-cyclic")
+    (version "1.0.0")
+    (source (origin
+              ;; Use git, as there are some test files missing from the PyPI
+              ;; release, see https://github.com/neurobin/cyclic/issues/1
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/neurobin/cyclic")
+                    ;; Release is not tagged on github, see
+                    ;; https://github.com/neurobin/cyclic/issues/2
+                    (commit "bf616c47ea49a43500ea55a1e6f4890323be0679")))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0r8zzjdv70fpxssxps62rlgpii8fr9gh8gykdygqn6mkdnfjwgjc"))))
+    (build-system python-build-system)
+    (home-page "https://github.com/neurobin/cyclic")
+    (synopsis "Handle cyclic relations")
+    (description "This package handles cyclic relations compared by value.")
+    (license license:bsd-3)))
+
+(define-public python-rcslice
+  (package
+    (name "python-rcslice")
+    (version "1.1.0")
+    (source (origin
+              ;; Use git, as there are some test files missing from the PyPI
+              ;; release, see https://github.com/neurobin/rcslice/issues/1
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/neurobin/rcslice")
+                    ;; Releases are not tagged on github, see
+                    ;; https://github.com/neurobin/rcslice/issues/2
+                    (commit "1e1ef42cd262db76b67ded430630d5b499790f42")))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1lmhcgghh60kvdlx0cin1phhgfy9jivc6l0mb4ibnpa1x1md0zvv"))))
+    (build-system python-build-system)
+    (home-page "https://github.com/neurobin/rcslice")
+    (synopsis "Slice a list of sliceables")
+    (description "This package provides Python module to slice a list of
+sliceables (1 indexed, both start and end index are inclusive).  Helps to
+slice file content line by line or column by column or a combination of
+both.")
+    (license license:bsd-3)))
+
+(define-public python-types-orjson
+  (package
+    (name "python-types-orjson")
+    (version "3.6.2")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "types-orjson" version))
+              (sha256
+               (base32
+                "0f66lf2qrl9d4vad42db3dmnzv89h4rr05r5zxx5qcl6kb3zr6ng"))))
+    (build-system python-build-system)
+    (home-page "https://github.com/python/typeshed")
+    (synopsis "Typing stubs for orjson")
+    (description "This is a PEP 561 type stub package for the @code{orjson}
+package.  It can be used by type-checking tools like mypy, PyCharm, pytype
+etc. to check code that uses @code{orjson}.")
+    (license license:asl2.0)))
