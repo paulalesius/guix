@@ -14,7 +14,7 @@
 ;;; Copyright © 2016, 2017 Pjotr Prins <pjotr.guix@thebird.nl>
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2017, 2020, 2021 Leo Famulari <leo@famulari.name>
-;;; Copyright © 2017, 2018, 2019, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2017-2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2017, 2018, 2019 Rutger Helling <rhelling@mykolab.com>
 ;;; Copyright © 2017, 2019 Gábor Boskovits <boskovits@gmail.com>
 ;;; Copyright © 2017 Thomas Danckaert <post@thomasdanckaert.be>
@@ -89,6 +89,7 @@
   #:use-module (gnu packages audio)
   #:use-module (gnu packages autogen)
   #:use-module (gnu packages autotools)
+  #:use-module (gnu packages assembly)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bison)
@@ -239,6 +240,98 @@ on byte-critical systems.  It supports HTTP, HTTPS, FTP and FTPS
 protocols.")
     (license license:gpl2+)))
 
+(define-public lcrq
+  (package
+    (name "lcrq")
+    (version "0.0.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://codeberg.org/librecast/lcrq")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0jf7x3zcdbz5b99qz7liw4i90hn9s457zr82n0r8g9qsi81a1d8c"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:parallel-tests? #f
+       #:make-flags (let ((target ,(%current-target-system)))
+                      (list ,(string-append "CC="
+                                            (cc-for-target))
+                            (string-append "PREFIX="
+                                           (assoc-ref %outputs "out"))))
+       #:test-target "test"))
+    (home-page "https://librecast.net/lcrq.html")
+    (synopsis "librecast RaptorQ library")
+    (description
+     "C library implementation of RaptorQ Forward Error Correction for
+Librecast.  RFC6330 (IETF) describes the RaptorQ proposed standard, which LCRQ
+more-or-less follows. The primary focus has been on building a fast, simple
+and dependency-free FEC implementation for use with Librecast, and not on
+strict standards compliance.  The code does, however, fairly closely follow
+the RFC.")
+    (license (list license:gpl2 license:gpl3))))
+
+(define-public lcsync
+  (package
+    (name "lcsync")
+    (version "0.0.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://codeberg.org/librecast/lcsync")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0s038b4xg9nlzhrganzjyfvc6n6cgd6kilnpik4axp62j2n5q11q"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:parallel-tests? #f
+       #:make-flags (let ((target ,(%current-target-system)))
+                      (list ,(string-append "CC="
+                                            (cc-for-target))
+                            ;; avoid running setcap in the install process
+                            "SETCAP_PROGRAM=true"
+                            (string-append "prefix="
+                                           (assoc-ref %outputs "out"))))
+       #:test-target "test"
+       #:phases (modify-phases %standard-phases
+                  (delete 'configure) ;no configure script
+                  (add-before 'check 'remove-network-tests
+                    (lambda _
+                      ;; these tests require networking
+                      (delete-file "./test/0000-0027.c")
+                      (delete-file "./test/0000-0049.c")
+                      (delete-file "./test/0000-0074.c")))
+                  (add-after 'unpack 'remove-immintrin.h
+                    (lambda* (#:key inputs #:allow-other-keys)
+                      (substitute* "Makefile"
+                        (("CFLAGS :=")
+                         (string-append "CFLAGS := -I" (search-input-directory
+                                                         inputs "include/simde"))))
+                      (substitute* (find-files "src")
+                        ((".*immintrin\\.h.*")
+                         (string-append "#include <simde-features.h>\n"
+                                        "#include <x86/ssse3.h>\n"))
+                        (("__m128i") "simde__m128i"))))
+                  (add-before 'build 'add-library-paths
+                    (lambda* (#:key inputs #:allow-other-keys)
+                      (let* ((librecast (assoc-ref inputs "librecast")))
+                        (substitute* (list "./src/Makefile" "./test/Makefile")
+                          (("-llibrecast")
+                           (string-append "-L" librecast "/lib -llibrecast")))))))))
+    (inputs (list librecast libsodium))
+    (native-inputs (list simde))
+    (home-page "https://librecast.net/lcsync.html")
+    (synopsis "librecast file and data syncing tool")
+    (description
+     "lcsync is a tool to sync files over IPv6 multicast or the
+local filesystem.  It splits the file into blocks, hashes them, and compares
+them in order to efficiently transfer a minimal amount of data.")
+    (license (list license:gpl2 license:gpl3))))
+
 ;; This package does not have a release yet.
 ;; But this is required to provide a feature in PipeWire.
 (define-public libcamera
@@ -382,6 +475,54 @@ GLib-based library, libnice, as well as GStreamer elements to use it.")
        (list
         license:lgpl2.1+
         license:mpl1.1)))))
+
+(define-public librecast
+  (package
+    (name "librecast")
+    (version "0.5.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://codeberg.org/librecast/librecast")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1zzdxawzsj0lxyxm8c2wdqx3b633f8ybvlg6szs4v0y42xg4a829"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:parallel-tests? #f
+       #:make-flags (let ((target ,(%current-target-system)))
+                      (list ,(string-append "CC="
+                                            (cc-for-target))
+                            (string-append "PREFIX="
+                                           (assoc-ref %outputs "out"))))
+       #:test-target "test"
+       #:phases (modify-phases %standard-phases
+                  (add-before 'check 'remove-network-tests
+                    (lambda _
+                      ;; these tests require networking
+                      (delete-file "./test/0000-0010.c")
+                      (delete-file "./test/0000-0012.c")
+                      (delete-file "./test/0000-0013.c")
+                      (delete-file "./test/0000-0014.c")
+                      (delete-file "./test/0000-0015.c")
+                      (delete-file "./test/0000-0016.c")
+                      (delete-file "./test/0000-0018.c")
+                      (delete-file "./test/0000-0019.c")
+                      (delete-file "./test/0000-0021.c")
+                      (delete-file "./test/0000-0028.c")
+                      (delete-file "./test/0000-0036.c")
+                      (delete-file "./test/0000-0037.c")
+                      (delete-file "./test/0000-0038.c")
+                      (delete-file "./test/0000-0039.c")
+                      (delete-file "./test/0000-0040.c"))))))
+    (inputs (list libsodium lcrq))
+    (synopsis "librecast IPv6 multicast library")
+    (description "Librecast is a C library which supports IPv6 multicast
+networking.")
+    (home-page "https://librecast.net/librecast.html")
+    (license (list license:gpl2 license:gpl3))))
 
 (define-public rtmpdump
   ;; There are no tags in the repository, and the project is unlikely to

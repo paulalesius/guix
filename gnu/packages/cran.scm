@@ -13955,6 +13955,30 @@ circular variables).")
 for evolution along a phylogenetic tree.")
     (license license:gpl2+)))
 
+(define-public r-fmri
+  (package
+    (name "r-fmri")
+    (version "1.9.6")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "fmri" version))
+              (sha256
+               (base32
+                "1wh77xwpm8f9d9vky3r7vfmkik3hls008ifk8hkm2rq6i06jj53n"))))
+    (properties `((upstream-name . "fmri")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-aws r-metafor r-nlme))
+    (native-inputs (list gfortran))
+    (home-page "http://www.wias-berlin.de/software/imaging/")
+    (synopsis "Analysis of fMRI experiments")
+    (description
+     "This package contains R-functions to perform an fMRI analysis as
+described in Polzehl and Tabelow (2019) <DOI:10.1007/978-3-030-29184-6>,
+Tabelow et al. (2006) <DOI:10.1016/j.neuroimage.2006.06.029>, Polzehl et
+al. (2010) <DOI:10.1016/j.neuroimage.2010.04.241>, Tabelow and Polzehl (2011)
+<DOI:10.18637/jss.v044.i11>.")
+    (license license:gpl2+)))
+
 (define-public r-fmsb
   (package
     (name "r-fmsb")
@@ -14039,6 +14063,31 @@ Anderson-Darling Distribution\".")
     ;; Any version of the GPL.
     (license license:gpl3+)))
 
+(define-public r-adimpro
+  (package
+    (name "r-adimpro")
+    (version "0.9.3")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "adimpro" version))
+              (sha256
+               (base32
+                "0njw38vcdm02sni193nj10mpv7hiklpamrkjlz5bnhjxx9mvf4cl"))))
+    (properties `((upstream-name . "adimpro")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-awsmethods
+           imagemagick))
+    (native-inputs (list gfortran))
+    (home-page "https://www.wias-berlin.de/software/imaging/")
+    (synopsis "Adaptive smoothing of digital images")
+    (description
+     "This package implements tools for manipulation of digital images and the
+Propagation Separation approach by Polzehl and Spokoiny (2006)
+<DOI:10.1007/s00440-005-0464-1> for smoothing digital images, see Polzehl and
+Tabelow (2007) <DOI:10.18637/jss.v019.i01>.")
+    (license license:gpl2+)))
+
 (define-public r-admisc
   (package
     (name "r-admisc")
@@ -14062,6 +14111,47 @@ possibly numeric (even if all numbers reside in a character vector) and coerce
 to numeric, or check if the numbers are whole.  It also offers, among many
 others, a highly flexible recoding routine and a more flexible alternative to
 the base function @code{with()}.")
+    (license license:gpl3+)))
+
+(define-public r-oro-nifti
+  (package
+    (name "r-oro-nifti")
+    (version "0.11.4")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "oro.nifti" version))
+              (sha256
+               (base32
+                "01mn90qxb7i15zr83xrl2cn4akayfzpm83r5x71zczz3qb9gbr7g"))))
+    (properties `((upstream-name . "oro.nifti")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-abind r-bitops r-rnifti))
+    (home-page "https://rigorousanalytics.blogspot.com")
+    (synopsis "Vizualization of medical imaging data")
+    (description
+     "This package provides functions for the input/output and visualization
+of medical imaging data that follow either the ANALYZE, NIfTI or AFNI formats.
+This package is part of the Rigorous Analytics bundle.")
+    (license license:bsd-3)))
+
+(define-public r-mritc
+  (package
+    (name "r-mritc")
+    (version "0.5-2")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "mritc" version))
+              (sha256
+               (base32
+                "07b1b2k1ka43ikj2mhwnazw3ig7w10bf759fimxpksvk5k6wanx2"))))
+    (properties `((upstream-name . "mritc")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-lattice r-misc3d r-oro-nifti))
+    (home-page "https://cran.r-project.org/package=mritc")
+    (synopsis "MRI tissue classification")
+    (description "This package provides various methods for MRI tissue
+classification.")
+    ;; Any version of the GPL.
     (license license:gpl3+)))
 
 (define-public r-sodium
@@ -14467,6 +14557,33 @@ package for using sparse matrices.  Some of the functions are very general,
 while other are highly specific for the special data format used for
 @dfn{quantitative language comparison} (QLC).")
     (license license:gpl3)))
+
+(define-public r-qmri
+  (package
+    (name "r-qmri")
+    (version "1.2")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "qMRI" version))
+              (sha256
+               (base32
+                "10x59g8awxjib5j5mc1yd5wsibk3z6ki6zifxsg8azl0zblxbscf"))))
+    (properties `((upstream-name . "qMRI")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-adimpro r-aws r-awsmethods r-oro-nifti
+                             r-stringr))
+    (native-inputs (list gfortran r-knitr))
+    (home-page "http://www.wias-berlin.de/research/ats/imaging/")
+    (synopsis "Methods for quantitative magnetic resonance imaging (qMRI)")
+    (description
+     "This package provides implementation of methods for estimation of
+quantitative maps from @dfn{Multi-Parameter Mapping} (MPM) acquisitions
+including adaptive smoothing methods in the framework of the ESTATICS model.
+The smoothing method is described in Mohammadi et
+al. (2017). <doi:10.20347/WIAS.PREPRINT.2432>.  Usage of the package is also
+described in Polzehl and Tabelow (2019), Magnetic Resonance Brain Imaging,
+Chapter 6, Springer, Use R! Series. <doi:10.1007/978-3-030-29184-6_6>.")
+    (license license:gpl2+)))
 
 (define-public r-ddrtree
   (package
