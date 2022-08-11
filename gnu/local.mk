@@ -1092,7 +1092,8 @@ dist_patch_DATA =						\
   %D%/packages/patches/freedink-engine-fix-sdl-hints.patch	\
   %D%/packages/patches/freeglut-gcc-compat.patch		\
   %D%/packages/patches/freeimage-unbundle.patch		\
-  %D%/packages/patches/fuse-overlapping-headers.patch				\
+  %D%/packages/patches/fuse-glibc-2.34.patch			\
+  %D%/packages/patches/fuse-overlapping-headers.patch		\
   %D%/packages/patches/fxdiv-system-libraries.patch		\
   %D%/packages/patches/gajim-honour-GAJIM_PLUGIN_PATH.patch	\
   %D%/packages/patches/ganeti-disable-version-symlinks.patch	\
@@ -1749,6 +1750,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/qtscript-disable-tests.patch		\
   %D%/packages/patches/quagga-reproducible-build.patch          \
   %D%/packages/patches/quickswitch-fix-dmenu-check.patch	\
+  %D%/packages/patches/qtwayland-gcc-11.patch			\
   %D%/packages/patches/qtwebkit-pbutils-include.patch		\
   %D%/packages/patches/qtwebkit-fix-building-with-bison-3.7.patch \
   %D%/packages/patches/qtwebkit-fix-building-with-python-3.9.patch	\

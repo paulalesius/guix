@@ -24,6 +24,11 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
+  #:use-module (guix i18n)
+  #:use-module ((guix diagnostics)
+                #:select (formatted-message
+                          &fix-hint &error-location
+                          location))
   #:export (pretty-print-with-comments
             pretty-print-with-comments/splice
             read-with-comments
@@ -76,11 +81,6 @@
 (define vertical-space?       (record-predicate <vertical-space>))
 (define vertical-space        (record-type-constructor <vertical-space>))
 (define vertical-space-height (record-accessor <vertical-space> 'height))
-
-(define (combine-vertical-space x y)
-  "Return vertical space as high as the combination of X and Y."
-  (vertical-space (+ (vertical-space-height x)
-                     (vertical-space-height y))))
 
 (define canonicalize-vertical-space
   (let ((unit (vertical-space 1)))
@@ -158,6 +158,19 @@ BLANK-LINE? is true, assume PORT is at the beginning of a new line."
   (define dot (list 'dot))
   (define (dot? x) (eq? x dot))
 
+  (define (missing-closing-paren-error)
+    (raise (make-compound-condition
+            (formatted-message (G_ "unexpected end of file"))
+            (condition
+             (&error-location
+              (location (match (port-filename port)
+                          (#f #f)
+                          (file (location file
+                                          (port-line port)
+                                          (port-column port))))))
+             (&fix-hint
+              (hint (G_ "Did you forget a closing parenthesis?")))))))
+
   (define (reverse/dot lst)
     ;; Reverse LST and make it an improper list if it contains DOT.
     (let loop ((result '())
@@ -190,12 +203,15 @@ BLANK-LINE? is true, assume PORT is at the beginning of a new line."
              ((memv chr '(#\( #\[))
               (let/ec return
                 (let liip ((lst '()))
-                  (liip (cons (loop (match lst
-                                      (((? blank?) . _) #t)
-                                      (_ #f))
-                                    (lambda ()
-                                      (return (reverse/dot lst))))
-                              lst)))))
+                  (define item
+                    (loop (match lst
+                            (((? blank?) . _) #t)
+                            (_ #f))
+                          (lambda ()
+                            (return (reverse/dot lst)))))
+                  (if (eof-object? item)
+                      (missing-closing-paren-error)
+                      (liip (cons item lst))))))
              ((memv chr '(#\) #\]))
               (return))
              ((eq? chr #\')
