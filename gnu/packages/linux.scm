@@ -6137,14 +6137,14 @@ invocations of itself.")
 (define-public ntfs-3g
   (package
     (name "ntfs-3g")
-    (version "2021.8.22")
+    (version "2022.5.17")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://tuxera.com/opensource/"
                                   "ntfs-3g_ntfsprogs-" version ".tgz"))
               (sha256
                (base32
-                "1yrf42xr92qv3pads8lzp5nyssz6875ncfgg8v3jwjyr0nm87f2m"))
+                "14zbsl7m32f796dkr334zbkj5rba7xa8smxb2ysf3095jyvgp284"))
               (modules '((guix build utils)))
               (snippet '(begin
                           ;; Install under $prefix.
@@ -6183,6 +6183,9 @@ invocations of itself.")
      "NTFS-3G provides read-write access to NTFS file systems, which are
 commonly found on Microsoft Windows.  It is implemented as a FUSE file system.
 The package provides additional NTFS tools.")
+    (properties
+     '((release-monitoring-url . "https://github.com/tuxera/ntfs-3g/releases")
+       (upstream-name . "ntfs-3g_ntfsprogs")))
     (license license:gpl2+)))
 
 (define-public ntfs-3g/static

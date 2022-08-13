@@ -1206,17 +1206,17 @@ xtensor provides:
 (define-public gap
   (package
     (name "gap")
-    (version "4.11.0")
+    (version "4.11.1")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://files.gap-system.org/gap-"
                            (version-major+minor version)
-                           "/tar.bz2/gap-"
+                           "/tar.gz/gap-"
                            version
-                           ".tar.bz2"))
+                           ".tar.gz"))
        (sha256
-        (base32 "00l6hvy4iggnlrib4vp805sxdm3j7n3hzpv5zs9hbiiavh80l1xz"))
+        (base32 "01535s81h254zcs84zi95xqmhvvn6fn9qss8761myxc2gpdcadb6"))
        (modules '((guix build utils) (ice-9 ftw) (srfi srfi-1)))
        (snippet
         '(begin
@@ -1242,28 +1242,42 @@ xtensor provides:
                    "SmallGrp-"   ; artistic2.0
                    "transgrp"    ; artistic2.0 for data,
                                  ; gpl2 or gpl3 for code
-                   ;; Recommended package.
-                   "io-"         ; gpl3+
-                   ;; Optional packages, searched for at start,
-                   ;; and their depedencies.
+                   ;; Optional packages.
                    "alnuth-"
+                   "AutoDoc-"
+                   "automata-"
                    "autpgrp-"
+                   "crime-"
                    "crisp-"      ; bsd-2
-                   "ctbllib"     ; gpl3+, clarified in the next release;
-                                 ; see
-                                 ; http://www.math.rwth-aachen.de/~Thomas.Breuer/ctbllib/README.md
+                   "ctbllib"     ; gpl3+
+                   "datastructures"
                    "FactInt-"
                    "fga"
+                   "format"
+                   "groupoids-"
+                   "guarana"
+                   "idrel-"
+                   "images-"     ; mpl2.0
+                   "IntPic-"
+                   "io-"         ; gpl3+
                    "irredsol-"   ; bsd-2
                    "laguna-"
+                   "liering-"
+                   "MapClass-"
+                   "nilmat-"
+                   "NumericalSgps-"
+                   "OpenMath-"
+                   "orb-"        ; gpl3+
                    "polenta-"
                    "polycyclic-"
                    "radiroot-"
+                   "repsn-"
                    "resclasses-"
+                   "simpcomp"
                    "sophus-"
                    "tomlib-"
-                   "utils-"))))
-           #t))))
+                   "unipot-"
+                   "utils-"))))))))
     (build-system gnu-build-system)
     (inputs
      (list gmp readline zlib))
@@ -1280,14 +1294,12 @@ xtensor provides:
            (lambda _
              (setenv "CONFIG_SHELL" (which "bash"))
              (with-directory-excursion "pkg"
-               (invoke "../bin/BuildPackages.sh")
-             #t)))
+               (invoke "../bin/BuildPackages.sh"))))
          (add-after 'build-packages 'build-doc
            ;; The documentation is bundled, but we create it from source.
            (lambda _
              (with-directory-excursion "doc"
-               (invoke "./make_doc"))
-             #t))
+               (invoke "./make_doc"))))
          (replace 'install
            (lambda* (#:key outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -1312,6 +1324,8 @@ xtensor provides:
                (chmod prog #o755)
                ;; Install the headers and library, which are needed by Sage.
                (invoke "make" "install-headers")
+               (install-file "gen/config.h"
+                             (string-append out "/include/gap"))
                (invoke "make" "install-libgap")
                ;; Remove information on the build directory from sysinfo.gap.
                (substitute* "sysinfo.gap"
@@ -1321,8 +1335,7 @@ xtensor provides:
                (invoke "make" "install-gaproot")
                ;; Copy the directory of compiled packages; the make target
                ;; install-pkg is currently empty.
-               (copy-recursively "pkg" (string-append share "/pkg")))
-             #t)))))
+               (copy-recursively "pkg" (string-append share "/pkg"))))))))
     (home-page "https://www.gap-system.org/")
     (synopsis
      "System for computational group theory")
@@ -1615,7 +1628,7 @@ John Cremona to compute his elliptic curve database.")
 (define-public lrcalc
   (package
     (name "lrcalc")
-    (version "1.2")
+    (version "2.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1624,18 +1637,10 @@ John Cremona to compute his elliptic curve database.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1c12d04jdyxkkav4ak8d1aqrv594gzihwhpxvc6p9js0ry1fahss"))
-              (patches (search-patches "lrcalc-includes.patch"))))
+                "0s3amf3z75hnrjyszdndrvk4wp5p630dcgyj341i6l57h43d1p4k"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf automake libtool))
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'fix-permission
-           (lambda _
-             (chmod "lrcalc.maple.src" #o644)
-             #t)))))
     (synopsis "Littlewood-Richardson calculator in algebraic combinatorics")
     (description "The Littlewood-Richardson Calculator (lrcalc) is a
 program designed to compute Littlewood-Richardson coefficients.  It computes

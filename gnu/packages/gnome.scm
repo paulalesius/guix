@@ -8895,7 +8895,7 @@ easy, safe, and automatic.")
 (define-public tracker
   (package
     (name "tracker")
-    (version "3.3.1")
+    (version "3.3.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/tracker/"
@@ -8903,7 +8903,7 @@ easy, safe, and automatic.")
                                   "tracker-" version ".tar.xz"))
               (sha256
                (base32
-                "1lkf353xvwc0hfyi03aq2qjikx3zmva7r56nxiavy7kqjyygbmjs"))))
+                "0r144kdqxdzs51qn495vablzf1zxkhkk6imrlrzj9wiqwc2gg520"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
@@ -8934,7 +8934,8 @@ easy, safe, and automatic.")
                (invoke "dbus-run-session" "--" "meson" "test"
                        "--print-errorlogs")))))))
     (native-inputs
-     (list `(,glib "bin")
+     (list gettext-minimal
+           `(,glib "bin")
            gobject-introspection
            docbook-xsl
            docbook-xml
@@ -8944,7 +8945,6 @@ easy, safe, and automatic.")
            cmake-minimal
            python-pygobject
            gtk-doc/stable
-           intltool
            dbus
            pkg-config
            python
@@ -10006,7 +10006,7 @@ functionality and behavior.")
 (define-public folks
   (package
     (name "folks")
-    (version "0.15.3")
+    (version "0.15.5")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -10015,7 +10015,7 @@ functionality and behavior.")
                     "folks-" version ".tar.xz"))
               (sha256
                (base32
-                "19a4qp9ry8y24jx1v5456qn9lnw843571vkkah3bxx4ky3x3gmr1"))))
+                "11lhfn6b7gml4ckj2dkm6g889j21wpvj90srwjp85k9hcf4qmzqg"))))
     (build-system meson-build-system)
     (arguments
      '(#:phases
@@ -10034,10 +10034,10 @@ functionality and behavior.")
            readline
            telepathy-glib))
     (native-inputs
-     (list `(,glib "bin")
+     (list gettext-minimal
+           `(,glib "bin")
            gobject-introspection
            python-dbusmock
-           intltool
            pkg-config
            python
            vala))

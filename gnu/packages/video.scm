@@ -339,7 +339,7 @@ efficiency.")
 (define-public mediasdk
   (package
     (name "mediasdk")
-    (version "20.1.1")
+    (version "22.4.4")
     (source
      (origin
        (method git-fetch)
@@ -349,29 +349,33 @@ efficiency.")
          (commit (string-append "intel-" name "-" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0blwcxr5j8762nylx2cxrq0h53bpgnk859dbs6crq4wr9fcxlx9z"))))
+        (base32 "18mrqringyv1drswm4m8ppw7sks6x4jzp6s0ag0h9hrpd15kn5rx"))))
     (build-system cmake-build-system)
     (arguments
-     `(#:configure-flags
-       (list
-        "-DENABLE_X11=ON"
-        "-DENABLE_X11_DRI3=ON"
-        "-DENABLE_WAYLAND=ON"
-        "-DENABLE_TEXTLOG=ON"
-        "-DENABLE_STAT=ON"
-        "-DBUILD_TESTS=ON"
-        "-DBUILD_TOOLS=ON"
-        (string-append "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath="
-                       (assoc-ref %outputs "out") "/lib"))))
+     (list
+      #:configure-flags
+      #~(list
+         "-DENABLE_X11=ON"
+         "-DENABLE_X11_DRI3=ON"
+         "-DENABLE_WAYLAND=ON"
+         "-DENABLE_TEXTLOG=ON"
+         "-DENABLE_STAT=ON"
+         "-DBUILD_TESTS=ON"
+         "-DBUILD_TOOLS=ON"
+         (string-append "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath="
+                        #$output "/lib"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'do-not-embed-kernel-version
+            (lambda _
+              (substitute* "builder/FindGlobals.cmake"
+                (("set\\([[:blank:]]+?BUILD_INFO \"\\$\\{CMAKE_SYSTEM\\}\
+ \\$\\{CMAKE_SYSTEM_VERSION\\}")
+                 "set( BUILD_INFO \"Linux")))))))
     (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("python" ,python-wrapper)))
+     (list pkg-config python-wrapper))
     (inputs
-     `(("libdrm" ,libdrm)
-       ("libva" ,libva)
-       ("pciaccess" ,libpciaccess)
-       ("wayland" ,wayland)
-       ("x11" ,libx11)))
+     (list libdrm libva libpciaccess wayland libx11))
     (synopsis "Intel Media SDK")
     (description "MediaSDK provides a plain C API to access hardware-accelerated
 video decode, encode and filtering on Intel's Gen graphics hardware platforms.")
@@ -3146,7 +3150,7 @@ from sites like Twitch.tv and pipes them into a video player of choice.")
 (define-public mlt
   (package
     (name "mlt")
-    (version "7.6.0")
+    (version "7.8.0")
     (source
      (origin
        (method git-fetch)
@@ -3155,7 +3159,7 @@ from sites like Twitch.tv and pipes them into a video player of choice.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1dj7jb5nk0qy28mlw0pcmj4nd607mgx229nhf14gjc0fq9gx71sd"))))
+        (base32 "01589xpx1vgx1l1zjg553nbjks5wy31rdvyq1sjnbp9w7p7nzjdg"))))
     (build-system cmake-build-system)
     (arguments
      (list
@@ -4800,7 +4804,7 @@ transitions, and effects and then export your film to many common formats.")
 (define-public shotcut
   (package
     (name "shotcut")
-    (version "22.04.25")
+    (version "22.06.23")
     (source
      (origin
        (method git-fetch)
@@ -4809,7 +4813,7 @@ transitions, and effects and then export your film to many common formats.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0ccbx2crqrnhl19d7267xc40vs0cjmps2cnhi1g1l6bqxbi7k88x"))))
+        (base32 "1kvhcblzjdjiv3jggdx41djq9pz6a9hg4ilgcwin13gb19ir7dcc"))))
     (build-system qt-build-system)
     (arguments
      `(#:tests? #f                      ;there are no tests
@@ -4826,14 +4830,6 @@ transitions, and effects and then export your film to many common formats.")
                (substitute* "src/jobs/meltjob.cpp"
                  (("\"melt\"") (string-append "\"" mlt "/bin/melt\""))
                  (("\"melt-7\"") (string-append "\"" mlt "/bin/melt-7\""))))))
-         (replace 'configure
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out")))
-               (invoke "qmake"
-                       (string-append "PREFIX=" out)
-                       "QMAKE_LRELEASE=lrelease"
-                       "QMAKE_LUPDATE=lupdate"
-                       "shotcut.pro"))))
          (add-after 'install 'wrap-executable
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -4858,6 +4854,7 @@ transitions, and effects and then export your film to many common formats.")
     (inputs
      (list bash-minimal
            ffmpeg
+           fftw
            frei0r-plugins
            jack-1
            ladspa

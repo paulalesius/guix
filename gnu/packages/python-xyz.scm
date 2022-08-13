@@ -1792,13 +1792,13 @@ conventions and aliases in the same expression.")
 (define-public python-wand
   (package
     (name "python-wand")
-    (version "0.6.7")
+    (version "0.6.9")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "Wand" version))
        (sha256
-        (base32 "1nxn7zvbnfgk4kkxajbzglcjpbgr84ilhnxm990nifjxqb61ph7b"))))
+        (base32 "1g5midlhff2yy64ppiq7mvmy5dssg82mi3rjpvym7nx85644w9s0"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -2807,20 +2807,20 @@ Python 3.3+.")
 (define-public python-pyicu
   (package
     (name "python-pyicu")
-    (version "2.7.4")
+    (version "2.9")
     (source
      (origin
       (method url-fetch)
       (uri (pypi-uri "PyICU" version))
       (sha256
        (base32
-        "0mkz1673qxldxs4mrqg9882xgmz5fhpia17yrsd6z8dfw8156rf0"))))
+        "0y2qhh443vydi3y7kmhyb6kz3z6d7qq7ld0sg88mfqalcp7dca9w"))))
     (build-system python-build-system)
     (inputs
      (list icu4c))
     (native-inputs
      (list python-pytest python-six))
-    (home-page "https://github.com/ovalhub/pyicu")
+    (home-page "https://gitlab.pyicu.org/main/pyicu")
     (synopsis "Python extension wrapping the ICU C++ API")
     (description
      "PyICU is a python extension wrapping the ICU C++ API.")
@@ -14133,13 +14133,13 @@ minimal and fast API targeting the following uses:
 (define-public python-icalendar
   (package
     (name "python-icalendar")
-    (version "4.0.7")
+    (version "4.1.0")
     (source (origin
              (method url-fetch)
              (uri (pypi-uri "icalendar" version))
              (sha256
               (base32
-               "19574j3jwssm2dkqykih4568xqfgjsa3hcd79yl5s2vfys3qvh8g"))))
+               "15dkq42rkqjdi17rpvmd1plnbwn4daby0nk1s1c3xi7w5v0bfj4p"))))
     (build-system python-build-system)
     (propagated-inputs
      (list python-dateutil python-pytz))
@@ -18315,40 +18315,40 @@ JSON) codec.")
 (define-public python-setproctitle
   (package
     (name "python-setproctitle")
-    (version "1.1.10")
+    (version "1.3.2")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "setproctitle" version))
        (sha256
         (base32
-         "163kplw9dcrw0lffq1bvli5yws3rngpnvrxrzdw89pbphjjvg0v2"))))
+         "1zbp6kyzfbrmbh9j3idai0mnpa28zn5db3k5l07jc3c3gj89gyxr"))))
     (build-system python-build-system)
     (arguments
      '(#:phases
        (modify-phases %standard-phases
          (replace 'check
-           (lambda _
+           (lambda* (#:key tests? #:allow-other-keys)
              (setenv "PYTHON" (or (which "python3") (which "python")))
              (setenv "PYCONFIG" (if (which "python3-config")
                                     "python3-config --embed"
                                     "python-config"))
-             (setenv "CC" "gcc")
-             ;; No need to extend PYTHONPATH to find the built package, since
-             ;; the Makefile will build anyway
-             (invoke "make" "check"))))))
+             (substitute* "tests/conftest.py"
+               (("cc") "gcc"))
+             (when tests?
+               (invoke "pytest" "tests/")))))))
     (native-inputs
-     (list procps))             ; required for tests
+     (list procps python-pytest))   ; required for tests
     (home-page "https://github.com/dvarrazzo/py-setproctitle")
     (synopsis
      "Setproctitle implementation for Python to customize the process title")
     (description "The library allows a process to change its title (as displayed
-                                                                       by system tools such as ps and top).
+by system tools such as @code{ps} and @code{top}).
 
-     Changing the title is mostly useful in multi-process systems, for
-     example when a master process is forked: changing the children's title
-     allows identifying the task each process is busy with.  The technique
-     is used by PostgreSQL and the OpenSSH Server for example.")
+Changing the title is mostly useful in multi-process systems, for example when a
+master process is forked: changing the children's title allows identifying the
+task each process is busy with.  The technique is used by PostgreSQL and the
+OpenSSH Server for example.")
     (license license:bsd-3)))
 
 (define-public python-validictory
@@ -21513,53 +21513,69 @@ based on the CPython 2.7 and 3.7 parsers.")
 (define-public python-typer
   (package
     (name "python-typer")
-    (version "0.3.2")
+    (version "0.6.1")
     (source
      (origin
-       ;; Building `python-typer` from the git repository requires the `flit-core`
-       ;; Python package that is not installed by `python-flit`.
-       (method url-fetch)
-       (uri (pypi-uri "typer" version))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/tiangolo/typer")
+             (commit version)))
+       (file-name (git-file-name name version))
        (sha256
-        (base32 "00v3h63dq8yxahp9vg3yb9r27l2niwv8gv0dbds9dzrc298dfmal"))))
+        (base32 "1knv353qhkl2imav3jfp6bgq47m8wkkqhq1dzmqg2sv8rsy7zgl7"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
-       (modify-phases %standard-phases
-         ;; Unfortunately, this doesn't seem to be enough to fix these two
-         ;; tests, but we'll patch this anyway.
-         (add-after 'unpack 'patch-shell-reference
-           (lambda _
-             (substitute* "tests/test_completion/test_completion.py"
-               (("\"bash\"") (string-append "\"" (which "bash") "\""))
-               (("\"/bin/bash\"") (string-append "\"" (which "bash") "\"")))))
-         (replace 'check
-           (lambda* (#:key tests? #:allow-other-keys)
-             (when tests?
-               (setenv "HOME" "/tmp") ; some tests need it
+       ,#~(modify-phases %standard-phases
+            ;; Unfortunately, this doesn't seem to be enough to fix these two
+            ;; tests, but we'll patch this anyway.
+            (add-after 'unpack 'patch-shell-reference
+              (lambda _
+                (substitute* "tests/test_completion/test_completion.py"
+                  (("\"bash\"") (string-append "\"" (which "bash") "\""))
+                  (("\"/bin/bash\"")
+                   (string-append "\"" (which "bash") "\"")))))
+            (replace 'build
+              (lambda _
+                (invoke "flit" "build")))
+            (replace 'install
+              (lambda* (#:key inputs outputs #:allow-other-keys)
+                (add-installed-pythonpath inputs outputs)
+                (for-each
+                 (lambda (wheel)
+                   (format #true wheel)
+                   (invoke "python" "-m" "pip" "install"
+                           wheel (string-append "--prefix=" #$output)))
+                 (find-files "dist" "\\.whl$"))))
+            (replace 'check
+              (lambda* (#:key tests? #:allow-other-keys)
+                (when tests?
+                  (setenv "HOME" "/tmp") ; some tests need it
 
-               ;; This is for completion tests
-               (with-output-to-file "/tmp/.bashrc" (lambda _ (display "# dummy")))
+                  ;; This is for completion tests
+                  (with-output-to-file "/tmp/.bashrc"
+                    (lambda _ (display "# dummy")))
 
-               (setenv "GUIX_PYTHONPATH"
-                       (string-append (getcwd) ":"
-                                      (getenv "GUIX_PYTHONPATH")))
-               (let ((disabled-tests (list "test_show_completion"
-                                           "test_install_completion")))
-                 (invoke "python" "-m" "pytest" "tests/"
-                         "-k"
-                         (string-append "not "
-                                        (string-join disabled-tests
-                                                     " and not "))))))))))
+                  (setenv "GUIX_PYTHONPATH"
+                          (string-append (getcwd) ":"
+                                         (getenv "GUIX_PYTHONPATH")))
+                  (let ((disabled-tests (list "test_show_completion"
+                                              "test_install_completion")))
+                    (invoke "python" "-m" "pytest" "tests/"
+                            "-k"
+                            (string-append "not "
+                                           (string-join disabled-tests
+                                                        " and not "))))))))))
     (propagated-inputs
      (list python-click))
     (native-inputs
-     (list python-coverage python-pytest python-shellingham))
+     (list python-coverage python-flit python-pytest python-rich
+           python-shellingham))
     (home-page "https://github.com/tiangolo/typer")
     (synopsis
-      "Typer builds CLI based on Python type hints")
+     "Typer builds CLI based on Python type hints")
     (description
-      "Typer is a library for building CLI applications.  It's based on
+     "Typer is a library for building CLI applications.  It's based on
 Python 3.6+ type hints.")
     ;; MIT license
     (license license:expat)))
@@ -30505,3 +30521,26 @@ both.")
 package.  It can be used by type-checking tools like mypy, PyCharm, pytype
 etc. to check code that uses @code{orjson}.")
     (license license:asl2.0)))
+
+(define-public python-misskey
+  (package
+    (name "python-misskey")
+    (version "4.1.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/YuzuRyo61/Misskey.py")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0rma8pdsjsy00cg76q6q4qki4xpldykmz1m6dl3w2bjjxfhlbaz5"))))
+    (build-system python-build-system)
+    (arguments (list #:tests? #f))      ;needs network
+    (propagated-inputs (list python-requests))
+    (home-page "https://misskeypy.readthedocs.io")
+    (synopsis "Python bindings for Misskey's API")
+    (description
+     "This package provides access to Misskey's API.  Misskey is a SNS
+platform using the ActivityPub protocol.")
+    (license license:expat)))

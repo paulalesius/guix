@@ -3101,7 +3101,7 @@ RSS 0.91, RSS 1.0, RSS 2.0, Atom.")
 (define-public perl-file-listing
   (package
     (name "perl-file-listing")
-    (version "6.11")
+    (version "6.15")
     (source (origin
              (method url-fetch)
              (uri (string-append
@@ -3109,7 +3109,7 @@ RSS 0.91, RSS 1.0, RSS 2.0, Atom.")
                    version ".tar.gz"))
              (sha256
               (base32
-               "0vmzw1mhv580flzkla80gvwfpficnhlbqr1dnlf9x50bw7n18k62"))))
+               "033p2ckkjbxrl390x8aq4wq4fpj5aidsazkbw82mhqxrksgzpi26"))))
     (build-system perl-build-system)
     (propagated-inputs
      (list perl-http-date))
@@ -3435,7 +3435,7 @@ jar in conformance with RFC 6265 <http://tools.ietf.org/html/rfc6265>.")
 (define-public perl-http-cookies
   (package
     (name "perl-http-cookies")
-    (version "6.06")
+    (version "6.10")
     (source (origin
              (method url-fetch)
              (uri (string-append
@@ -3443,7 +3443,7 @@ jar in conformance with RFC 6265 <http://tools.ietf.org/html/rfc6265>.")
                    version ".tar.gz"))
              (sha256
               (base32
-               "13rnz3233vbsfariya4njiyfaj6k94j6bvlyh3dmfmh24hpqgx77"))))
+               "01vhppq18g6ppn3z9mvdfghfzibwg1sczzvnp3jbbrjw7iikcvz3"))))
     (build-system perl-build-system)
     (propagated-inputs
      (list perl-http-message))
@@ -3795,7 +3795,7 @@ select or poll.")
 (define-public perl-libwww
   (package
     (name "perl-libwww")
-    (version "6.55")
+    (version "6.67")
     (source (origin
              (method url-fetch)
              (uri (string-append
@@ -3803,7 +3803,7 @@ select or poll.")
                    version ".tar.gz"))
              (sha256
               (base32
-               "0869hn711d6fd6yil8p88wij6p1zdrbnycy7p9p176q39ajd7l61"))))
+               "08xp4q90nkvpwnks2qfqjhqgff6447myayqi6kc1panh7w5c9vln"))))
     (build-system perl-build-system)
     (native-inputs
      (list perl-test-fatal perl-test-needs perl-test-requiresinternet))
@@ -4024,7 +4024,7 @@ is limited to http and https.")
 (define-public perl-net-http
   (package
     (name "perl-net-http")
-    (version "6.21")
+    (version "6.22")
     (source (origin
              (method url-fetch)
              (uri (string-append
@@ -4032,7 +4032,7 @@ is limited to http and https.")
                    "Net-HTTP-" version ".tar.gz"))
              (sha256
               (base32
-               "1i7fk6q1iaxzgf82mjd5hg77hvy7dbb79488cijg16dyfrds6nip"))))
+               "18m1b1274wmsl3cdfwg27pm7s1fgrrlhwy4gw4zl8da2p2jzkyk2"))))
     (build-system perl-build-system)
     (propagated-inputs
      (list perl-io-socket-ssl perl-uri))
