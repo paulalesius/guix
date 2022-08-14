@@ -1935,14 +1935,14 @@ other machines, such as over the network.")
 (define-public python-setuptools
   (package
     (name "python-setuptools")
-    (version "62.0.0")
+    (version "64.0.3")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "setuptools" version))
        (sha256
         (base32
-         "0sm8n6y6q640cpac9wjyggidbgi4n9la7vs7pwriyvhvgzccp6br"))
+         "1sllqf0bhsl2yilf1w0xnlz0r4yaksmwaj0ap91zdc6kgbigdjiv"))
        (modules '((guix build utils)))
        (snippet
         ;; Remove included binaries which are used to build self-extracting
@@ -5643,6 +5643,8 @@ with Python.  It contains among other things: a powerful N-dimensional array
 object, sophisticated (broadcasting) functions, tools for integrating C/C++
 and Fortran code, useful linear algebra, Fourier transform, and random number
 capabilities.")
+    (properties
+     '((upstream-name . "numpy")))
     (license license:bsd-3)))
 
 (define-public python-numpy-next
@@ -17229,13 +17231,13 @@ addresses, and phone numbers.")
 (define-public python-pyaml
   (package
     (name "python-pyaml")
-    (version "18.11.0")
+    (version "21.10.1")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "pyaml" version))
               (sha256
                (base32
-                "0fi604ix8lbpj1266q7js6szm771saprdzzcdwmj43wy83694qmr"))))
+                "10w3frzqir5sbpglc9bwb8w414dsivmcvji07yxy61mz2gp9ylf6"))))
     (build-system python-build-system)
     (native-inputs
      (list python-unidecode))
@@ -19091,7 +19093,15 @@ from the header, as well as section details and data available.")
               (uri (pypi-uri "m2r" version))
               (sha256
                (base32
-                "16gdm8i06jjmlpvckpfmlkr4693dh0vs192vgsqn84fsdkbbm45z"))))
+                "16gdm8i06jjmlpvckpfmlkr4693dh0vs192vgsqn84fsdkbbm45z"))
+              (modules '((guix build utils)))
+              (snippet
+               ;; Adjust test regex for Python 3.10 compatibility.
+               ;; Taken from upstream pull request:
+               ;; https://github.com/miyakogi/m2r/pull/62
+               '(substitute* "tests/test_cli.py"
+                  (("self.assertIn\\('optional arguments:', message\\)")
+                   "self.assertRegex(message, r'option(s|al arguments):')")))))
     (build-system python-build-system)
     (propagated-inputs
      (list python-docutils python-mistune))
@@ -23371,7 +23381,6 @@ Features:
      (list python-cfgv
            python-identify
            python-importlib-metadata
-           python-importlib-resources
            python-nodeenv
            python-pyyaml
            python-toml

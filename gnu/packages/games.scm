@@ -7759,38 +7759,33 @@ quotation from a collection of quotes.")
 (define xonotic-data
   (package
     (name "xonotic-data")
-    (version "0.8.2")
+    (version "0.8.5")
     (source
      (origin
        (method url-fetch)
-       (uri (string-append "http://dl.xonotic.org/xonotic-"
+       (uri (string-append "https://dl.xonotic.org/xonotic-"
                            version ".zip"))
        (file-name (string-append name "-" version ".zip"))
        (sha256
-        (base32
-         "1mcs6l4clvn7ibfq3q69k2p0z6ww75rxvnngamdq5ic6yhq74bx2"))))
+        (base32 "1r9pdrrki7mkdw99zh9m7911fqldsfdnl0nrp5cv1bk2hcism4hg"))))
     (build-system trivial-build-system)
-    (native-inputs
-     `(("unzip" ,unzip)))
+    (native-inputs (list unzip))
     (arguments
-     `(#:modules ((guix build utils))
-       #:builder
-       (begin
-         (use-modules (guix build utils))
-         (let* ((out (assoc-ref %outputs "out"))
-                (xonotic (string-append out "/share/xonotic"))
-                (source (assoc-ref %build-inputs "source"))
-                (unzip (search-input-file %build-inputs "/bin/unzip")))
-           (copy-file source (string-append ,name "-" ,version ".zip"))
-           (invoke unzip (string-append ,name "-" ,version ".zip"))
-           (mkdir-p out)
-           (mkdir-p xonotic)
-           (chdir "Xonotic")
-           (copy-recursively "data"
-                             (string-append xonotic "/data"))
-           (copy-recursively "server"
-                             (string-append xonotic "/server"))
-           (install-file "key_0.d0pk" xonotic)))))
+     (list #:modules '((guix build utils))
+           #:builder
+           #~(begin
+               (use-modules (guix build utils))
+               (let* ((out (assoc-ref %outputs "out"))
+                      (xonotic (string-append out "/share/xonotic"))
+                      (source (assoc-ref %build-inputs "source"))
+                      (unzip (search-input-file %build-inputs "/bin/unzip")))
+                 (invoke unzip source)
+                 (chdir "Xonotic")
+                 (install-file "key_0.d0pk" xonotic)
+                 (copy-recursively "data"
+                                   (string-append xonotic "/data"))
+                 (copy-recursively "server"
+                                   (string-append xonotic "/server"))))))
     (home-page "http://xonotic.org")
     (synopsis "Data files for Xonotic")
     (description
@@ -7801,192 +7796,142 @@ quotation from a collection of quotes.")
 (define-public xonotic
   (package
     (name "xonotic")
-    (version "0.8.2")
+    (version "0.8.5")
     (source
      (origin
        (method url-fetch)
-       (uri (string-append "http://dl.xonotic.org/xonotic-"
+       (uri (string-append "https://dl.xonotic.org/xonotic-"
                            version "-source.zip"))
        (file-name (string-append name "-" version ".zip"))
        (sha256
-        (base32
-         "0axxw04fyz6jlfqd0kp7hdrqa0li31sx1pbipf2j5qp9wvqicsay"))))
+        (base32 "0pgahai0gk8bjmvkwx948bl50l9f9dhmjzwffl4vyldibajipa51"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:configure-flags (list (string-append "--prefix="
-                                              (assoc-ref %outputs "out"))
-                               "--disable-rijndael")
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'make-darkplaces
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (sharedir (string-append out "/share/xonotic/")))
-               (invoke "make" "-C" "source/darkplaces"
-                       (string-append "DP_FS_BASEDIR="
-                                      sharedir)
-                       "DP_LINK_TO_LIBJPEG=1"
-                       "DP_SOUND_API=ALSA"
-                       "CC=gcc"
-                       "-f" "makefile"
-                       "cl-release")
-               (invoke "make" "-C" "source/darkplaces"
-                       (string-append "DP_FS_BASEDIR="
-                                      sharedir)
-                       "DP_LINK_TO_LIBJPEG=1"
-                       "DP_SOUND_API=ALSA"
-                       "CC=gcc"
-                       "-f" "makefile"
-                       "sdl-release")
-               (invoke "make" "-C" "source/darkplaces"
-                       (string-append "DP_FS_BASEDIR="
-                                      sharedir)
-                       "DP_LINK_TO_LIBJPEG=1"
-                       "DP_SOUND_API=ALSA"
-                       "CC=gcc"
-                       "-f" "makefile"
-                       "sv-release"))))
-         (add-before 'configure 'bootstrap
-           (lambda _
-             (chdir "source/d0_blind_id")
-             (invoke "sh" "autogen.sh")))
-         (add-after 'build 'install-desktop-entry
-           (lambda* (#:key outputs #:allow-other-keys)
-             ;; Add .desktop files for the 2 variants and the symlink
-             (let* ((output (assoc-ref outputs "out"))
-                    (apps (string-append output "/share/applications")))
-               (mkdir-p apps)
-               (with-output-to-file
-                   (string-append apps "/xonotic-glx.desktop")
+     (list #:configure-flags
+           #~(list (string-append "--prefix=" #$output)
+                   "--disable-rijndael")
+           #:modules '((guix build gnu-build-system)
+                       (guix build utils)
+                       (srfi srfi-26))
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'configure 'build-darkplaces
+                 (lambda* (#:key make-flags parallel-build? outputs
+                           #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out"))
+                          (share (string-append out "/share/xonotic/")))
+                     (apply invoke "make"
+                            "-C" "source/darkplaces"
+                            "-f" "makefile"
+                            "-j" (if parallel-build?
+                                     (number->string (parallel-job-count))
+                                     "1")
+                            (string-append "CC=" #$(cc-for-target))
+                            (string-append "DP_FS_BASEDIR=" share)
+                            "DP_LINK_TO_LIBJPEG=1"
+                            "DP_SOUND_API=ALSA"
+                            "cl-release"
+                            "sdl-release"
+                            "sv-release"
+                            make-flags))))
+               (add-before 'configure 'preconfigure
                  (lambda _
-                   (format #t
-                           "[Desktop Entry]~@
-                     Name=xonotic-glx~@
-                     Comment=Xonotic glx~@
-                     Exec=~a/bin/xonotic-glx~@
-                     TryExec=~@*~a/bin/xonotic-glx~@
-                     Icon=xonotic~@
-                     Categories=Game~@
-                     Type=Application~%"
-                           output)))
-               (with-output-to-file
-                   (string-append apps "/xonotic-sdl.desktop")
-                 (lambda _
-                   (format #t
-                           "[Desktop Entry]~@
-                     Name=xonotic-sdl~@
-                     Comment=Xonotic sdl~@
-                     Exec=~a/bin/xonotic-sdl~@
-                     TryExec=~@*~a/bin/xonotic-sdl~@
-                     Icon=xonotic~@
-                     Categories=Game~@
-                     Type=Application~%"
-                           output)))
-               (with-output-to-file
-                   (string-append apps "/xonotic.desktop")
-                 (lambda _
-                   (format #t
-                           "[Desktop Entry]~@
-                     Name=xonotic~@
-                     Comment=Xonotic~@
-                     Exec=~a/bin/xonotic-glx~@
-                     TryExec=~@*~a/bin/xonotic~@
-                     Icon=xonotic~@
-                     Categories=Game~@
-                     Type=Application~%"
-                           output)))
-               #t)))
-         (add-after 'install-desktop-entry 'install-icons
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (with-directory-excursion "../../misc/logos/icons_png/"
-                 (for-each
-                  (lambda (file)
-                    (let* ((size (string-filter char-numeric? file))
-                           (icons (string-append out "/share/icons/hicolor/"
-                                                 size "x" size "/apps")))
-                      (mkdir-p icons)
-                      (copy-file file (string-append icons "/xonotic.png"))))
-                  '("xonotic_16.png" "xonotic_22.png" "xonotic_24.png"
-                    "xonotic_32.png" "xonotic_48.png" "xonotic_64.png"
-                    "xonotic_128.png" "xonotic_256.png" "xonotic_512.png"))))))
-         (add-after 'install-icons 'install-binaries
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (define (install src dst)
-                 (let ((dst (string-append out dst)))
-                   (mkdir-p (dirname dst))
-                   (copy-file src dst)))
-               (mkdir-p (string-append out "/bin"))
-               (install "../darkplaces/darkplaces-dedicated"
-                        "/bin/xonotic-dedicated")
-               (install "../darkplaces/darkplaces-glx"
-                        "/bin/xonotic-glx")
-               (install "../darkplaces/darkplaces-sdl"
-                        "/bin/xonotic-sdl")
-               ;; Provide a default xonotic executable, defaulting to SDL.
-               (symlink (string-append out "/bin/xonotic-sdl")
-                        (string-append out "/bin/xonotic"))
-               #t)))
-         (add-after 'install-binaries 'install-data
-           (lambda* (#:key outputs inputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (data (assoc-ref inputs "xonotic-data")))
-               (symlink (string-append data "/share/xonotic")
-                        (string-append out "/share/xonotic"))
-               #t)))
-         (add-after 'install-binaries 'wrap-binaries
-           (lambda* (#:key outputs inputs #:allow-other-keys)
-             ;; Curl and libvorbis need to be wrapped so that we get
-             ;; sound and networking.
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin/xonotic"))
-                    (bin-sdl (string-append out "/bin/xonotic-sdl"))
-                    (bin-glx (string-append out "/bin/xonotic-glx"))
-                    (bin-dedicated (string-append out "/bin/xonotic-dedicated"))
-                    (curl (assoc-ref inputs "curl"))
-                    (vorbis (assoc-ref inputs "libvorbis")))
-               (wrap-program bin
-                 `("LD_LIBRARY_PATH" ":" prefix
-                   (,(string-append curl "/lib:" vorbis "/lib"))))
-               (wrap-program bin-sdl
-                 `("LD_LIBRARY_PATH" ":" prefix
-                   (,(string-append curl "/lib:" vorbis "/lib"))))
-               (wrap-program bin-glx
-                 `("LD_LIBRARY_PATH" ":" prefix
-                   (,(string-append curl "/lib:" vorbis "/lib"))))
-               (wrap-program bin-dedicated
-                 `("LD_LIBRARY_PATH" ":" prefix
-                   (,(string-append curl "/lib:" vorbis "/lib"))))
-               #t))))))
-    (inputs
-     `(("xonotic-data" ,xonotic-data)
-       ("alsa-lib" ,alsa-lib)
-       ("curl" ,curl)
-       ("libjpeg" ,libjpeg-turbo)
-       ("libmodplug" ,libmodplug)
-       ("libvorbis" ,libvorbis)
-       ("libogg" ,libogg)
-       ("libxpm" ,libxpm)
-       ("libxxf86dga" ,libxxf86dga)
-       ("libxxf86vm" ,libxxf86vm)
-       ("libx11" ,libx11)
-       ("libxext" ,libxext)
-       ("libxau" ,libxau)
-       ("libxdmcp" ,libxdmcp)
-       ("mesa" ,mesa)
-       ("glu" ,glu)
-       ("freetype" ,freetype)
-       ("sdl2" ,sdl2)
-       ("libpng" ,libpng)
-       ("hicolor-icon-theme" ,hicolor-icon-theme)))
+                   (chdir "source/d0_blind_id")
+                   (invoke "sh" "autogen.sh")))
+               (add-after 'install 'symlink-data
+                 (lambda* (#:key outputs inputs #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out"))
+                          (data (assoc-ref inputs "xonotic-data")))
+                     (symlink (string-append data "/share/xonotic")
+                              (string-append out "/share/xonotic")))))
+               (add-after 'install 'install-desktop-entries
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out"))
+                          (app (string-append out "/share/applications")))
+                     ;; Add .desktop files for the 2 variants and the symlink.
+                     (for-each
+                      (lambda (variant)
+                        (let* ((file (if variant
+                                         (format #f "xonotic-~(~a~)" variant)
+                                         "xonotic"))
+                               (name (if variant
+                                         (format #f "Xonotic (~a)" variant)
+                                         "Xonotic"))
+                               (exec (string-append out "/bin/" file)))
+                          (make-desktop-entry-file
+                           (string-append app "/" file ".desktop")
+                           #:name name
+                           #:comment `((#f #$(package-synopsis this-package)))
+                           #:exec exec
+                           #:try-exec exec
+                           #:icon "xonotic"
+                           #:categories '("Game"))))
+                      (list #f "GLX" "SDL")))))
+               (add-after 'install 'install-icons
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let ((out (assoc-ref outputs "out")))
+                     (for-each
+                      (lambda (file)
+                        (let* ((size (string-filter char-numeric? file))
+                               (icons (string-append out "/share/icons/hicolor/"
+                                                     size "x" size "/apps")))
+                          (mkdir-p icons)
+                          (copy-file file (string-append icons "/xonotic.png"))))
+                      (find-files "../../misc/logos/icons_png"
+                                  "^xonotic_[0-9]+\\.png$")))))
+               (add-after 'install 'install-binaries
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out"))
+                          (bin (string-append out "/bin")))
+                     (for-each
+                      (lambda (variant)
+                        (copy-file
+                         (string-append "../darkplaces/darkplaces-" variant)
+                         (string-append bin "/xonotic-" variant)))
+                      (list "dedicated" "glx" "sdl")))))
+               (add-after 'install-binaries 'wrap-binaries
+                 (lambda* (#:key outputs inputs #:allow-other-keys)
+                   ;; All games must be wrapped to get sound and networking.
+                   (let* ((out (assoc-ref outputs "out"))
+                          (bin (string-append out "/bin"))
+                          (curl (assoc-ref inputs "curl"))
+                          (vorbis (assoc-ref inputs "libvorbis")))
+                     (for-each (cut wrap-program <>
+                                    `("LD_LIBRARY_PATH" ":" prefix
+                                      (,(string-append curl "/lib:"
+                                                       vorbis "/lib"))))
+                               (find-files bin "^xonotic"))
+
+                     ;; Provide a default xonotic executable, defaulting to SDL.
+                     (symlink "xonotic-sdl" (string-append bin "/xonotic"))))))))
     (native-inputs
-     (list unzip
-           autoconf
+     (list autoconf
            automake
-           pkg-config
+           gmp
            libtool
-           gmp))
+           pkg-config
+           unzip))
+    (inputs
+     (list alsa-lib
+           curl
+           libjpeg-turbo
+           libmodplug
+           libvorbis
+           libogg
+           libpng
+           libx11
+           libxpm
+           libxxf86dga
+           libxxf86vm
+           libxext
+           libxau
+           libxdmcp
+           mesa
+           glu
+           freetype
+           sdl2
+           hicolor-icon-theme
+           xonotic-data))
     (home-page "https://xonotic.org")
     (synopsis "Fast-paced first-person shooter game")
     (description

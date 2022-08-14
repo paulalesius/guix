@@ -591,26 +591,21 @@ for day to day programming.")
 (define-public ocaml-cudf
   (package
     (name "ocaml-cudf")
-    (version "0.9")
-    (source
-      (origin
-        (method url-fetch)
-        (uri "https://gforge.inria.fr/frs/download.php/36602/cudf-0.9.tar.gz")
-        (sha256
-          (base32
-            "0771lwljqwwn3cryl0plny5a5dyyrj4z6bw66ha5n8yfbpcy8clr"))))
-    (build-system ocaml-build-system)
-    (propagated-inputs (list ocaml-extlib))
-    (native-inputs
-      (list perl ocamlbuild ocaml-ounit))
+    (version "0.10")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                     (url "https://gitlab.com/irill/cudf")
+                     (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1lvrmpscbk1kjv5ag5bzlzv520xk5zw2haf6q7chvz98gcm9g0hk"))))
+    (build-system dune-build-system)
     (arguments
-     `(#:make-flags
-       ,#~(list
-           "all" "opt"
-           (string-append "BINDIR=" #$output "/bin"))
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure))))
+     '(#:test-target "."))
+    (propagated-inputs (list ocaml-extlib))
+    (native-inputs (list ocaml-ounit2))
     (home-page "https://www.mancoosi.org/cudf/")
     (synopsis "CUDF library (part of the Mancoosi tools)")
     (description "CUDF (for Common Upgradeability Description Format) is a
@@ -1705,7 +1700,7 @@ full_split, cut, rcut, etc..")
 (define dune-bootstrap
   (package
     (name "dune")
-    (version "3.3.1")
+    (version "3.4.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1714,7 +1709,7 @@ full_split, cut, rcut, etc..")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0wdja70l7y1cj1d0sijm0q0cbics8xd9wqka7zyb29y1cc57pasa"))))
+                "02zn79l7y7rvy7b6bimlf5qymrvzc43w8q7l4jx3k8wzn2g5326z"))))
     (build-system ocaml-build-system)
     (arguments
      `(#:tests? #f; require odoc
@@ -2428,7 +2423,7 @@ immutability.")
 (define-public ocaml-alcotest
   (package
     (name "ocaml-alcotest")
-    (version "1.5.0")
+    (version "1.6.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2437,7 +2432,7 @@ immutability.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1lgadc7p56677fi5gwl7r9bml4z87rzh50khhqaij7bwp37zrmpi"))))
+                "195612n7p8y5ba6n19glql7qffl8n3aqkl9nrlln5lb9739gpv4w"))))
     (build-system dune-build-system)
     (arguments
      `(#:package "alcotest"
@@ -2449,7 +2444,6 @@ immutability.")
              ;; cmdliner changed the format and the tests fail
              (substitute* "test/e2e/alcotest/failing/unknown_option.expected"
                (("`") "'")
-               (("COMMAND") "[COMMAND]")
                (("\\.\\.\\.") "…")))))))
     (native-inputs
      (list ocamlbuild))
@@ -2550,21 +2544,21 @@ lets the client choose the concrete timeline.")
 (define-public ocaml-ssl
   (package
     (name "ocaml-ssl")
-    (version "0.5.10")
+    (version "0.5.12")
     (source
       (origin
         (method git-fetch)
         (uri (git-reference
               (url "https://github.com/savonet/ocaml-ssl")
-              (commit (string-append "v" version))))
+              (commit version)))
         (file-name (git-file-name name version))
         (sha256 (base32
-                  "1rszqiqayh67xlwd5411k8vib47x9kapdr037z1majd2c14z3kcb"))))
+                  "1dr7yghbv0wncvggd2105bj097msgrdzxd9wjkw1xxf2vvp0j1bi"))))
     (build-system dune-build-system)
     (arguments
      `(#:test-target "."))
     (native-inputs
-     (list autoconf automake which))
+     (list autoconf automake ocaml-alcotest which))
     (propagated-inputs (list openssl))
     (home-page "https://github.com/savonet/ocaml-ssl/")
     (synopsis "OCaml bindings for OpenSSL")
@@ -3753,7 +3747,7 @@ big- and little-endian, with their unsafe counter-parts.")
 (define-public ocaml-cstruct
   (package
     (name "ocaml-cstruct")
-    (version "6.1.0")
+    (version "6.1.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3762,7 +3756,7 @@ big- and little-endian, with their unsafe counter-parts.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1pwfkfs8zzr88slnvl5b28lx6w2k149ybgvrs6diay3qvwcmkhx5"))))
+                "0dpbirs6lzp0bclr3wcw407jjspll7iy66z18zks3mjccvlxd21w"))))
     (build-system dune-build-system)
     (arguments
      `(#:package "cstruct"
@@ -3946,7 +3940,7 @@ Format module of the OCaml standard library.")
 (define-public ocaml-piqilib
   (package
     (name "ocaml-piqilib")
-    (version "0.6.15")
+    (version "0.6.16")
     (source
      (origin
        (method git-fetch)
@@ -3955,7 +3949,7 @@ Format module of the OCaml standard library.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0v04hs85xv6d4ysqxyv1dik34dx49yab9shpi4x7iv19qlzl7csb"))))
+        (base32 "0mbhfrfrik3jlzx9zz680g0qdvv0b7cbjz28cgdlryp7nk4v4kx8"))))
     (build-system ocaml-build-system)
     (arguments
      `(#:phases
@@ -4074,7 +4068,7 @@ and 4 (random based) according to RFC 4122.")
 (define-public ocaml-piqi
   (package
     (name "ocaml-piqi")
-    (version "0.7.7")
+    (version "0.7.8")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -4083,7 +4077,7 @@ and 4 (random based) according to RFC 4122.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1913jpsb8mvqi8609j4g4sm5jhg50dq0xqxgy8nmvknfryyc89nm"))))
+                "12m9vxir0cs2155nxs0a3m3npf3w79kyxf9a5lmf18qvvgismfz8"))))
     (build-system ocaml-build-system)
     (arguments
      `(#:make-flags
@@ -4293,7 +4287,7 @@ function that follows the prototype of POSIX's wcwidth.")
 (define-public ocaml-zed
   (package
     (name "ocaml-zed")
-    (version "3.1.0")
+    (version "3.2.0")
     (home-page "https://github.com/ocaml-community/zed")
     (source
      (origin
@@ -4303,14 +4297,18 @@ function that follows the prototype of POSIX's wcwidth.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "04vr1a94imsghm98iigc35rhifsz0rh3qz2qm0wam2wvp6vmrx0p"))))
+        (base32 "1g171kk5wxnk66d4vwz2crh5i19vhqghp78iybl5am17gl9qf8pb"))))
     (build-system dune-build-system)
+    (propagated-inputs
+     (list ocaml-react
+           ocaml-result
+           ocaml-uchar
+           ocaml-uutf
+           ocaml-uucp
+           ocaml-uuseg
+           ocaml-odoc))
     (arguments
      `(#:test-target "."))
-    (propagated-inputs
-     `(("ocaml-charInfo-width" ,ocaml-charinfo-width)
-       ("ocaml-camomile" ,ocaml-camomile)
-       ("ocaml-react" ,ocaml-react)))
     (properties `((ocaml4.07-variant . ,(delay ocaml4.07-zed))))
     (synopsis "Abstract engine for text edition in OCaml")
     (description
@@ -4337,12 +4335,16 @@ capabilities, Zed provides macro recording and cursor management facilities.")
                (sha256
                 (base32
                  "0pa9awinqr0plp4b2az78dwpvh01pwaljnn5ydg8mc6hi7rmir55"))))
+    (propagated-inputs
+     `(("ocaml-charInfo-width" ,ocaml-charinfo-width)
+       ("ocaml-camomile" ,ocaml-camomile)
+       ("ocaml-react" ,ocaml-react)))
      (properties '()))))
 
 (define-public ocaml-lambda-term
   (package
     (name "ocaml-lambda-term")
-    (version "3.2.0")
+    (version "3.3.1")
     (home-page "https://github.com/ocaml-community/lambda-term")
     (source (origin
               (method git-fetch)
@@ -4352,18 +4354,18 @@ capabilities, Zed provides macro recording and cursor management facilities.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "048k26644wq5wlwk0j179dxrxyz9nxqqq4vvhyh6pqpgxdajd44i"))))
+                "1pkamblc6h0rsbk901cqn3xr9gqa3g8wrwyx5zryaqvb2xpbhp8b"))))
     (build-system dune-build-system)
     (arguments
      `(#:test-target "."))
     (propagated-inputs
-     (list ocaml-lwt
-           ocaml-lwt-log
-           ocaml-react
-           ocaml-zed
-           ocaml-camomile
+     (list ocaml-logs
+           ocaml-lwt
            ocaml-lwt-react
-           ocaml-mew-vi))
+           ocaml-mew-vi
+           ocaml-odoc
+           ocaml-react
+           ocaml-zed))
     (properties `((ocaml4.07-variant . ,(delay ocaml4.07-lambda-term))))
     (synopsis "Terminal manipulation library for OCaml")
     (description "Lambda-Term is a cross-platform library for manipulating the
@@ -4398,7 +4400,7 @@ instead of bindings to a C library.")
 (define-public ocaml-utop
   (package
     (name "ocaml-utop")
-    (version "2.9.2")
+    (version "2.10.0")
     (source
      (origin
        (method git-fetch)
@@ -4407,15 +4409,19 @@ instead of bindings to a C library.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0z5anakgbndhyzbi570pfs2fy69bnmgq9jflgfbly2rhbhwa7wgj"))))
+        (base32 "1pcix3h9f7is06581iax4i08zkd6sv8y5hy1vvxhqhcsd9z0qfl3"))))
     (build-system dune-build-system)
     (arguments
      `(#:test-target "."))
     (native-inputs
      (list ocaml-cppo))
     (propagated-inputs
-     (list ocaml-lambda-term ocaml-lwt ocaml-lwt-react ocaml-camomile
-           ocaml-react))
+     (list ocaml-lambda-term
+           ocaml-logs
+           ocaml-lwt
+           ocaml-lwt-react
+           ocaml-react
+           ocaml-zed))
     (properties `((ocaml4.07-variant . ,(delay ocaml4.07-utop))))
     (home-page "https://github.com/ocaml-community/utop")
     (synopsis "Improved interface to the OCaml toplevel")
@@ -4900,31 +4906,20 @@ is also support for writing OCaml syntax extensions in a camlp4 style.")
 (define-public ocaml-timed
   (package
     (name "ocaml-timed")
-    (version "1.0")
+    (version "1.1")
     (home-page "https://github.com/rlepigre/ocaml-timed")
     (source (origin
               (method git-fetch)
               (uri (git-reference
                     (url (string-append home-page ".git"))
-                    (commit (string-append name "_" version))))
+                    (commit version)))
               (sha256
                (base32
-                "0hfxz710faxy5yk97bkfnw87r732jcxxhmjppwrbfdb6pd0wks96"))
+                "1aqmkpjv5jk95lc2m3qyyrhw8ra7n9wj8pv3bfc83l737zv0hjn1"))
               (file-name (git-file-name name version))))
-    (build-system ocaml-build-system)
+    (build-system dune-build-system)
     (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (delete 'configure)
-         (replace 'build
-           (lambda _
-             (invoke "make")))
-         (replace 'install
-           (lambda _
-             (invoke "make" "install")))
-         (replace 'check
-           (lambda _
-             (invoke "make" "tests"))))))
+     '(#:test-target "."))
     (synopsis "Timed references for imperative state")
     (description "Timed references for imperative state.  This module provides
 an alternative type for references (or mutable cells) supporting undo/redo
@@ -4941,7 +4936,7 @@ than the first one.")
 (define-public ocaml-biniou
  (package
    (name "ocaml-biniou")
-   (version "1.2.1")
+   (version "1.2.2")
    (home-page "https://github.com/mjambon/biniou")
     (source
      (origin
@@ -4952,7 +4947,7 @@ than the first one.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0x2kiy809n1j0yf32l7hj102y628jp5jdrkbi3z7ld8jq04h1790"))))
+         "1gd4nqffm9h7dzxyvpfpww24l61fqgazyh3p5f7k9jvgyv9y4vcn"))))
    (build-system dune-build-system)
    (arguments
     `(#:phases
@@ -4960,7 +4955,7 @@ than the first one.")
         (add-before 'build 'make-writable
           (lambda _ (for-each make-file-writable (find-files "." ".")))))))
    (inputs
-    (list ocaml-easy-format))
+    (list ocaml-easy-format ocaml-camlp-streams))
    (native-inputs
     (list which))
    (synopsis "Data format designed for speed, safety, ease of use and backward
@@ -4975,7 +4970,7 @@ than yojson), with 25-35% space savings.")
 (define-public ocaml-yojson
   (package
     (name "ocaml-yojson")
-    (version "1.7.0")
+    (version "2.0.2")
     (home-page "https://github.com/ocaml-community/yojson")
     (source
      (origin
@@ -4986,14 +4981,13 @@ than yojson), with 25-35% space savings.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0zncsw8bgbkh1pfvfc7nh628hfj84lgx6jwhp9ashj3z1z0w3xjn"))))
+         "1habsh00ihjhk1g1csxqg3hj8izk5zvgc7wm579wyjw35vzcmwr1"))))
     (build-system dune-build-system)
     (arguments
-     `(#:test-target "."))
-    (propagated-inputs
-     (list ocaml-biniou ocaml-easy-format))
-    (native-inputs
-     (list ocaml-alcotest ocaml-cppo))
+     `(#:test-target "."
+       #:package "yojson"))
+    (propagated-inputs (list ocaml-seq))
+    (native-inputs (list ocaml-alcotest ocaml-cppo))
     (synopsis "Low-level JSON library for OCaml")
     (description "Yojson is an optimized parsing and printing library for the
 JSON format.  It addresses a few shortcomings of json-wheel including 2x
@@ -5036,10 +5030,10 @@ Mercurial's @code{https://www.selenic.com/blog/?p=663, unified test
 format}.  @code{craml} is released as a single binary (called @code{craml}).")
     (license license:isc)))
 
-(define-public ocaml-dot-merlin-reader
+(define-public ocaml-merlin-lib
   (package
-    (name "ocaml-dot-merlin-reader")
-    (version "4.5-414")
+    (name "ocaml-merlin-lib")
+    (version "4.6-414")
     (source
      (origin
        (method git-fetch)
@@ -5049,17 +5043,27 @@ format}.  @code{craml} is released as a single binary (called @code{craml}).")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "125gyk63fg9plqkyrkl3wvpr3czjxgvshf4496fc4swldl7z587c"))))
+         "1cpa9x45w54l4mqqmc8z3s5gscggw37gb6z9i7wwss86fj1wgclh"))))
     (build-system dune-build-system)
+    (arguments '(#:package "merlin-lib"
+                 #:tests? #f))          ; no tests
+    (propagated-inputs (list ocaml-csexp ocaml-menhir))
+    (home-page "https://ocaml.github.io/merlin/")
+    (synopsis "Merlin libraries")
+    (description "These libraries provides access to low-level compiler
+interfaces and the standard higher-level merlin protocol.")
+    (license license:expat)))
+
+(define-public ocaml-dot-merlin-reader
+  (package
+    (inherit ocaml-merlin-lib)
+    (name "ocaml-dot-merlin-reader")
     (arguments '(#:package "dot-merlin-reader"
                  #:tests? #f))          ; no tests
-    (inputs
-     (list ocaml-yojson ocaml-csexp ocaml-result))
-    (home-page "https://ocaml.github.io/merlin/")
+    (propagated-inputs (list ocaml-merlin-lib))
     (synopsis "Reads config files for @code{ocaml-merlin}")
     (description "@code{ocaml-dot-merlin-reader} is an external reader for
-@code{ocaml-merlin} configurations.")
-    (license license:expat)))
+@code{ocaml-merlin} configurations.")))
 
 (define-public ocaml-merlin
   (package
@@ -5073,8 +5077,7 @@ format}.  @code{craml} is released as a single binary (called @code{craml}).")
            (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
                (invoke "dune" "runtest" "-p" "merlin,dot-merlin-reader")))))))
-    (inputs
-     (list ocaml-yojson ocaml-csexp ocaml-result))
+    (propagated-inputs (list ocaml-merlin-lib ocaml-yojson))
     (native-inputs
      (list ocaml-dot-merlin-reader ; required for tests
            ocaml-mdx jq))
@@ -5299,11 +5302,17 @@ parsexp_io.")
 (define-public ocaml-sexplib
   (package
     (name "ocaml-sexplib")
-    (version "0.15.0")
+    (version "0.15.1")
     (home-page "https://github.com/janestreet/sexplib")
-    (source
-     (janestreet-origin "sexplib" version
-                        "1xs55f11yhscnfrzpvy1vn05j6xi9kxy097465624l615j7k8qm5"))
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                     (url home-page)
+                     (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1gcvcc0jw6pb69wwfjnaqz1jk5simap2kdb7g43v7v7mksg8sh9f"))))
     (build-system dune-build-system)
     (propagated-inputs
      (list ocaml-base ocaml-num ocaml-parsexp ocaml-sexplib0))
@@ -7632,7 +7641,8 @@ then run the Bisect_ppx report tool on the generated visitation files.")
         (base32 "07zjkk455l51i29lcayzrc1q8j5bvbv97sscv8yhcj7x6h6q2nag"))))
     (build-system dune-build-system)
     (arguments
-     `(#:phases
+     `(#:tests? #f; not compatible with current version of ocaml-yojson
+       #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'fix-test
            (lambda _
@@ -7677,7 +7687,7 @@ complexity of the OCaml module system.")
 (define-public ocaml-odoc-parser
   (package
     (name "ocaml-odoc-parser")
-    (version "1.0.0")
+    (version "2.0.0")
     (source
       (origin
         (method git-fetch)
@@ -7687,10 +7697,10 @@ complexity of the OCaml module system.")
         (file-name (git-file-name name version))
         (sha256
           (base32
-           "0mvwbnla0wd29bc7ckwpb494qv7p616cx8hnm0zg36np7v3zwy4w"))))
+           "1x48kf051xs98rd6cri591bk1ccp9hyp93n1rlf6qnxic55jw683"))))
     (build-system dune-build-system)
     (propagated-inputs
-      (list ocaml-astring ocaml-result))
+      (list ocaml-astring ocaml-camlp-streams ocaml-result))
     (native-inputs
       (list ocaml-ppx-expect))
     (home-page "https://github.com/ocaml-doc/odoc-parser")
@@ -7831,7 +7841,7 @@ and SVG file output.")
 (define-public ocaml-version
   (package
     (name "ocaml-version")
-    (version "3.4.0")
+    (version "3.5.0")
     (source
      (origin
        (method git-fetch)
@@ -7841,7 +7851,7 @@ and SVG file output.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1c13zk1qna59m5z9jx7da3p7cxd48scpyk7zg7gi6gc6hx5hhjx8"))))
+         "1pnw2ym021j48zknhbi1kdiyfv9si8p2l04rdzbv4g51fclsqs92"))))
     (build-system dune-build-system)
     (arguments `(#:tests? #f))          ; no tests
     (properties '((upstream-name . "ocaml-version")))
@@ -8206,7 +8216,7 @@ defined in OCaml 4.12.0.")
 (define-public ocamlformat
   (package
     (name "ocamlformat")
-    (version "0.22.4")
+    (version "0.24.1")
     (source
       (origin
         (method git-fetch)
@@ -8216,7 +8226,7 @@ defined in OCaml 4.12.0.")
         (file-name (git-file-name name version))
         (sha256
           (base32
-            "171lq3vx4y8xj4by5zy93isx8nhg6ysxg1hxmkqkq16fdaiz8mnc"))))
+            "0y1j5mwwrliy6a78cmpi6j8gw425shghqg9ylyl3qw5fx4b088pp"))))
     (build-system dune-build-system)
     (arguments
      '(#:package "ocamlformat"
