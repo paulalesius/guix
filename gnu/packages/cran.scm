@@ -104,6 +104,7 @@
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages sqlite)
   #:use-module (gnu packages statistics)
+  #:use-module (gnu packages tbb)
   #:use-module (gnu packages tcl)
   #:use-module (gnu packages tex)
   #:use-module (gnu packages textutils)
@@ -9216,6 +9217,14 @@ always locate the files relative to your project root.")
         (base32
          "0b1szzsqyc8wcfpkn5517bb1ds064vs2hky71my3p74kfngay991"))))
     (build-system r-build-system)
+    (arguments
+     (list
+      #:phases
+      '(modify-phases %standard-phases
+         (add-after 'unpack 'build-reproducibly
+           (lambda _
+             (setenv "PYTHONHASHSEED" "0")
+             (setenv "PYTHONDONTWRITEBYTECODE" "1"))))))
     (inputs (list python))
     (propagated-inputs
      (list r-here
@@ -13657,9 +13666,20 @@ package provides a minimal R interface by relying on the Rcpp package.")
        (uri (cran-uri "RcppParallel" version))
        (sha256
         (base32
-         "1sn211ajlb1p12sglxqns175rg078yvww268m8cp0vvd7cmk55k3"))))
+         "1sn211ajlb1p12sglxqns175rg078yvww268m8cp0vvd7cmk55k3"))
+       (modules '((guix build utils)))
+       (snippet
+        '(delete-file-recursively "src/tbb/"))))
     (properties `((upstream-name . "RcppParallel")))
     (build-system r-build-system)
+    (arguments
+     (list
+      #:phases
+      '(modify-phases %standard-phases
+         (add-after 'unpack 'use-system-tbb
+           (lambda* (#:key inputs #:allow-other-keys)
+             (setenv "TBB_ROOT" (assoc-ref inputs "tbb")))))))
+    (inputs (list tbb-2020))
     (home-page "https://rcppcore.github.io/RcppParallel/")
     (synopsis "Parallel programming tools for Rcpp")
     (description
@@ -19040,6 +19060,15 @@ packages with Rcpp.")
         (base32
          "17znizh4yabh2zs9mzyr0sl6p0pw49961i61br7cl1b7v9sza18q"))))
     (build-system r-build-system)
+    (arguments
+     (list
+      #:phases
+      '(modify-phases %standard-phases
+         (add-after 'unpack 'build-reproducibly
+           (lambda _
+             (substitute* "R/aaa.R"
+               (("BASEDATETIME <- Sys.time.*")
+                "BASEDATETIME <- structure(0, class = c(\"POSIXct\", \"POSIXt\"))\n")))))))
     (propagated-inputs
      (list r-farver r-magrittr r-rcpp r-rlang))
     (home-page "https://github.com/thomasp85/tweenr")

@@ -2961,7 +2961,7 @@ or XEmacs.")
 (define-public emacs-autothemer
   (package
     (name "emacs-autothemer")
-    (version "0.2.2")
+    (version "0.2.5")
     (source
      (origin
        (method git-fetch)
@@ -2971,7 +2971,7 @@ or XEmacs.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0cd2pqh6k32sjidkcd8682y4l6mx52xw4a05f38kk8nsrk28m74k"))))
+         "1rwz8hdmycmvak1w5sriwf1pwahham77vyab6jngdw8x9ngxabnx"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-dash))
@@ -3162,7 +3162,7 @@ Its features are:
 (define-public emacs-citeproc-el
   (package
     (name "emacs-citeproc-el")
-    (version "0.9")
+    (version "0.9.1")
     (source
      (origin
        (method git-fetch)
@@ -3171,7 +3171,7 @@ Its features are:
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1m5j1abyk68f3d1v781yrx2xkg42vyfgfckbj2yk2lgk6d7rz0p1"))))
+        (base32 "0rkwqn9pcimfcyq19wlrcij0kcjyhbwisla7vwbhjj8ang0bq9rm"))))
     (build-system emacs-build-system)
     (arguments
      `(#:emacs ,emacs))                 ;need libxml support
@@ -6629,14 +6629,14 @@ src blocks.")
 (define-public emacs-debbugs
   (package
     (name "emacs-debbugs")
-    (version "0.32")
+    (version "0.33")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/debbugs-"
                            version ".tar"))
        (sha256
-        (base32 "1xp3mj3ndaljma0g7x9abziphgi2a6j8k1v52sb8xwgn4p5gdvby"))))
+        (base32 "1s4p3jf9yrm8pn5pljpkrw05n2p9v6fpl141rh1df7f7l0w80qbk"))))
     (build-system emacs-build-system)
     (arguments '(#:include '("\\.el$" "\\.wsdl$" "\\.info$")))
     (propagated-inputs
@@ -8708,7 +8708,7 @@ built-in custom themes.")
 (define-public emacs-gruvbox-theme
   (package
     (name "emacs-gruvbox-theme")
-    (version "1.29.0")
+    (version "1.30.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -8717,7 +8717,7 @@ built-in custom themes.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0ydwr2l3jhqbs3gk5qajirl54vfb8i65qrlzrs04jnsj1pkzq5xa"))))
+                "1dzaivis9cpqzb53qmkmhijr5l4hl2l3yr2412jxrz2jmqi3q4c5"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-autothemer))
@@ -14944,7 +14944,7 @@ letter of Pinyin to Simplified/Traditional Chinese characters.")
 (define-public emacs-reverse-im
   (package
     (name "emacs-reverse-im")
-    (version "0.0.7")
+    (version "0.0.8")
     (source
      (origin
        (method git-fetch)
@@ -14953,7 +14953,7 @@ letter of Pinyin to Simplified/Traditional Chinese characters.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "05k2zp2hldzq5h6nl8gx79dd8lvfn507ad4x3naichdqgn2013nn"))))
+        (base32 "1h4gpyqir0kqf6a7ni8dbqwd4mr33imay0fmprrpfpfqxj0lj7c1"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/a13/reverse-im.el")
     (synopsis "Reverse mapping for non-default system layouts")
@@ -18820,7 +18820,7 @@ Chinese to English.")
 (define-public emacs-org-auto-tangle
   (package
     (name "emacs-org-auto-tangle")
-    (version "0.4.1")
+    (version "0.6.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -18829,7 +18829,7 @@ Chinese to English.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1zb7vcmhmjiqpbbhqrqci689rnpn10p985cs5jk9sgg66xsbrgs3"))))
+                "1kn1jsbv97ps280lcdx19d6hs7pvz7q9ng67xlb1kwjb680pa7rl"))))
     (build-system emacs-build-system)
     (propagated-inputs (list emacs-async))
     (home-page "https://github.com/yilkalargaw/org-auto-tangle")
@@ -18942,7 +18942,7 @@ automatically fetched from well-curated sources, and formatted as BibTeX.")
 (define-public emacs-citar
   (package
     (name "emacs-citar")
-    (version "0.9.7")
+    (version "1.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -18951,7 +18951,7 @@ automatically fetched from well-curated sources, and formatted as BibTeX.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1f49l1zmy4fnz75b0m2rav5jm8yp6hry44bv9xasiszyy3bn0hv8"))))
+                "1n69lkp7298gasm9hlbx9nhgp9ggh8w8ffyvi1rmbj96lcnpsyi9"))))
     (build-system emacs-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
@@ -20309,7 +20309,7 @@ powerful Org contents.")
 (define-public emacs-org-re-reveal
   (package
     (name "emacs-org-re-reveal")
-    (version "3.14.1")
+    (version "3.15.0")
     (source
      (origin
        (method git-fetch)
@@ -20318,7 +20318,7 @@ powerful Org contents.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "180dn5iywarljbmx8lm61y30n2d800kg96psrvc8ghfglnvp6964"))))
+        (base32 "0mn7qn80289gizvnxyjjs00b7qmlf0692kai7qgzgfj6i87pjc38"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-htmlize emacs-org))
@@ -23999,7 +23999,7 @@ targets the Emacs based IDEs (CIDER, ESS, Geiser, Robe, SLIME etc.)")
 (define-public emacs-buttercup
   (package
     (name "emacs-buttercup")
-    (version "1.25")
+    (version "1.26")
     (source
      (origin
        (method git-fetch)
@@ -24009,18 +24009,18 @@ targets the Emacs based IDEs (CIDER, ESS, Geiser, Robe, SLIME etc.)")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0fsysvsypda6b7azc15bpaprq3bwx4gb6rlq2mj6f8rgwdqc8153"))))
+         "1zr9lczdr9dfh99n079d5advxm9p32a8f984dx14f3jn5mx750b1"))))
     (build-system emacs-build-system)
     (arguments
-     `(#:tests? #t
-       #:test-command '("make" "test")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'install-bin
-           (lambda* (#:key outputs #:allow-other-keys)
-             (install-file "bin/buttercup"
-                           (string-append (assoc-ref outputs "out") "/bin"))
-             #t)))))
+     (list
+      #:tests? #t
+      #:test-command #~(list "make" "test")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'install-bin
+            (lambda _
+              (install-file "bin/buttercup"
+                            (string-append #$output "/bin")))))))
     (home-page "https://github.com/jorgenschaefer/emacs-buttercup")
     (synopsis "Behavior driven emacs lisp testing framework")
     (description "Buttercup is a behavior-driven development framework for

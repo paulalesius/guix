@@ -359,7 +359,7 @@ merging features essential for loading menus modified with menu editors.")
 (define-public tumbler
   (package
     (name "tumbler")
-    (version "4.16.0")
+    (version "4.16.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://archive.xfce.org/src/xfce/"
@@ -367,7 +367,7 @@ merging features essential for loading menus modified with menu editors.")
                                   "tumbler-" version ".tar.bz2"))
               (sha256
                (base32
-                "0rmga1l7da0pjrs6jlyq1nfn513r543v7cchshrif1341knpy2wv"))))
+                "0gi77675gi1bbhrrg0p60dy06clf24xa0hz2jb74hnzk2gxbyaw5"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config intltool
@@ -1348,7 +1348,7 @@ of data to either CD/DVD/BD.")
 (define-public xfce4-screenshooter
   (package
    (name "xfce4-screenshooter")
-   (version "1.9.10")
+   (version "1.9.11")
    (source (origin
             (method url-fetch)
             (uri (string-append "https://archive.xfce.org/src/apps/"
@@ -1358,7 +1358,7 @@ of data to either CD/DVD/BD.")
                                 version ".tar.bz2"))
             (sha256
              (base32
-              "1mwjhakbjv9g6ffn6c55cbrfsrqhb2apwhmffvz8rfgm4y2igd04"))))
+              "1d7qyc2w4962crmkz5n0mma2qmyp9hhq455karyzacjbb6z0cgg7"))))
    (build-system gnu-build-system)
    (native-inputs
     (list pkg-config intltool

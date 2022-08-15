@@ -3703,12 +3703,12 @@ the style of the Node Package Manager (NPM).")
   (package
     (name "guile-hashing")
     (version "1.2.0")
-    (home-page "https://github.com/weinholt/hashing")
+    (home-page "https://gitlab.com/weinholt/hashing")
     (source (origin
               (method git-fetch)
               (uri (git-reference
                     (url home-page)
-                    (commit (string-append "v" version))))
+                    (commit "f138deaec38d54ddb621c082764ece276deebe7f")))
               (file-name (git-file-name name version))
               (sha256
                (base32
@@ -3761,12 +3761,12 @@ SHA-512).")
   (package
     (name "guile-packrat")
     (version "0.1.1")
-    (home-page "https://github.com/weinholt/packrat")
+    (home-page "https://gitlab.com/weinholt/packrat")
     (source (origin
               (method git-fetch)
               (uri (git-reference
                     (url home-page)
-                    (commit (string-append "v" version))))
+                    (commit "4201ebe741b605db58a21d70195cfb7db3c38eae")))
               (file-name (git-file-name name version))
               (sha256
                (base32
@@ -4176,8 +4176,8 @@ more objects or strings, represented by a Json object or an IRI.")
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/weinholt/struct-pack")
-             (commit (string-append "v" version))))
+             (url "https://gitlab.com/weinholt/struct-pack")
+             (commit "11b71963793ed4a3bf761efdd83cf2fe123239ee")))
        (file-name (git-file-name name version))
        (sha256
         (base32 "0hd72m821pahjphzyjn26i55542v8makr55xzjll2cycja4wsbc1"))))
@@ -4205,7 +4205,7 @@ more objects or strings, represented by a Json object or an IRI.")
                       #t)))))
     (native-inputs
      (list guile-3.0))
-    (home-page "https://github.com/weinholt/struct-pack")
+    (home-page "https://gitlab.com/weinholt/struct-pack")
     (synopsis "R6RS library for working with packed byte structures")
     (description
      "This is an R6RS library for working with packed byte structures.  It is
@@ -4215,16 +4215,16 @@ similar to struct in Python or pack and unpack in Perl.")
 (define-public guile-machine-code
   (package
     (name "guile-machine-code")
-    (version "2.1.0")
+    (version "2.2.0")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/weinholt/machine-code")
+             (url "https://gitlab.com/weinholt/machine-code")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0wzj3caj2jypzyjqfkfqkvr3kkbjabsnhldv9kvnx9w9qnria5yd"))))
+        (base32 "1yjzpg5p082kg4vaqlwbwddrrhxyxar6gsx9ql72hpwah4ka82h5"))))
     (build-system guile-build-system)
     (arguments
      `(#:compile-flags '("--r6rs" "-Wunbound-variable" "-Warity-mismatch")
@@ -4251,7 +4251,7 @@ similar to struct in Python or pack and unpack in Perl.")
      (list guile-3.0))
     (propagated-inputs
      (list guile-struct-pack))
-    (home-page "https://github.com/weinholt/machine-code")
+    (home-page "https://gitlab.com/weinholt/machine-code")
     (synopsis "Tools that relate to machine code and object formats")
     (description
      "This project is about the development of tools that relate to machine
@@ -4268,7 +4268,7 @@ object formats and related areas.")
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/weinholt/laesare")
+             (url "https://gitlab.com/weinholt/laesare")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
@@ -4297,7 +4297,7 @@ object formats and related areas.")
                       #t)))))
     (native-inputs
      (list guile-3.0))
-    (home-page "https://github.com/weinholt/laesare")
+    (home-page "https://gitlab.com/weinholt/laesare")
     (synopsis "R6RS Scheme library that provides a reader")
     (description
      "This is an R6RS Scheme library that provides a reader with some extra
