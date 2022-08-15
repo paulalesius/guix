@@ -7330,14 +7330,14 @@ re-use code and to avoid re-inventing the wheel.")
 (define-public libnftnl
   (package
     (name "libnftnl")
-    (version "1.2.2")
+    (version "1.2.3")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "mirror://netfilter.org/libnftnl/"
                            "libnftnl-" version ".tar.bz2"))
        (sha256
-        (base32 "02kdxp4l1ds5lpkw6rxv6f7icc70am6ik3p9z5l8v48mkm7h1z4y"))))
+        (base32 "0m82bmh8i24hwxmz7rxwxjll4904ghd2b1x1p5h8algrg6dyl5p9"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
@@ -7372,7 +7372,7 @@ used by nftables.")
 (define-public nftables
   (package
     (name "nftables")
-    (version "1.0.4")
+    (version "1.0.5")
     (source
      (origin
        (method url-fetch)
@@ -7381,7 +7381,7 @@ used by nftables.")
                   (string-append "https://www.nftables.org/projects/nftables"
                                  "/files/nftables-" version ".tar.bz2")))
        (sha256
-        (base32 "0ddsdj6zs78hndffl3iikpa1wzjxcpmr3xqcq4la71gnl7zb2zwj"))))
+        (base32 "02p59m773l2xqcb7ib7cprlpjfdnp792bahbs6c3dx1s74c4n6wd"))))
     (build-system gnu-build-system)
     (arguments `(#:configure-flags
                  '("--disable-static"

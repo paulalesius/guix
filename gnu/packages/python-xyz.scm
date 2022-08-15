@@ -4873,6 +4873,60 @@ utility, a static analysis tool (linter) for Robot Framework source files.")
     (description "Pabot is a parallel executor for Robot Framework tests.")
     (license license:asl2.0)))
 
+(define-public python-sshtunnel
+  (package
+    (name "python-sshtunnel")
+    (version "0.4.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "sshtunnel" version))
+              (sha256
+               (base32
+                "1z7rdgpp9m36ysh9pfzrn3vyiaj05bkjvcjdhj8vz0fvfjkhxjz7"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests? (invoke "pytest" "-vv" "tests")))))))
+    (propagated-inputs (list python-paramiko))
+    (native-inputs (list openssh python-pytest))
+    (home-page "https://github.com/pahaz/sshtunnel")
+    (synopsis "Python SSH tunnels library")
+    (description "@code{sshtunnel} is a Python module for easily creating SSH
+tunnels in the background, using Python.")
+    (license license:expat)))
+
+(define-public python-robotframework-sshtunnellibrary
+  (package
+    (name "python-robotframework-sshtunnellibrary")
+    (version "1.0.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/C-Squad/robotframework-sshtunnellibrary")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1vkkmkb8iql13xpbyj4hvnnmfgzqlr8rffgryp2082cadb3w7xrd"))))
+    (build-system python-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (replace 'check
+                          (lambda* (#:key tests? #:allow-other-keys)
+                            (when tests?
+                              (invoke "python" "-m" "unittest"
+                                      "discover" "-s" "test")))))))
+    (propagated-inputs (list python-robotframework python-sshtunnel))
+    (home-page "https://github.com/C-Squad/robotframework-sshtunnellibrary")
+    (synopsis "Alternative RobotFramework library for SSH tunnels")
+    (description "SSHTunnelLibrary is an alternative RobotFramework
+library (to the more official one that comes from the
+@code{robotframework-sshlibrary} package) to support SSH tunnels.")
+    (license license:asl2.0)))
+
 (define-public python-robotframework-stacktrace
   (package
     (name "python-robotframework-stacktrace")
