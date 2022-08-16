@@ -3985,26 +3985,44 @@ HMMs).")
 (define-public htseq
   (package
     (name "htseq")
-    (version "0.12.3")
+    (version "2.0.2")
+    ;; Sources on pypi do not include everything needed to run the tests.
     (source (origin
-              (method url-fetch)
-              (uri (pypi-uri "HTSeq" version))
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/htseq/htseq")
+                    (commit (string-append "release_" version))))
+              (file-name (git-file-name name version))
               (sha256
                (base32
-                "0pk41vkzxsbb5nv644325mh8akmz4zdply9r2s80dgg5b21pgp0b"))))
+                "1kbr4ydjjhizz6r5m3xd4f0wj7qnn8zs0vnzghhgaa0yhbya5r19"))))
     (build-system python-build-system)
-    (native-inputs
-     (list python-cython))
-    ;; Numpy needs to be propagated when htseq is used as a Python library.
+    (arguments
+     (list
+      #:phases
+      '(modify-phases %standard-phases
+         ;; Avoid rebuilding the extension.  Everything is built during the
+         ;; 'install phase anyway.
+         (delete 'build)
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (invoke "pytest" "-v")))))))
     (propagated-inputs
-     (list python-numpy))
-    (inputs
-     (list python-pysam python-matplotlib))
-    (home-page "https://htseq.readthedocs.io/")
-    (synopsis "Analysing high-throughput sequencing data with Python")
+     (list python-matplotlib
+           python-numpy
+           python-pysam))
+    (native-inputs
+     (list python-cython
+           python-pandas
+           python-pytest
+           python-scipy
+           swig))
+    (home-page "https://github.com/htseq")
+    (synopsis "Framework for analyzing high-throughput sequencing data")
     (description
-     "HTSeq is a Python package that provides infrastructure to process data
-from high-throughput sequencing assays.")
+     "This package provides a framework to process and analyze data from
+high-throughput sequencing (HTS) assays")
     (license license:gpl3+)))
 
 (define-public java-htsjdk
@@ -6430,6 +6448,86 @@ complexity samples.")
 Values such as sequence name, sequence description, sequence quality and the
 sequence itself can be retrieved from these databases.")
     (license license:bsd-3)))
+
+(define-public python-taggd
+  (package
+    (name "python-taggd")
+    (version "0.3.6")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/SpatialTranscriptomicsResearch/taggd")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0j19ah81z7aqrdljah9hyarp91gvgbk63pz6fz3pdpksy1yqyi6k"))
+              (modules '((guix build utils)))
+              (snippet
+               '(for-each delete-file
+                          (find-files "taggd" "\\.c$")))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      '(modify-phases %standard-phases
+         (add-after 'unpack 'disable-broken-tests
+           (lambda _
+             (substitute* "tests/taggd_demultiplex_test.py"
+               (("def test_normal_bam_run")
+                "def _disabled_test_normal_bam_run")))))))
+    (propagated-inputs
+     (list python-numpy python-pysam python-setuptools))
+    (native-inputs
+     (list python-cython))
+    (home-page "https://github.com/SpatialTranscriptomicsResearch/taggd")
+    (synopsis "Genetic barcode demultiplexing")
+    (description "This package provides TagGD barcode demultiplexing utilities
+for Spatial Transcriptomics data.")
+    (license license:bsd-3)))
+
+(define-public stpipeline
+  (package
+    (name "stpipeline")
+    (version "1.8.1")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "stpipeline" version))
+              (sha256
+               (base32
+                "0har2g42fvaqpiz66lincy86aj1hvwzds26kxhxfamvyvv4721wk"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      '(modify-phases %standard-phases
+         (add-after 'unpack 'relax-requirements
+           (lambda _
+             (substitute* "requirements.txt"
+               (("argparse.*") "")))))))
+    (propagated-inputs
+     (list htseq
+           python-cython
+           python-invoke
+           python-numpy
+           python-pandas
+           python-pympler
+           python-pysam
+           python-regex
+           python-scikit-learn
+           python-scipy
+           python-seaborn
+           python-setuptools
+           python-sqlitedict
+           python-taggd
+           samtools
+           star))
+    (home-page "https://github.com/SpatialTranscriptomicsResearch/st_pipeline")
+    (synopsis "Pipeline for spatial mapping of unique transcripts")
+    (description
+     "This package provides an automated pipeline for spatial mapping of
+unique transcripts.")
+    (license license:expat)))
 
 (define-public sra-tools
   (package
