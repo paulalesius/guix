@@ -824,6 +824,18 @@ safety and thread safety guarantees.")
          ((#:tests? _ #f)
           #f))))))
 
+(define-public rust-1.63
+  (let ((base-rust
+         (rust-bootstrapped-package
+          rust-1.62 "1.63.0"
+          "1l4rrbzhxv88pnfq94nbyb9m6lfnjwixma3mwjkmvvs2aqlq158z")))
+    (package
+      (inherit base-rust)
+      (arguments
+       (substitute-keyword-arguments (package-arguments base-rust)
+         ((#:tests? _ #f)
+          #f))))))
+
 ;;; Note: Only the latest versions of Rust are supported and tested.  The
 ;;; intermediate rusts are built for bootstrapping purposes and should not
 ;;; be relied upon.  This is to ease maintenance and reduce the time
@@ -834,7 +846,7 @@ safety and thread safety guarantees.")
   ;; Disable hidden, to allow installing the src package separately
   ;;(hidden-package
    (package
-     (inherit rust-1.62)
+     (inherit rust-1.63)
      (name "rust-src")
      (build-system copy-build-system)
      (native-inputs '())
