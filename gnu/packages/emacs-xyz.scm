@@ -18698,7 +18698,7 @@ according to a parsing expression grammar.")
 (define-public emacs-eldev
   (package
     (name "emacs-eldev")
-    (version "1.1.3")
+    (version "1.2")
     (source
      (origin
        (method git-fetch)
@@ -18707,7 +18707,7 @@ according to a parsing expression grammar.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1dgbwaar8l8nl79mlzf5g1n49f1j9yj4772yfmim9vv8ppxnzbqk"))))
+        (base32 "1dmi05ry62nszy9w6zyvzh2q5ii57vdyc7mwv3dyfhwx4hqbngs4"))))
     (build-system emacs-build-system)
     (arguments
      (list
@@ -19545,8 +19545,8 @@ never confused by comments or @code{foo-bar} matching @code{foo}.")
 (define-public emacs-crdt
   ;; XXX: Upstream does not always tag new releases.  The commit below
   ;; corresponds exactly to latest version bump.
-  (let ((commit "77be6cded0e2d24fc9c132032ae3bf7ae8ed2cf9")
-        (version "0.3.0"))
+  (let ((commit "7d8a6b13c2127c4302196030114fd6cd95fd6f49")
+        (version "0.3.1"))
     (package
       (name "emacs-crdt")
       (version version)
@@ -19558,7 +19558,7 @@ never confused by comments or @code{foo-bar} matching @code{foo}.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0irf2allz7bp696nqlgg70ma6n336bspz8794bff1s1pramrzlhz"))))
+          (base32 "0qs1pbv7skkgz9pdfq0k7sbdran1pal5ask29xf3kxdgx5qlv3x8"))))
       (build-system emacs-build-system)
       (home-page "https://code.librehq.com/qhong/crdt.el")
       (synopsis "Real-time collaborative editing environment")

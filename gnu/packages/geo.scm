@@ -217,7 +217,7 @@ OpenStreetMap written in C using eXpat, Cairo and GLib.")
 (define-public geos
   (package
     (name "geos")
-    (version "3.10.2")
+    (version "3.11.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://download.osgeo.org/geos/geos-"
@@ -225,7 +225,7 @@ OpenStreetMap written in C using eXpat, Cairo and GLib.")
                                   ".tar.bz2"))
               (sha256
                (base32
-                "05apyh6dvv15fax4xvxa0kr622h4y08w9p3274mlqsrqmjcwbfsh"))))
+                "12l59pxawyizmc4wn20dvjn7aifqwkim4ysmc78h91mayjmqravr"))))
     (build-system cmake-build-system)
     (arguments `(#:phases
                  (modify-phases %standard-phases
@@ -941,7 +941,7 @@ development.")
 (define-public gdal
   (package
     (name "gdal")
-    (version "3.5.0")
+    (version "3.5.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -949,7 +949,7 @@ development.")
                      version ".tar.gz"))
               (sha256
                (base32
-                "0h7dgjx8nk3dd17wwqm2yjnaqciyrd2mz9gcjswpcnmap09wbzrs"))
+                "1l93q7xf6qx9ck5axfkf3ygmvclxkvrjd8x00ckn7j0d0750ci3w"))
               (modules '((guix build utils)))
               (snippet
                 `(begin
@@ -1827,7 +1827,7 @@ ways, and relations) and their metadata tags.")
 (define-public libmaxminddb
   (package
     (name "libmaxminddb")
-    (version "1.4.3")
+    (version "1.6.0")
     (source
      (origin
        (method url-fetch)
@@ -1835,7 +1835,7 @@ ways, and relations) and their metadata tags.")
                            "/releases/download/" version "/"
                            "/libmaxminddb-" version ".tar.gz"))
        (sha256
-        (base32 "0fd4a4sxiiwzbd5h74wl1ijnb7xybjyybb7q41vdq3w8nk3zdzd5"))))
+        (base32 "0rw2z7rx8jzgdcgqlmc4wqrsjmiwd8vm5wvvrldy472rghcaq83n"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags
@@ -1854,14 +1854,14 @@ associated with an address.")
 (define-public python-maxminddb
   (package
     (name "python-maxminddb")
-    (version "1.5.1")
+    (version "2.2.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "maxminddb" version))
        (sha256
         (base32
-         "0y9giw81k4wdmpryr4k42w50z292mf364a6vs1vxf83ksc9ig6j4"))))
+         "1rc4a403r3b4vhmhb03gidd0fmsbvfpbf3qfcw25h4db9zn0fxz3"))))
     (build-system python-build-system)
     (arguments
      `(#:tests? #f)) ;; Tests require a copy of the maxmind database
