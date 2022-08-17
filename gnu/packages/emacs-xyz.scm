@@ -14962,6 +14962,31 @@ letter of Pinyin to Simplified/Traditional Chinese characters.")
 methods from a given list.")
     (license license:gpl3+)))
 
+(define-public emacs-mini-frame
+  (let ((commit "60838f3cab438dcbda8eaa15ab3e5d1af88910e9")
+        (revision "0"))
+    (package
+      (name "emacs-mini-frame")
+      (version (git-version "1.19" revision commit))
+      (source
+       (origin
+         (uri (git-reference
+               (url "https://github.com/muffinmad/emacs-mini-frame.git")
+               (commit commit)))
+         (method git-fetch)
+         (sha256
+          (base32 "0q01iymz657bg3mcmq7vcl8r0ypsa1pqj1p6gxs7ywx1d33lan4d"))
+         (file-name (git-file-name name version))))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/muffinmad/emacs-mini-frame")
+      (synopsis "Show minibuffer in child frame")
+      (description
+       "@dfn{mini-frame-mode} adds an advice around @code{read-from-minibuffer}
+to show the minibuffer as a child frame on top of the current frame.
+@code{find-file} and similar functions associated mini-buffers may appear at
+the center of the screen and not at the bottom.")
+      (license license:gpl3+))))
+
 (define-public emacs-posframe
   (package
     (name "emacs-posframe")
@@ -31762,7 +31787,7 @@ headlines, keywords, tables and source blocks.")
       (license license:gpl3+)))) ; License is in pyimport.el
 
 (define-public emacs-straight-el
-  (let ((commit "4517e118ee43f849f708025dbb2cf4f281793121")
+  (let ((commit "fed215348076ba9182f634e0770a175220474b5a")
         (revision "0"))
     (package
       (name "emacs-straight-el")
@@ -31772,11 +31797,11 @@ headlines, keywords, tables and source blocks.")
          (method git-fetch)
          (uri
           (git-reference
-           (url "https://github.com/raxod502/straight.el")
+           (url "https://github.com/radian-software/straight.el")
            (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0idhgh203rac9c046286gir9rq0lgnlllzj4b4hrjpd3idg9v0r8"))))
+          (base32 "0z0j670s18mp1bhrsnng0mybcbnlywarhlz7zmrf9399rr513z1x"))))
       (build-system emacs-build-system)
       (arguments
        (list
@@ -31808,7 +31833,7 @@ headlines, keywords, tables and source blocks.")
        (list git))
       (propagated-inputs
        (list emacs-magit))
-      (home-page "https://github.com/raxod502/straight.el/")
+      (home-page "https://github.com/radian-software/straight.el/")
       (synopsis "Purely functional package manager for the Emacs hacker")
       (description
        "@code{emacs-straight-el} is a purely functional package manager for the Emacs

@@ -16429,3 +16429,222 @@ alignment algorithm.  It completes MashMap with a high-performance alignment
 module capable of computing base-level alignments for very large sequences.")
     (home-page "https://github.com/ekg/wfmash")
     (license license:expat)))
+
+(define-public go-github-com-biogo-graph
+  (package
+    (name "go-github-com-biogo-graph")
+    (version "0.0.0-20150317020928-057c1989faed")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/biogo/graph")
+                    (commit (go-version->git-ref version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1kpzs5dfd5dsk4mg1g2qjz1prqd84ixhrcxxnf90hq25vxcnk7lh"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/biogo/graph"
+       #:tests? #false))      ;TODO: one of 13 tests fails for unknown reasons
+    (propagated-inputs
+     (list go-gopkg-in-check-v1))
+    (home-page "https://github.com/biogo/graph")
+    (synopsis "Undirected graph analysis for biogo")
+    (description "The package @code{graph} implements graph manipulation
+functions.")
+    (license license:bsd-3)))
+
+(define-public go-github-com-biogo-store-interval
+  (package
+    (name "go-github-com-biogo-store-interval")
+    (version "0.0.0-20201120204734-aad293a2328f")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/biogo/store")
+                    (commit (go-version->git-ref version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0skizrp1j6vgbl0g1kmh73picagqlvwckaqs0gkl6rai5lckxj8a"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/biogo/store/interval"
+       #:unpack-path "github.com/biogo/store"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1
+           go-github-com-kr-pretty))
+    (home-page "https://github.com/biogo/store")
+    (synopsis "Interval store type for biogo")
+    (description
+     "The @code{store} package provides a number of data store types that are
+useful for bioinformatic analysis.")
+    (license license:bsd-3)))
+
+(define-public go-github-com-biogo-store-kdtree
+  (package
+    (inherit go-github-com-biogo-store-interval)
+    (name "go-github-com-biogo-store-kdtree")
+    (arguments
+     '(#:import-path "github.com/biogo/store/kdtree"
+       #:unpack-path "github.com/biogo/store"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1
+           go-github-com-kr-pretty))
+    (synopsis "kdtree store type for biogo")))
+
+(define-public go-github-com-biogo-store-llrb
+  (package
+    (inherit go-github-com-biogo-store-interval)
+    (name "go-github-com-biogo-store-llrb")
+    (arguments
+     '(#:import-path "github.com/biogo/store/llrb"
+       #:unpack-path "github.com/biogo/store"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1
+           go-github-com-kr-pretty))
+    (synopsis "LLRB store for biogo")))
+
+(define-public go-github-com-biogo-store-step
+  (package
+    (inherit go-github-com-biogo-store-interval)
+    (name "go-github-com-biogo-store-step")
+    (arguments
+     '(#:import-path "github.com/biogo/store/step"
+       #:unpack-path "github.com/biogo/store"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1
+           go-github-com-kr-pretty))
+    (synopsis "Step store for biogo")))
+
+(define-public go-github-com-biogo-hts-bam
+  (package
+    (name "go-github-com-biogo-hts-bam")
+    (version "1.4.3")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/biogo/hts")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "013ga6ilc4m3hyfr3yyiva9g4vs81afhj73v2sy7r75b5zxw7lx1"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/biogo/hts/bam"
+       #:unpack-path "github.com/biogo/hts"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1))
+    (home-page "https://github.com/biogo/hts")
+    (synopsis "HTS BAM module for biogo")
+    (description "This package provides tools for handling BAM files.")
+    (license license:bsd-3)))
+
+(define-public go-github-com-biogo-hts-sam
+  (package
+    (inherit go-github-com-biogo-hts-bam)
+    (name "go-github-com-biogo-hts-sam")
+    (arguments
+     '(#:import-path "github.com/biogo/hts/sam"
+       #:unpack-path "github.com/biogo/hts"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1))
+    (synopsis "HTS SAM module for biogo")
+    (description "This package provides tools for handling SAM files.")))
+
+(define-public go-github-com-biogo-hts-tabix
+  (package
+    (inherit go-github-com-biogo-hts-bam)
+    (name "go-github-com-biogo-hts-tabix")
+    (arguments
+     '(#:import-path "github.com/biogo/hts/tabix"
+       #:unpack-path "github.com/biogo/hts"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1))
+    (synopsis "HTS Tabix module for biogo")
+    (description "This package provides tools for handling Tabix files.")))
+
+(define-public go-github-com-biogo-hts-bgzf
+  (package
+    (inherit go-github-com-biogo-hts-bam)
+    (name "go-github-com-biogo-hts-bgzf")
+    (arguments
+     '(#:import-path "github.com/biogo/hts/bgzf"
+       #:unpack-path "github.com/biogo/hts"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1))
+    (synopsis "HTS bgzf module for biogo")
+    (description "This package provides tools for handling bgzf files.")))
+
+(define-public go-github-com-biogo-hts-cram
+  (package
+    (inherit go-github-com-biogo-hts-bam)
+    (name "go-github-com-biogo-hts-cram")
+    (arguments
+     '(#:import-path "github.com/biogo/hts/cram"
+       #:unpack-path "github.com/biogo/hts"
+       #:tests? #false)) ;require network access
+    (propagated-inputs
+     (list go-gopkg-in-check-v1
+           go-github.com-ulikunitz-xz
+           go-github-com-kortschak-utter))
+    (synopsis "HTS CRAM module for biogo")
+    (description "This package provides tools for handling CRAM files.")))
+
+(define-public go-github-com-biogo-hts-csi
+  (package
+    (inherit go-github-com-biogo-hts-bam)
+    (name "go-github-com-biogo-hts-csi")
+    (arguments
+     '(#:import-path "github.com/biogo/hts/csi"
+       #:unpack-path "github.com/biogo/hts"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1))
+    (synopsis "Coordinate sorted indexing for biogo")
+    (description "This package implements CSIv1 and CSIv2 coordinate sorted
+indexing.")))
+
+(define-public go-github-com-biogo-hts-fai
+  (package
+    (inherit go-github-com-biogo-hts-bam)
+    (name "go-github-com-biogo-hts-fai")
+    (arguments
+     '(#:import-path "github.com/biogo/hts/fai"
+       #:unpack-path "github.com/biogo/hts"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1))
+    (synopsis "Fasta sequence file index handling for biogo")
+    (description "This package implements FAI fasta sequence file index
+handling.")))
+
+(define-public go-github-com-biogo-biogo
+  (package
+    (name "go-github-com-biogo-biogo")
+    (version "1.0.4")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/biogo/biogo")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0ali1mqf3dc26myv6l7wmqfr8i25461rbq3qdad8s0wi29622199"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/biogo/biogo"))
+    (propagated-inputs
+     (list go-gopkg-in-check-v1
+           go-github-com-biogo-store-interval
+           go-github-com-biogo-store-kdtree
+           go-github-com-biogo-store-llrb
+           go-github-com-biogo-store-step
+           go-github-com-biogo-hts-bam
+           go-github-com-biogo-graph))
+    (home-page "https://github.com/biogo/biogo")
+    (synopsis "Bioinformatics library for Go")
+    (description
+     "Bíogo is a bioinformatics library for the Go language.")
+    (license license:bsd-3)))
