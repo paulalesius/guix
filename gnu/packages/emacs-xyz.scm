@@ -23058,7 +23058,7 @@ source code.")
 (define-public emacs-rustic
   (package
     (name "emacs-rustic")
-    (version "3.2")
+    (version "3.3")
     (source
      (origin
        (method git-fetch)
@@ -23067,7 +23067,7 @@ source code.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "000awxvnwxg2hmhhn6yd9pnvflr91npfs2v1p5y7hcwg1d6mmvgk"))))
+        (base32 "088g6arlbq7czxyg5f31zmcm0gla7qh4vapaaskf6866yyqhizvb"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-dash
@@ -28172,7 +28172,7 @@ color.  Designed for 256-color terminals.  Comes in light and dark!")
 (define-public emacs-spacemacs-theme
   (package
     (name "emacs-spacemacs-theme")
-    (version "0.2")
+    (version "0.3")
     (source
      (origin
        (method git-fetch)
@@ -28181,7 +28181,7 @@ color.  Designed for 256-color terminals.  Comes in light and dark!")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "15l9hb8f08nkxsaj8pxbg2mip4pp2msnrl0nvlq22zg40gh7pqsn"))))
+        (base32 "1yz8xg9ni9290nly5b93djkzk9235q6k4lhb5ghs6snr0r39157n"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/nashamri/spacemacs-theme")
     (synopsis
@@ -31037,14 +31037,14 @@ work on alists, hash-table and arrays.  All functions are prefixed with
 (define-public emacs-xref
   (package
     (name "emacs-xref")
-    (version "1.4.1")
+    (version "1.5.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/xref-"
                            version ".tar"))
        (sha256
-        (base32 "1vbpplw0sngymmawi940nlqmncqznb5vp7zi0ib8v66g3y33ijrf"))))
+        (base32 "0xl6aiwkjbgs44c3wxk6s85diydm3y5lsd7znb0dhbqb7milid2d"))))
     (build-system emacs-build-system)
     (home-page "http://elpa.gnu.org/packages/xref.html")
     (synopsis "Cross-referencing commands")
