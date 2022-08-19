@@ -5739,14 +5739,14 @@ on the fly.")
                          "$(ps -p $HITCH_PID -o state= | grep -qv '^Z$')"))
                       #t)))))
     (native-inputs
-     `(("pkg-config" ,pkg-config)
+     (list pkg-config
 
-       ;; For tests.
-       ("curl" ,curl)
-       ("egrep" ,grep)
-       ("lsof" ,lsof)
-       ("procps" ,procps)
-       ("python" ,python)))
+           ;; For tests.
+           curl
+           grep
+           lsof
+           procps
+           python))
     (inputs
      (list libev openssl))
     (synopsis "Scalable TLS proxy")
@@ -5846,13 +5846,13 @@ deployments.")
   (package
     (name "varnish")
     (home-page "https://varnish-cache.org/")
-    (version "7.0.1")
+    (version "7.1.1")
     (source (origin
               (method url-fetch)
               (uri (string-append home-page "_downloads/varnish-" version ".tgz"))
               (sha256
                (base32
-                "0q265fzarz5530g8lasvfpgks8z1kq1yh7rn88bn2qfly3pmpry4"))))
+                "14512fjjzwini3fics6sib9y83s45vlrpncamixqmmg7j0jvxbrc"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags (list (string-append "LDFLAGS=-Wl,-rpath=" %output "/lib")
@@ -5913,6 +5913,8 @@ deployments.")
 reverse proxy and load balancer.  You install it in front of any server that
 speaks HTTP and configure it to cache the contents through an extensive
 configuration language.")
+    (properties
+     '((release-monitoring-url . "https://varnish-cache.org/releases/index.html")))
     (license (list license:bsd-2           ;main distribution
                    license:zlib            ;lib/libvgz/*
                    license:public-domain   ;bin/varnishncsa/as64.c, include/miniobj.h

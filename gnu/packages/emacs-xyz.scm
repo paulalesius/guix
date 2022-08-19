@@ -19545,8 +19545,8 @@ never confused by comments or @code{foo-bar} matching @code{foo}.")
 (define-public emacs-crdt
   ;; XXX: Upstream does not always tag new releases.  The commit below
   ;; corresponds exactly to latest version bump.
-  (let ((commit "7d8a6b13c2127c4302196030114fd6cd95fd6f49")
-        (version "0.3.1"))
+  (let ((commit "2feb88ea9a2589946014878790af585cad9f28fc")
+        (version "0.3.2"))
     (package
       (name "emacs-crdt")
       (version version)
@@ -19558,7 +19558,7 @@ never confused by comments or @code{foo-bar} matching @code{foo}.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0qs1pbv7skkgz9pdfq0k7sbdran1pal5ask29xf3kxdgx5qlv3x8"))))
+          (base32 "1fc98kl5qm7h5hrd70g61zzbdinnbf0zvk9rghf6w78ndp6lv7fz"))))
       (build-system emacs-build-system)
       (home-page "https://code.librehq.com/qhong/crdt.el")
       (synopsis "Real-time collaborative editing environment")
@@ -28106,7 +28106,7 @@ Emacs that integrate with major modes like Org-mode.")
 (define-public emacs-modus-themes
   (package
     (name "emacs-modus-themes")
-    (version "2.5.0")
+    (version "2.6.0")
     (source
      (origin
        (method git-fetch)
@@ -28115,7 +28115,7 @@ Emacs that integrate with major modes like Org-mode.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0ng85240zabw87ac53xnrlrafp10ns5wn6dgv9d1jxvnq40p7zqz"))))
+        (base32 "1zl1gd3jlkanjmlsxmwhqaiwyblp6kzznfjnw9cq8ah2390y9n1c"))))
     (native-inputs (list texinfo))
     (build-system emacs-build-system)
     (arguments
