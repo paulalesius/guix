@@ -352,6 +352,24 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
 ;; The current "stable" kernels. That is, the most recently released major
 ;; versions that are still supported upstream.
 
+(define-public linux-libre-5.19-version "5.19.2")
+(define-public linux-libre-5.19-gnu-revision "gnu")
+(define deblob-scripts-5.19
+  (linux-libre-deblob-scripts
+   linux-libre-5.19-version
+   linux-libre-5.19-gnu-revision
+   (base32
+    "0a4pln89nbxiniykm14kyqmnn79gfgj22dr3h94w917xhidq7gp1")
+   (base32
+    "00nxwb30vy0q0xr9lmrhqyhf06jwgf9gw14xnxzrsq8zfy35kf6d")))
+(define-public linux-libre-5.19-pristine-source
+  (let ((version linux-libre-5.19-version)
+        (hash (base32
+               "0gg63y078k886clgfq4k5n7nh2r0359ksvf8wd06rv01alghmr28")))
+   (make-linux-libre-source version
+                            (%upstream-linux-source version hash)
+                            deblob-scripts-5.19)))
+
 (define-public linux-libre-5.18-version "5.18.18")
 (define-public linux-libre-5.18-gnu-revision "gnu")
 (define deblob-scripts-5.18
@@ -364,7 +382,6 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
   (let ((version linux-libre-5.18-version)
         (hash (base32 "0as0cslwz6zdiwd5wzcjggw3qpa9hzvfmxlhy72jdhn5vk47dhy1")))
    (make-linux-libre-source version
-
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.18)))
 
@@ -489,6 +506,11 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
     (patches (append (origin-patches source)
                      patches))))
 
+(define-public linux-libre-5.19-source
+  (source-with-patches linux-libre-5.19-pristine-source
+                       (list %boot-logo-patch
+                             %linux-libre-arm-export-__sync_icache_dcache-patch)))
+
 (define-public linux-libre-5.18-source
   (source-with-patches linux-libre-5.18-pristine-source
                        (list %boot-logo-patch
@@ -602,6 +624,11 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
     (synopsis "GNU Linux-Libre kernel headers")
     (description "Headers of the Linux-Libre kernel.")
     (license license:gpl2)))
+
+(define-public linux-libre-headers-5.19
+  (make-linux-libre-headers* linux-libre-5.19-version
+                             linux-libre-5.19-gnu-revision
+                             linux-libre-5.19-source))
 
 (define-public linux-libre-headers-5.18
   (make-linux-libre-headers* linux-libre-5.18-version
@@ -924,6 +951,13 @@ It has been modified to remove all non-free binary blobs.")
 ;;; Generic kernel packages.
 ;;;
 
+(define-public linux-libre-5.19
+  (make-linux-libre* linux-libre-5.19-version
+                     linux-libre-5.19-gnu-revision
+                     linux-libre-5.19-source
+                     '("x86_64-linux" "i686-linux" "armhf-linux" "aarch64-linux" "riscv64-linux")
+                     #:configuration-file kernel-config))
+
 (define-public linux-libre-5.18
   (make-linux-libre* linux-libre-5.18-version
                      linux-libre-5.18-gnu-revision
@@ -931,11 +965,11 @@ It has been modified to remove all non-free binary blobs.")
                      '("x86_64-linux" "i686-linux" "armhf-linux" "aarch64-linux" "riscv64-linux")
                      #:configuration-file kernel-config))
 
-(define-public linux-libre-version         linux-libre-5.18-version)
-(define-public linux-libre-gnu-revision    linux-libre-5.18-gnu-revision)
-(define-public linux-libre-pristine-source linux-libre-5.18-pristine-source)
-(define-public linux-libre-source          linux-libre-5.18-source)
-(define-public linux-libre                 linux-libre-5.18)
+(define-public linux-libre-version         linux-libre-5.19-version)
+(define-public linux-libre-gnu-revision    linux-libre-5.19-gnu-revision)
+(define-public linux-libre-pristine-source linux-libre-5.19-pristine-source)
+(define-public linux-libre-source          linux-libre-5.19-source)
+(define-public linux-libre                 linux-libre-5.19)
 
 (define-public linux-libre-5.15
   (make-linux-libre* linux-libre-5.15-version
@@ -2379,7 +2413,7 @@ Zerofree requires the file system to be unmounted or mounted read-only.")
 (define-public strace
   (package
     (name "strace")
-    (version "5.18")
+    (version "5.19")
     (home-page "https://strace.io")
     (source (origin
              (method url-fetch)
@@ -2387,7 +2421,7 @@ Zerofree requires the file system to be unmounted or mounted read-only.")
                                  "/strace-" version ".tar.xz"))
              (sha256
               (base32
-               "11qi7pdm0ldycsg9qhsa50icm219mmvy16yw1ih3s9f9kakkwab0"))
+               "18zcddwbx4x79zfw93cakmqvzizk8yi4llcnsgrnykqfwv4c2gda"))
              (patches (search-patches "strace-readlink-tests.patch"))))
     (build-system gnu-build-system)
     (arguments
@@ -9410,3 +9444,4 @@ desktop.")
 directly from the kernel device and prints a device description and the events
 with the value and the symbolic name.")
     (license license:gpl2+)))
+
