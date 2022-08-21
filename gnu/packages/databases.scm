@@ -481,14 +481,14 @@ mapping from string keys to string values.")
 (define-public memcached
   (package
     (name "memcached")
-    (version "1.6.15")
+    (version "1.6.16")
     (source
      (origin
        (method url-fetch)
        (uri (string-append
              "https://memcached.org/files/memcached-" version ".tar.gz"))
        (sha256
-        (base32 "05fmds73hr71bha9gszjfp02lgyacqfyyhkgl6xysy4kchyvwyld"))))
+        (base32 "1nilmfhy8hc7zzlihnx3hmiqf7siyrpgz2g5s3r3l36xy4xsjl9h"))))
     (build-system gnu-build-system)
     (inputs
      (list libevent cyrus-sasl))
@@ -4815,9 +4815,9 @@ a Gtk.Grid Widget.")
            sqlite))
     (native-inputs (list qttools-5))
     (home-page "https://sqlitebrowser.org/")
-    (synopsis "Database browser for SQLite")
-    (description "Sqlitebrowser is a high quaility, visual, open source tool to
-create design, and edit database file compatible with SQLite.")
+    (synopsis "Visual database browser and editor for SQLite")
+    (description "Sqlitebrowser lets you create, design, and edit database files
+compatible with SQLite using a graphical user interface.")
     (license
      ;; dual license
      (list license:gpl3+

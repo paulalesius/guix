@@ -417,43 +417,36 @@ dictionary and suggesting spelling corrections.")
     (package
       (name "guile2.0-bash")
       (version (string-append "0.1.6-" revision "." (string-take commit 7)))
-      (home-page
-       "https://anonscm.debian.org/cgit/users/kaction-guest/retired/dev.guile-bash.git")
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
                       (commit commit)
-                      (url home-page)))
+                      (url "https://git.sr.ht/~kaction/guile-bash")))
                 (sha256
                  (base32
                   "097vny990wp2qpjij6a5a5gwc6fxzg5wk56inhy18iki5v6pif1p"))
                 (file-name (string-append name "-" version "-checkout"))))
       (build-system gnu-build-system)
       (arguments
-       '(#:configure-flags
-         ;; Add -I to match 'bash.pc' of Bash 4.4.
-         (list (string-append "CPPFLAGS=-I"
-                              (assoc-ref %build-inputs "bash:include")
-                              "/include/bash/include")
-
-               ;; The '.a' file is useless.
-               "--disable-static"
-
-               ;; Install 'lib/bash' as Bash 4.4 expects.
-               (string-append "--libdir=" (assoc-ref %outputs "out")
-                              "/lib/bash"))))
-      (native-inputs `(("pkg-config" ,pkg-config)
-                       ("autoconf" ,autoconf)
-                       ("automake" ,automake)
-                       ("libtool" ,libtool)
-                       ;; Gettext brings 'AC_LIB_LINKFLAGS_FROM_LIBS'.
-                       ("gettext" ,gettext-minimal)
-
-                       ;; Bash with loadable module support, for the test
-                       ;; suite.
-                       ("bash-full" ,bash)))
+       (list
+        #:configure-flags
+        #~(list (string-append "CPPFLAGS=-I" ; match bash.pc
+                               (assoc-ref %build-inputs "bash:include")
+                               "/include/bash/include")
+                ;; The '.a' file is useless.
+                "--disable-static"
+                ;; Install 'lib/bash' as Bash 4.4 expects.
+                (string-append "--libdir=" #$output "/lib/bash"))))
+      (native-inputs
+       (list autoconf
+             automake
+             bash                    ; with loadable module support, for tests
+             gettext-minimal         ; for AC_LIB_LINKFLAGS_FROM_LIBS
+             libtool
+             pkg-config))
       (inputs `(("guile" ,guile-2.0)
                 ("bash:include" ,bash "include")))
+      (home-page "https://git.sr.ht/~kaction/guile-bash")
       (synopsis "Extend Bash using Guile")
       (description
        "Guile-Bash provides a shared library and set of Guile modules,
@@ -483,19 +476,20 @@ and then run @command{scm example.scm}.")
     (inherit guile2.0-bash)
     (name "guile-bash")
     (inputs
-     `(("guile" ,guile-3.0-latest)
-       ,@(assoc-remove! (package-inputs guile2.0-bash) "guile")))
+     (modify-inputs (package-inputs guile2.0-bash)
+       (replace "guile" guile-3.0-latest)))
     (arguments
-     `(#:tests? #f
-       #:phases (modify-phases %standard-phases
-                  (add-after 'install 'install-guile
-                    (lambda* (#:key inputs outputs #:allow-other-keys)
-                      (copy-recursively
-                       (string-append (assoc-ref outputs "out")
-                                      (assoc-ref inputs "guile") "/share")
-                       (string-append (assoc-ref outputs "out") "/share"))
-                      #t)))
-       ,@(package-arguments guile2.0-bash)))))
+     (substitute-keyword-arguments (package-arguments guile2.0-bash)
+       ;; XXX The tests succeed with Guile 2.0 but fail with 3.0.
+       ((#:tests? _ #f) #f)
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-after 'install 'install-guile
+              (lambda* (#:key inputs outputs #:allow-other-keys)
+                (copy-recursively
+                 (string-append (assoc-ref outputs "out")
+                                (assoc-ref inputs "guile") "/share")
+                 (string-append (assoc-ref outputs "out") "/share"))))))))))
 
 (define-public guile-8sync
   (let ((commit "183b4f02e68279d4984e79b79e06bfcf1861fcbf") (revision "0"))
