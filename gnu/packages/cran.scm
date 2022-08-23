@@ -749,6 +749,42 @@ similar rank-based tests for equal probability distributions due to Neuhauser
 WebAssembly engine.")
     (license license:expat)))
 
+(define-public r-rvenn
+  (package
+    (name "r-rvenn")
+    (version "1.1.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (cran-uri "RVenn" version))
+       (sha256
+        (base32
+         "016m00xv59lkwm2is32v5nr4lw5a1ymdnz34r3ffflcv9bfrc6n4"))))
+    (properties `((upstream-name . "RVenn")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-ggforce
+           r-ggplot2
+           r-magrittr
+           r-pheatmap
+           r-purrr
+           r-rlang
+           r-vegan))
+    (native-inputs (list r-knitr))
+    (home-page "https://cran.r-project.org/package=RVenn")
+    (synopsis "Set operations for many sets")
+    (description
+     "The base functions for set operations in @code{R} can be used for only two
+sets.  This package @code{RVenn} provides functions for dealing with multiple sets.
+It uses @code{purr} to find the union, intersection and difference of three or
+more sets.  This package also provides functions for pairwise set operations among
+several sets.  Further, based on @code{ggplot2} and @code{ggforce}, a Venn diagram
+can be drawn for two or three sets.  For bigger data sets, a clustered heatmap
+showing the presence or absence of the elements of the sets can be drawn based on
+the @code{pheatmap} package.  Finally, enrichment test can be applied to two sets
+whether an overlap is statistically significant or not.")
+    (license license:gpl3)))
+
 (define-public r-dot
   (package
     (name "r-dot")
@@ -1060,6 +1096,65 @@ all labels and text in vector format.  This allows users to keep plots within
 the reasonable size limit without losing vector properties of the
 scale-sensitive information.")
     (license license:expat)))
+
+(define-public r-ggvenn
+  (package
+    (name "r-ggvenn")
+    (version "0.1.9")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "ggvenn" version))
+              (sha256
+               (base32
+                "0bm52j3idchignp6nrw7c76jlbfkjf5zng258957vq019vx9qxrq"))))
+    (properties `((upstream-name . "ggvenn")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-dplyr r-ggplot2))
+    (home-page "https://cran.r-project.org/package=ggvenn")
+    (synopsis "Draw Venn diagram with ggplot2")
+    (description
+     "This package offers an easy to use way to draw a Venn diagram with
+@code{ggplot2}.")
+    (license license:expat)))
+
+(define-public r-ggvenndiagram
+  (package
+    (name "r-ggvenndiagram")
+    (version "1.2.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (cran-uri "ggVennDiagram" version))
+       (sha256
+        (base32
+         "1mjs488npnxd53nsw936iw2vzv7z38h8d02pm4lwrz4i83jg3www"))))
+    (properties `((upstream-name . "ggVennDiagram")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-dplyr
+           r-ggplot2
+           r-magrittr
+           r-plotly
+           r-purrr
+           r-rvenn
+           r-sf
+           r-stringr
+           r-tibble))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/gaospecial/ggVennDiagram")
+    (synopsis "Implementention of the Venn diagram using ggplot2")
+    (description
+     "This package implements easy-to-use functions to generate 2-7 sets Venn
+plot in publication quality.  @code{ggVennDiagram} plot Venn using
+well-defined geometry dataset and @code{ggplot2}.  The shapes of 2-4 sets Venn
+use circles and ellipses, while the shapes of 4-7 sets Venn use irregular
+polygons (4 has both forms), which are developed and imported from another
+package @code{venn}.  We provide internal functions to integrate shape data
+with user provided sets data, and calculated the geometry of every
+regions/intersections of them, then separately plot Venn in three components:
+set edges, set labels, and regions.  From version 1.0, it is possible to
+customize these components as you demand in ordinary @code{ggplot2} grammar.")
+    (license license:gpl3)))
 
 (define-public r-lmds
   (package
@@ -1482,6 +1577,28 @@ with default R plot functions.")
 qualitative palettes with many (20-30 or more) colors.  See Coombes and
 colleagues (2019) @url{https://doi:10.18637/jss.v090.c01}.")
     (license license:asl2.0)))
+
+(define-public r-polylabelr
+  (package
+    (name "r-polylabelr")
+    (version "0.2.0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "polylabelr" version))
+              (sha256
+               (base32
+                "01b2v0l5g8nxwbd6nwqv8ahypgh6gfhd4qabg75brlj7z1iyfzf2"))))
+    (properties `((upstream-name . "polylabelr")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-rcpp))
+    (home-page "https://github.com/jolars/polylabelr")
+    (synopsis "Finding pole of inaccessibility (visual center) of a polygon")
+    (description
+     "This package provides a wrapper around the @code{C++} library @code{
+polylabel} from @code{Mapbox}, providing an efficient routine for finding the
+approximate pole of inaccessibility of a polygon, which usually serves as an
+excellent candidate for labeling of a polygon.")
+    (license license:expat)))
 
 (define-public r-poorman
   (package
@@ -3512,6 +3629,24 @@ coordinates.")
   requires proper coordinate scaling.
 @end enumerate\n")
     (license license:gpl2+)))
+
+(define-public r-gensa
+  (package
+    (name "r-gensa")
+    (version "1.1.7")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "GenSA" version))
+              (sha256
+               (base32
+                "03xqwxm7v7rnihx730a4p65dfwhjh4345r3d78y0qxxplk8d76cx"))))
+    (properties `((upstream-name . "GenSA")))
+    (build-system r-build-system)
+    (home-page "https://cran.r-project.org/package=GenSA")
+    (synopsis "Generalized simulated annealing")
+    (description "This package performs search for the global minimum of a very
+complex non-linear objective function with a very large number of optima.")
+    (license license:gpl2)))
 
 (define-public r-geosphere
   (package

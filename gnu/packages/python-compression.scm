@@ -195,28 +195,27 @@ Python.")
 (define-public python-lzo
   (package
     (name "python-lzo")
-    (version "1.12")
+    (version "1.14")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "python-lzo" version))
        (sha256
-        (base32
-         "0iakqgd51n1cd7r3lpdylm2rgbmd16y74cra9kcapwg84mlf9a4p"))))
+        (base32 "0315nq6r39n51n8qqamb7xv0ib0qrh76q7g3a1977172mbndijw3"))))
     (build-system python-build-system)
     (arguments
-     `(#:test-target "check"
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-setuppy
-           (lambda _
-             (substitute* "setup.py"
-               (("include_dirs.append\\(.*\\)")
-                (string-append "include_dirs.append('"
-                               (assoc-ref %build-inputs "lzo")
-                               "/include/lzo"
-                               "')")))
-             #t)))))
+     (list
+      #:test-target "check"
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-setuppy
+            (lambda _
+              (substitute* "setup.py"
+                (("include_dirs.append\\(.*\\)")
+                 (string-append "include_dirs.append('"
+                                #$(this-package-input "lzo")
+                                "/include/lzo"
+                                "')"))))))))
     (inputs
      (list lzo))
     (home-page "https://github.com/jd-boyd/python-lzo")

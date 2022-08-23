@@ -1221,6 +1221,27 @@ demonstration purposes in the @code{AneuFinder} package.")
 from Illumina 450k methylation arrays.")
     (license license:artistic2.0)))
 
+(define-public r-bladderbatch
+  (package
+    (name "r-bladderbatch")
+    (version "1.34.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "bladderbatch" version
+                                     'experiment))
+              (sha256
+               (base32
+                "1dpbaqsqizyi99r0imf5m4lndhhrkyiaqii9bi8rp18fjbjdd72k"))))
+    (properties `((upstream-name . "bladderbatch")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-biobase))
+    (home-page "https://bioconductor.org/packages/bladderbatch")
+    (synopsis "Bladder gene expression data illustrating batch effects")
+    (description
+     "This package contains microarray gene expression data on 57 bladder samples from
+5 batches.  The data are used as an illustrative example for the sva package.")
+    (license license:artistic2.0)))
+
 (define-public r-biscuiteerdata
   (package
     (name "r-biscuiteerdata")
@@ -1540,6 +1561,30 @@ data.  It also links assay barcodes with patient identifiers, enabling
 harmonized subsetting of rows (features) and columns (patients / samples)
 across the entire multi-'omics experiment.")
     (license license:artistic2.0)))
+
+(define-public r-parathyroidse
+  (package
+    (name "r-parathyroidse")
+    (version "1.34.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "parathyroidSE" version
+                                     'experiment))
+              (sha256
+               (base32
+                "1h33x55c4gbzmh085skqif04wdcvjp2l9fm55qzwws27kwd30c16"))))
+    (properties `((upstream-name . "parathyroidSE")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-summarizedexperiment))
+    (home-page "https://bioconductor.org/packages/parathyroidSE")
+    (synopsis "RangedSummarizedExperiment for RNA-Seq of parathyroid tumors")
+    (description
+     "This package provides @code{RangedSummarizedExperiment} objects of read
+counts in genes and exonic parts for paired-end RNA-Seq data from experiments on
+primary cultures of parathyroid tumors.  The sequencing was performed on tumor
+cultures from 4 patients at 2 time points over 3 conditions (DPN, OHT and control).")
+    ;; The author(s) mentions only LGPL without any specific version.
+    (license license:lgpl2.1+)))
 
 (define-public r-tcgabiolinksgui-data
   (package
@@ -5017,6 +5062,45 @@ proteowizard library for mzML and mzIdentML.  The netCDF reading code has
 previously been used in XCMS.")
     (license license:artistic2.0)))
 
+(define-public r-organism-dplyr
+  (package
+    (name "r-organism-dplyr")
+    (version "1.24.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (bioconductor-uri "Organism.dplyr" version))
+       (sha256
+        (base32
+         "0j29f85d66c45ww3417xx376vpz0mmvga5n7h2cl1sd4h70b55as"))))
+    (properties `((upstream-name . "Organism.dplyr")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-annotationdbi
+           r-annotationfilter
+           r-biocfilecache
+           r-dbi
+           r-dbplyr
+           r-dplyr
+           r-genomeinfodb
+           r-genomicfeatures
+           r-genomicranges
+           r-iranges
+           r-rlang
+           r-rsqlite
+           r-s4vectors
+           r-tibble))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/Organism.dplyr")
+    (synopsis "Dplyr-based access to Bioconductor annotation resources")
+    (description
+     "This package provides an alternative interface to Bioconductor @code{
+annotation} resources, in particular the gene identifier mapping functionality
+of the @code{org} packages (e.g., @code{org.Hs.eg.db}) and the genome coordinate
+functionality of the @code{TxDb} packages (e.g.,
+@code{TxDb.Hsapiens.UCSC.hg38.knownGene}).")
+    (license license:artistic2.0)))
+
 (define-public r-organismdbi
   (package
     (name "r-organismdbi")
@@ -5048,6 +5132,61 @@ previously been used in XCMS.")
 annotation packages each of which has its own schema by taking advantage of
 the fact that each of these packages implements a select methods.")
     (license license:artistic2.0)))
+
+(define-public r-pcaexplorer
+  (package
+    (name "r-pcaexplorer")
+    (version "2.22.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (bioconductor-uri "pcaExplorer" version))
+       (sha256
+        (base32
+         "0xkafpi6y5n8hljdaj183hd5z4ik7lpbklg2cbx1hwfz4n4hh1bl"))))
+    (properties `((upstream-name . "pcaExplorer")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-annotationdbi
+           r-base64enc
+           r-biomart
+           r-deseq2
+           r-dt
+           r-genefilter
+           r-genomicranges
+           r-ggplot2
+           r-ggrepel
+           r-go-db
+           r-gostats
+           r-heatmaply
+           r-iranges
+           r-knitr
+           r-limma
+           r-nmf
+           r-pheatmap
+           r-plotly
+           r-plyr
+           r-rmarkdown
+           r-s4vectors
+           r-scales
+           r-shiny
+           r-shinyace
+           r-shinybs
+           r-shinydashboard
+           r-summarizedexperiment
+           r-threejs
+           r-tidyr
+           r-topgo))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/federicomarini/pcaExplorer")
+    (synopsis
+     "Interactive Visualization of RNA-seq Data Using a Principal Components Approach")
+    (description
+     "This package provides functionality for interactive visualization of RNA-seq
+datasets based on Principal Components Analysis.  The methods provided allow for
+quick information extraction and effective data exploration.  A Shiny
+application encapsulates the whole analysis.")
+    (license license:expat)))
 
 (define-public r-pcamethods
   (package

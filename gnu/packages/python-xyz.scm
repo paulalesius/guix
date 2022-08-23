@@ -1211,13 +1211,13 @@ iotop, uptime, pidof, tty, taskset, pmap.")
 (define-public python-shapely
   (package
     (name "python-shapely")
-    (version "1.8.2")
+    (version "1.8.4")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "Shapely" version))
        (sha256
-        (base32 "1dpbjw0w2l1r9s5drmi4cyr1yd5h2a4m9vip7qhy7mbg03azjajp"))))
+        (base32 "130rqd0czi128wm5pdn47v4m6czxd7pkzanbya8q48gsm8ffb5d1"))))
     (build-system python-build-system)
     (native-inputs
      (list python-cython python-matplotlib python-pytest
@@ -1765,6 +1765,26 @@ to users of that module.")
 client-side scripting and application development around the NETCONF
 protocol.")
     (license license:asl2.0)))
+
+(define-public python-ncls
+  (package
+    (name "python-ncls")
+    (version "0.0.65")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "ncls" version))
+              (sha256
+               (base32
+                "1wx06xqknd2r98w8z93f47g5dpxzn92kamhj8vkq0nj569hf7cg1"))))
+    (build-system python-build-system)
+    (propagated-inputs (list python-numpy))
+    (home-page "https://github.com/endrebak/ncls")
+    (synopsis "Nested containment list data structure")
+    (description
+     "This package provides a wrapper for the nested containment list data
+structure.  It is a static interval-tree that is fast for both construction
+and lookups.")
+    (license license:bsd-3)))
 
 (define-public python-license-expression
   (package
@@ -8337,8 +8357,11 @@ module with a few extra procedures.")
               (lambda* (#:key tests? #:allow-other-keys)
                 (when tests?
                   ;; Do not test the myproject.toml build as it tries to pull
-                  ;; dependencies from the Internet.
-                  (invoke "pytest" "-vv" "-k" "not project"))))))))
+                  ;; dependencies from the Internet.  Do not run a test that
+                  ;; tries to emulate a broken proprietary CI set-up, fails
+                  ;; to do so correctly, and then throws an error about it.
+                  (invoke "pytest" "-vv" "-k"
+                          "not project and not test_function_throttled"))))))))
     (native-inputs
      (modify-inputs
          (package-native-inputs python-jaraco-functools-bootstrap)
@@ -30500,7 +30523,7 @@ window managers.")
 (define-public i3-autotiling
   (package
     (name "i3-autotiling")
-    (version "1.6")
+    (version "1.6.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -30509,7 +30532,7 @@ window managers.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1hjlvg7095s322gb43r9g7mqlsy3pj13l827jpnbn5x0918rq9rr"))))
+                "1m8k3g83n2n1xws89dh20f3sy6753wvip9dzf6bssv2cz9ll7406"))))
     (build-system python-build-system)
     (arguments (list #:tests? #f))      ;no tests
     (native-inputs (list python-wheel))

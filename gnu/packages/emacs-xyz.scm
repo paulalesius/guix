@@ -250,7 +250,7 @@
 (define-public emacs-geiser
   (package
     (name "emacs-geiser")
-    (version "0.23.2")
+    (version "0.25.1")
     (source
      (origin
        (method git-fetch)
@@ -259,7 +259,7 @@
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0p5cwx0xwva4ajgj8hnrk8bx6n3hv1z7aqs4zivp81crnq4077yw"))))
+        (base32 "0qm43qkf0rpcbsf5wb7b51m79jvn2fkl19f49acbzjpavx66vn3n"))))
     (build-system emacs-build-system)
     (arguments
      '(#:phases
@@ -2961,7 +2961,7 @@ or XEmacs.")
 (define-public emacs-autothemer
   (package
     (name "emacs-autothemer")
-    (version "0.2.5")
+    (version "0.2.6")
     (source
      (origin
        (method git-fetch)
@@ -2971,7 +2971,7 @@ or XEmacs.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1rwz8hdmycmvak1w5sriwf1pwahham77vyab6jngdw8x9ngxabnx"))))
+         "1zrm09lzl5s3l0rnzihj9azj1n1l214r6lrmp9yqj7sm7y1xjf0c"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-dash))
@@ -19005,6 +19005,36 @@ With Embark, it also makes available at-point actions in Org
 citations.")
     (license license:gpl3+)))
 
+(define-public emacs-citar-org-roam
+  (package
+    (name "emacs-citar-org-roam")
+    (version "0.3")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/emacs-citar/citar-org-roam")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1ldfs7g7ixnrwj23draiph4vy6xq7qgw18vhi7vbw6wvkh9fcv9r"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-org-roam emacs-citar))
+    (home-page "https://github.com/emacs-citar/citar-org-roam")
+    (synopsis "Emacs pacakge to provide tighter Citar and Org-Roam integration")
+    (description "\
+Out-of-box, Citar provides default support for file-per-note bibliographic
+notes that are compatible with Org-Roam v2.  This package integrates directly
+with the Org-Roam database, and provides the following additional features to
+Citar note support:
+@itemize
+@item multiple references per note
+@item multiple reference notes per file
+@item ability to query note citations by reference
+@item ``live'' updating of Citar UI for presence of notes
+@end itemize")
+    (license license:gpl3)))
+
 (define-public emacs-helm-bibtex
   (let ((commit "aa775340ba691d2322948bfdc6a88158568a1399")
         (revision "3"))
@@ -25114,7 +25144,7 @@ constant expressions.")
 (define-public emacs-dockerfile-mode
   (package
     (name "emacs-dockerfile-mode")
-    (version "1.6")
+    (version "1.7")
     (source
      (origin
        (method git-fetch)
@@ -25124,7 +25154,7 @@ constant expressions.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0nmybfc9qch0jng06qgs2xb41dl9v52ckc9nc20d7hv3x36w555x"))))
+         "0hmzwh8m72rj6cwaxfypnv3fmjrs11iqr15vsdw1rw7m55xi675f"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-s))
