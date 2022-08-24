@@ -786,16 +786,67 @@ safety and thread safety guarantees.")
                             `("procps" ,procps)
                             (package-native-inputs base-rust))))))
 
+(define rust-1.58
+  (rust-bootstrapped-package
+   rust-1.57 "1.58.1" "1iq7kj16qfpkx8gvw50d8rf7glbm6s0pj2y1qkrz7mi56vfsyfd8"))
+
+(define rust-1.59
+  (rust-bootstrapped-package
+   rust-1.58 "1.59.0" "1yc5bwcbmbwyvpfq7zvra78l0r8y3lbv60kbr62fzz2vx2pfxj57"))
+
+(define rust-1.60
+  (rust-bootstrapped-package
+   rust-1.59 "1.60.0" "1drqr0a26x1rb2w3kj0i6abhgbs3jx5qqkrcwbwdlx7n3inq5ji0"))
+
+(define rust-1.61
+  (let ((base-rust
+         (rust-bootstrapped-package
+          rust-1.60 "1.61.0"
+          "1vfs05hkf9ilk19b2vahqn8l6k17pl9nc1ky9kgspaascx8l62xd")))
+    (package
+      (inherit base-rust)
+      (arguments
+       (substitute-keyword-arguments (package-arguments base-rust)
+         ((#:tests? _ #f)
+          #f))))))
+
+;; Latest needs to be public so it can be included in a profile, while just "rust" is
+;; intended to build system artifacts.
+(define-public rust-1.62
+  (let ((base-rust
+         (rust-bootstrapped-package
+          rust-1.61 "1.62.1"
+          "0gqkg34ic77dcvsz69qbdng6g3zfhl6hnhx7ha1mjkyrzipvxb3j")))
+    (package
+      (inherit base-rust)
+      (arguments
+       (substitute-keyword-arguments (package-arguments base-rust)
+         ((#:tests? _ #f)
+          #f))))))
+
+(define-public rust-1.63
+  (let ((base-rust
+         (rust-bootstrapped-package
+          rust-1.62 "1.63.0"
+          "1l4rrbzhxv88pnfq94nbyb9m6lfnjwixma3mwjkmvvs2aqlq158z")))
+    (package
+      (inherit base-rust)
+      (arguments
+       (substitute-keyword-arguments (package-arguments base-rust)
+         ((#:tests? _ #f)
+          #f))))))
+
 ;;; Note: Only the latest versions of Rust are supported and tested.  The
 ;;; intermediate rusts are built for bootstrapping purposes and should not
 ;;; be relied upon.  This is to ease maintenance and reduce the time
 ;;; required to build the full Rust bootstrap chain.
-(define-public rust rust-1.57)
+(define-public rust rust-1.61)
 
 (define-public rust-src
-  (hidden-package
+  ;; Disable hidden, to allow installing the src package separately
+  ;;(hidden-package
    (package
-     (inherit rust)
+     (inherit rust-1.63)
      (name "rust-src")
      (build-system copy-build-system)
      (native-inputs '())
@@ -808,4 +859,6 @@ safety and thread safety guarantees.")
           ("src" "lib/rustlib/src/rust/src"))))
      (synopsis "Source code for the Rust standard library")
      (description "This package provide source code for the Rust standard
-library, only use by rust-analyzer, make rust-analyzer out of the box."))))
+library, only use by rust-analyzer, make rust-analyzer out of the box.")))
+;;) /hidden-package
+
