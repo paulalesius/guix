@@ -1567,7 +1567,13 @@ support for Rust.")
         ("rust-serde" ,rust-serde-1)
         ("rust-serde-derive" ,rust-serde-derive-1)
         ("rust-serde-json" ,rust-serde-json-1)
-        ("rust-regex" ,rust-regex-1))))
+        ("rust-regex" ,rust-regex-1))
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'build 'fix-cargo-toml
+             (lambda _
+               (delete-file "Cargo.toml")
+               (rename-file "Cargo.toml.orig" "Cargo.toml"))))))
     (native-inputs
      (list pkg-config))
     (inputs
@@ -1790,3 +1796,4 @@ It will then write @code{fixup!} commits for each of those changes.")
 track of the directories you use most frequently, and uses a ranking algorithm
 to navigate to the best match.")
     (license license:expat)))
+
