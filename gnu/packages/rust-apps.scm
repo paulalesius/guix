@@ -497,6 +497,10 @@ also knows about symlinks, extended attributes, and Git.")
                (setenv "JEMALLOC_OVERRIDE"
                        (string-append jemalloc "/lib/libjemalloc.so")))
              #t))
+         (add-after 'build 'fix-cargo-toml
+             (lambda _
+               (delete-file "Cargo.toml")
+               (rename-file "Cargo.toml.orig" "Cargo.toml")))
          (add-after 'install 'install-extra
            (lambda* (#:key outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
