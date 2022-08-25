@@ -758,7 +758,11 @@ bar.  It is also compatible with sway.")
                 (install-file manpage (string-append
                                        (assoc-ref outputs "out")
                                        "/share/man/man1"))))
-             #t)))
+             #t))
+         (add-after 'build 'fix-cargo-toml
+           (lambda _
+            (delete-file "Cargo.toml")
+            (rename-file "Cargo.toml.orig" "Cargo.toml"))))
        #:features '("pcre2")))
     (native-inputs
      (list asciidoc pcre2 pkg-config))
