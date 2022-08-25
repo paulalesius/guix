@@ -642,6 +642,25 @@ outlines, manage all your contacts, your windows and frames, and search across
 buffers, directory trees, or the web.")
     (license license:gpl3+)))
 
+(define-public emacs-vlf
+  (package
+    (name "emacs-vlf")
+    (version "1.7.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://elpa.gnu.org/packages/"
+                           "vlf-" version ".tar"))
+       (sha256
+        (base32 "0hpri19z6b7dqmrj5ckp8sf0m0l72lkgahqzvfmwhgpgv2p81bny"))))
+    (build-system emacs-build-system)
+    (home-page "https://github.com/m00natic/vlfi/")
+    (synopsis "View large files in Emacs")
+    (description
+"Vlf is an Emacs minor mode that allows viewing, editing, searching and
+comparing large files in batches.")
+    (license license:gpl2+)))
+
 (define-public emacs-hg-histedit
   ;; From 2021-03-02.
   ;; No releases available.
@@ -9086,6 +9105,28 @@ Emacs completion function completing-read, which allows quickly selecting from a
 list of candidates.")
     (license license:gpl3+)))
 
+(define-public emacs-consult-bibtex
+  ;; XXX: Upstream contains a single commit, which matches the version below.
+  (let ((commit "2f870d6eefb54a53216d90a82cff0ff97ba54725"))
+    (package
+      (name "emacs-consult-bibtex")
+      (version "0.1")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mohkale/consult-bibtex")
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "0jxjvpg3j8zk77sfhyy27fd1zbj2zz7xayavan3hhj4853q92kwq"))))
+      (build-system emacs-build-system)
+      (inputs (list emacs-consult emacs-embark emacs-org-roam-bibtex))
+      (home-page "https://github.com/mohkale/consult-bibtex")
+      (synopsis "Consulting-read interface for BibTeX completion")
+      (description "This package provides a read interface for BibTeX
+completion using Consult.")
+      (license license:gpl3+))))
+
 (define-public emacs-consult-dir
   (package
     (name "emacs-consult-dir")
@@ -9154,6 +9195,31 @@ and present results either as single emails or full trees.")
 provides a front-end interface for the workspace/symbols LSP procedure
 call.")
    (license license:gpl3+)))
+
+(define-public emacs-consult-yasnippet
+  (let ((commit "ae0450889484f23dc4ec37518852a2c61b89f184")
+        (revision "0"))
+    (package
+      (name "emacs-consult-yasnippet")
+      (version (git-version "0.2" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/mohkale/consult-yasnippet")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "13hmmsnmh32vafws61sckzzy354rq0nslqpyzhw97iwvn0fpsa35"))))
+      (build-system emacs-build-system)
+      (propagated-inputs (list emacs-consult emacs-yasnippet))
+      (home-page "https://github.com/mohkale/consult-yasnippet")
+      (synopsis "Consulting-read interface for Yasnippet")
+      (description
+       "This package allows you to expand Yasnippet' snippets through
+a completing-read interface.  It supports previewing the current snippet
+expansion and overwriting the marked region with a new snippet completion.")
+      (license license:gpl3+))))
 
 (define-public emacs-marginalia
   (package
@@ -10503,14 +10569,14 @@ as Fuseki or DBPedia.")
      (origin
        (method git-fetch)
        (uri (git-reference
-              (url "https://github.com/technomancy/better-defaults")
+              (url "https://git.sr.ht/~technomancy/better-defaults")
               (commit version)))
        (file-name (git-file-name name version))
        (sha256
         (base32
          "1rxznx2l0cdpiz8mad8s6q17m1fngpgb1cki7ch6yh18r3qz8ysr"))))
     (build-system emacs-build-system)
-    (home-page "https://github.com/technomancy/better-defaults")
+    (home-page "https://git.sr.ht/~technomancy/better-defaults")
     (synopsis "Better defaults for Emacs")
     (description
      "Better defaults attempts to address the most obvious deficiencies of the
@@ -13621,7 +13687,7 @@ you to deal with multiple log levels.")
 (define-public emacs-logos
   (package
     (name "emacs-logos")
-    (version "0.3.1")
+    (version "0.4.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -13630,7 +13696,7 @@ you to deal with multiple log levels.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1xhnhaxmjqdv0bbh22gj9ak83hha8d59q64b6aa4rynrgcyajk45"))))
+                "1f40h8kbmza2rgmz84rgwbb4bwqkbfxnc3sc7gqshvxdkz3flbb7"))))
     (native-inputs (list texinfo))
     (build-system emacs-build-system)
     (arguments
@@ -19388,7 +19454,7 @@ navigate and display hierarchy structures.")
 (define-public emacs-pulsar
   (package
     (name "emacs-pulsar")
-    (version "0.3.0")
+    (version "0.4.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -19397,7 +19463,7 @@ navigate and display hierarchy structures.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "09s1r9zqc28g75jjxajdm34ni4m7gynh0xsffy5d60c50igiqa94"))))
+                "05ig8p3y5k20w4xy0ahaml9z0i0xyw6fkypzvz0mjpldhxl7dbxd"))))
     (native-inputs (list texinfo))
     (build-system emacs-build-system)
     (arguments
@@ -28017,6 +28083,29 @@ It can also be useful on Unix-like platforms to delay having to enter your
 passphrase until the first time you push to a remote.")
     (license license:gpl3+)))
 
+(define-public emacs-super-save
+  (package
+    (name "emacs-super-save")
+    (version "0.3.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/bbatsov/super-save")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "066fyg4r4pksyandpd7s53hagpvm2rw90q5ks4jlpgy7x00hw09l"))))
+    (build-system emacs-build-system)
+    (home-page "https://github.com/bbatsov/super-save")
+    (synopsis "Auto-save buffers, based on your activity")
+    (description "Super-save auto-saves your buffers, when certain events
+happen, e.g., when you switch between buffers or when an Emacs frame loses
+focus.  You can think of it as both something that augments and replaces the
+standard Auto-save mode.")
+    (license license:gpl3+)))
+
 (define-public emacs-tao-theme
   (let ((commit "468ee4f6ba7afb9dbfc8855ae2c333cb16ca4408")
         (revision "1"))
@@ -29485,6 +29574,27 @@ mercury-mode provided by Emacs as a wrapper around prolog-mode.")
 a text quoting style that partially boxes in the left hand side of an area of
 text, such a marking style might be used to show externally included text or
 example code.")
+    (license license:gpl3+)))
+
+(define-public emacs-buffer-env
+  (package
+    (name "emacs-buffer-env")
+    (version "0.4")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://elpa.gnu.org/packages/buffer-env-"
+                                  version ".tar"))
+              (sha256
+               (base32
+                "0y8ik87dqldhn6q631zp2ln9z5byqgm9icrvr4xrdx6g8mr9c56z"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-compat))
+    (home-page "https://github.com/astoff/buffer-env")
+    (synopsis "Create buffer-local process environments")
+    (description "This package creates buffer-local environments using scripts
+similar to Direnv.  This allows Emacs to call the correct version of external
+programs such as linters, compilers, and language servers on a per-project
+basis.")
     (license license:gpl3+)))
 
 (define-public emacs-buffer-move
@@ -31980,6 +32090,53 @@ scrolling, and they even don't go away when switching buffer, but you
 can bind a popon to a specific buffer to only show on that buffer.")
       (license license:gpl3+))))
 
+(define-public emacs-consult-lsp
+  (package
+    (name "emacs-consult-lsp")
+    (version "1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/gagbo/consult-lsp")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "14dyclspkf1a34nvjj800ckz1phsizq07ps8k4x0ah6ik0hfhy1w"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-consult emacs-lsp-mode emacs-f))
+    (home-page "https://github.com/gagbo/consult-lsp/")
+    (synopsis "LSP-mode and consult helping each other")
+    (description
+"@code{emacs-consult-lsp} provides helpers for interactively selecting LSP
+workspace diagnostics, symbols, and file symbols from @{emacs-lsp-mode}
+by leveraging @code{emacs-consult} APIs.")
+    (license license:expat)))
+
+(define-public emacs-pdb-capf
+  (let ((commit "31602ccab53aa7dcf26a1af222c7da2bcc1390ed")
+        (revision "0"))
+    (package
+      (name "emacs-pdb-capf")
+      (version (git-version "1.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://github.com/muffinmad/emacs-pdb-capf")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0x2pg03csf25vj8y2zb5sv493dk3n0s4xbkihii2mzhkx82vgpxg"))))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/muffinmad/emacs-pdb-capf")
+      (synopsis "Completion-at-point function for pdb")
+      (description
+"@code{emacs-pdb-capf} provides a @code{completion-at-point} function
+for pdb allowing completion in a @code{*gud-pdb*} buffer.")
+      (license license:gpl3+))))
+
 (define-public emacs-bitbake-modes
   (package
    (name "emacs-bitbake-modes")
@@ -32021,4 +32178,28 @@ projects.")
      "Vundo (visual undo) displays the undo history as a tree and lets you move in the
 tree to go back to previous buffer states.  To use vundo, type @kbd{M-x vundo RET} in
 the buffer you want to undo.  An undo tree buffer should pop up.")
+    (license license:gpl3+)))
+
+(define-public emacs-vertico-posframe
+  (package
+    (name "emacs-vertico-posframe")
+    (version "0.5.4")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://elpa.gnu.org/packages/vertico-posframe-" version
+                    ".tar"))
+              (sha256
+               (base32
+                "19lx6p06wkwfivxgswdljdsh9bgcd1b9zkzx426w3pwicdk0cvgg"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-posframe emacs-vertico))
+    (home-page "https://github.com/tumashu/vertico-posframe")
+    (synopsis "Pop up a frame at point to show vertical completion UI")
+    (description
+     "Vertico is an Emacs package that provides a vertical completion UI based
+on the default completion system.  Posframe is an Emacs package that provides
+a way to pop up a frame at point.  Vertico-posframe is an Emacs package and
+a Vertico extension which provides a way to pop up a frame at point to show
+a vertical completion UI.")
     (license license:gpl3+)))

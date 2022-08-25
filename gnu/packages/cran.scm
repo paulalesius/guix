@@ -116,6 +116,35 @@
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg))
 
+(define-public r-aer
+  (package
+    (name "r-aer")
+    (version "1.2-10")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "AER" version))
+              (sha256
+               (base32
+                "1p6vxr0220lim5i4gwsvphqrfd65zbs8h3qydz4gipca9asmy2k5"))))
+    (properties `((upstream-name . "AER")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-car
+           r-formula
+           r-lmtest
+           r-sandwich
+           r-survival
+           r-zoo))
+    (home-page "https://cran.r-project.org/package=AER")
+    (synopsis "Applied econometrics with R")
+    (description
+     "This package provides functions, data sets, examples, demos, and
+vignettes for the book Christian Kleiber and Achim Zeileis (2008), Applied
+Econometrics with R, Springer-Verlag, New York.  ISBN 978-0-387-77316-2. (See
+the vignette \"AER\" for a package overview.)")
+    ;; Either version of the GPL
+    (license (list license:gpl2 license:gpl3))))
+
 (define-public r-afpt
   (package
     (name "r-afpt")
@@ -392,6 +421,28 @@ Gaussian quadrature for a numerical solution.")
      "This package provides tools to calculate the Earth Mover's
 Distance (EMD).")
     (license license:expat)))
+
+(define-public r-glmpca
+  (package
+    (name "r-glmpca")
+    (version "0.2.0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "glmpca" version))
+              (sha256
+               (base32
+                "02xjf0gg52925hw9nw2j0znfmzfzfwbv0fxjl9d2fy9j63drr2h4"))))
+    (properties `((upstream-name . "glmpca")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-mass))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/willtownes/glmpca")
+    (synopsis "Dimension Reduction of Non-Normally Distributed Data")
+    (description
+     "This package implements a generalized version of principal components
+analysis (GLM-PCA) for dimension reduction of non-normally distributed data
+such as counts or binary matrices.")
+    (license license:lgpl3+)))
 
 (define-public r-googledrive
   (package
@@ -6528,6 +6579,27 @@ Analysis} (ICA) using various algorithms: FastICA,
 Information-Maximization (Infomax), and @dfn{Joint Approximate Diagonalization
 of Eigenmatrices} (JADE).")
     (license license:gpl2+)))
+
+(define-public r-ips
+  (package
+    (name "r-ips")
+    (version "0.0.11")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "ips" version))
+              (sha256
+               (base32
+                "02jxanfhsjrabj33nwjv71vdc87hiyzikyqrfdj9ix6dky6lm199"))))
+    (properties `((upstream-name . "ips")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-ape r-phangorn r-plyr r-seqinr r-xml))
+    (home-page "https://cran.r-project.org/package=ips")
+    (synopsis "Interfaces to phylogenetic software in R")
+    (description
+     "This package provides functions that wrap popular phylogenetic software
+for sequence alignment, masking of sequence alignments, and estimation of
+phylogenies and ancestral character states.")
+    (license license:gpl3)))
 
 (define-public r-dtw
   (package

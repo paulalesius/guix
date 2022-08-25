@@ -18194,9 +18194,17 @@ JSON) codec.")
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-         (replace 'check
+         (add-after 'unpack 'remove-test-hypothesis-deadlines
            (lambda _
-             (invoke "pytest" "-v"))))))
+             (substitute* "tests/test_utils.py"
+               (("from hypothesis import given")
+                "from hypothesis import given, settings")
+               (("( +)@given" all spaces)
+                (string-append spaces "@settings(deadline=None)\n" all)))))
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (invoke "pytest" "-v")))))))
     (native-inputs
      (list python-hypothesis python-pytest-cov python-pytest-mock
            python-pytest))
@@ -18206,13 +18214,13 @@ JSON) codec.")
     (synopsis "Natural sorting for python and shell")
     (description
      "Natsort lets you apply natural sorting on lists instead of
-     lexicographical.  If you use the built-in @code{sorted} method in python
-     on a list such as @code{[@code{a20}, @code{a9}, @code{a1}, @code{a4},
-                                   @code{a10}]}, it would be returned as @code{[@code{a1}, @code{a10}, @code{a20},
-                                   @code{a4}, @code{a9}]}.  Natsort provides a function @code{natsorted} that
-     identifies numbers and sorts them separately from strings.  It can also sort
-     version numbers, real numbers, mixed types and more, and comes with a shell
-     command @command{natsort} that exposes this functionality in the command line.")
+lexicographical.  If you use the built-in @code{sorted} method in python on a
+list such as @code{[@code{a20}, @code{a9}, @code{a1}, @code{a4}, @code{a10}]},
+it would be returned as @code{[@code{a1}, @code{a10}, @code{a20}, @code{a4},
+@code{a9}]}.  Natsort provides a function @code{natsorted} that identifies
+numbers and sorts them separately from strings.  It can also sort version
+numbers, real numbers, mixed types and more, and comes with a shell command
+@command{natsort} that exposes this functionality in the command line.")
     (license license:expat)))
 
 (define-public glances

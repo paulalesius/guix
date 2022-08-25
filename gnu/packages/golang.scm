@@ -54,6 +54,7 @@
 (define-module (gnu packages golang)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix utils)
+  #:use-module (guix gexp)
   #:use-module (guix memoization)
   #:use-module ((guix build utils) #:select (alist-replace))
   #:use-module (guix download)
@@ -2438,7 +2439,16 @@ termination.")
                 "1k7xd2q2ysv2xsh373qs801v6f359240kx0vrl0ydh7731lngvk6"))))
     (build-system go-build-system)
     (arguments
-     '(#:import-path "github.com/jtolds/gls"))
+     (list
+       #:import-path "github.com/jtolds/gls"
+       #:phases
+       #~(modify-phases %standard-phases
+           (replace 'check
+             (lambda* (#:key inputs #:allow-other-keys #:rest args)
+               (unless
+                 ;; The tests fail when run with gccgo.
+                 (false-if-exception (search-input-file inputs "/bin/gccgo"))
+                 (apply (assoc-ref %standard-phases 'check) args)))))))
     (synopsis "@code{gls} provides Goroutine local storage")
     (description
      "The @code{gls} package provides a way to store a retrieve values
@@ -2999,7 +3009,7 @@ Go.")
 (define-public go-github-com-stretchr-objx
   (package
     (name "go-github-com-stretchr-objx")
-    (version "0.2.0")
+    (version "0.4.0")
     (source
      (origin
        (method git-fetch)
@@ -3009,14 +3019,23 @@ Go.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0pcdvakxgddaiwcdj73ra4da05a3q4cgwbpm2w75ycq4kzv8ij8k"))
+         "0dygds32qxx6x1x2mmn7msyjr15qi5r70pyzv8dz8cprxq32nzc1"))
         (modules '((guix build utils)))
         (snippet
          '(begin
             (delete-file-recursively "vendor")))))
     (build-system go-build-system)
     (arguments
-     '(#:import-path "github.com/stretchr/objx"))
+     (list
+       #:import-path "github.com/stretchr/objx"
+       #:phases
+       #~(modify-phases %standard-phases
+           (replace 'check
+             (lambda* (#:key inputs #:allow-other-keys #:rest args)
+               (unless
+                 ;; The tests fail when run with gccgo.
+                 (false-if-exception (search-input-file inputs "/bin/gccgo"))
+                 (apply (assoc-ref %standard-phases 'check) args)))))))
     (propagated-inputs
      (list go-github-com-davecgh-go-spew
            go-github-com-pmezard-go-difflib))
@@ -3781,7 +3800,7 @@ application's http.Handlers.")
 (define-public go-github-com-sirupsen-logrus
   (package
     (name "go-github-com-sirupsen-logrus")
-    (version "1.8.1")
+    (version "1.9.0")
     (source
      (origin
        (method git-fetch)
@@ -3791,14 +3810,23 @@ application's http.Handlers.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0rvqzic2zz7fpxyizmqxwmhv1m52ii9bgxnqa6km8wsa0l08wh42"))))
+         "12i402dxq5js4npnncg043vx874h6nk4ffn4gswcccxrp6h10ivz"))))
     (build-system go-build-system)
+    (arguments
+     (list
+       #:import-path "github.com/sirupsen/logrus"
+       #:phases
+       #~(modify-phases %standard-phases
+           (replace 'check
+             (lambda* (#:key inputs #:allow-other-keys #:rest args)
+               (unless
+                 ;; The tests fail when run with gccgo.
+                 (false-if-exception (search-input-file inputs "/bin/gccgo"))
+                 (apply (assoc-ref %standard-phases 'check) args)))))))
     (propagated-inputs
      (list go-github-com-davecgh-go-spew go-github-com-pmezard-go-difflib
            go-github-com-stretchr-testify go-golang-org-x-crypto
            go-golang-org-x-sys))
-    (arguments
-     '(#:import-path "github.com/sirupsen/logrus"))
     (home-page "https://github.com/sirupsen/logrus")
     (synopsis "Structured, pluggable logging for Go")
     (description "Logrus is a structured logger for Go, completely API
@@ -4041,7 +4069,16 @@ which satisfies the cron expression.")
          "1jwxndf8rsyx0fgrp47d99rp55yzssmryb92jfj3yf7zd8rjjljn"))))
     (build-system go-build-system)
     (arguments
-     '(#:import-path "gopkg.in/check.v1"))
+     (list
+       #:import-path "gopkg.in/check.v1"
+       #:phases
+       #~(modify-phases %standard-phases
+           (replace 'check
+             (lambda* (#:key inputs #:allow-other-keys #:rest args)
+               (unless
+                 ;; The tests fail when run with gccgo.
+                 (false-if-exception (search-input-file inputs "/bin/gccgo"))
+                 (apply (assoc-ref %standard-phases 'check) args)))))))
     (propagated-inputs
      (list go-github-com-kr-pretty))
     (home-page "https://gopkg.in/check.v1")
@@ -6017,7 +6054,16 @@ decode/encode structures and slices.")
                 "1761pybhc2kqr6v5fm8faj08x9bql8427yqg6vnfv6nhrasx1mwq"))))
     (build-system go-build-system)
     (arguments
-     `(#:import-path "github.com/pkg/errors"))
+     (list
+       #:import-path "github.com/pkg/errors"
+       #:phases
+       #~(modify-phases %standard-phases
+           (replace 'check
+             (lambda* (#:key inputs #:allow-other-keys #:rest args)
+               (unless
+                 ;; The tests fail when run with gccgo.
+                 (false-if-exception (search-input-file inputs "/bin/gccgo"))
+                 (apply (assoc-ref %standard-phases 'check) args)))))))
     (synopsis "Go error handling primitives")
     (description "This package provides @code{error}, which offers simple
 error handling primitives in Go.")
@@ -9092,7 +9138,7 @@ anti-fragmentation protection.")
 (define-public go-github-com-valyala-fasthttp
   (package
     (name "go-github-com-valyala-fasthttp")
-    (version "1.31.0")
+    (version "1.39.0")
     (source
      (origin
        (method git-fetch)
@@ -9101,10 +9147,19 @@ anti-fragmentation protection.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0ra0n2shcp11736xv37cjnsqn32gvqfm3dkf9v8j98xmch2wqxqg"))))
+        (base32 "12qwx0yk7wjj25v4fswgmj28r69gk94kqdmzavca8k9f0yznniz1"))))
     (build-system go-build-system)
     (arguments
-     '(#:import-path "github.com/valyala/fasthttp"))
+     (list
+       #:import-path "github.com/valyala/fasthttp"
+       #:phases
+       #~(modify-phases %standard-phases
+           (replace 'check
+             (lambda* (#:key inputs #:allow-other-keys #:rest args)
+               (unless
+                 ;; Tests hang forever with gccgo.
+                 (false-if-exception (search-input-file inputs "/bin/gccgo"))
+                 (apply (assoc-ref %standard-phases 'check) args)))))))
     (propagated-inputs
      (list go-golang-org-x-sys
            go-golang-org-x-net
