@@ -499,9 +499,11 @@ also knows about symlinks, extended attributes, and Git.")
              #t))
          (add-after 'build 'fix-cargo-toml
              (lambda _
-               (if (exists? "Cargo.toml.orig" F_OK)
-                   (delete-file "Cargo.toml")
-                   (rename-file "Cargo.toml.orig" "Cargo.toml"))))
+               ;;(if (exists? "Cargo.toml.orig" F_OK)
+                   (delete-file "Cargo.toml.orig")
+                   ;;(rename-file "Cargo.toml.orig" "Cargo.toml"))
+               )
+             )
          (add-after 'install 'install-extra
            (lambda* (#:key outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -1805,4 +1807,3 @@ track of the directories you use most frequently, and uses a ranking algorithm
 to navigate to the best match.")
     (license license:expat)))
 
-ripgrep
