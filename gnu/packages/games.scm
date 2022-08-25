@@ -4163,7 +4163,7 @@ falling, themeable graphics and sounds, and replays.")
 (define-public wesnoth
   (package
     (name "wesnoth")
-    (version "1.16.1")
+    (version "1.16.5")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/wesnoth/wesnoth-"
@@ -4172,7 +4172,7 @@ falling, themeable graphics and sounds, and replays.")
                                   "wesnoth-" version ".tar.bz2"))
               (sha256
                (base32
-                "0cyrwmdg93pqpdm7030540jznaky9rda355i9ym8am4k9civlcwf"))))
+                "02pzijbmkgcb8hc4l3f4r3r3mxqda936dp488i9sd9d4m3xdzimh"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f))                    ;no check target
@@ -6515,14 +6515,16 @@ fish.  The whole game is accompanied by quiet, comforting music.")
 (define-public crawl
   (package
     (name "crawl")
-    (version "0.28.0")
+    (version "0.29.0")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append "https://github.com/crawl/crawl/releases/download/"
-                           version "/stone_soup-" version "-nodeps.tar.xz"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/crawl/crawl")
+             (commit version)))
+       (file-name (git-file-name name version))
        (sha256
-        (base32 "0irg5w4m127fxcj037kyp9vnyqyq1fi4q64rn6yq92w8z1lf2sss"))
+        (base32 "0cx67ln5qr4bawidi48ss63wflx7x22901da683c9wvy6m41vks8"))
        (patches (search-patches "crawl-upgrade-saves.patch"))))
     (build-system gnu-build-system)
     (inputs
@@ -6552,24 +6554,30 @@ fish.  The whole game is accompanied by quiet, comforting music.")
               "BUILD_LUA="
               "BUILD_SQLITE="
               "BUILD_ZLIB="
-              "-Csource")
+              "-Ccrawl-ref/source")
       #:phases
       #~(modify-phases %standard-phases
+          (add-after 'unpack 'set-version
+            (lambda _
+              (call-with-output-file "crawl-ref/source/util/release_ver"
+                (lambda (port)
+                  (display #$version port)))))
           (add-after 'unpack 'find-SDL-image
             (lambda _
-              (substitute* "source/windowmanager-sdl.cc"
+              (substitute* "crawl-ref/source/windowmanager-sdl.cc"
                 (("SDL_image.h") "SDL2/SDL_image.h"))))
           (delete 'configure)
           (replace 'check
-            (lambda* (#:key make-flags #:allow-other-keys)
-              (setenv "HOME" (getcwd))
-              ;; Fake a terminal for the test cases.
-              (setenv "TERM" "xterm-256color")
-              ;; Run the tests that don't require a debug build.
-              (apply invoke "make" "nondebugtest"
-                     (format #f "-j~d" (parallel-job-count))
-                     ;; Force command line build for test cases.
-                     (append make-flags '("GAME=crawl" "TILES="))))))))
+            (lambda* (#:key tests? make-flags #:allow-other-keys)
+              (when tests?
+                (setenv "HOME" (getcwd))
+                ;; Fake a terminal for the test cases.
+                (setenv "TERM" "xterm-256color")
+                ;; Run the tests that don't require a debug build.
+                (apply invoke "make" "nondebugtest"
+                       (format #f "-j~d" (parallel-job-count))
+                       ;; Force command line build for test cases.
+                       (append make-flags '("GAME=crawl" "TILES=")))))))))
     (synopsis "Roguelike dungeon crawler game")
     (description "Dungeon Crawl Stone Soup (also known as \"Crawl\" or DCSS
 for short) is a roguelike adventure through dungeons filled with dangerous

@@ -8561,6 +8561,156 @@ It makes it possible to run pure OCaml programs in JavaScript environment like
 browsers and Node.js.")
     (license license:lgpl2.1+)))
 
+(define-public ocaml-afl-persistent
+  (package
+    (name "ocaml-afl-persistent")
+    (version "1.3")
+    (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+              (url "https://github.com/stedolan/ocaml-afl-persistent")
+              (commit (string-append "v" version))))
+        (file-name (git-file-name name version))
+        (sha256
+          (base32
+           "06yyds2vcwlfr2nd3gvyrazlijjcrd1abnvkfpkaadgwdw3qam1i"))))
+    (build-system ocaml-build-system)
+    (arguments
+     '(#:phases
+       (modify-phases %standard-phases
+         (delete 'configure)
+         (replace 'build
+           (lambda _
+             (invoke "./build.sh")))
+         ;; XXX: The tests are already run in the build.sh script.
+         (delete 'check))))
+    (native-inputs
+     `(("opam" ,opam)))
+    (home-page "https://github.com/stedolan/ocaml-afl-persistent")
+    (synopsis "Use afl-fuzz in persistent mode")
+    (description
+      "afl-fuzz normally works by repeatedly forking the program being tested.
+Using this package, you can run afl-fuzz in ``persistent mode'', which avoids
+repeated forking and is much faster.")
+    (license license:expat)))
+
+(define-public ocaml-pprint
+  (package
+    (name "ocaml-pprint")
+    (version "20220103")
+    (home-page "https://github.com/fpottier/pprint")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url home-page)
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "09y6nwnjldifm47406q1r9987njlk77g4ifqg6qs54dckhr64vax"))))
+    (build-system dune-build-system)
+    (synopsis "OCaml pretty-printing combinator library and rendering
+engine")
+    (description "This OCaml library offers a set of combinators for building
+so-called documents as well as an efficient engine for converting documents to
+a textual, fixed-width format.  The engine takes care of indentation and line
+breaks, while respecting the constraints imposed by the structure of the
+document and by the text width.")
+    (license license:lgpl2.0)))
+
+(define-public ocaml-crowbar
+  (package
+    (name "ocaml-crowbar")
+    (version "0.2.1")
+    (home-page "https://github.com/stedolan/crowbar")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url home-page)
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "11f3kiw58g8njx15akx16xcplzvzdw9y6c4jpyfxylkxws4g0f6j"))))
+    (build-system dune-build-system)
+    (arguments
+     `(#:test-target "."))
+    (propagated-inputs
+     (list ocaml-ocplib-endian
+           ocaml-cmdliner
+           ocaml-afl-persistent))
+    (native-inputs
+     (list ocaml-calendar
+           ocaml-fpath
+           ocaml-uucp
+           ocaml-uunf
+           ocaml-uutf
+           ocaml-pprint))
+    (synopsis "Ocaml library for tests, let a fuzzer find failing cases")
+    (description "Crowbar is a library for testing code, combining
+QuickCheck-style property-based testing and the magical bug-finding powers of
+@uref{http://lcamtuf.coredump.cx/afl/, afl-fuzz}.")
+    (license license:expat)))
+
+(define-public ocaml-eqaf
+  (package
+    (name "ocaml-eqaf")
+    (version "0.9")
+    (home-page "https://github.com/mirage/eqaf")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url home-page)
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "16ics56wiqyng70dy2hqikicm8ag1mv5w1h7hkiwvydw1x2j2rsl"))))
+    (build-system dune-build-system)
+    (propagated-inputs (list ocaml-cstruct))
+    (native-inputs (list ocaml-alcotest ocaml-crowbar))
+    (synopsis "OCaml library for constant-time equal function on string")
+    (description "This OCaml library provides an equal function on string in
+constant-time to avoid timing-attack with crypto stuff.")
+    (license license:expat)))
+
+(define-public ocaml-digestif
+  (package
+    (name "ocaml-digestif")
+    (version "1.1.2")
+    (home-page "https://github.com/mirage/digestif")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url home-page)
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "0mc233d63y04jznsn3bxncgv7fkvyngbv6hcka412iq0y3x4qsmq"))))
+    (build-system dune-build-system)
+    (propagated-inputs (list ocaml-eqaf))
+    (native-inputs
+     (list pkg-config
+           ocaml-fmt
+           ocaml-alcotest
+           ocaml-bos
+           ocaml-astring
+           ocaml-fpath
+           ocaml-rresult
+           ocaml-findlib))
+    (synopsis "Simple hash algorithms in OCaml")
+    (description
+     "Digestif is an OCaml library that provides implementations of hash
+algorithms.  Implemented hash algorithms include MD5, SHA1, SHA224, SHA256,
+SHA384, SHA512, Blake2b, Blake2s and RIPEMD160.")
+    (license license:expat)))
+
 (define-public ocaml-bibtex2html
   (package
     (name "ocaml-bibtex2html")
