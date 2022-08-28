@@ -7812,7 +7812,7 @@ users.")
 (define-public network-manager
   (package
     (name "network-manager")
-    (version "1.38.0")
+    (version "1.40.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/NetworkManager/"
@@ -7822,7 +7822,7 @@ users.")
                                        "network-manager-meson.patch"))
               (sha256
                (base32
-                "1vxjc9h1adafl90ha2ww4pb50v5fb180yz5nhxkq3c7yvl3wz942"))))
+                "00zwx7cvl8p8xv5h8yvlj2r5wycbvbqia7z4hjmmvjicpiby1rxf"))))
     (build-system meson-build-system)
     (outputs '("out"
                "doc"))                  ; 8 MiB of gtk-doc HTML
