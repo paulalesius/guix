@@ -51,6 +51,7 @@
 # Copyright © 2022 Remco van 't Veer <remco@remworks.net>
 # Copyright © 2022 Artyom V. Poptsov <poptsov.artyom@gmail.com>
 # Copyright © 2022 John Kehayias <john.kehayias@protonmail.com>
+# Copyright © 2022 muradm <mail@muradm.net>
 #
 # This file is part of GNU Guix.
 #
@@ -660,6 +661,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/services/guix.scm			\
   %D%/services/hurd.scm				\
   %D%/services/kerberos.scm			\
+  %D%/services/lightdm.scm      		\
   %D%/services/linux.scm			\
   %D%/services/lirc.scm				\
   %D%/services/virtualization.scm		\
@@ -672,6 +674,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/services/nfs.scm			\
   %D%/services/pam-mount.scm			\
   %D%/services/science.scm			\
+  %D%/services/security.scm			\
   %D%/services/security-token.scm		\
   %D%/services/shepherd.scm			\
   %D%/services/sound.scm			\
@@ -756,6 +759,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/tests/package-management.scm		\
   %D%/tests/reconfigure.scm			\
   %D%/tests/rsync.scm				\
+  %D%/tests/security.scm			\
   %D%/tests/security-token.scm			\
   %D%/tests/singularity.scm			\
   %D%/tests/ssh.scm				\
@@ -840,6 +844,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/abseil-cpp-fix-strerror_test.patch	\
   %D%/packages/patches/adb-add-libraries.patch			\
   %D%/packages/patches/adb-libssl_11-compatibility.patch	\
+  %D%/packages/patches/accountsservice-extensions.patch		\
   %D%/packages/patches/aegis-constness-error.patch         	\
   %D%/packages/patches/aegis-perl-tempdir1.patch           	\
   %D%/packages/patches/aegis-perl-tempdir2.patch           	\
@@ -1356,6 +1361,9 @@ dist_patch_DATA =						\
   %D%/packages/patches/librime-fix-build-with-gcc10.patch	\
   %D%/packages/patches/libvirt-add-install-prefix.patch	\
   %D%/packages/patches/libziparchive-add-includes.patch		\
+  %D%/packages/patches/lightdm-arguments-ordering.patch		\
+  %D%/packages/patches/lightdm-vncserver-check.patch		\
+  %D%/packages/patches/lightdm-vnc-color-depth.patch		\
   %D%/packages/patches/localed-xorg-keyboard.patch		\
   %D%/packages/patches/kdiagram-Fix-missing-link-libraries.patch \
   %D%/packages/patches/kiki-level-selection-crash.patch		\
