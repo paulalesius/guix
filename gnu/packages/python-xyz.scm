@@ -9688,7 +9688,7 @@ Python style, together with a fast and comfortable execution environment.")
                ;; because there are no AWS credentials.
                (delete-file "tests/test_tibanna.py")
                (invoke "pytest")))))))
-    (inputs
+    (propagated-inputs
      (list python-appdirs
            python-configargparse
            python-connection-pool
@@ -9739,15 +9739,14 @@ Python style, together with a fast and comfortable execution environment.")
          ;; For cluster execution Snakemake will call Python.  Since there is
          ;; no suitable GUIX_PYTHONPATH set, cluster execution will fail.  We
          ;; fix this by calling the snakemake wrapper instead.
-
-         ;; XXX: There is another instance of sys.executable on line 692, but
-         ;; it is not clear how to patch it.
          (add-after 'unpack 'call-wrapper-not-wrapped-snakemake
            (lambda* (#:key outputs #:allow-other-keys)
              (substitute* "snakemake/executors/__init__.py"
-               (("\\{sys.executable\\} -m snakemake")
-                (string-append (assoc-ref outputs "out")
-                               "/bin/snakemake")))))
+               (("self\\.get_python_executable\\(\\),")
+                "")
+               (("\"-m snakemake\"")
+                (string-append "\"" (assoc-ref outputs "out")
+                               "/bin/snakemake" "\"")))))
          (replace 'check
            (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
@@ -9759,7 +9758,7 @@ Python style, together with a fast and comfortable execution environment.")
                ;; to the Google Storage service.
                (delete-file "tests/test_google_lifesciences.py")
                (invoke "pytest")))))))
-    (inputs
+    (propagated-inputs
      (list python-appdirs
            python-configargparse
            python-connection-pool
