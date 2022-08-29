@@ -934,7 +934,8 @@ safety and thread safety guarantees.")
                  (invoke "./x.py" "install" "rustfmt")
                  (substitute* "config.toml"
                    (("prefix = \"[^\"]*\"")
-                    (format #f "prefix = ~s" (assoc-ref outputs "clippy")))))))))))))
+                    (format #f "prefix = ~s" (assoc-ref outputs "clippy"))))
+                 (invoke "./x.py" "install" "clippy"))))))))))
 
 ;;; Note: Only the latest versions of Rust are supported and tested.  The
 ;;; intermediate rusts are built for bootstrapping purposes and should not
@@ -962,4 +963,3 @@ safety and thread safety guarantees.")
 library, only use by rust-analyzer, make rust-analyzer out of the box.")))
 ;;) /hidden-package
 
-rust-1.63
