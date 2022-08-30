@@ -786,168 +786,16 @@ safety and thread safety guarantees.")
                             `("procps" ,procps)
                             (package-native-inputs base-rust))))))
 
-(define rust-1.58
-  (rust-bootstrapped-package
-   rust-1.57 "1.58.1" "1iq7kj16qfpkx8gvw50d8rf7glbm6s0pj2y1qkrz7mi56vfsyfd8"))
-
-(define rust-1.59
-  (rust-bootstrapped-package
-   rust-1.58 "1.59.0" "1yc5bwcbmbwyvpfq7zvra78l0r8y3lbv60kbr62fzz2vx2pfxj57"))
-
-(define rust-1.60
-  (rust-bootstrapped-package
-   rust-1.59 "1.60.0" "1drqr0a26x1rb2w3kj0i6abhgbs3jx5qqkrcwbwdlx7n3inq5ji0"))
-
-(define rust-1.61
-  (let ((base-rust
-         (rust-bootstrapped-package
-          rust-1.60 "1.61.0"
-          "1vfs05hkf9ilk19b2vahqn8l6k17pl9nc1ky9kgspaascx8l62xd")))
-    (package
-      (inherit base-rust)
-      (arguments
-       (substitute-keyword-arguments (package-arguments base-rust)
-         ((#:tests? _ #f)
-          #f))))))
-
-;; Latest needs to be public so it can be included in a profile, while just "rust" is
-;; intended to build system artifacts.
-(define-public rust-1.62
-  (let ((base-rust
-         (rust-bootstrapped-package
-          rust-1.61 "1.62.1"
-          "0gqkg34ic77dcvsz69qbdng6g3zfhl6hnhx7ha1mjkyrzipvxb3j")))
-    (package
-      (inherit base-rust)
-      (arguments
-       (substitute-keyword-arguments (package-arguments base-rust)
-         ((#:tests? _ #f)
-          #f))))))
-
-(define-public rust-1.63
-  (let ((base-rust
-         (rust-bootstrapped-package
-          rust-1.62 "1.63.0"
-          "1l4rrbzhxv88pnfq94nbyb9m6lfnjwixma3mwjkmvvs2aqlq158z")))
-    (package
-      (inherit base-rust)
-      (outputs (cons "clippy" (package-outputs base-rust)))
-;;    (native-inputs
-;;     `(("cmake" ,cmake-minimal)
-;;       ("pkg-config" ,pkg-config)       ; For "cargo"
-;;       ("python" ,python-wrapper)
-;;       ("rustc-bootstrap" ,base-rust)
-;;       ("cargo-bootstrap" ,base-rust "cargo")
-;;       ("rustfmt-bootstrap" ,base-rust "rustfmt")
-;;       ("which" ,which)))
-      (arguments
-       (substitute-keyword-arguments (package-arguments base-rust)
-         ((#:tests? _ #f) #f)
-         ;; Clippy wants rustc_driver.so which is not found in runpath
-         ((#:validate-runpath? _ #f) #f)
-         ((#:phases phases)
-          `(modify-phases ,phases
-;;          (replace 'configure
-;;            (lambda* (#:key inputs outputs #:allow-other-keys)
-;;              (let* ((out (assoc-ref outputs "out"))
-;;                     (gcc (assoc-ref inputs "gcc"))
-;;                     (python (assoc-ref inputs "python"))
-;;                     (binutils (assoc-ref inputs "binutils"))
-;;                     (rustc (assoc-ref inputs "rustc-bootstrap"))
-;;                     (cargo (assoc-ref inputs "cargo-bootstrap"))
-;;                     (rustfmt (assoc-ref inputs "rustfmt-bootstrap"))
-;;                     (llvm (assoc-ref inputs "llvm"))
-;;                     (jemalloc (assoc-ref inputs "jemalloc")))
-;;                ;; The compiler is no longer directly built against jemalloc, but
-;;                ;; rather via the jemalloc-sys crate (which vendors the jemalloc
-;;                ;; source). To use jemalloc we must enable linking to it (otherwise
-;;                ;; it would use the system allocator), and set an environment
-;;                ;; variable pointing to the compiled jemalloc.
-;;                (setenv "JEMALLOC_OVERRIDE"
-;;                        (search-input-file inputs
-;;                                           "/lib/libjemalloc_pic.a"))
-;;                (call-with-output-file "config.toml"
-;;                  (lambda (port)
-;;                    (display (string-append "
-;; [llvm]
-;; [build]
-;; cargo = \"" cargo "/bin/cargo" "\"
-;; rustc = \"" rustc "/bin/rustc" "\"
-;; rustfmt = \"" rustfmt "/bin/rustfmt" "\"
-;; docs = true
-;; python = \"" python "/bin/python" "\"
-;; vendor = true
-;; submodules = false
-;; [install]
-;; prefix = \"" out "\"
-;; sysconfdir = \"etc\"
-;; [rust]
-;; jemalloc=true
-;; default-linker = \"" gcc "/bin/gcc" "\"
-;; channel = \"stable\"
-;; rpath = true
-;; [target." ,(nix-system->gnu-triplet-for-rust) "]
-;; llvm-config = \"" llvm "/bin/llvm-config" "\"
-;; cc = \"" gcc "/bin/gcc" "\"
-;; cxx = \"" gcc "/bin/g++" "\"
-;; ar = \"" binutils "/bin/ar" "\"
-;; [dist]
-;; ") port))))))
-             (replace 'build
-               ;; Phase overridden to also build rustfmt.
-               (lambda* (#:key parallel-build? #:allow-other-keys)
-                 (let ((job-spec (string-append
-                                  "-j" (if parallel-build?
-                                           (number->string (parallel-job-count))
-                                           "1"))))
-                   (invoke "./x.py" job-spec "build"
-                           "library/std" ;rustc
-                           "src/tools/cargo"
-                           "src/tools/rustfmt"
-                           "src/tools/clippy"))))
-             (replace 'check
-               ;; Phase overridden to also test rustfmt.
-               (lambda* (#:key tests? parallel-build? #:allow-other-keys)
-                 (when tests?
-                   (let ((job-spec (string-append
-                                    "-j" (if parallel-build?
-                                             (number->string (parallel-job-count))
-                                             "1"))))
-                     (invoke "./x.py" job-spec "test" "-vv"
-                             "library/std"
-                             "src/tools/cargo"
-                             "src/tools/rustfmt"
-                             "src/tools/clippy")))))
-             (replace 'install
-               ;; Phase overridden to also install rustfmt.
-               (lambda* (#:key outputs #:allow-other-keys)
-                 (invoke "./x.py" "install")
-                 (substitute* "config.toml"
-                   ;; Adjust the prefix to the 'cargo' output.
-                   (("prefix = \"[^\"]*\"")
-                    (format #f "prefix = ~s" (assoc-ref outputs "cargo"))))
-                 (invoke "./x.py" "install" "cargo")
-                 (substitute* "config.toml"
-                   ;; Adjust the prefix to the 'rustfmt' output.
-                   (("prefix = \"[^\"]*\"")
-                    (format #f "prefix = ~s" (assoc-ref outputs "rustfmt"))))
-                 (invoke "./x.py" "install" "rustfmt")
-                 (substitute* "config.toml"
-                   (("prefix = \"[^\"]*\"")
-                    (format #f "prefix = ~s" (assoc-ref outputs "clippy"))))
-                 (invoke "./x.py" "install" "clippy"))))))))))
-
 ;;; Note: Only the latest versions of Rust are supported and tested.  The
 ;;; intermediate rusts are built for bootstrapping purposes and should not
 ;;; be relied upon.  This is to ease maintenance and reduce the time
 ;;; required to build the full Rust bootstrap chain.
-(define-public rust rust-1.63)
+(define-public rust rust-1.57)
 
 (define-public rust-src
-  ;; Disable hidden, to allow installing the src package separately
-  ;;(hidden-package
+  (hidden-package
    (package
-     (inherit rust-1.63)
+     (inherit rust)
      (name "rust-src")
      (build-system copy-build-system)
      (native-inputs '())
@@ -960,6 +808,4 @@ safety and thread safety guarantees.")
           ("src" "lib/rustlib/src/rust/src"))))
      (synopsis "Source code for the Rust standard library")
      (description "This package provide source code for the Rust standard
-library, only use by rust-analyzer, make rust-analyzer out of the box.")))
-;;) /hidden-package
-
+library, only use by rust-analyzer, make rust-analyzer out of the box."))))
