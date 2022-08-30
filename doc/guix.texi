@@ -37439,6 +37439,15 @@ corresponds to COM1 (@pxref{Serial terminal,,, grub,GNU GRUB manual}).
 The speed of the serial interface, as an integer.  For GRUB, the
 default value is chosen at run-time; currently GRUB chooses
 9600@tie{}bps (@pxref{Serial terminal,,, grub,GNU GRUB manual}).
+
+@item @code{device-tree-support?} (default: @code{#t})
+Whether to support Linux @uref{https://en.wikipedia.org/wiki/Devicetree,
+device tree} files loading.
+
+This option in enabled by default.  In some cases involving the
+@code{u-boot} bootloader, where the device tree has already been loaded
+in RAM, it can be handy to disable the option by setting it to
+@code{#f}.
 @end table
 
 @end deftp
@@ -38011,6 +38020,11 @@ Installation Image}).
 @itemx -s @var{system}
 Attempt to build for @var{system} instead of the host system type.
 This works as per @command{guix build} (@pxref{Invoking guix build}).
+
+@item --target=@var{triplet}
+Cross-build for @var{triplet}, which must be a valid GNU triplet, such
+as @code{"aarch64-linux-gnu"} (@pxref{Specifying target triplets, GNU
+configuration triplets,, autoconf, Autoconf}).
 
 @item --derivation
 @itemx -d

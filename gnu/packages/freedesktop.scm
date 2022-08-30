@@ -1076,8 +1076,11 @@ fullscreen) or other display servers.")
     (build-system meson-build-system)
     (inputs
      (list wayland))
-    (native-inputs
-     (list pkg-config python))
+    (native-inputs (cons* pkg-config python
+                          (if (%current-target-system)
+                              (list pkg-config-for-build
+                                    wayland) ; for wayland-scanner
+                              '())))
     (synopsis "Wayland protocols")
     (description "Wayland-Protocols contains Wayland protocols that add
 functionality not available in the Wayland core protocol.  Such protocols either

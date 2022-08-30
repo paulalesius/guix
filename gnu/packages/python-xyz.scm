@@ -8255,7 +8255,7 @@ procedures.")
      (substitute-keyword-arguments
          (package-arguments python-jaraco-context-bootstrap)
        ((#:tests? _ #f)
-        #t)
+        (not (%current-target-system)))
        ((#:phases phases #~%standard-phases)
         #~(modify-phases #$phases
             (replace 'check
@@ -8306,7 +8306,7 @@ module with a few extra procedures.")
      (substitute-keyword-arguments
          (package-arguments python-jaraco-functools-bootstrap)
        ((#:tests? _ #f)
-        #t)
+        (not (%current-target-system)))
        ((#:phases phases #~%standard-phases)
         #~(modify-phases #$phases
             (replace 'check
@@ -8706,7 +8706,7 @@ installing @code{kernelspec}s for use with Jupyter frontends.")
       (arguments
        (substitute-keyword-arguments (package-arguments base)
          ((#:tests? _ #f)
-          #t)
+          (not (%current-target-system)))
          ((#:phases phases #~%standard-phases)
           #~(modify-phases #$phases
               (replace 'check
@@ -11305,7 +11305,7 @@ from an XML-based format.")
     (arguments
      (substitute-keyword-arguments (package-arguments python-fonttools)
        ((#:tests? _ #f)
-        #t)
+        (not (%current-target-system)))
        ((#:phases phases '%standard-phases)
         `(modify-phases ,phases
            (replace 'check
@@ -12382,7 +12382,7 @@ invoked on those path objects directly.")
      (substitute-keyword-arguments
          (package-arguments python-path-bootstrap)
        ((#:tests? _ #f)
-        #t)
+        (not (%current-target-system)))
        ((#:phases phases #~%standard-phases)
         #~(modify-phases #$phases
             (replace 'check
@@ -12505,7 +12505,7 @@ $ rm -rf /tmp/env
     (arguments
      (substitute-keyword-arguments (package-arguments python-pip-run-bootstrap)
        ((#:tests? _ #f)
-        #t)
+        (not (%current-target-system)))
        ((#:phases phases #~%standard-phases)
         #~(modify-phases #$phases
             (replace 'check
