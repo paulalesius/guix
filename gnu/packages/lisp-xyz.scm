@@ -3428,7 +3428,7 @@ is a library for creating graphical user interfaces.")
 (define-public sbcl-cl-webkit
   (package
     (name "sbcl-cl-webkit")
-    (version "3.5.3")
+    (version "3.5.4")
     (source
      (origin
        (method git-fetch)
@@ -3438,7 +3438,7 @@ is a library for creating graphical user interfaces.")
        (file-name (git-file-name "cl-webkit" version))
        (sha256
         (base32
-         "076lqj8ns9s7z980g3p2llw3k6hgsqnsvw8vjjslbpas2jzf26nr"))))
+         "072c6m63w9q4nr3lsvavi2i71qyfgygdpyqy659l0n81n7mjy2cr"))))
     (build-system asdf-build-system/sbcl)
     (inputs
      `(("cffi" ,sbcl-cffi)
@@ -3851,10 +3851,10 @@ client and server.")
   (sbcl-package->cl-source-package sbcl-trivial-arguments))
 
 (define-public sbcl-trivial-clipboard
-  (let ((commit "8a580cb97196be7cf096548eb1f46794cd22bb39"))
+  (let ((commit "13b53720306c0e6a13eccf4674d28ee5361127ae"))
     (package
       (name "sbcl-trivial-clipboard")
-      (version (git-version "0.0.0.0" "4" commit))
+      (version (git-version "0.0.0.0" "5" commit))
       (source
        (origin
          (method git-fetch)
@@ -3864,7 +3864,7 @@ client and server.")
          (file-name (git-file-name "trivial-clipboard" version))
          (sha256
           (base32
-           "0apkgqrscylw3hhm5x2vs0z3hz6h7zd7dl5y3wr2zl8qjpvpc80k"))))
+           "0l198m1gg2ixc43lqjq1ffd80s1sjxhqf1w83qqa1cn51rra2jp8"))))
       (build-system asdf-build-system/sbcl)
       (inputs
        ;; Pick xsel instead of xclip because its closure size is slightly
@@ -7814,17 +7814,16 @@ of function partial application and composition.")
 (define-public sbcl-yason
   (package
     (name "sbcl-yason")
-    (version "0.7.7")
+    (version "0.8.4")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/phmarek/yason")
              (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
+       (file-name (git-file-name "cl-yason" version))
        (sha256
-        (base32
-         "0479rbjgbj80jpk5bby18inlv1kfp771a82rlcq5psrz65qqa9bj"))))
+        (base32 "0d22sw7nf2ygqm56ilybg7bza63cv43pc4184r8rvsjz2in37n51"))))
     (build-system asdf-build-system/sbcl)
     (inputs
      (list sbcl-alexandria sbcl-trivial-gray-streams))
@@ -18454,6 +18453,51 @@ RSS feeds data via HTTP.  Currently, it supports RSS versions 0.90,
 (define-public cl-rss
   (sbcl-package->cl-source-package sbcl-rss))
 
+(define-public sbcl-binascii
+  (let ((commit "0fb0a9e5773148fd04d50efef08c1cc10f6fc487")
+        (revision "1"))
+    (package
+      (name "sbcl-binascii")
+      (version (git-version "1.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/sharplispers/binascii")
+               (commit commit)))
+         (file-name (git-file-name "cl-binascii" version))
+         (sha256
+          (base32 "000rcdl8qshr7n48zq9bzrc4lkjx4ylb3r3w9x9syhiwfla9j4b7"))
+         (modules '((guix build utils)))
+         (snippet
+          ;; Unbundle the RT test framework.
+          '(begin
+             (delete-file "tests/rt.lisp")
+             (substitute* "binascii.asd"
+               ((":depends-on \\(binascii\\)")
+                ":depends-on (binascii rt)")
+               (("\\(:file \"rt\"\\)")
+                "")
+               (("\\(:file \"tests\" :depends-on \\(\"rt\"\\)\\)")
+                "(:file \"tests\")"))))))
+      (build-system asdf-build-system/sbcl)
+      (native-inputs
+       (list sbcl-rt))
+      (home-page "https://github.com/sharplispers/binascii")
+      (synopsis "Common Lisp library of ASCII encoding schemes for binary data")
+      (description
+       "@code{binascii} is a Common Lisp library for converting binary data
+to ASCII text of some kind.  Such conversions are common in email protocols
+(for encoding attachments to support old non-8-bit clean transports) or
+encoding binary data in HTTP and XML applications.  @code{binascii} supports
+the encodings described in RFC 4648: base64, base32, base16, and variants.
+It also supports base85, used in Adobe's PostScript and PDF document formats,
+and a variant called ascii85, used by git for binary diff files.")
+      (license license:bsd-3))))
+
+(define-public cl-binascii
+  (sbcl-package->cl-source-package sbcl-binascii))
+
 (define-public sbcl-trivial-with-current-source-form
   (let ((commit "9e343e043a77a5478c1f77bb626db22335fbbfb8")
         (revision "1"))
@@ -22793,6 +22837,43 @@ internbombing, excessive input and macro characters.")
 (define-public ecl-safe-read
   (sbcl-package->ecl-package sbcl-safe-read))
 
+(define-public sbcl-portable-condition-system
+  (let ((commit "1307ec146d227a9d8ea42312c1ba2a5206a9eb3c")
+        (revision "0"))
+    (package
+      (name "sbcl-portable-condition-system")
+      (version (git-version "1.1.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/phoe/portable-condition-system")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "099lb9f4bavj95wik99wla5rf6fk1gdw9pvn0cqlaf0wf20csd3h"))))
+      (build-system asdf-build-system/sbcl)
+      (arguments
+       '(#:asd-systems '("portable-condition-system")))
+      (native-inputs
+       (list sbcl-1am))
+      (inputs
+       (list sbcl-alexandria
+             sbcl-split-sequence))
+      (home-page "https://github.com/phoe/portable-condition-system")
+      (synopsis "Portable condition system for Common Lisp")
+      (description
+       "This package provides an example implementation of the Common Lisp
+condition system and library, based on the original condition system
+implementation by Kent M. Pitman.")
+      (license license:cc0))))
+
+(define-public cl-portable-condition-system
+  (sbcl-package->cl-source-package sbcl-portable-condition-system))
+
+(define-public ecl-portable-condition-system
+  (sbcl-package->ecl-package sbcl-portable-condition-system))
+
 (define-public sbcl-ospm
   (package
     (name "sbcl-ospm")
@@ -22842,6 +22923,41 @@ It has extensive support for Guix, among others:
       (inputs
        (cons (list "osicat" cl-osicat)
              (package-inputs pkg))))))
+
+(define-public sbcl-data-lens
+  (let ((commit "801bc1e0331f19fdc38be314c86ccac9362fde78")
+        (revision "0"))
+    (package
+     (name "sbcl-data-lens")
+     (version (git-version "0.0.0" revision commit))
+     (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/fiddlerwoaroof/data-lens")
+               (commit commit)))
+         (file-name (git-file-name "cl-data-lens" version))
+         (sha256
+          (base32 "1w4rvhcnss037q0bb1j70kdlhfh9085hy95d9q56sk519alhzhrp"))))
+     (build-system asdf-build-system/sbcl)
+     (native-inputs
+      (list sbcl-fiveam))
+     (inputs
+       (list sbcl-cl-ppcre
+             sbcl-alexandria
+             sbcl-serapeum))
+     (synopsis "Functional utilities for Common Lisp")
+     (description
+      "The @code{cl-data-lens} library provides a language for expressing data
+manipulations as the composition of more primitive operations.")
+     (home-page "https://fiddlerwoaroof.github.io/data-lens/")
+     (license license:asl2.0))))
+
+(define-public cl-data-lens
+  (sbcl-package->cl-source-package sbcl-data-lens))
+
+(define-public ecl-data-lens
+  (sbcl-package->ecl-package sbcl-data-lens))
 
 (define-public sbcl-ndebug
   (package

@@ -221,14 +221,14 @@ Python 3.3 and later, rather than on Python 2.")
 (define-public git
   (package
    (name "git")
-   (version "2.37.2")
+   (version "2.37.3")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://kernel.org/software/scm/git/git-"
                                 version ".tar.xz"))
             (sha256
              (base32
-              "00xhdm086bxm4v2p8m7ra7vf9kwdppw4l2n3vakfff253j19qg8w"))))
+              "0yp8hdj0w18jhmmdflzz74z418cw95i08pc22yycyn8nyvbl2il1"))))
    (build-system gnu-build-system)
    (native-inputs
     `(("native-perl" ,perl)
@@ -248,7 +248,7 @@ Python 3.3 and later, rather than on Python 2.")
                 version ".tar.xz"))
           (sha256
            (base32
-            "1zhn91fzyyz890a5hm0bvs0vnhy8c81q1fhsk2gfwbbh73z161nz"))))
+            "053lj9wy8y2yr5jzpb0af4w50gz3ckhgc15wqx7is4z6k9a76lww"))))
       ;; For subtree documentation.
       ("asciidoc" ,asciidoc)
       ("docbook-xsl" ,docbook-xsl)
@@ -1549,6 +1549,9 @@ also walk each side of a merge and test those changes individually.")
                                         (assoc-ref inputs "inetutils")
                                         "/bin/logger\"")))
 
+                      (substitute* "src/lib/Gitolite/Cache.pm"
+                        (("/usr/sbin/redis-server") "redis-server"))
+
                       (substitute* "src/commands/svnserve"
                         (("/usr/bin/svnserve") "svnserve"))))
                   (replace 'install
@@ -1570,17 +1573,15 @@ also walk each side of a merge and test those changes individually.")
                             (coreutils (assoc-ref inputs "coreutils"))
                             (findutils (assoc-ref inputs "findutils"))
                             (git (assoc-ref inputs "git")))
-                        (wrap-program (string-append out "/bin/gitolite")
-                          `("PATH" ":" prefix
-                            ,(map (lambda (dir)
-                                    (string-append dir "/bin"))
-                                  (list out coreutils findutils git))))))))))
+                        (for-each (lambda (file-name)
+                                    (wrap-program (string-append out file-name)
+                                      `("PATH" ":" prefix
+                                        ,(map (lambda (dir)
+                                                (string-append dir "/bin"))
+                                              (list out coreutils findutils git)))))
+                                  '("/bin/gitolite" "/bin/gitolite-shell"))))))))
     (inputs
-     (list bash-minimal perl coreutils findutils inetutils))
-    ;; git and openssh are propagated because trying to patch the source via
-    ;; regexp matching is too brittle and prone to false positives.
-    (propagated-inputs
-     (list git openssh))
+     (list bash-minimal coreutils findutils git inetutils openssh perl))
     (home-page "https://gitolite.com")
     (synopsis "Git access control layer")
     (description
@@ -1735,15 +1736,16 @@ execution of any hook written in any language before every commit.")
 (define-public mercurial
   (package
     (name "mercurial")
-    (version "5.8.1")
+    (version "6.2.1")
     (source (origin
              (method url-fetch)
              (uri (string-append "https://www.mercurial-scm.org/"
                                  "release/mercurial-" version ".tar.gz"))
-             (patches (search-patches "mercurial-hg-extension-path.patch"))
+             (patches (search-patches "mercurial-hg-extension-path.patch"
+                                      "mercurial-openssl-compat.patch"))
              (sha256
               (base32
-               "16xi4bmjqzi7ig8sfa5mnypfpbbbiyafmmqrs4nxmgc743za7fl1"))))
+               "1nl2726szaxyrxlyssrsir5c6vb4ci0i6g969i6xaahw1nidgica"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags
@@ -1753,13 +1755,11 @@ execution of any hook written in any language before every commit.")
          (delete 'configure)
          (add-after 'unpack 'patch-tests
            (lambda _
-             (substitute* '("tests/test-extdiff.t"
-                            "tests/test-logtoprocess.t"
-                            "tests/test-patchbomb.t"
-                            "tests/test-run-tests.t"
-                            "tests/test-transplant.t")
+             (substitute* (find-files "tests" "\\.(t|py)$")
                (("/bin/sh")
-                (which "sh")))))
+                (which "sh"))
+               (("/usr/bin/env")
+                (which "env")))))
          (replace 'check
            (lambda* (#:key tests? #:allow-other-keys)
              (with-directory-excursion "tests"
@@ -1770,6 +1770,12 @@ execution of any hook written in any language before every commit.")
                            ;; PATH from before (that's why we are building it!)?
                            "test-hghave.t"
 
+                           ;; This test creates a shebang spanning multiple
+                           ;; lines which is difficult to substitute.  It
+                           ;; only tests the test runner itself, which gets
+                           ;; thoroughly tested during the check phase anyway.
+                           "test-run-tests.t"
+
                            ;; These tests fail because the program is not
                            ;; connected to a TTY in the build container.
                            "test-nointerrupt.t"
@@ -1777,6 +1783,15 @@ execution of any hook written in any language before every commit.")
 
                            ;; FIXME: This gets killed but does not receive an interrupt.
                            "test-commandserver.t"
+
+                           ;; These tests get unexpected warnings about using
+                           ;; deprecated functionality in Python, but otherwise
+                           ;; succeed; try enabling for later Mercurial versions.
+                           "test-demandimport.py"
+                           "test-patchbomb-tls.t"
+                           ;; Similarly, this gets a more informative error
+                           ;; message from Python 3.10 than it expects.
+                           "test-http-bad-server.t"
 
                            ;; Only works when run in a hg-repo, not in an
                            ;; extracted tarball
@@ -1808,7 +1823,7 @@ execution of any hook written in any language before every commit.")
            ;; The following inputs are only needed to run the tests.
            python-nose unzip which))
     (inputs
-     (list python))
+     (list python-wrapper))
     ;; Find third-party extensions.
     (native-search-paths
      (list (search-path-specification
@@ -2446,7 +2461,7 @@ from Subversion to any supported Distributed Version Control System (DVCS).")
 (define-public tig
   (package
     (name "tig")
-    (version "2.5.6")
+    (version "2.5.7")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -2454,7 +2469,7 @@ from Subversion to any supported Distributed Version Control System (DVCS).")
                     version "/tig-" version ".tar.gz"))
               (sha256
                (base32
-                "0pwn7mlfnd5ngcbagjs9vsr7jgmia8676p0i91vvfl4v6qrmzfsh"))
+                "0xna55y1r1jssdmrzpinv96p7w00w9hn39q5l3d8l299dg4bmiyv"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -2832,14 +2847,14 @@ specific files and directories.")
 (define-public src
   (package
     (name "src")
-    (version "1.18")
+    (version "1.29")
     (source (origin
               (method url-fetch)
               (uri (string-append
                     "http://www.catb.org/~esr/src/src-" version ".tar.gz"))
               (sha256
                (base32
-                "0n0skhvya8w2az45h2gsafxy8m2mvqas64nrgxifcmrzfv0rf26c"))))
+                "0ha287gc95vz6bdvn42pi3qibc56h1w5dshsvjvdn2zd283amksd"))))
     (build-system gnu-build-system)
     (arguments
      '(#:make-flags
@@ -2865,7 +2880,8 @@ specific files and directories.")
      ;; For testing.
      (list git perl))
     (inputs
-     `(("python" ,python-wrapper)
+     `(("cssc" ,cssc)
+       ("python" ,python-wrapper)
        ("rcs" ,rcs)))
     (synopsis "Simple revision control")
     (home-page "http://www.catb.org/~esr/src/")

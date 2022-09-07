@@ -30,6 +30,7 @@
 ;;; Copyright © 2021 Giovanni Biscuolo <g@xelera.eu>
 ;;; Copyright © 2022 Philip McGrath <philip@philipmcgrath.com>
 ;;; Copyright © 2022 Remco van 't Veer <remco@remworks.net>
+;;; Copyright © 2022 Taiju HIGASHI <higashi@taiju.info>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -138,7 +139,7 @@
                (("/bin/sh") (which "sh")))
              #t)))))
     (inputs
-     (list readline openssl libffi gdbm))
+     (list readline openssl-1.1 libffi gdbm))
     (propagated-inputs
      (list zlib))
     (native-search-paths
@@ -216,11 +217,14 @@ a focus on simplicity and productivity.")
                            "/ruby-" version ".tar.xz"))
        (sha256
         (base32
-         "1w7jpq3flnm007z5kj8kixgm8l4smb80w8ak4993a12j0irzq8lf"))))))
+         "1w7jpq3flnm007z5kj8kixgm8l4smb80w8ak4993a12j0irzq8lf"))))
+    (inputs
+     (modify-inputs (package-inputs ruby-2.7)
+       (replace "openssl" openssl)))))
 
 (define-public ruby-3.1
   (package
-    (inherit ruby-2.7)
+    (inherit ruby-3.0)
     (version "3.1.2")
     (source
      (origin
@@ -5395,6 +5399,24 @@ The output can be customized with a formatting system.")
     (home-page "https://github.com/jfelchner/ruby-progressbar")
     (license license:expat)))
 
+(define-public ruby-latest-ruby
+  (package
+    (name "ruby-latest-ruby")
+    (version "3.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (rubygems-uri "latest_ruby" version))
+              (sha256
+               (base32
+                "15rqwgxzpnkzdiz8m02jra0zq5sx0fiz61vkfrj1ls6slqfhnzqg"))))
+    (build-system ruby-build-system)
+    (arguments
+     '(#:tests? #f)) ; No Rakefile
+    (synopsis "Answers the question of what the latest Ruby version is")
+    (description "Knows about MRI, Rubinius, JRuby, MagLev and MacRuby.")
+    (home-page "https://github.com/kyrylo/latest_ruby")
+    (license license:zlib)))
+
 (define-public ruby-pry
   (package
     (name "ruby-pry")
@@ -5416,6 +5438,29 @@ The output can be customized with a formatting system.")
 Ruby.  It features syntax highlighting, a plugin architecture, runtime
 invocation, and source and documentation browsing.")
     (home-page "https://cobaltbluemedia.com/pryrepl/")
+    (license license:expat)))
+
+(define-public ruby-pry-doc
+  (package
+    (name "ruby-pry-doc")
+    (version "1.3.0")
+    (source (origin
+              (method url-fetch)
+              (uri (rubygems-uri "pry-doc" version))
+              (sha256
+               (base32
+                "0wyvql6pb6m8jl8bsamabxhxhd86bnqblspaxzz05sl0fm2ynj0r"))))
+    (build-system ruby-build-system)
+    (propagated-inputs (list ruby-pry ruby-yard))
+    (native-inputs (list ruby-latest-ruby ruby-rspec ruby-rake)) ;for tests
+    (synopsis "Provides YARD and extended documentation support for Pry")
+    (description
+     "Pry Doc is a Pry REPL plugin.  It provides extended documentation
+support for the REPL by means of improving the @code{show-doc} and
+@code{show-source} commands.  With help of the plugin the commands are
+be able to display the source code and the docs of Ruby methods and
+classes implemented in C.")
+    (home-page "https://github.com/pry/pry-doc")
     (license license:expat)))
 
 (define-public ruby-single-cov
