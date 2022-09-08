@@ -148,6 +148,75 @@ portable between implementations.")
 (define-public ecl-alexandria
   (sbcl-package->ecl-package sbcl-alexandria))
 
+(define-public sbcl-map-bind
+  (let ((commit "532d55d93540c632e22b2cd264b5daa5f9d3d900")
+        (revision "0"))
+    (package
+      (name "sbcl-map-bind")
+      (version (git-version "1.0" revision commit))
+      (source
+        (origin
+          (method git-fetch)
+          (uri (git-reference
+                (url "https://github.com/Hexstream/map-bind")
+                (commit commit)))
+          (file-name (git-file-name "cl-map-bind" version))
+          (sha256
+           (base32 "0hfy65xyqc4zqfncn11pp3hjjkdz7m91cynnv91s3lgcl3kffva0"))))
+      (build-system asdf-build-system/sbcl)
+      (native-inputs
+        (list sbcl-parachute))
+      (home-page "https://www.hexstreamsoft.com/libraries/map-bind/")
+      (synopsis "Macro favouring positional references over naming")
+      (description
+       "@code{MAP-BIND} is a macro that allows visual grouping of variables with
+their corresponding values in calls to mapping operators when using an
+inline @code{LAMBDA}.")
+      (license license:unlicense))))
+
+(define-public cl-map-bind
+  (sbcl-package->cl-source-package sbcl-map-bind))
+
+(define-public ecl-cl-map-bind
+  (sbcl-package->ecl-package sbcl-map-bind))
+
+(define-public sbcl-positional-lambda
+  (let ((commit "a43a7bb4ef6faa277e6a7440ec9839711c4b9d28")
+        (revision "0"))
+    (package
+      (name "sbcl-positional-lambda")
+      (version (git-version "2.0" revision commit))
+      (source
+        (origin
+          (method git-fetch)
+          (uri (git-reference
+                (url "https://github.com/Hexstream/positional-lambda")
+                (commit commit)))
+          (file-name (git-file-name "cl-positional-lambda" version))
+          (sha256
+           (base32 "1l27mw5ciqz7rnjq1lwslgk220i8iqcr39rs8b7hxkp1yqmah5zq"))))
+      (build-system asdf-build-system/sbcl)
+      (native-inputs
+        (list sbcl-parachute))
+      (inputs
+        (list sbcl-map-bind))
+      (home-page "https://www.hexstreamsoft.com/libraries/positional-lambda/")
+      (synopsis "Macro favouring positional references over naming")
+      (description
+       "This package provides a concise, intuitive and flexible macro for
+trivial lambdas that eschews explicit naming of parameter variables in favor
+of positional references, with support for a used or ignored &rest parameter
+and automatic declaration of ignored parameters when logical @code{gaps}
+are left in the positional references.  Further convenience features
+are provided.")
+      (license license:unlicense))))
+
+(define-public cl-positional-lambda
+  (sbcl-package->cl-source-package sbcl-positional-lambda))
+
+(define-public ecl-cl-positional-lambda
+  (sbcl-package->ecl-package sbcl-positional-lambda))
+
 (define-public sbcl-bodge-utilities
   (let ((commit "6304bac4abe06d53579e2c0fc4437d14ff077d9f")
         (revision "1"))
@@ -216,6 +285,39 @@ implementation with no external dependencies.")
 
 (define-public ecl-bodge-queue
   (sbcl-package->ecl-package sbcl-bodge-queue))
+
+(define-public sbcl-list-named-class
+  (let ((commit "2955791a7469131bcab42d800883f27993ee1d62")
+        (revision "0"))
+    (package
+      (name "sbcl-list-named-class")
+      (version (git-version "0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/phoe/list-named-class")
+               (commit commit)))
+         (file-name (git-file-name "cl-list-named-class" version))
+         (sha256
+          (base32 "1bdi9q9wvfj66jji3n9hpjrj9271ial2awsb0xw80bmy6wqbg8kq"))))
+      (build-system asdf-build-system/sbcl)
+      (native-inputs
+       (list sbcl-1am))
+      (inputs
+       (list sbcl-alexandria sbcl-closer-mop))
+      (home-page "https://github.com/phoe/list-named-class/")
+      (synopsis "Name classes after lists of symbols")
+      (description
+       "This package makes it possible to name classes by lists of symbols
+instead of symbols.")
+      (license license:expat))))
+
+(define-public cl-list-named-class
+  (sbcl-package->cl-source-package sbcl-list-named-class))
+
+(define-public ecl-list-named-class
+  (sbcl-package->ecl-package sbcl-list-named-class))
 
 (define-public sbcl-golden-utils
   (let ((commit "fe1898f9abbd302b0359f017637c063173cf73e1")
@@ -390,6 +492,45 @@ Features:
 
 (define-public ecl-cl-irc
   (sbcl-package->ecl-package sbcl-cl-irc))
+
+(define-public sbcl-tripod
+  (let ((commit "bcea16610b4961a927e417e4413fffe686d71c83")
+        (revision "0"))
+    (package
+      (name "sbcl-tripod")
+      (version (git-version "0.0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/aartaka/tripod")
+               (commit commit)))
+         (file-name (git-file-name "cl-tripod" version))
+         (sha256
+          (base32 "07czbwzfqg8n1q4dsfmrdp2zmp90xgsg8q26hkrniyvkylq4nn1z"))))
+      (build-system asdf-build-system/sbcl)
+      (inputs
+        (list sbcl-alexandria
+              sbcl-cl-gopher
+              sbcl-cl-markdown
+              sbcl-clss
+              sbcl-hunchentoot
+              sbcl-phos
+              sbcl-plump
+              sbcl-trivial-mimes))
+      (home-page "https://aartaka.me/blog/tripod")
+      (synopsis "Common Lisp web server aiming to ease website hosting")
+      (description
+       "Tripod is a Common Lisp web server aiming to ease plain text, HTML,
+and Gopher website hosting.")
+      (license license:bsd-2))))
+
+(define-public cl-tripod
+  (sbcl-package->cl-source-package sbcl-tripod))
+
+(define-public ecl-tripod
+  (sbcl-package->ecl-package sbcl-tripod))
+
 
 (define-public sbcl-trivial-timeout
   (let ((commit "feb869357f40f5e109570fb40abad215fb370c6c")
@@ -12184,7 +12325,9 @@ functions.")
              sbcl-zpb-ttf))
       (arguments
        '(#:asd-systems '("mcclim"
-                         "clim-examples")
+                         "clim-examples"
+                         ;; clim-debugger is required by cleavir.
+                         "clim-debugger")
          #:phases
          (modify-phases %standard-phases
            (add-after 'unpack 'fix-paths
@@ -12216,7 +12359,14 @@ specification}, a toolkit for writing GUIs in Common Lisp.")
   (sbcl-package->cl-source-package sbcl-mcclim))
 
 (define-public ecl-mcclim
-  (sbcl-package->ecl-package sbcl-mcclim))
+  (let ((pkg (sbcl-package->ecl-package sbcl-mcclim)))
+    (package
+      (inherit pkg)
+      (arguments
+       (substitute-keyword-arguments (package-arguments pkg)
+         ;; Tests fail with "FUNCTION: Not a valid argument (R1
+         ;; (GENERATE-REGION))."  on ECL.
+         ((#:tests? _ #f) #f))))))
 
 (define-public sbcl-cl-inflector
   (let ((commit "f1ab16919ccce3bd82a0042677d9616dde2034fe")
@@ -14641,10 +14791,10 @@ source files.")
   (sbcl-package->cl-source-package sbcl-cl-indentify))
 
 (define-public sbcl-concrete-syntax-tree
-  (let ((commit "abd242a59dadc5452aa9dbc1d313c83ec2c11f46"))
+  (let ((commit "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac"))
     (package
       (name "sbcl-concrete-syntax-tree")
-      (version (git-version "0.0.0" "1" commit))
+      (version (git-version "0.0.0" "2" commit))
       (source
        (origin
          (method git-fetch)
@@ -14653,10 +14803,14 @@ source files.")
                (commit commit)))
          (file-name (git-file-name name commit))
          (sha256
-          (base32 "1lyrglc3h1if44gxd9cwv90wa90nrdjvb7fry39b1xn8ywdfa7di"))))
+          (base32 "169ibaz1vv7pphib28443zzk3hf1mrcarhzfm8hnbdbk529cnxyi"))))
       (build-system asdf-build-system/sbcl)
       (inputs
        (list sbcl-acclimation))
+      (arguments
+       '(#:asd-systems '("concrete-syntax-tree"
+                         "concrete-syntax-tree-destructuring"
+                         "concrete-syntax-tree-source-info")))
       (home-page "https://github.com/s-expressionists/Concrete-Syntax-Tree")
       (synopsis "Parse Common Lisp code into a concrete syntax tree")
       (description
@@ -22279,6 +22433,10 @@ place outside with-notes.
          (sha256
           (base32 "05smc81ml9rbcbzdhqg2mi9drnjsipq62r5q7f7qql8hbx01vl9i"))))
       (build-system asdf-build-system/sbcl)
+      (inputs
+       (list sbcl-alexandria))
+      (arguments
+       '(#:asd-systems '("ctype" "ctype-tfun")))
       (home-page "https://github.com/s-expressionists/ctype")
       (synopsis "Common Lisp type system implementation ")
       (description
@@ -22524,6 +22682,32 @@ can be useful for games, 3D, and GL in general.")
 (define-public ecl-mathkit
   (sbcl-package->ecl-package sbcl-mathkit))
 
+(define-public sbcl-rucksack
+  (let ((commit "89278f88513ef328d290aa8b2baa06d63b44a9b1")
+        (revision "0"))
+    (package
+     (name "sbcl-rucksack")
+     (version (git-version "0.1.20" revision commit))
+     (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/arieltan/rucksack")
+               (commit commit)))
+         (file-name (git-file-name "cl-rucksack" version))
+         (sha256
+          (base32 "0acpsxaxpp90km7gdbn9sysilycp3yg1g040fg1vqakpj2yb8vad"))))
+     (build-system asdf-build-system/sbcl)
+     (synopsis "Flexible, light weight, persistence library")
+     (description
+      "@code{cl-rucksack} is a persistence library based on Arthur Lemmens'
+Rucksack with some enhancements.")
+     (home-page "https://github.com/arieltan/rucksack/")
+     (license license:expat))))
+
+(define-public cl-rucksack
+  (sbcl-package->cl-source-package sbcl-rucksack))
+
 (define-public sbcl-sdl2kit
   (let ((commit "aae663224a10ece2b0c374aa5942a3f0bc1b3c2f"))
     (package
@@ -22664,6 +22848,39 @@ objects.")
 (define-public ecl-cl-geometry
   (sbcl-package->ecl-package sbcl-cl-geometry))
 
+(define-public sbcl-amb
+  (let ((commit "884bef69a1ea02f3b9deae0341e1a038ff31b896")
+        (revision "0"))
+    (package
+     (name "sbcl-amb")
+     (version (git-version "1.0.0" revision commit))
+     (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/phoe/amb")
+               (commit commit)))
+         (file-name (git-file-name "cl-amb" version))
+         (sha256
+          (base32 "1klh1aakklj1famrff0sccnwlv8238b1q446288aqnqgxxw6pf21"))))
+     (build-system asdf-build-system/sbcl)
+     (inputs
+       (list sbcl-alexandria))
+     (native-inputs
+       (list sbcl-parachute))
+     (synopsis "Implementation of John McCarthy's ambiguous operator")
+     (description
+      "@code{cl-amb} provides an implementation of John McCarthy's ambiguous
+operator in portable Common Lisp.")
+     (home-page "https://github.com/phoe/amb/")
+     (license license:expat))))
+
+(define-public cl-amb
+  (sbcl-package->cl-source-package sbcl-amb))
+
+(define-public ecl-amb
+  (sbcl-package->ecl-package sbcl-amb))
+
 (define-public sbcl-sketch
   ;; No release in years.
   (let ((commit "4cc00b08e202c7adda41391463096cf9df1705c3"))
@@ -22708,6 +22925,37 @@ the Processing language and shares some of the API.")
 
 (define-public ecl-sketch
   (sbcl-package->ecl-package sbcl-sketch))
+
+(define-public sbcl-cl-cron
+  (let ((commit "092aef5d5666fb43c04258e4043f609670a20456")
+        (revision "0"))
+    (package
+      (name "sbcl-cl-cron")
+      (version (git-version "0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/ciel-lang/cl-cron")
+               (commit commit)))
+         (file-name (git-file-name "cl-cron" version))
+         (sha256
+          (base32 "0y4li8j2h1nbpldpqm39ld9kgs4a7biy94h49n27l59l7mn1jd0d"))))
+      (build-system asdf-build-system/sbcl)
+      (inputs
+        (list sbcl-bordeaux-threads))
+      (home-page "https://github.com/ciel-lang/cl-cron/")
+      (synopsis "Run cron like jobs in Common Lisp")
+      (description
+       "@code{cl-cron} is a simple tool that provides cron like facilities
+directly inside of Common Lisp.")
+      (license license:gpl3+))))
+
+(define-public cl-cron
+  (sbcl-package->cl-source-package sbcl-cl-cron))
+
+(define-public ecl-cl-cron
+  (sbcl-package->ecl-package sbcl-cl-cron))
 
 (define-public sbcl-string-pokemonize
   (let ((commit "2dc01643defb497e4d1eb833def71dfc1e8d5da6")
@@ -22996,3 +23244,36 @@ especially in a multi-threaded context.")
 
 (define-public ecl-ndebug
   (sbcl-package->ecl-package sbcl-ndebug))
+
+(define-public sbcl-smug
+  (let ((commit "647a2428df297e1dd183ba7c19574bdb1320ae79")
+        (revision "0"))
+    (package
+     (name "sbcl-smug")
+     (version (git-version "0.0.0" revision commit))
+     (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/drewc/smug")
+               (commit commit)))
+         (file-name (git-file-name "cl-smug" version))
+         (sha256
+          (base32 "13gzkj9skya2ziwclk041v7sif392ydbvhvikhg2raa3qjcxb3rq"))))
+     (build-system asdf-build-system/sbcl)
+     (arguments
+      `(#:tests? #f)) ; There are no tests.
+     (synopsis "Parser combinators for Common Lisp")
+     (description
+      "@code{cl-smug} is a library for parsing text, based on monadic parser
+combinators.  Using a simple technique from the functional programming
+camp, @code{cl-smug} makes it simple to create quick extensible recursive
+descent parsers without funky syntax or impenetrable macrology.")
+     (home-page "http://smug.drewc.ca/")
+     (license license:expat))))
+
+(define-public cl-smug
+  (sbcl-package->cl-source-package sbcl-smug))
+
+(define-public ecl-smug
+  (sbcl-package->ecl-package sbcl-smug))
