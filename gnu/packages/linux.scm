@@ -8746,7 +8746,7 @@ tools for managing PipeWire.")
 (define-public ell
   (package
     (name "ell")
-    (version "0.48")
+    (version "0.53")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -8755,7 +8755,7 @@ tools for managing PipeWire.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0lxjizby3zdyhzad5a0gbz4m2pp44jf1j4l1pn18d04rw9mr2gqy"))))
+                "1jfwnyjyhakrvr7xljn7ckb3q81gp62zgv5dn30r4zcbd4ymf6xp"))))
     (build-system gnu-build-system)
     (arguments
      ;; Tests launch dbus-daemon instances that all try to bind to
@@ -9335,3 +9335,4 @@ desktop.")
 directly from the kernel device and prints a device description and the events
 with the value and the symbolic name.")
     (license license:gpl2+)))
+
