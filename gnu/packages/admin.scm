@@ -712,7 +712,9 @@ console.")
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (inputs
-     (list ncurses))
+     `(("ncurses" ,ncurses)
+       ("lm-sensors" ,lm-sensors "lib")
+       ("libcap" ,libcap)))
     (native-inputs
      (list autoconf automake python-minimal-wrapper))     ; for scripts/MakeHeader.py
     (home-page "https://htop.dev")
@@ -5493,3 +5495,4 @@ mechanisms if you really want to protect services.")
 several hosts in succession or in parallel.  It can also be used to copy a
 file or files to several hosts.")
     (license license:gpl3+)))
+
