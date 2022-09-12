@@ -522,6 +522,31 @@ repositories through the
 server}.  The main advantage compared to @code{vc-hg} is speed.")
     (license license:gpl3+)))
 
+(define-public emacs-telephone-line
+  (let ((commit "6f3455a365912e8f0c45a2240ea79507dee45ade")
+        (revision "0"))
+    (package
+      (name "emacs-telephone-line")
+      (version (git-version "0.5" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://github.com/dbordak/telephone-line")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "1hnd6wnc52sc0ckriqnhaz64pyjk027y0dpcmh2zhpd27i8d4hmq"))))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/dbordak/telephone-line")
+      (synopsis "Implementation of Powerline for Emacs")
+      (description
+       "Telephone Line is a new implementation of Powerline for Emacs with
+optional baked-in Evil support, antialiased separators, and an easy
+configuration language which makes it trivial to write your own themes.")
+      (license license:gpl3+))))
+
 (define-public emacs-terminal-here
   (package
     (name "emacs-terminal-here")
@@ -2680,7 +2705,7 @@ shine on top of your cursor so you know where it is.")
 (define-public emacs-counsel-bbdb
   (package
     (name "emacs-counsel-bbdb")
-    (version "0.0.4")
+    (version "0.0.5")
     (source
      (origin
        (method git-fetch)
@@ -2689,9 +2714,9 @@ shine on top of your cursor so you know where it is.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0bki658mvlchqf3prkzxz4217a95cxm58c1qmf84yp2n8h6gd0d8"))))
+        (base32 "1jrj7hx6y518np3xcnarbj0c43lglcf9gww3fhfqp7lzxl9hvi8s"))))
     (build-system emacs-build-system)
-    (propagated-inputs (list emacs-ivy))
+    (propagated-inputs (list emacs-bbdb emacs-ivy))
     (home-page "https://github.com/redguardtoo/counsel-bbdb")
     (synopsis "Ivy interface for BBDB")
     (description "This Ivy extension enables the use of @code{ivy-mode} to input
@@ -3306,7 +3331,7 @@ be regarded as @code{emacs-company-quickhelp} for @code{emacs-corfu}.")
 (define-public emacs-cape
   (package
     (name "emacs-cape")
-    (version "0.8")
+    (version "0.9")
     (source
      (origin
        (method git-fetch)
@@ -3315,7 +3340,7 @@ be regarded as @code{emacs-company-quickhelp} for @code{emacs-corfu}.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0zv3hcnarwyhj4hhfk9kz4gzshks10vd5zfsmpv5nlbhvwp69j3p"))))
+        (base32 "09lzzhx438s9wlpmiyyx9bbb2hlscf415f080bkz6gyw4nsdh0g4"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/minad/cape")
     (synopsis "Completion at point extensions for Emacs")
@@ -6698,14 +6723,14 @@ user.")
 (define-public emacs-subed
   (package
     (name "emacs-subed")
-    (version "1.0.7")
+    (version "1.0.8")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://elpa.nongnu.org/nongnu/subed-"
                                   version ".tar"))
               (sha256
                (base32
-                "0js48yar8xgj3wjmlkv3k5208q1zvv74sg4lhk6asiy4cq3pqjia"))))
+                "05dx4ywma7n73d0cihf4v8ayihm7gmfqpzvdycq4yk0zkxb958z1"))))
     (arguments
      (list
       #:tests? #t
@@ -8871,7 +8896,7 @@ built-in custom themes.")
 (define-public emacs-gruvbox-theme
   (package
     (name "emacs-gruvbox-theme")
-    (version "1.30.0")
+    (version "1.30.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -8880,7 +8905,7 @@ built-in custom themes.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1dzaivis9cpqzb53qmkmhijr5l4hl2l3yr2412jxrz2jmqi3q4c5"))))
+                "0dgjf86i8179l1nsjyc20chysqmy8yhphpd5lzv2ypx79l4z3jka"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-autothemer))
@@ -9230,7 +9255,7 @@ style, or as multiple word prefixes.")
 (define-public emacs-consult
   (package
     (name "emacs-consult")
-    (version "0.18")
+    (version "0.19")
     (source
      (origin
        (method git-fetch)
@@ -9238,7 +9263,7 @@ style, or as multiple word prefixes.")
              (url "https://github.com/minad/consult")
              (commit version)))
        (sha256
-        (base32 "0sy4rn1vjk1g50r8z14hzj8lds6s7ij2zkjqfi6mfash5il75wnq"))
+        (base32 "1lb7ci1kkgv07c4hcfxisr5zjx68hq15bqf4x3bhmnn13x38j7jw"))
        (file-name (git-file-name name version))))
     (build-system emacs-build-system)
     (propagated-inputs (list emacs-compat))
@@ -9393,7 +9418,7 @@ expansion and overwriting the marked region with a new snippet completion.")
 (define-public emacs-marginalia
   (package
     (name "emacs-marginalia")
-    (version "0.13")
+    (version "0.14")
     (source
      (origin
        (method git-fetch)
@@ -9402,7 +9427,7 @@ expansion and overwriting the marked region with a new snippet completion.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1qk6j7l39z92h4kvvbwcs85ilyx3d6y0l8zm33iar2pjnyks1kq3"))))
+        (base32 "1gbcjw447vxd3ivfjgnya2ix3w791kvbika1v9bzj8s7i996fb6f"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/minad/marginalia")
     (synopsis "Marginalia in the minibuffer completions")
@@ -13301,7 +13326,6 @@ passive voice.")
        #:test-command '("make" "test-dirty")
        #:phases
        (modify-phases %standard-phases
-         (delete 'build)
          (add-before 'check 'make
            (lambda _
              (invoke "make" (string-append "ORGVERSION=" ,version))))
@@ -13374,23 +13398,24 @@ compatible with the Org stable version.")
     (license license:gpl3+)))
 
 (define-public emacs-org-contacts
-  ;;; XXX: Upstream made no release yet.
-  (let ((commit "3d2f39f62aefb0a32d10607703e8b1d4f43821fa")
-        (revision "0"))
+  ;; XXX: Upstream does not tag version bumps. Commit below matches latest
+  ;; version bump.
+  (let ((commit "217ba04c9d638067a6ccb0829cf1885f54c1d568"))
     (package
       (name "emacs-org-contacts")
-      (version (git-version "0" revision commit))
+      (version "1.1")
       (source
        (origin
          (method git-fetch)
          (uri (git-reference
-               (url "https://github.com/stardiviner/org-contacts.el")
+               (url "https://repo.or.cz/org-contacts")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0a654406w8zd1hbp8ckc975jhl9mi14xzqizzwiki625dymiw5g5"))))
+          (base32 "0f0vjdvx0hffj2xvyrya8yfl77djmzmpxdxsx58ym4lmdvwyb6x3"))))
       (build-system emacs-build-system)
-      (home-page "https://github.com/stardiviner/org-contacts.el")
+      (propagated-inputs (list emacs-org))
+      (home-page "https://repo.or.cz/org-contacts")
       (synopsis "Contacts management system for Org mode")
       (description "Manage your contacts from Org mode.  You can auto
 complete email addresses, export contacts to a vCard file, put birthdays
@@ -14133,6 +14158,34 @@ automatically using existing List-ID headers in your mu database.  Just press
 \"l\" in the headers view and any mailing list you've subscribed to will be
 automatically discovered and presented in recency order.")
       (license license:gpl3+))))
+
+(define-public emacs-mentor
+  (package
+    (name "emacs-mentor")
+    (version "0.3.5")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://elpa.nongnu.org/nongnu/mentor-"
+                           version ".tar"))
+       (sha256
+        (base32
+         "01zrvfk2njzyzjzkvp5hv5cjl1k1qjrila1ab4bv26gf6bkq5xh3"))))
+    (build-system emacs-build-system)
+    (propagated-inputs
+     (list emacs-async emacs-xml-rpc))
+    (home-page "https://elpa.nongnu.org/nongnu/mentor.html")
+    (synopsis "Emacs front-end for the rTorrent bittorrent client")
+    (description
+     "Mentor is a GNU Emacs frontend for the rTorrent bittorrent client.
+
+By default, it will start and run rTorrent from within Emacs but can also be
+configured to use an external rTorrent instance over XML-RPC.
+
+This project aims to provide a feature complete and customizable interface,
+that will feel familiar to Emacs users.  Key bindings are chosen to be as
+close to the vanilla rTorrent curses interface as possible.")
+    (license license:gpl3+)))
 
 (define-public emacs-message-view-patch
   (let ((commit "40bc2e554fc1d0b6f0c403192c0a3ceaa019a78d")
@@ -15136,7 +15189,7 @@ in Emacs.")
 (define-public emacs-php-mode
   (package
     (name "emacs-php-mode")
-    (version "1.24.0")
+    (version "1.24.1")
     (source
      (origin
        (method git-fetch)
@@ -15145,7 +15198,7 @@ in Emacs.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0bs9q62bd7885c39v7x1qz3w1fhpmpdgm72xwsk2yygw0ii425nn"))))
+        (base32 "06xgmlbvqhkrnk6390mdbpjij34msxxwzqmagi6zpwpsf38mn6qf"))))
     (build-system emacs-build-system)
     (arguments
      `(#:phases
@@ -15217,13 +15270,13 @@ containing words from the Rime project.")
 (define-public emacs-pyim
   (package
     (name "emacs-pyim")
-    (version "5.2.3")
+    (version "5.2.4")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/pyim-" version ".tar"))
        (sha256
-        (base32 "189r0qkd8nv5zjg2ljbzbj086jb8xbl4yd1jliz4azaprv8fhqv0"))))
+        (base32 "1dzl4xaf31nyjb5hnwwf29i75x0i8dakpmmagbn4ks5hi3jl2ig0"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-async emacs-popup emacs-posframe emacs-xr))
@@ -15789,8 +15842,8 @@ lines, and @code{gc} to comment out the target of a motion.")
 ;; Tests for emacs-ansi have a circular dependency with ert-runner, and
 ;; therefore cannot be run
 (define-public emacs-ansi
-  (let ((commit "a41d5cc719297515d85bb5256980cd1204a71b88")
-        (revision "1"))
+  (let ((commit "2367fba7b3b2340364a30cd6de7f3eb6bb9898a3")
+        (revision "2"))
     (package
       (name "emacs-ansi")
       (version (git-version "0.4.1" revision commit))
@@ -15802,10 +15855,8 @@ lines, and @code{gc} to comment out the target of a motion.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "051v8dmji90chwbsyqsqry7h35mksal2j6rgw1kpmjsni86d79y1"))))
+          (base32 "1n7h6l4icm6lks3zpvd83j1fzrnspw19rmz7c96vy7pdh1y4v3p3"))))
       (build-system emacs-build-system)
-      (propagated-inputs
-       (list emacs-dash emacs-s))
       (home-page "https://github.com/rejeep/ansi.el")
       (synopsis "Convert strings to ANSI")
       (description "@code{emacs-ansi} defines functions that turns simple
@@ -16519,33 +16570,31 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
     (license license:gpl3+)))
 
 (define-public emacs-ement
-  (let ((commit "02015eacf682b53baaddf26c8a4046e6ff84d4e8")
-        (revision "3"))
-    (package
-      (name "emacs-ement")
-      (version (git-version "0.1-pre" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/alphapapa/ement.el")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "0xnhhzl1si09l7lgh5smgpmxgbkzi8p68dykdgsawqa960w6n1ks"))))
-      (build-system emacs-build-system)
-      (arguments
-       `(#:emacs ,emacs))               ;need libxml support
-      (propagated-inputs
-       (list emacs-plz
-             emacs-svg-lib
-             emacs-taxy
-             emacs-taxy-magit-section
-             emacs-ts))
-      (home-page "https://github.com/alphapapa/ement.el")
-      (synopsis "Matrix client for Emacs")
-      (description "Ement.el is a Matrix client for Emacs.")
-      (license license:gpl3+))))
+  (package
+    (name "emacs-ement")
+    (version "0.1.2")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/alphapapa/ement.el")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0khp1x8rip6kddkb7d6y14z1505zhk1gdxiaw0m26ksa1rw852nr"))))
+    (build-system emacs-build-system)
+    (arguments
+     `(#:emacs ,emacs))               ;need libxml support
+    (propagated-inputs
+     (list emacs-plz
+           emacs-svg-lib
+           emacs-taxy
+           emacs-taxy-magit-section
+           emacs-ts))
+    (home-page "https://github.com/alphapapa/ement.el")
+    (synopsis "Matrix client for Emacs")
+    (description "Ement.el is a Matrix client for Emacs.")
+    (license license:gpl3+)))
 
 (define-public emacs-rpm-spec-mode
   (let ((commit "c1c38050c48ea330c7cea632b8785d66daeefb2b")
@@ -19046,7 +19095,7 @@ according to a parsing expression grammar.")
 (define-public emacs-eldev
   (package
     (name "emacs-eldev")
-    (version "1.2.1")
+    (version "1.2.2")
     (source
      (origin
        (method git-fetch)
@@ -19055,7 +19104,7 @@ according to a parsing expression grammar.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1zf3vrk9yw4f4fj31g3vphjd3rhr2hv3q2crkdsgi7z5xlb8frds"))))
+        (base32 "0d6wbfim0q81sm5m45fjc6n0v6nk32qrgas5nzrs0vslym4bfxna"))))
     (build-system emacs-build-system)
     (arguments
      (list
@@ -20153,14 +20202,14 @@ or expressions with SVG rounded box labels that are fully customizable.")
 (define-public emacs-kind-icon
   (package
     (name "emacs-kind-icon")
-    (version "0.1.6")
+    (version "0.1.7")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/kind-icon-"
                            version ".tar"))
        (sha256
-        (base32 "0ac53qrz217b054z51244r7whvjmyrq4941ld0bgl9crssrhb588"))))
+        (base32 "02imi2qj329yrqvs23d4z7fv8bbaz0fvya6zdswb38blpdri4cn1"))))
     (build-system emacs-build-system)
     (propagated-inputs (list emacs-svg-lib))
     (home-page "https://github.com/jdtsmith/kind-icon")
@@ -25128,7 +25177,7 @@ according to their use.")
 (define-public emacs-detached
   (package
     (name "emacs-detached")
-    (version "0.7")
+    (version "0.8.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -25137,22 +25186,17 @@ according to their use.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "160h60vrpxslw6y290ndc065cc75dab58aq7kjqash94vkifnii2"))))
+                "190sil04wbnnml7i1nv19xn8fpqwng9xngpsxvmfxj3bzn7slid6"))))
     (arguments
      (list
       #:tests? #t
       #:test-command #~(list "ert-runner")
       #:phases
       #~(modify-phases %standard-phases
-          (add-before 'install 'install-detached-env
-            (lambda _
-              (install-file "detached-env" (string-append #$output "/bin"))))
           (add-after 'unpack 'configure
             (lambda* (#:key inputs #:allow-other-keys)
               (make-file-writable "detached.el")
               (emacs-substitute-variables "detached.el"
-                ("detached-env"
-                 (string-append #$output "/bin/detached-env"))
                 ("detached-dtach-program"
                  (search-input-file inputs "/bin/dtach"))
                 ("detached-shell-program"
@@ -31679,7 +31723,7 @@ and preferred services can easily be configured.")
 (define-public emacs-vertico
   (package
     (name "emacs-vertico")
-    (version "0.26")
+    (version "0.27")
     (source
      (origin
        (method git-fetch)
@@ -31688,7 +31732,7 @@ and preferred services can easily be configured.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "16bv4pfc3k37dqyj1va3cb24db36pn8hsazk3ak4xhrgf2q5l548"))))
+        (base32 "17ip4v0hkv9q2fsnpja24jnf5d5zn4g91553n2s0l5c6gwwpilkp"))))
     (build-system emacs-build-system)
     (arguments
      `(#:phases
@@ -31905,7 +31949,7 @@ for detecting and improve non-idiomatic Clojure source code.")
 (define-public emacs-mint-mode
   (package
     (name "emacs-mint-mode")
-    (version "1.0.2")
+    (version "1.0.3")
     (source
      (origin
        (method git-fetch)
@@ -31914,7 +31958,7 @@ for detecting and improve non-idiomatic Clojure source code.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1v8mp1k24lzvc0mh9l4k3fwzr4sr87f5p9ahpy7263pcbvcy11vl"))))
+        (base32 "19szk2dhsa0771kbg1ywp0zz8j6akysvwmmrx2bihq8h5j4y23pg"))))
     (build-system emacs-build-system)
     (arguments '(#:include '("\\.el$" "\\.txt$")))
     (home-page "https://github.com/creatorrr/emacs-mint-mode")
@@ -32545,3 +32589,9 @@ a way to pop up a frame at point.  Vertico-posframe is an Emacs package and
 a Vertico extension which provides a way to pop up a frame at point to show
 a vertical completion UI.")
     (license license:gpl3+)))
+
+;;;
+;;; Avoid adding new packages to the end of this file. To reduce the chances
+;;; of a merge conflict, place them above by existing packages with similar
+;;; functionality or similar names.
+;;;

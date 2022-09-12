@@ -45997,6 +45997,8 @@ in your code.")
        (("rust-unicode-ident" ,rust-unicode-ident-1))
        #:cargo-development-inputs
        (("rust-quote" ,rust-quote-1))))
+    ;; This is necessary for downstream packages such as rust-wayland-scanner
+    (inputs (list rust-unicode-ident-1))
     (home-page "https://github.com/dtolnay/proc-macro2")
     (synopsis "Stable implementation of the upcoming new `proc_macro` API")
     (description "This package provides a stable implementation of the upcoming new
@@ -75106,3 +75108,8 @@ way to convert simple shell commands to windows batch commands.")
      "This crate uses bindgen to generate the raw FFI definitions for PAM. For a rustified API consider using pam.")
     (license (list license:expat license:asl2.0))))
 
+;;;
+;;; Avoid adding new packages to the end of this file. To reduce the chances
+;;; of a merge conflict, place them above by existing packages with similar
+;;; functionality or similar names.
+;;;
