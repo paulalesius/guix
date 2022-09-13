@@ -171,11 +171,15 @@ in AC mode.  Values are stated as a percentage of the available performance.")
 
   (cpu-hwp-on-bat
    (string "balance_power")
-   "Same as @code{cpu-cwp-on-bat} on BAT more.")
+   "Same as @code{cpu-cwp-on-ac} on BAT more.")
 
-  (cpu-hwp-dyn-boost?
+  (cpu-hwp-dyn-boost-on-ac?
    (boolean #t)
    "Configure the Intel CPU HWP dynamic boost feature.")
+
+  (cpu-hwp-dyn-boost-on-bat?
+   (boolean #t)
+   "Same as @code{cpu-hwp-dyn-boost-on-ac?}")
 
   (sched-powersave-on-ac?
    (boolean #f)
