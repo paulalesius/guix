@@ -714,7 +714,13 @@ console.")
     (inputs
      `(("ncurses" ,ncurses)
        ("lm-sensors" ,lm-sensors "lib")
-       ("libcap" ,libcap)))
+       ("libcap" ,libcap)
+       ("hwloc" ,hwloc "lib")))
+    (arguments
+     `(#:configure-flags
+       '("--enable-hwloc"
+         "--enable-sensors"
+         "--enable-capabilities")))
     (native-inputs
      (list autoconf automake python-minimal-wrapper))     ; for scripts/MakeHeader.py
     (home-page "https://htop.dev")
