@@ -8528,7 +8528,6 @@ Cisco's AnyConnect SSL VPN.")
      `(("xsltproc" ,libxslt)))
     (arguments
      `(#:tests? #f))                    ; no tests
-    (native-inputs (list libxslt))
     (home-page "https://wiki.gnome.org/Projects/NetworkManager")
     (synopsis "Database of broadband connection configuration")
     (description "Database of broadband connection configuration.")
