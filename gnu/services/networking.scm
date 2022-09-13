@@ -1177,8 +1177,7 @@ project's documentation} for more information."
        (list (shepherd-service
               (documentation "Run the NetworkManager.")
               (provision '(networking))
-              ;; Remove wpa-supplicant from requirement after dbus and before loopback
-              (requirement '(user-processes dbus-system loopback))
+              (requirement '(user-processes dbus-system wpa-supplicant loopback))
               (start #~(make-forkexec-constructor
                         (list (string-append #$network-manager
                                              "/sbin/NetworkManager")
