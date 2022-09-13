@@ -5045,18 +5045,20 @@ mode, which displays information about Elasticsearch clusters.")
     (license license:gpl3+)))
 
 (define-public emacs-expand-region
-  (package
+  (let ((commit "c5c4362741deebb0985a8a29f9b8b0e25160764a")
+        (revision "1"))
+    (package
     (name "emacs-expand-region")
-    (version "0.11.0")
+    (version (git-version "0.11.0" revision commit))
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/magnars/expand-region.el")
-             (commit version)))
+             (commit commit)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0h40dhc3kn8fq86xnwi5lz7ql8my8737y7wkqr897p15y90swr35"))))
+        (base32 "17h58v5mnggbrwrp61cwkqx8hzazkdqyz9p6s1hl9g2hys7zkb00"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/magnars/expand-region.el")
     (synopsis "Increase selected region by semantic units")
@@ -5064,7 +5066,7 @@ mode, which displays information about Elasticsearch clusters.")
      "Expand region increases the selected region by semantic units.  Just
 keep pressing the key until it selects what you want.  There's also
 @code{er/contract-region} if you expand too far.")
-    (license license:gpl3+)))
+    (license license:gpl3+))))
 
 (define-public emacs-explain-pause-mode
   (let ((commit "2356c8c3639cbeeb9751744dbe737267849b4b51")
@@ -29739,6 +29741,30 @@ It also provides original Helm commands: @command{helm-cider-spec},
       (synopsis "Read and write EDN from Elisp")
       (description "This is an Emacs Lisp library for reading and writing the
 data format @code{edn}.  See @url{https://github.com/edn-format/edn}.")
+      (license license:gpl3+))))
+
+(define-public emacs-ednc
+  (let ((commit "940a4adbbeb3b6b1a72270a814d52770dd89a997")
+        (revision "1"))
+    (package
+      (name "emacs-ednc")
+      (version (git-version "0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/sinic/ednc")
+               (commit commit)))
+         (sha256
+          (base32 "1gsx2qgv5xm9r0i0axd4hf31g2rq2m4a1hvnif48g4xb0llss73c"))))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/sinic/ednc")
+      (synopsis "Emacs Desktop Notification Center")
+      (description
+       "The Emacs Desktop Notification Center (EDNC) is an Emacs package written
+in pure Lisp that implements a Desktop Notifications service according to the
+freedesktop.org specification.  EDNC aspires to be a small, but flexible
+drop-in replacement of standalone daemons like Dunst.")
       (license license:gpl3+))))
 
 (define-public emacs-helm-clojuredocs
