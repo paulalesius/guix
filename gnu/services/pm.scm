@@ -165,6 +165,18 @@ in AC mode.  Values are stated as a percentage of the available performance.")
    maybe-boolean
    "Same as @code{cpu-boost-on-ac?} on BAT mode.")
 
+  (cpu-hwp-on-ac
+   (string "balance_performance")
+   "Set Intel CPU energy/performance policy HWP.EPP.")
+
+  (cpu-hwp-on-bat
+   (string "balance_power")
+   "Same as @code{cpu-cwp-on-bat} on BAT more.")
+
+  (cpu-hwp-dyn-boost?
+   (boolean #t)
+   "Configure the Intel CPU HWP dynamic boost feature.")
+
   (sched-powersave-on-ac?
    (boolean #f)
    "Allow Linux kernel to minimize the number of CPU cores/hyper-threads
