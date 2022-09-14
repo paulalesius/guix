@@ -824,17 +824,17 @@ safety and thread safety guarantees.")
          ((#:tests? _ #f)
           #f))))))
 
-;;(define-public rust-1.63
-;;  (let ((base-rust
-;;         (rust-bootstrapped-package
-;;          rust-1.62 "1.63.0"
-;;          "1l4rrbzhxv88pnfq94nbyb9m6lfnjwixma3mwjkmvvs2aqlq158z")))
-;;    (package
-;;      (inherit base-rust)
-;;      (arguments
-;;       (substitute-keyword-arguments (package-arguments base-rust)
-;;         ((#:tests? _ #f)
-;;          #f))))))
+(define-public rust-1.63
+  (let ((base-rust
+         (rust-bootstrapped-package
+          rust-1.62 "1.63.0"
+          "1l4rrbzhxv88pnfq94nbyb9m6lfnjwixma3mwjkmvvs2aqlq158z")))
+    (package
+      (inherit base-rust)
+      (arguments
+       (substitute-keyword-arguments (package-arguments base-rust)
+         ((#:tests? _ #f)
+          #f))))))
 
 ;;; Note: Only the latest versions of Rust are supported and tested.  The
 ;;; intermediate rusts are built for bootstrapping purposes and should not
@@ -860,3 +860,21 @@ safety and thread safety guarantees.")
      (description "This package provide source code for the Rust standard
 library, only use by rust-analyzer, make rust-analyzer out of the box."))))
 
+(define-public rust-latest rust-1.63)
+
+(define-public rust-latest-src
+   (package
+     (inherit rust-latest)
+     (name "rust-latest-src")
+     (build-system copy-build-system)
+     (native-inputs '())
+     (inputs '())
+     (native-search-paths '())
+     (outputs '("out"))
+     (arguments
+      `(#:install-plan
+        '(("library" "lib/rustlib/src/rust/library")
+          ("src" "lib/rustlib/src/rust/src"))))
+     (synopsis "Source code for the Rust standard library")
+     (description "This package provide source code for the Rust standard
+library, only use by rust-analyzer, make rust-analyzer out of the box.")))
