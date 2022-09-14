@@ -860,7 +860,10 @@ safety and thread safety guarantees.")
      (description "This package provide source code for the Rust standard
 library, only use by rust-analyzer, make rust-analyzer out of the box."))))
 
-(define-public rust-latest rust-1.63)
+(define-public rust-latest
+  (package
+    (inherit rust-1.63)
+    (name "rust-latest")))
 
 (define-public rust-latest-src
    (package
