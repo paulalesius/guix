@@ -141,9 +141,9 @@
       #:modules (%emacs-modules build-system)
       #:configure-flags #~(list "--with-modules"
                                 "--with-cairo"
-                                "--with-native-compilation"
+                                ;;"--with-native-compilation"
                                 "--disable-build-details")
-      #:make-flags #~(list "NATIVE_FULL_AOT=1")
+      ;;#:make-flags #~(list "NATIVE_FULL_AOT=1")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'set-paths 'set-libgccjit-path
