@@ -5318,7 +5318,7 @@ documentation.")
            vala))
     (inputs
      (list gtk+
-           libgnome-games-support
+           libgnome-games-support-1
            librsvg
            yelp))
     (home-page "https://wiki.gnome.org/Apps/Mines")
@@ -9525,15 +9525,20 @@ shared object databases, search tools and indexing.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "1cncyiyh79w1id6a6s2f0rxmgwl65lp4ml4afa0z35jrnwp2s8cr"))
-              (patches
-               (search-patches "nautilus-disable-tracker-tests.patch"))))
+                "1cncyiyh79w1id6a6s2f0rxmgwl65lp4ml4afa0z35jrnwp2s8cr"))))
     (build-system meson-build-system)
     (arguments
      (list
       #:glib-or-gtk? #t
       #:phases
       #~(modify-phases %standard-phases
+          (add-after 'unpack 'disable-tracker-tests
+            ;; The tracker test hangs in the build container (see:
+            ;; https://gitlab.gnome.org/GNOME/nautilus/-/issues/2486).
+            (lambda _
+              (substitute* "test/automated/displayless/meson.build"
+                (("^foreach t: tracker_tests" all)
+                 (string-append "tracker_tests = []\n" all)))))
           (add-after 'unpack 'make-extensible
             (lambda _
               (substitute* "src/nautilus-module.c"
