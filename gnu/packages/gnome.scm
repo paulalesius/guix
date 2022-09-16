@@ -2671,7 +2671,7 @@ on the GNOME Desktop with a single simple application.")
 (define-public gsettings-desktop-schemas
   (package
     (name "gsettings-desktop-schemas")
-    (version "42.0")
+    (version "41.0")
     (source
      (origin
        (method url-fetch)
@@ -2680,7 +2680,7 @@ on the GNOME Desktop with a single simple application.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "1li3fcqwnw20f4j0i21i88fygm0hli8gmzkn4apgf8ynkrd371k6"))))
+         "1v9jagk679m01nji0acirynxinziv036618c7xc49l4nwmr9ja3p"))))
     (build-system meson-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
@@ -3489,7 +3489,6 @@ for dealing with different structured file formats.")
     (build-system cargo-build-system)
     (outputs '("out" "doc" "debug"))
     (arguments
-     ;; Tests fail to pass for whatever reason with rust-1.62
      `(#:install-source? #f
        #:modules
        ((guix build cargo-build-system)
@@ -3614,11 +3613,7 @@ for dealing with different structured file formats.")
                (("fn multiple_input_files_not_allowed_for_png_output" all)
                 (string-append "#[ignore] " all))
                (("fn stylesheet_option_error" all)
-                (string-append "#[ignore] " all)))
-             (substitute* "rsvg_internals/Cargo.toml"
-               ;; Disable doc tests for rsvg_internals
-               (("name = \"rsvg_internals\"" all)
-                (string-append all "\ndoctest = false")))))
+                (string-append "#[ignore] " all)))))
          (replace 'check
            (lambda* args
              ((assoc-ref gnu:%standard-phases 'check)
@@ -4467,7 +4462,7 @@ passwords in the GNOME keyring.")
 (define-public vala
   (package
     (name "vala")
-    (version "0.56.1")
+    (version "0.54.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/vala/"
@@ -4475,7 +4470,7 @@ passwords in the GNOME keyring.")
                                   "vala-" version ".tar.xz"))
               (sha256
                (base32
-                "1f8zv4js1kjh6v0a5d9wpnbcnqii6argkcw6yp6x30nszlfvh665"))))
+                "048k5c6c6y7jyb961krnrb7m0kghr0yrkpnfx3j5ckbx652yfkc8"))))
     (build-system glib-or-gtk-build-system)
     (arguments
      '(#:configure-flags '("--enable-coverage")
@@ -4890,7 +4885,7 @@ indicators etc).")
 (define-public glib-networking
   (package
     (name "glib-networking")
-    (version "2.72.0")
+    (version "2.70.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/glib-networking/"
@@ -4898,7 +4893,7 @@ indicators etc).")
                                   "glib-networking-" version ".tar.xz"))
               (sha256
                (base32
-                "0fw2w0rbk1x53fks6jbm9mg9sy0nnyv2591dwlfh91cj6sxsw2hh"))
+                "0dbg1na239mbavn4hknkax5sns9q2dbdnqw9wcpmhv58mzkhid36"))
               (patches
                (search-patches "glib-networking-gnutls-binding.patch"))))
     (build-system meson-build-system)
@@ -5051,7 +5046,7 @@ as OpenStreetMap, OpenCycleMap, OpenAerialMap and Maps.")
 (define-public libsoup-minimal
   (package
     (name "libsoup-minimal")
-    (version "3.0.6")
+    (version "3.0.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/libsoup/"
@@ -5059,7 +5054,7 @@ as OpenStreetMap, OpenCycleMap, OpenAerialMap and Maps.")
                                   "libsoup-" version ".tar.xz"))
               (sha256
                (base32
-                "19ixq8m51myq78f40mxr79zgawpn7r78aigx8nxzkb5r83w5jpdl"))))
+                "0ysnvvfd2f6w2z6g31spqqb8wgyamixc7mryzbbpyw0z15g8plsv"))))
     (build-system meson-build-system)
     (arguments
      `(#:configure-flags '("-Dgtk_doc=false")
@@ -6845,14 +6840,14 @@ side panel;
 (define-public libgudev
   (package
     (name "libgudev")
-    (version "237")
+    (version "236")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
                                   version "/" name "-" version ".tar.xz"))
               (sha256
                (base32
-                "1al6nr492nzbm8ql02xhzwci2kwb1advnkaky3j9636jf08v41hd"))))
+                "094mgjmwgsgqrr1i0vd20ynvlkihvs3vgbmpbrhswjsrdp86j0z5"))))
     (build-system meson-build-system)
     (native-inputs
      `(("glib:bin" ,glib "bin") ; for glib-genmarshal, etc.
@@ -8196,7 +8191,7 @@ users.")
               (uri (string-append "mirror://gnome/sources/NetworkManager/"
                                   (version-major+minor version) "/"
                                   "NetworkManager-" version ".tar.xz"))
-              (patches (search-patches ;;"network-manager-plugin-path.patch"
+              (patches (search-patches "network-manager-plugin-path.patch"
                                        "network-manager-meson.patch"))
               (sha256
                (base32
@@ -8524,10 +8519,9 @@ Cisco's AnyConnect SSL VPN.")
                (base32
                 "1k9acdnl4mr6aqh11xbklv2gyww82jddaqmw4aqdzwl7q80swia8"))))
     (build-system gnu-build-system)
-    (native-inputs
-     `(("xsltproc" ,libxslt)))
     (arguments
      `(#:tests? #f))                    ; no tests
+    (native-inputs (list libxslt))
     (home-page "https://wiki.gnome.org/Projects/NetworkManager")
     (synopsis "Database of broadband connection configuration")
     (description "Database of broadband connection configuration.")
@@ -9660,7 +9654,7 @@ is complete it provides a graphical representation of each selected folder.")
 (define-public gnome-backgrounds
   (package
     (name "gnome-backgrounds")
-    (version "42.0")
+    (version "41.0")
     (source
      (origin
        (method url-fetch)
@@ -9669,7 +9663,7 @@ is complete it provides a graphical representation of each selected folder.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "0p99q434c8qgj5wxcma9jj4dh1ff9x984ncs31vmz725kyhf2zsc"))))
+         "0i9id5z72dqddh94648zylyf41amqq5lhny8sbyg1v8v4q6sr88x"))))
     (build-system meson-build-system)
     (native-inputs (list gettext-minimal))
     (home-page "https://gitlab.gnome.org/GNOME/gnome-backgrounds")
@@ -13234,4 +13228,3 @@ historical battery usage and related statistics.")
     (home-page "http://xffm.org/")
     (license license:gpl3+)
     (properties '((upstream-name . "xffm")))))
-
