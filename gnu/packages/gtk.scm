@@ -244,7 +244,7 @@ output.  Experimental backends include OpenGL, BeOS, OS/2, and DirectFB.")
 (define-public harfbuzz
   (package
    (name "harfbuzz")
-   (version "2.8.2")
+   (version "5.2.0")
    (source (origin
              (method url-fetch)
              (uri (string-append "https://github.com/harfbuzz/harfbuzz"
@@ -252,7 +252,7 @@ output.  Experimental backends include OpenGL, BeOS, OS/2, and DirectFB.")
                                  version ".tar.xz"))
              (sha256
               (base32
-               "1rvv86wpm3y04fqns1655268rhvhvms469837709v2z2bhwn316m"))))
+               "0b4lpkidwx0lf8slczjji652yll6g5zgmm5lmisnb4s7gf8r8nkk"))))
    (build-system gnu-build-system)
    (outputs '("out"
               "bin")) ; 160K, only hb-view depend on cairo
@@ -279,31 +279,44 @@ output.  Experimental backends include OpenGL, BeOS, OS/2, and DirectFB.")
                        "See 'COPYING' in the distribution."))
    (home-page "https://www.freedesktop.org/wiki/Software/HarfBuzz/")))
 
-(define-public harfbuzz-3
-  (package
-    (inherit harfbuzz)
-    (version "3.4.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://github.com/harfbuzz/harfbuzz"
-                                  "/releases/download/" version
-                                  "/harfbuzz-" version ".tar.xz"))
-              (sha256
-               (base32
-                "0lprrl8iih8ji1n17xwm5llz05a1hv4g04b7a3y229dq9myahn3i"))))))
+;; (define-public harfbuzz-3
+;;   (package
+;;     (inherit harfbuzz)
+;;     (version "3.4.0")
+;;     (source (origin
+;;               (method url-fetch)
+;;               (uri (string-append "https://github.com/harfbuzz/harfbuzz"
+;;                                   "/releases/download/" version
+;;                                   "/harfbuzz-" version ".tar.xz"))
+;;               (sha256
+;;                (base32
+;;                 "0lprrl8iih8ji1n17xwm5llz05a1hv4g04b7a3y229dq9myahn3i"))))))
 
-(define-public harfbuzz-4
-  (package
-    (inherit harfbuzz)
-    (version "4.3.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://github.com/harfbuzz/harfbuzz"
-                                  "/releases/download/" version
-                                  "/harfbuzz-" version ".tar.xz"))
-              (sha256
-               (base32
-                "0c5mzwgz43d37h75p4b6cgjg4v24jdd96i7gjpgxirn8qks2i5m4"))))))
+;; (define-public harfbuzz-4
+;;   (package
+;;     (inherit harfbuzz)
+;;     (version "4.3.0")
+;;     (source (origin
+;;               (method url-fetch)
+;;               (uri (string-append "https://github.com/harfbuzz/harfbuzz"
+;;                                   "/releases/download/" version
+;;                                   "/harfbuzz-" version ".tar.xz"))
+;;               (sha256
+;;                (base32
+;;                 "0b4lpkidwx0lf8slczjji652yll6g5zgmm5lmisnb4s7gf8r8nkk"))))))
+
+;; (define-public harfbuzz
+;;   (package
+;;     (inherit harfbuzz)
+;;     (version "5.2.0")
+;;     (source (origin
+;;               (method url-fetch)
+;;               (uri (string-append "https://github.com/harfbuzz/harfbuzz"
+;;                                   "/releases/download/" version
+;;                                   "/harfbuzz-" version ".tar.xz"))
+;;               (sha256
+;;                (base32
+;;                 "0b4lpkidwx0lf8slczjji652yll6g5zgmm5lmisnb4s7gf8r8nkk"))))))
 
 (define-public libdatrie
   (package
@@ -489,7 +502,7 @@ handling for GTK+-2.x.")
                      (("cairo_user_font_face_set_render_color_glyph_func")
                       "cairo_user_font_face_set_render_glyph_func"))))))
     (inputs (modify-inputs (package-inputs pango)
-               (prepend harfbuzz-4)))))
+               (prepend harfbuzz-5)))))
 
 (define-public pangox-compat
   (package
@@ -2983,3 +2996,4 @@ Unix desktop environment under X11 as well as Wayland.")
     (synopsis "WebP GdkPixbuf loader library")
     (description "Webp-pixbuf-loader is a WebP format loader of GdkPixbuf.")
     (license license:lgpl2.0+)))
+
