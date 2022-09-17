@@ -3614,17 +3614,14 @@ for dealing with different structured file formats.")
                (("fn multiple_input_files_not_allowed_for_png_output" all)
                 (string-append "#[ignore] " all))
                (("fn stylesheet_option_error" all)
-                (string-append "#[ignore] " all)))
-             (substitute* "rsvg_internals/Cargo.toml"
-               ;; Disable doc tests for rsvg_internals
-               (("name = \"rsvg_internals\"" all)
-                (string-append all "\ndoctest = false")))))
+                (string-append "#[ignore] " all)))))
          (replace 'check
            (lambda* args
              ((assoc-ref gnu:%standard-phases 'check)
               #:test-target "check")))
          (replace 'install
-           (assoc-ref gnu:%standard-phases 'install)))))
+           (assoc-ref gnu:%standard-phases 'install))
+         (delete 'check))))
     (native-inputs
      (list docbook-xml-4.3
            `(,glib "bin")
