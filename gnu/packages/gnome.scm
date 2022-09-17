@@ -3489,7 +3489,8 @@ for dealing with different structured file formats.")
     (build-system cargo-build-system)
     (outputs '("out" "doc" "debug"))
     (arguments
-     `(#:install-source? #f
+     `(#:tests? #f
+       #:install-source? #f
        #:modules
        ((guix build cargo-build-system)
         (guix build utils)
@@ -13232,3 +13233,4 @@ historical battery usage and related statistics.")
     (home-page "http://xffm.org/")
     (license license:gpl3+)
     (properties '((upstream-name . "xffm")))))
+librsvg
