@@ -502,7 +502,7 @@ handling for GTK+-2.x.")
                      (("cairo_user_font_face_set_render_color_glyph_func")
                       "cairo_user_font_face_set_render_glyph_func"))))))
     (inputs (modify-inputs (package-inputs pango)
-               (prepend harfbuzz-5)))))
+               (prepend harfbuzz)))))
 
 (define-public pangox-compat
   (package

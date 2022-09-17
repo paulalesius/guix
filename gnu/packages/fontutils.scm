@@ -819,7 +819,7 @@ value (e.g. @samp{x=\"95.0\"} becomes @samp{x=\"95\"})
     (native-inputs
      (list flex bison pkg-config))
     (inputs
-     (list freetype harfbuzz-5))
+     (list freetype harfbuzz))
     (arguments
      `(#:configure-flags '("--disable-static"
                            "--with-qt=no"))) ;no gui
@@ -1653,7 +1653,7 @@ maintain the Noto Fonts project.")
      (list ;; Required by fcft.pc.
            fontconfig
            freetype
-           harfbuzz-5
+           harfbuzz
            pixman
            tllist))
     (synopsis "Font loading and glyph rasterization library")
@@ -1800,7 +1800,7 @@ Unicode Charts.  It was developed for use with DejaVu Fonts project.")
     (native-inputs
      (list gtk-doc/stable pkg-config python-wrapper))
     (inputs
-     (list freetype fribidi harfbuzz-5))
+     (list freetype fribidi harfbuzz))
     (home-page "https://github.com/HOST-Oman/libraqm")
     (synopsis "Library for complex text layout")
     (description
