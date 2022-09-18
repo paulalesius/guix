@@ -305,6 +305,19 @@ output.  Experimental backends include OpenGL, BeOS, OS/2, and DirectFB.")
                (base32
                 "0c5mzwgz43d37h75p4b6cgjg4v24jdd96i7gjpgxirn8qks2i5m4"))))))
 
+(define-public harfbuzz-5
+  (package
+    (inherit harfbuzz)
+    (version "5.2.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/harfbuzz/harfbuzz"
+                                  "/releases/download/" version
+                                  "/harfbuzz-" version ".tar.xz"))
+              (sha256
+               (base32
+                "0b4lpkidwx0lf8slczjji652yll6g5zgmm5lmisnb4s7gf8r8nkk"))))))
+
 (define-public libdatrie
   (package
     (name "libdatrie")
