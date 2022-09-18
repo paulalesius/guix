@@ -692,7 +692,7 @@ rasterisation.")
 (define-public libdrm
   (package
     (name "libdrm")
-    (version "2.4.113")
+    (version "2.4.107")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -700,7 +700,7 @@ rasterisation.")
                     version ".tar.xz"))
               (sha256
                (base32
-                "1qg54drng3mxm64dsxgg0l6li4yrfzi50bgj0r3fnfzncwlypmvz"))))
+                "127qf1rzhaf13vdd75a58v5q34617hvangjlfnlkcdh37gqcwm65"))))
     (build-system meson-build-system)
     (arguments
      `(#:configure-flags
@@ -3163,4 +3163,3 @@ that support @samp{wlr-gamma-control-unstable-v1}.  It is also known as a blue
 light filter or night light.")
     (license license:expat)))
 
-libdrm

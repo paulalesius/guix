@@ -260,7 +260,7 @@ also known as DXTn or DXTC) for Mesa.")
 (define-public mesa
   (package
     (name "mesa")
-    (version "22.1.7")
+    (version "21.3.8")
     (source
       (origin
         (method url-fetch)
@@ -272,11 +272,9 @@ also known as DXTn or DXTC) for Mesa.")
                                   version "/mesa-" version ".tar.xz")))
         (sha256
          (base32
-          "12ax6lmshc8aqzw5ca7ab7f7z64n9nyzci4r1s6y1l0iryr8x0ys"))
-        ;;(patches
-         ;;(search-patches "mesa-skip-tests.patch")
-        ;; )
-        ))
+          "19wx5plk6z0hhi0zdzxjx8ynl3lhlc5mbd8vhwqyk92kvhxjf3g7"))
+        (patches
+         (search-patches "mesa-skip-tests.patch"))))
     (build-system meson-build-system)
     (propagated-inputs
       (list ;; The following are in the Requires.private field of gl.pc.
@@ -327,7 +325,7 @@ also known as DXTn or DXTC) for Mesa.")
               '("-Dgallium-drivers=iris,nouveau,r300,r600,radeonsi,svga,swrast,virgl")))
          ;; Enable various optional features.  TODO: opencl requires libclc,
          ;; omx requires libomxil-bellagio
-         "-Dplatforms=x11"
+         "-Dplatforms=x11,wayland"
          "-Dglx=dri"        ;Thread Local Storage, improves performance
          ;; "-Dopencl=true"
          ;; "-Domx=true"
@@ -356,15 +354,15 @@ also known as DXTn or DXTC) for Mesa.")
          "-Dvulkan-layers=device-select,overlay"
 
          ;; Also enable the tests.
-         "-Dbuild-tests=false"
+         "-Dbuild-tests=true"
 
          ;; on non-intel systems, drop i915 and i965
          ;; from the default dri drivers
-       ;;  ,@(match (%current-system)
-       ;;      ((or "x86_64-linux" "i686-linux")
-       ;;       '("-Ddri-drivers=i915,i965,nouveau,r200,r100"))
-       ;;      (_
-       ;;       '("-Ddri-drivers=nouveau,r200,r100")))
+         ,@(match (%current-system)
+             ((or "x86_64-linux" "i686-linux")
+              '("-Ddri-drivers=i915,i965,nouveau,r200,r100"))
+             (_
+              '("-Ddri-drivers=nouveau,r200,r100")))
 
                 "-Dllvm=enabled")       ; default is x86/x86_64 only
 

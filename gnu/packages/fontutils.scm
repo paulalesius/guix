@@ -819,7 +819,7 @@ value (e.g. @samp{x=\"95.0\"} becomes @samp{x=\"95\"})
     (native-inputs
      (list flex bison pkg-config))
     (inputs
-     (list freetype harfbuzz))
+     (list freetype harfbuzz-5))
     (arguments
      `(#:configure-flags '("--disable-static"
                            "--with-qt=no"))) ;no gui
@@ -1015,14 +1015,14 @@ Font Format (WOFF).")
   (hidden-package
    (package
      (name "fontconfig-minimal")
-     (version "2.14.0")
+     (version "2.13.94")
      (source (origin
                (method url-fetch)
                (uri (string-append
                      "https://www.freedesktop.org/software/"
                      "fontconfig/release/fontconfig-" version ".tar.xz"))
                (sha256 (base32
-                        "1b4v1r94ri44p4a3kbwd38ig5jgdgcfgwdfm6fqzvfvlki6bignw"))
+                        "0g004r0bkkqz00mpm3svnnxn7d83158q0yb9ggxryizxfg5m5w55"))
                (patches (search-patches "fontconfig-cache-ignore-mtime.patch"))))
      (build-system gnu-build-system)
      ;; In Requires or Requires.private of fontconfig.pc.
@@ -1653,7 +1653,7 @@ maintain the Noto Fonts project.")
      (list ;; Required by fcft.pc.
            fontconfig
            freetype
-           harfbuzz
+           harfbuzz-5
            pixman
            tllist))
     (synopsis "Font loading and glyph rasterization library")
@@ -1800,7 +1800,7 @@ Unicode Charts.  It was developed for use with DejaVu Fonts project.")
     (native-inputs
      (list gtk-doc/stable pkg-config python-wrapper))
     (inputs
-     (list freetype fribidi harfbuzz))
+     (list freetype fribidi harfbuzz-5))
     (home-page "https://github.com/HOST-Oman/libraqm")
     (synopsis "Library for complex text layout")
     (description

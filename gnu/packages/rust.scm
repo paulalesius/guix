@@ -840,12 +840,35 @@ safety and thread safety guarantees.")
 ;;; intermediate rusts are built for bootstrapping purposes and should not
 ;;; be relied upon.  This is to ease maintenance and reduce the time
 ;;; required to build the full Rust bootstrap chain.
-(define-public rust rust-1.63)
+(define-public rust rust-1.57)
 
 (define-public rust-src
+  (hidden-package
    (package
      (inherit rust)
      (name "rust-src")
+     (build-system copy-build-system)
+     (native-inputs '())
+     (inputs '())
+     (native-search-paths '())
+     (outputs '("out"))
+     (arguments
+      `(#:install-plan
+        '(("library" "lib/rustlib/src/rust/library")
+          ("src" "lib/rustlib/src/rust/src"))))
+     (synopsis "Source code for the Rust standard library")
+     (description "This package provide source code for the Rust standard
+library, only use by rust-analyzer, make rust-analyzer out of the box."))))
+
+(define-public rust-latest
+  (package
+    (inherit rust-1.63)
+    (name "rust-latest")))
+
+(define-public rust-latest-src
+   (package
+     (inherit rust-latest)
+     (name "rust-latest-src")
      (build-system copy-build-system)
      (native-inputs '())
      (inputs '())

@@ -195,8 +195,7 @@ endif()~%~%"
               (let ((out (assoc-ref outputs "out")))
                 (wrap-program (string-append out "/bin/inkscape")
                   `("GUIX_PYTHONPATH" ":" prefix
-                    (,(getenv "GUIX_PYTHONPATH")))))))
-          (delete 'check))))
+                    (,(getenv "GUIX_PYTHONPATH"))))))))))
      (inputs
       `(("aspell" ,aspell)
         ("autotrace" ,autotrace)

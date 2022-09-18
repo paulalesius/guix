@@ -354,7 +354,7 @@ Graphviz and LaTeX.")
     (inputs
      (list atk
            (librsvg-for-system)
-           harfbuzz
+           harfbuzz-5
            graphviz
            gtk+
            python-pycairo

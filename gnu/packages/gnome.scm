@@ -3489,8 +3489,7 @@ for dealing with different structured file formats.")
     (build-system cargo-build-system)
     (outputs '("out" "doc" "debug"))
     (arguments
-     `(#:tests? #f
-       #:install-source? #f
+     `(#:install-source? #f
        #:modules
        ((guix build cargo-build-system)
         (guix build utils)
@@ -3620,8 +3619,7 @@ for dealing with different structured file formats.")
              ((assoc-ref gnu:%standard-phases 'check)
               #:test-target "check")))
          (replace 'install
-           (assoc-ref gnu:%standard-phases 'install))
-         (delete 'check))))
+           (assoc-ref gnu:%standard-phases 'install)))))
     (native-inputs
      (list docbook-xml-4.3
            `(,glib "bin")
