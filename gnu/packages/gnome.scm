@@ -11838,7 +11838,7 @@ higher level porcelain stuff.")
            gsettings-desktop-schemas
            gspell
            gtk+
-           gtksourceview
+           gtksourceview-4
            json-glib
            libdazzle
            libgee
@@ -12104,6 +12104,7 @@ desktop environment.")
            gspell
            gtk
            gjs
+           libadwaita
            libsecret
            libsoup
            telepathy-glib

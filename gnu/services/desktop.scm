@@ -117,6 +117,9 @@
             elogind-service
             elogind-service-type
 
+            %gdm-file-system
+            gdm-file-system-service
+
             %fontconfig-file-system
             fontconfig-file-system-service
 
@@ -1034,7 +1037,7 @@ include the @command{udisksctl} command, part of UDisks, and GNOME Disks."
     '(ignore poweroff reboot halt kexec suspend hibernate hybrid-sleep lock))
   (define (handle-action x)
     (if (unspecified? x)
-        ""                              ;empty serializer
+        x                               ;let the unspecified value go through
         (enum x handle-actions)))
   (define (sleep-list tokens)
     (unless (valid-list? tokens char-set:user-name)
@@ -1042,10 +1045,18 @@ include the @command{udisksctl} command, part of UDisks, and GNOME Disks."
     (string-join tokens " "))
   (define-syntax ini-file-clause
     (syntax-rules ()
+      ;; Produce an empty line when encountering an unspecified value.  This
+      ;; is better than an empty string value, which can, in some cases, cause
+      ;; warnings such as "Failed to parse handle action setting".
       ((_ config (prop (parser getter)))
-       (string-append prop "=" (parser (getter config)) "\n"))
+       (let ((value (parser (getter config))))
+         (if (unspecified? value)
+             ""
+             (string-append prop "=" value "\n"))))
       ((_ config str)
-       (string-append str "\n"))))
+       (if (unspecified? str)
+           ""
+           (string-append str "\n")))))
   (define-syntax-rule (ini-file config file clause ...)
     (plain-file file (string-append (ini-file-clause config clause) ...)))
   (ini-file
@@ -1224,6 +1235,13 @@ when they log out."
     (flags '(read-only))
     (check? #f)))
 
+(define %gdm-file-system
+  (file-system
+    (device "none")
+    (mount-point "/var/lib/gdm")
+    (type "tmpfs")
+    (check? #f)))
+
 ;; The global fontconfig cache directory can sometimes contain stale entries,
 ;; possibly referencing fonts that have been GC'd, so mount it read-only.
 ;; As mentioned https://debbugs.gnu.org/cgi/bugreport.cgi?bug=36924#8 and
@@ -1232,6 +1250,15 @@ when they log out."
   (simple-service 'fontconfig-file-system
                   file-system-service-type
                   (list %fontconfig-file-system)))
+
+;; Avoid stale caches and stale user IDs being reused between system
+;; reconfigurations, which would crash GDM and render the system unusable.
+;; GDM doesn't require persisting anything valuable there anyway.
+(define gdm-file-system-service
+  (simple-service 'gdm-file-system
+                  file-system-service-type
+                  (list %gdm-file-system)))
+
 
 ;;;
 ;;; AccountsService service.
@@ -1741,6 +1768,10 @@ applications needing access to be root.")
                                  (program program)))
                               (list (file-append nfs-utils "/sbin/mount.nfs")
                                (file-append ntfs-3g "/sbin/mount.ntfs-3g"))))
+
+         ;; This is a volatile read-write file system mounted at /var/lib/gdm,
+         ;; to avoid GDM stale cache and permission issues.
+         gdm-file-system-service
 
          ;; The global fontconfig cache directory can sometimes contain
          ;; stale entries, possibly referencing fonts that have been GC'd,
