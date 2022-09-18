@@ -720,7 +720,15 @@ console.")
      `(#:configure-flags
        '("--enable-hwloc"
          "--enable-sensors"
-         "--enable-capabilities")))
+         "--enable-capabilities")
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'install 'wrap-program
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let ((out (assoc-ref outputs "out")))
+               (wrap-program (string-append out "/bin/htop")
+                 `("LD_LIBRARY_PATH" ":" prefix
+                   (,(getenv "LIBRARY_PATH"))))))))))
     (native-inputs
      (list autoconf automake python-minimal-wrapper))     ; for scripts/MakeHeader.py
     (home-page "https://htop.dev")
