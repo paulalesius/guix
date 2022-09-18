@@ -4505,7 +4505,7 @@ It counts more than 100 plugins.")
 (define-public motion
   (package
     (name "motion")
-    (version "4.3.2")
+    (version "4.4.0")
     (home-page "https://motion-project.github.io/")
     (source (origin
               (method git-fetch)
@@ -4514,7 +4514,7 @@ It counts more than 100 plugins.")
                     (commit (string-append "release-" version))))
               (sha256
                (base32
-                "09xs815jsivcilpmnrx2jkcxirj4lg5kp99fkr0p2sdxw03myi95"))
+                "150vv8ly9w43xc7a51isidiywi62f859vaydqdfaw7j7vwbzvcmj"))
               (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (native-inputs
