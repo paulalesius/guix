@@ -143,7 +143,12 @@
                                 "--with-cairo"
                                 "--with-native-compilation"
                                 "--disable-build-details"
-				"--with-x-toolkit=lucid")
+                                "--without-gpm"
+                                "--without-selinux"
+                                "--with-x-toolkit=lucid"
+                                "--without-gsettings"
+                                "--with-sound=no"
+                                "--enable-link-time-optimization")
       #:make-flags #~(list "NATIVE_FULL_AOT=1")
       #:phases
       #~(modify-phases %standard-phases
@@ -319,9 +324,9 @@
            ;; This is not needed for (modern) IMAP.
            mailutils
 
-           gpm
+           ;;gpm
            libx11
-           gtk+
+           ;;gtk+
            cairo
            pango
            harfbuzz-5
@@ -330,7 +335,7 @@
            giflib
            lcms
            libjpeg-turbo
-           libselinux
+           ;;libselinux
            acl
            jansson
            gmp
@@ -349,7 +354,7 @@
            libxml2
            libice
            libsm
-           alsa-lib
+           ;;alsa-lib
            dbus
 
            ;; multilingualization support
