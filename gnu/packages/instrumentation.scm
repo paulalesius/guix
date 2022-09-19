@@ -210,14 +210,14 @@ with the script @command{flamegraph.pl} and many stackcollapse scripts.")
 (define-public lttng-modules
   (package
     (name "lttng-modules")
-    (version "2.13.4")
+    (version "2.13.5")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://lttng.org/files/lttng-modules/"
                                   "lttng-modules-" version ".tar.bz2"))
               (sha256
                (base32
-                "1vm9nnjvid7acsvgwnjyxd60ih9rmbhnfjldxip58n8x9q7d0nb1"))))
+                "0277yfp57psnvn5g40mk09zryp0r4saynns213qak18fv0l39szc"))))
     (build-system linux-module-build-system)
     (arguments
      `(#:tests? #f ; no tests
@@ -234,14 +234,14 @@ many probes which instrument numerous interesting parts of Linux.")
 (define-public lttng-ust
   (package
     (name "lttng-ust")
-    (version "2.13.3")
+    (version "2.13.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://lttng.org/files/lttng-ust/"
                                   "lttng-ust-" version ".tar.bz2"))
               (sha256
                (base32
-                "0vwgxp027pgwm0a4xr6bdibday7xjlnv6wmbqh546l2h2i8jzi1c"))))
+                "165kz3zsklynkxdkcbkwhw7cccdgmgmld35h1cf9hvn5bpn853v9"))))
     (build-system gnu-build-system)
     (inputs
      (list numactl))
@@ -260,20 +260,17 @@ to ring buffers shared with a consumer daemon.")
 (define-public lttng-tools
   (package
     (name "lttng-tools")
-    (version "2.13.7")
+    (version "2.13.8")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://lttng.org/files/lttng-tools/"
                                   "lttng-tools-" version ".tar.bz2"))
               (sha256
                (base32
-                "13gh4bvlgbh82h9vb80aw8l1cfmdj3xyvjg30cscz9vqy7l04yni"))))
+                "1h9x6mmqrxrbgivll3g81l7a9f7ggjmcgwr01f9r01r6kdbmksdi"))))
     (build-system gnu-build-system)
     (arguments
-     `( ;; FIXME - Currently there's a segmentation fault by swig when enabling
-       ;; Python's bindings.  Thus, bindings are disable here.  Replace
-       ;; `disable` by `enable` in #:configure-flags when this is fixed.
-       #:configure-flags '("--disable-python-bindings")
+     `(#:configure-flags '("--enable-python-bindings")
        ;; FIXME - Tests are disabled for now because one test hangs
        ;; indefinetely.  Also, parallel testing is not possible because of how
        ;; the lttng-daemon handles sessions.  Thus, keep parallel testing
