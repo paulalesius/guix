@@ -142,7 +142,8 @@
       #:configure-flags #~(list "--with-modules"
                                 "--with-cairo"
                                 "--with-native-compilation"
-                                "--disable-build-details")
+                                "--disable-build-details"
+				"--with-x-toolkit=lucid")
       #:make-flags #~(list "NATIVE_FULL_AOT=1")
       #:phases
       #~(modify-phases %standard-phases
@@ -353,7 +354,8 @@
 
            ;; multilingualization support
            libotf
-           m17n-lib))
+           m17n-lib
+	   libxaw3d))
     (native-inputs
      (list autoconf pkg-config texinfo))
     (native-search-paths
