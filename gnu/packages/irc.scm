@@ -151,7 +151,7 @@ irssi, but graphical.")
 (define-public irssi
   (package
     (name "irssi")
-    (version "1.4.1")
+    (version "1.4.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/irssi/irssi/"
@@ -159,7 +159,7 @@ irssi, but graphical.")
                                   version ".tar.xz"))
               (sha256
                (base32
-                "00bmwkpzhqqnsajakk7dviap1i8s89375kwpdyxg65ms3ds94xka"))))
+                "1a161vjmrqdm4lizjz2ch6b2ns6hsmsb0x8p1923q5gy5mfpd93r"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
