@@ -833,8 +833,14 @@ safety and thread safety guarantees.")
       (inherit base-rust)
       (arguments
        (substitute-keyword-arguments (package-arguments base-rust)
-         ((#:tests? _ #f)
-          #f))))))
+         ((#:tests? _ #t)
+          #f)
+         ((#:phases phases)
+          `(modify-phases ,phases
+            (delete 'check)))))
+      (inputs (alist-replace "llvm" (list llvm-14)
+                             (package-inputs base-rust))))))
+
 
 ;;; Note: Only the latest versions of Rust are supported and tested.  The
 ;;; intermediate rusts are built for bootstrapping purposes and should not
@@ -881,3 +887,5 @@ library, only use by rust-analyzer, make rust-analyzer out of the box."))))
      (synopsis "Source code for the Rust standard library")
      (description "This package provide source code for the Rust standard
 library, only use by rust-analyzer, make rust-analyzer out of the box.")))
+
+rust-1.63
