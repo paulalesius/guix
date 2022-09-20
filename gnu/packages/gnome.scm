@@ -8009,7 +8009,7 @@ Microsoft Exchange, Last.fm, IMAP/SMTP, Jabber, SIP and Kerberos.")
 (define-public evolution-data-server
   (package
     (name "evolution-data-server")
-    (version "3.45.3")
+    (version "3.46.0")
     (source
      (origin
        (method url-fetch)
@@ -8017,7 +8017,7 @@ Microsoft Exchange, Last.fm, IMAP/SMTP, Jabber, SIP and Kerberos.")
                            (version-major+minor version) "/"
                            name "-" version ".tar.xz"))
        (sha256
-        (base32 "1zjg9b77qmfin9m16rqa6cpqp1rh63pg3bcnkh25vmklslwhvq7a"))))
+        (base32 "1aydynpc9qx2a5xlrvc3xzfq3d3rhf15mqr8m6splgqqb84jiyp5"))))
     (build-system cmake-build-system)
     (arguments
      (list
@@ -10252,19 +10252,18 @@ desktop.  It supports world clock, stop watch, alarms, and count down timer.")
 desktop.  It supports multiple calendars, month, week and year view.")
     (license license:gpl3+)))
 
-(define-public gnome-todo
+(define-public endeavour
   (package
-    (name "gnome-todo")
-    (version "41.0")
+    (name "endeavour")
+    (version "42.0")
     (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnome/sources/" name "/"
-                                  (version-major version) "/"
-                                  name "-" version ".tar.xz"))
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.gnome.org/World/Endeavour")
+                    (commit (string-append "v" version))))
               (sha256
                (base32
-                "1r94880d4khbjhhfnhaba3y3d4hv2bri82rzfzxn27s5iybpqras"))
-              (patches (search-patches "gnome-todo-libportal.patch"))))
+                "0d6by7aq8db35zavzvckcxxxcdi6qnv0mkjndhb0syc8ih15dpak"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -10308,6 +10307,9 @@ desktop.  It supports multiple calendars, month, week and year view.")
     (description "GNOME To Do is a simplistic personal task manager designed
 to perfectly fit the GNOME desktop.")
     (license license:gpl3+)))
+
+(define-public gnome-todo
+  (deprecated-package "gnome-todo" endeavour))
 
 (define-public gnome-dictionary
   (package
@@ -11502,7 +11504,7 @@ generic enough to work for everyone.")
 (define-public evolution
   (package
     (name "evolution")
-    (version "3.45.3")
+    (version "3.46.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/evolution/"
@@ -11510,7 +11512,7 @@ generic enough to work for everyone.")
                                   "evolution-" version ".tar.xz"))
               (sha256
                (base32
-                "1q4fa5l7k0rax39iwn2spmzxcr2l73mj3644lf8j9mnp5w774c96"))))
+                "0gwi89bqk20ggcxsq7xgd97my0hxx8z82kisml6vz6kbpiv957p0"))))
     (build-system cmake-build-system)
     (arguments
      (list
