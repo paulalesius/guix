@@ -719,7 +719,7 @@ console.")
     (arguments
      `(#:configure-flags
        '("--enable-hwloc"
-         "--enable-sensors"
+         "--enable-sensors=yes"
          "--enable-capabilities")))
     (native-inputs
      (list autoconf automake python-minimal-wrapper))     ; for scripts/MakeHeader.py
