@@ -70,7 +70,7 @@
 ;;; Copyright © 2020 Jérémy Korwin-Zmijowski <jeremy@korwin-zmijowski.fr>
 ;;; Copyright © 2020 Alberto Eleuterio Flores Guerrero <barbanegra+guix@posteo.mx>
 ;;; Copyright © 2020 Marius Bakke <mbakke@fastmail.com>
-;;; Copyright © 2020 pinoaffe <pinoaffe@airmail.cc>
+;;; Copyright © 2020, 2022 pinoaffe <pinoaffe@gmail.com>
 ;;; Copyright © 2020, 2021, 2022 Vinicius Monego <monego@posteo.net>
 ;;; Copyright © 2020 Ryan Desfosses <rdes@protonmail.com>
 ;;; Copyright © 2020 Marcin Karpezo <sirmacik@wioo.waw.pl>
@@ -4040,6 +4040,42 @@ place (e.g., the current page and zoom) of PDF buffers under PDFView mode or
 DocView mode, and revisiting those PDF files later using the same mode will
 restore the saved place.")
     (license license:gpl3+)))
+
+(define-public emacs-pdfgrep
+  ;; XXX: Upstream does not tag releases.  The commit below matches latest
+  ;; version bump.
+  (let ((commit "e250376d97fc5240e07d81108bbca9b5a9ab50f4"))
+    (package
+      (name "emacs-pdfgrep")
+      (version "1.4")
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/jeremy-compostella/pdfgrep")
+               (commit commit)))
+         (sha256
+          (base32 "17yqvvgkgxmcl8nc0mb9yaz884zcdnz7dwvfi4mxjzp1l05fvwjk"))))
+      (build-system emacs-build-system)
+      (arguments
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 (add-after 'unpack 'patch-pdfgrep-path
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     (make-file-writable "pdfgrep.el")
+                     (emacs-substitute-variables "pdfgrep.el"
+                       ("pdfgrep-program"
+                        (search-input-file inputs "bin/pdfgrep"))))))))
+      (inputs (list pdfgrep))
+      (home-page "https://github.com/jeremy-compostella/pdfgrep")
+      (synopsis "Emacs module providing @code{grep} comparable facilities but
+for PDF files")
+      (description
+       "pdfgrep is a GNU/Emacs module providing @code{grep} comparable
+facilities but for PDF files.  Its usage is similar to the @code{grep}
+function.  For example, using the @code{next-error} function gets you to the
+next matching page.")
+      (license license:gpl3+))))
 
 (define-public emacs-dash
   (package
@@ -17192,7 +17228,7 @@ an elisp expression.")
 (define-public emacs-taxy
   (package
     (name "emacs-taxy")
-    (version "0.10")
+    (version "0.10.1")
     (source
      (origin
        (method url-fetch)
@@ -17200,7 +17236,7 @@ an elisp expression.")
              "https://elpa.gnu.org/packages/taxy-" version ".tar"))
        (sha256
         (base32
-         "1jamry2p3qhswq8prd2g7ljh4yqk0wwblyd9fhnaclakahrn5vi3"))))
+         "05czw8fkifb25rwl99dmncr1g0rjfx1bqijl7igqs9j6h9ia2xvg"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-magit))
@@ -23646,7 +23682,7 @@ source code.")
 (define-public emacs-rustic
   (package
     (name "emacs-rustic")
-    (version "3.3")
+    (version "3.4")
     (source
      (origin
        (method git-fetch)
@@ -23655,7 +23691,7 @@ source code.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "088g6arlbq7czxyg5f31zmcm0gla7qh4vapaaskf6866yyqhizvb"))))
+        (base32 "16vsv4fhj8zq9g4zrsmipdb1nydxgw3dhh5s3wawpvx2rcg6gx2l"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-dash
@@ -29455,7 +29491,7 @@ current buffer.")
 (define-public emacs-repl-toggle
   (package
     (name "emacs-repl-toggle")
-    (version "0.7.1")
+    (version "0.7.2")
     (source
      (origin
        (method git-fetch)
@@ -29464,7 +29500,7 @@ current buffer.")
              (commit version)))
        (sha256
         (base32
-         "0nycm8a4wwkkaif958z4m89slayp17k20lp2h7lvddjx8prn6yfp"))
+         "18dpy7a7yrn7m7qifrjk5zcr6zbd3kwp9pb55la9052vwipxxvfk"))
        (file-name (git-file-name name version))))
     (build-system emacs-build-system)
     (propagated-inputs
@@ -30093,7 +30129,7 @@ mercury-mode provided by Emacs as a wrapper around prolog-mode.")
 (define-public emacs-boxquote
   (package
     (name "emacs-boxquote")
-    (version "2.2")
+    (version "2.3")
     (source
      (origin
        (method git-fetch)
@@ -30102,7 +30138,7 @@ mercury-mode provided by Emacs as a wrapper around prolog-mode.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0wwjawgylaaifdsszqxcfsyhfzgxbjkzqhzrnxnr9b16wghb7xf7"))))
+        (base32 "0d7m9kcwhbgv4pikaa2dzlg9zkmwdhyx2ksn68di6xzbh838892q"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/davep/boxquote.el")
     (synopsis "Quote text with different kinds of boxes")
@@ -32340,14 +32376,14 @@ are prefixed with @code{seq-} and work on lists, strings, and vectors.")
 (define-public emacs-setup
   (package
     (name "emacs-setup")
-    (version "1.3.1")
+    (version "1.3.2")
     (source
       (origin
         (method url-fetch)
         (uri (string-append "https://elpa.gnu.org/packages/setup-"
                             version ".tar"))
         (sha256
-          (base32 "0n9zjclf4b2sr8c8zd37fs45p25p3856frm419c9hch69hhcsv3a"))))
+          (base32 "1sr514w4mn0fbdawjb5p0fd6i6q2zi9737rbwcgakb1l9cqvb5qy"))))
     (build-system emacs-build-system)
     (home-page "https://git.sr.ht/~pkal/setup")
     (synopsis "Helpful configuration macro")
@@ -32566,26 +32602,41 @@ hacker.")
 (define-public emacs-osm
   (package
     (name "emacs-osm")
-    (version "0.6")
+    (version "0.8")
     (home-page "https://github.com/minad/osm")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference (url home-page) (commit version)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "0aiq2z9vv4jsl0s0x9vpjgp0mnn27wanhirzj3h80ivgiphzs7l5"))))
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url home-page)
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "039ac364f00slx1dxxgsgfcr4x47v9ymn8arcs0fyhdhw7jnky5j"))))
     (build-system emacs-build-system)
     (arguments
-     `(#:phases (modify-phases %standard-phases
-                  (add-after 'unpack 'set-curl-file-name
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (substitute* "osm.el"
-                        (("\"curl( ?)\"" _ space)
-                         (string-append "\""
-                                        (search-input-file inputs "/bin/curl")
-                                        space "\""))))))))
+     (list #:phases #~(modify-phases %standard-phases
+                        (add-after 'unpack 'set-curl-file-name
+                          (lambda* (#:key inputs #:allow-other-keys)
+                            (substitute* "osm.el"
+                              (("\"curl( ?)\"" _ space)
+                               (string-append "\""
+                                              (search-input-file inputs
+                                                                 "/bin/curl")
+                                              space "\"")))))
+                        (add-after 'install 'makeinfo
+                          (lambda _
+                            (invoke "emacs"
+                             "--batch"
+                             "--eval=(require 'ox-texinfo)"
+                             "--eval=(setq org-export-with-broken-links t)"
+                             "--eval=(find-file \"README.org\")"
+                             "--eval=(org-texinfo-export-to-info)")
+                            (install-file "osm.info"
+                                          (string-append #$output
+                                                         "/share/info")))))))
     (inputs (list curl))
+    (native-inputs (list texinfo))
     (synopsis "OpenStreetMap viewer for Emacs")
     (description
      "This package provides an OpenStreetMap viewer for Emacs, featuring

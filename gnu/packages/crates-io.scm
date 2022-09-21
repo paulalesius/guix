@@ -32668,6 +32668,25 @@ libraries have.
      "Efficiently insert line separators.")
     (license license:asl2.0)))
 
+(define-public rust-linecount-0.1
+  (package
+    (name "rust-linecount")
+    (version "0.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "linecount" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1n2733qcmvxl3fra3924yj8sf21vr6f6g6dg6wnhbkxr8fia9mfm"))))
+    (build-system cargo-build-system)
+    (arguments '(#:skip-build? #t))
+    (home-page "https://github.com/eclarke/linecount")
+    (synopsis "Quickly count lines in a file")
+    (description "This package provides a function @code{count_lines}
+to count the number of lines in a file.")
+    (license license:expat)))
+
 (define-public rust-link-cplusplus-1
   (package
     (name "rust-link-cplusplus")
@@ -59384,6 +59403,70 @@ OIDs)")
     (description "Simple SPMC channel")
     (license (list license:expat license:asl2.0))))
 
+(define-public rust-sprs-0.11
+  (package
+    (name "rust-sprs")
+    (version "0.11.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "sprs" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0w6xishm9jxqjy83as7g14474cn1xb55vqz8afqw9d7and41x9vf"))))
+    (build-system cargo-build-system)
+    (arguments
+     `(#:skip-build? #t ;8 test failures due to "No such file or directory"
+       #:cargo-inputs
+       (("rust-alga" ,rust-alga-0.9)
+        ("rust-approx" ,rust-approx-0.5)
+        ("rust-ndarray" ,rust-ndarray-0.15)
+        ("rust-num-complex" ,rust-num-complex-0.4)
+        ("rust-num-traits" ,rust-num-traits-0.2)
+        ("rust-num-cpus" ,rust-num-cpus-1)
+        ("rust-rayon" ,rust-rayon-1)
+        ("rust-serde" ,rust-serde-1)
+        ("rust-smallvec" ,rust-smallvec-1))
+       #:cargo-development-inputs
+       (("rust-bencher" ,rust-bencher-0.1)
+        ("rust-bincode" ,rust-bincode-1)
+        ("rust-tobj" ,rust-tobj-3))))
+    (home-page "https://github.com/vbarrielle/sprs")
+    (synopsis "Sparse matrix library")
+    (description "This package provides a sparse matrix library.")
+    ;; Either license can be chosen
+    (license (list license:expat license:asl2.0))))
+
+(define-public rust-sprs-0.10
+  (package
+    (inherit rust-sprs-0.11)
+    (name "rust-sprs")
+    (version "0.10.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "sprs" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "18qwm1wnc1jbzdpl0wfrrybb6rak74zv8jmfg87id7ksb6crkz6r"))))
+    (build-system cargo-build-system)
+    (arguments
+     `(#:skip-build? #t    ;8 test failures due to "No such file or directory"
+       #:cargo-inputs
+       (("rust-alga" ,rust-alga-0.9)
+        ("rust-approx" ,rust-approx-0.3)
+        ("rust-ndarray" ,rust-ndarray-0.14)
+        ("rust-num-complex" ,rust-num-complex-0.2)
+        ("rust-num-traits" ,rust-num-traits-0.2)
+        ("rust-num-cpus" ,rust-num-cpus-1)
+        ("rust-rayon" ,rust-rayon-1)
+        ("rust-serde" ,rust-serde-1)
+        ("rust-smallvec" ,rust-smallvec-1))
+       #:cargo-development-inputs
+       (("rust-bencher" ,rust-bencher-0.1)
+        ("rust-bincode" ,rust-bincode-1)
+        ("rust-tobj" ,rust-tobj-2))))))
+
 (define-public rust-rspotify-0.10
   (package
     (name "rust-rspotify")
@@ -64816,6 +64899,47 @@ containers.")
 to a style defined by John Gruber for post titles on his website ``Daring
 Fireball''.")
     (license license:expat)))
+
+(define-public rust-tobj-3
+  (package
+    (name "rust-tobj")
+    (version "3.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "tobj" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1q9hxhdzbqcrpnmja98mnd5890jf3x1njg0q1lgpj8yg5j29ryc9"))))
+    (build-system cargo-build-system)
+    (arguments
+     `(#:skip-build? #t ;tests are incomplete
+       #:cargo-inputs
+       (("rust-ahash" ,rust-ahash-0.7)
+        ("rust-log" ,rust-log-0.4))))
+    (home-page "https://github.com/Twinklebear/tobj")
+    (synopsis "Lightweight OBJ loader in the spirit of tinyobjloader")
+    (description
+     "This package provides a lightweight OBJ loader in the spirit of
+tinyobjloader.")
+    (license license:expat)))
+
+(define-public rust-tobj-2
+  (package
+    (inherit rust-tobj-3)
+    (name "rust-tobj")
+    (version "2.0.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "tobj" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "06w8ix9nk38wli0pjfl22hiyy07byhdcz18nkwhzg775x1dzas14"))))
+    (build-system cargo-build-system)
+    (arguments
+     `(#:skip-build? #t ;tests are incomplete
+       #:cargo-inputs (("rust-log" ,rust-log-0.4))))))
 
 (define-public rust-tokio-1
   (package
