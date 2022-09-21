@@ -12736,6 +12736,12 @@ fasta subsequences.")
              (substitute* '("requirements.txt"
                             "cooler.egg-info/requires.txt")
                (("cytoolz.*<.*0.11") "cytoolz"))))
+         ;; This version of flake8 just won't work with this version of
+         ;; pytest, because of dependency pinning.
+         (add-after 'unpack 'do-not-use-flake8
+           (lambda _
+             (substitute* "setup.cfg"
+               (("addopts = --flake8") "addopts = "))))
          (add-after 'unpack 'patch-tests
            (lambda _
              (substitute* "tests/test_create.py"
@@ -12744,10 +12750,13 @@ fasta subsequences.")
                                 "access to genome.ucsc.edu\")\n"
                                 "def test_roundtrip")))
              (substitute* "tests/test_util.py"
-              (("def test_fetch_chromsizes")
-                 (string-append "@pytest.mark.skip(reason=\"requires network "
-                                "access to genome.ucsc.edu\")\n"
-                                "def test_fetch_chromsizes")))
+               (("def test_fetch_chromsizes")
+                (string-append "@pytest.mark.skip(reason=\"requires network "
+                               "access to genome.ucsc.edu\")\n"
+                               "def test_fetch_chromsizes"))
+               ;; See https://github.com/open2c/cooler/issues/287
+               (("skipif\\(six.PY2, reason=\"Scipy on Py2 is too old\"")
+                "skip(reason=\"Scipy is too new\""))
              ;; This test depends on ipytree, which contains a lot of minified
              ;; JavaScript.
              (substitute* "tests/test_fileops.py"
