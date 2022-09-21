@@ -7273,6 +7273,228 @@ sequence.")
     (supported-systems '("i686-linux" "x86_64-linux"))
     (license license:bsd-3)))
 
+(define-public r-gutils
+  (let ((commit "10e36c7b580aacb2d952140a3fdd82418aaddea6")
+        (revision "1"))
+    (package
+      (name "r-gutils")
+      (version (git-version "0.2.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mskilab/gUtils")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1wq9kd1afzy7ii510r20c4n9fkykj6p15q5c85ws27h1q5w4ghxy"))))
+      (properties `((upstream-name . "gUtils")))
+      (build-system r-build-system)
+      (propagated-inputs
+       (list r-biocgenerics
+             r-data-table
+             r-genomeinfodb
+             r-genomicranges
+             r-iranges
+             r-matrix
+             r-s4vectors
+             r-stringr))
+      (home-page "https://github.com/mskilab/gUtils")
+      (synopsis "Additional capabilities and speed for GenomicRanges operations")
+      (description
+       "This is an R package providing additional capabilities and speed for
+@code{GenomicRanges} operations.")
+      (license license:gpl2))))
+
+(define-public r-bamutils
+  (let ((commit "639dba901f16944fa1b7a8d7048701ba86a2cdb8")
+        (revision "1"))
+    (package
+      (name "r-bamutils")
+      (version (git-version "0.0.0.9000" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mskilab/bamutils/")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0qwby2v5rydnipvf1iv1wz9nf02yq98k0xbc4inf9mqc54jwacs0"))))
+      (properties `((upstream-name . "bamUtils")))
+      (build-system r-build-system)
+      (propagated-inputs
+       (list r-abind
+             r-biocgenerics
+             r-data-table
+             r-genomicalignments
+             r-genomicranges
+             r-gutils
+             r-rsamtools
+             r-variantannotation))
+      (home-page "https://github.com/mskilab/bamutils/")
+      (synopsis "Utility functions for manipulating BAMs")
+      (description "This package provides utility functions for manipulating
+BAM files.")
+      (license license:gpl2))))
+
+(define-public r-gtrack
+  (let ((commit "a694fa36cedafca2658da79fc8e5b673535b15e5")
+        (revision "1"))
+    (package
+      (name "r-gtrack")
+      (version (git-version "0.1.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mskilab/gTrack/")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "070qlrbqsbj9max2vx740zigqh0ymvnw2pm1ia5la3wb4dbfwh2b"))))
+      (properties `((upstream-name . "gTrack")))
+      (build-system r-build-system)
+      (propagated-inputs
+       (list r-biocgenerics
+             r-data-table
+             r-genomeinfodb
+             r-genomicranges
+             r-gutils
+             r-iranges
+             r-matrix
+             r-rcolorbrewer
+             r-rcpp
+             r-rcurl
+             r-rtracklayer
+             r-s4vectors))
+      (home-page "https://github.com/mskilab/gTrack/")
+      (synopsis "Plot tracks of complex genomic data across multiple genomic windows")
+      (description
+       "This package provides an object for plotting GRanges, RleList, UCSC
+file formats, and ffTrack objects in multi-track panels.")
+      (license license:gpl2))))
+
+(define-public r-gchain
+  (let ((commit "dc393e8dd0d8efaf36270c04d7112db8553db36a")
+        (revision "1"))
+    (package
+      (name "r-gchain")
+      (version (git-version "0.2.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mskilab/gChain/")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "105wgi5w2fhwq1grsvj6zjigwg0sny3z7zr577q8ki3qffjwdkj0"))))
+      (properties `((upstream-name . "gChain")))
+      (build-system r-build-system)
+      (propagated-inputs
+       (list r-bamutils
+             r-biostrings
+             r-data-table
+             r-genomicalignments
+             r-genomicranges
+             r-gtrack
+             r-gutils
+             r-matrix
+             r-rtracklayer))
+      (home-page "https://github.com/mskilab/gChain/")
+      (synopsis "Additional capabilities and speed for GenomicRanges operations")
+      (description
+       "This R package provides additional capabilities and speed for
+GenomicRanges operations.")
+      (license license:gpl2))))
+
+(define-public r-skitools
+  (let ((commit "22d107d32f063eb891eb5e7fb36996d1c0b0d2bc")
+        (revision "1"))
+    (package
+      (name "r-skitools")
+      (version (git-version "0.0.0.9000" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mskilab/skitools/")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1977d9bkdk9l2n6niahfj9vksh9l1ga4g7c3b3x27lj1gc0qgr4z"))))
+      (properties `((upstream-name . "skitools")))
+      (build-system r-build-system)
+      (propagated-inputs
+       (list r-biostrings
+             r-complexheatmap
+             r-data-table
+             r-devtools
+             r-dt
+             r-gchain
+             r-genomeinfodb
+             r-genomicranges
+             r-ggplot2
+             r-gplots
+             r-gutils
+             r-htmlwidgets
+             r-hwriter
+             r-igraph
+             r-iranges
+             r-plotly
+             r-rcolorbrewer
+             r-reshape2
+             r-s4vectors
+             r-stringr
+             r-variantannotation))
+      (home-page "https://github.com/mskilab/skitools/")
+      (synopsis "Various mskilab R utilties")
+      (description
+       "This package provides R miscellaneous utilities for basic data
+manipulation, debugging, visualization, lsf management, and common mskilab
+tasks.")
+      (license license:expat))))
+
+(define-public r-chromunity
+  (let ((commit "09fce8bc12cb84b45a6ea25bf8db6e5b75113d4f")
+        (revision "1"))
+    (package
+      (name "r-chromunity")
+      (version (git-version "0.0.1" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mskilab/chromunity")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0lp0h614k8fq6h9gpbylk4chh7q6w4qda8lx03ajrpppxmg7al2d"))))
+      (properties `((upstream-name . "chromunity")))
+      (build-system r-build-system)
+      (propagated-inputs
+       (list r-arrow
+             r-biocgenerics
+             r-data-table
+             r-gchain
+             r-genomicranges
+             r-gutils
+             r-igraph
+             r-magrittr
+             r-mass
+             r-matrix
+             r-pbmcapply
+             r-plyr
+             r-r6
+             r-skitools
+             r-zoo))
+      (home-page "https://github.com/mskilab/chromunity")
+      (synopsis "Discovery of communities in Pore-C concatemers")
+      (description "This is a package for the discovery of communities in
+Pore-C concatemers.")
+      (license license:gpl3))))
+
 (define-public r-presto
   (let ((commit "052085db9c88aa70a28d11cc58ebc807999bf0ad")
         (revision "0"))
