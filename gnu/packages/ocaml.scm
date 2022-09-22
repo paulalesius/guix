@@ -1954,7 +1954,7 @@ ocaml-migrate-parsetree")
 (define-public ocaml-linenoise
   (package
     (name "ocaml-linenoise")
-    (version "1.3.1")
+    (version "1.4.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1963,7 +1963,7 @@ ocaml-migrate-parsetree")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0s98695skz1wvrak0rdlh80w3cv6piic1dxqpn9rv1yymbklafg4"))))
+                "1gk11pflal08kg2dz1b5zrlpnhbxpg2rwf8cknw3vzmq6gsmk2kc"))))
     (build-system dune-build-system)
     (arguments
      ;; No tests
@@ -3068,7 +3068,7 @@ string values and to directly encode characters in OCaml Buffer.t values.")
 (define-public ocaml-uunf
   (package
     (name "ocaml-uunf")
-    (version "14.0.0")
+    (version "15.0.0")
     (source
      (origin
        (method url-fetch)
@@ -3076,13 +3076,18 @@ string values and to directly encode characters in OCaml Buffer.t values.")
                            version".tbz"))
        (sha256
         (base32
-         "17wv0nm3vvwcbzb1b09akw8jblmigyhbfmh1sy9lkb5756ni94a2"))))
+         "1s5svvdqfbzw16rf1h0zm9n92xfdr0qciprd7lcjza8z1hy6pyh7"))))
     (build-system ocaml-build-system)
     (arguments
      `(#:build-flags (list "build" "--tests" "true")
        #:phases
        (modify-phases %standard-phases
          (delete 'configure)
+         ;; reported and fixed upstream, will be available in next version.
+         (add-before 'build 'fix-test
+           (lambda _
+             (substitute* "test/test.ml"
+               (("test/NormalizationTest.txt") "-"))))
          (add-before 'check 'check-data
            (lambda* (#:key inputs #:allow-other-keys)
              (copy-file (assoc-ref inputs "NormalizationTest.txt")
@@ -3101,7 +3106,7 @@ string values and to directly encode characters in OCaml Buffer.t values.")
                                "/ucd/NormalizationTest.txt"))
            (file-name (string-append "NormalizationTest-" version ".txt"))
            (sha256
-              (base32 "0c93pqdkksf7b7zw8y2w0h9i5kkrsdjmh2cr5clrrhp6mg10rcvw"))))))
+              (base32 "09pkawfqpgy2xnv2nkkgmxv53rx4anprg65crbbcm02a2p6ci6pv"))))))
     (propagated-inputs (list ocaml-uutf))
     (home-page "https://erratique.ch/software/uunf")
     (synopsis "Unicode text normalization for OCaml")
@@ -7998,7 +8003,7 @@ support for Mparser.")))
 (define-public lablgtk3
   (package
     (name "lablgtk")
-    (version "3.1.1")
+    (version "3.1.2")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -8007,10 +8012,11 @@ support for Mparser.")))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "11qfc39cmwfwfpwmjh6wh98zwdv6p73bv8hqwcsss869vs1r7gmn"))))
+                "0b17w9qb1f02h3313cm62mrqlhwxficppzm72n7sf8mmwrylxbm7"))))
     (build-system dune-build-system)
     (arguments
-     `(#:test-target "."
+     `(#:package "lablgtk3"
+       #:test-target "."
        #:phases
        (modify-phases %standard-phases
          (add-before 'build 'make-writable
@@ -8026,7 +8032,7 @@ support for Mparser.")))
     (propagated-inputs
      (list ocaml-cairo2))
     (inputs
-     (list camlp5 gtk+ gtksourceview-3 gtkspell3))
+     (list camlp5 gtk+))
     (native-inputs
      (list pkg-config))
     (home-page "https://github.com/garrigue/lablgtk")
@@ -8039,6 +8045,19 @@ LablGL), gnomecanvas, gnomeui, gtksourceview, gtkspell, libglade (and it can
 generate OCaml code from .glade files), libpanel, librsvg and quartz.")
     ;; Version 2 only, with linking exception.
     (license license:lgpl2.0)))
+
+(define-public ocaml-lablgtk3-sourceview3
+  (package
+    (inherit lablgtk3)
+    (name "ocaml-lablgtk3-sourceview3")
+    (propagated-inputs (list lablgtk3))
+    (native-inputs (list gtksourceview-3 pkg-config))
+    (arguments
+     `(#:package "lablgtk3-sourceview3"
+       #:test-target "."))
+    (synopsis "OCaml interface to GTK+ gtksourceview library")
+    (description "This package provides the lablgtk interface to the
+GTK+ gtksourceview library.")))
 
 (define-public ocaml-reactivedata
   (package
@@ -8071,7 +8090,7 @@ client chooses the concrete timeline.")
 (define-public ocaml-uucd
   (package
     (name "ocaml-uucd")
-    (version "14.0.0")
+    (version "15.0.0")
     (source
      (origin
        (method url-fetch)
@@ -8079,7 +8098,7 @@ client chooses the concrete timeline.")
                            "uucd-" version ".tbz"))
        (sha256
         (base32
-         "0fc737v5gj3339jx4x9xr096lxrpwvp6vaiylhavcvsglcwbgm30"))))
+         "1g26237yqmxr7sd1n9fg65qm5mxz66ybk7hr336zfyyzl25h6jqf"))))
     (build-system ocaml-build-system)
     (arguments
      '(#:build-flags '("build" "--tests" "true")
@@ -8101,7 +8120,7 @@ representations can be extracted.")
 (define-public ocaml-uucp
   (package
     (name "ocaml-uucp")
-    (version "14.0.0")
+    (version "15.0.0")
     (source
      (origin
        (method url-fetch)
@@ -8109,7 +8128,7 @@ representations can be extracted.")
                            "uucp-" version ".tbz"))
        (sha256
         (base32
-         "1yx9nih3d9prb9zizq8fzmmqylf24a6yifhf81h33znrj5xn1mpj"))))
+         "0c2k9gkg442l7hnc8rn1vqzn6qh68w9fx7h3nj03n2x90ps98ixc"))))
     (build-system ocaml-build-system)
     (arguments
      '(#:build-flags '("build" "--tests" "true")
