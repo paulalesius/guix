@@ -1,3 +1,19 @@
+diff --git a/src/bootstrap/bootstrap.py b/src/bootstrap/bootstrap.py
+index 03eec02a8bf..e83d37b2e5a 100644
+--- a/src/bootstrap/bootstrap.py
++++ b/src/bootstrap/bootstrap.py
+@@ -761,8 +761,9 @@ class RustBuild(object):
+             args.append("--verbose")
+         if self.use_locked_deps:
+             args.append("--locked")
+-        if self.use_vendored_sources:
+-            args.append("--frozen")
++        # Disabled by Guix build
++        #if self.use_vendored_sources:
++        #    args.append("--frozen")
+         if self.get_toml("metrics", "build"):
+             args.append("--features")
+             args.append("build-metrics")
 diff --git a/src/bootstrap/builder.rs b/src/bootstrap/builder.rs
 index 0ab4824ac0a..aa05ede560d 100644
 --- a/src/bootstrap/builder.rs
