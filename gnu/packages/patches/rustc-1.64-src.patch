@@ -1,0 +1,19 @@
+diff --git a/src/bootstrap/builder.rs b/src/bootstrap/builder.rs
+index 0ab4824ac0a..aa05ede560d 100644
+--- a/src/bootstrap/builder.rs
++++ b/src/bootstrap/builder.rs
+@@ -2057,10 +2057,12 @@ pub fn cargo(
+         if self.config.locked_deps {
+             cargo.arg("--locked");
+         }
++        /**
++         * Disabled by Guix build because lockfile gets generated with the wrong
++         * hashes as we've patched crates
+         if self.config.vendor || self.is_sudo {
+             cargo.arg("--frozen");
+-        }
+-
++        }**/
+         // Try to use a sysroot-relative bindir, in case it was configured absolutely.
+         cargo.env("RUSTC_INSTALL_BINDIR", self.config.bindir_relative());
+ 
