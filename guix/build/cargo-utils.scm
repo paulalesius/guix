@@ -75,8 +75,7 @@ the same directory."
     (lambda (filename)
       (let* ((dir (dirname filename))
              (checksum-file (string-append dir "/.cargo-checksum.json")))
-        (when (file-exists? checksum-file) (rename-file checksum-file (string-append checksum-file ".orig")))
-          ;;(delete-file checksum-file))
+        (when (file-exists? checksum-file) (delete-file checksum-file))
         (display (string-append
                    "patch-cargo-checksums: generate-checksums for "
                    dir "\n"))
