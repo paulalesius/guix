@@ -53,6 +53,7 @@
 # Copyright © 2022 John Kehayias <john.kehayias@protonmail.com>
 # Copyright © 2022 muradm <mail@muradm.net>
 # Copyright © 2022 Hilton Chain <hako@ultrarare.space>
+# Copyright © 2022 Alex Griffin <a@ajgrf.com>
 #
 # This file is part of GNU Guix.
 #
@@ -81,6 +82,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/bootloader/u-boot.scm                     \
   %D%/bootloader/depthcharge.scm                \
   %D%/ci.scm					\
+  %D%/compression.scm				\
   %D%/home.scm					\
   %D%/home/services.scm			\
   %D%/home/services/desktop.scm			\
@@ -682,6 +684,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/services/herd.scm				\
   %D%/services/pm.scm				\
   %D%/services/rsync.scm			\
+  %D%/services/samba.scm			\
   %D%/services/sddm.scm				\
   %D%/services/spice.scm				\
   %D%/services/ssh.scm				\
@@ -716,6 +719,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/system/images/pine64.scm			\
   %D%/system/images/pinebook-pro.scm		\
   %D%/system/images/rock64.scm			\
+  %D%/system/images/wsl2.scm			\
 						\
   %D%/machine.scm				\
 						\
@@ -761,6 +765,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/tests/package-management.scm		\
   %D%/tests/reconfigure.scm			\
   %D%/tests/rsync.scm				\
+  %D%/tests/samba.scm				\
   %D%/tests/security.scm			\
   %D%/tests/security-token.scm			\
   %D%/tests/singularity.scm			\
@@ -1325,10 +1330,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/irrlicht-link-against-needed-libs.patch	\
   %D%/packages/patches/isl-0.11.1-aarch64-support.patch	\
   %D%/packages/patches/itk-snap-alt-glibc-compat.patch		\
-  %D%/packages/patches/jami-fix-esc-bug.patch			\
-  %D%/packages/patches/json-c-0.13-CVE-2020-12762.patch	\
-  %D%/packages/patches/json-c-0.12-CVE-2020-12762.patch	\
-  %D%/packages/patches/jsoncpp-pkg-config-version.patch		\
+  %D%/packages/patches/jami-fix-crash-on-block-contact.patch	\
   %D%/packages/patches/jamvm-1.5.1-aarch64-support.patch	\
   %D%/packages/patches/jamvm-1.5.1-armv7-support.patch	\
   %D%/packages/patches/jamvm-2.0.0-aarch64-support.patch	\
@@ -1350,6 +1352,9 @@ dist_patch_DATA =						\
   %D%/packages/patches/jfsutils-add-sysmacros.patch		\
   %D%/packages/patches/jfsutils-gcc-compat.patch		\
   %D%/packages/patches/jfsutils-include-systypes.patch		\
+  %D%/packages/patches/json-c-0.13-CVE-2020-12762.patch	\
+  %D%/packages/patches/json-c-0.12-CVE-2020-12762.patch	\
+  %D%/packages/patches/jsoncpp-pkg-config-version.patch		\
   %D%/packages/patches/julia-SOURCE_DATE_EPOCH-mtime.patch	\
   %D%/packages/patches/julia-tracker-16-compat.patch		\
   %D%/packages/patches/julia-allow-parallel-build.patch		\
@@ -1608,7 +1613,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/password-store-tree-compat.patch		\
   %D%/packages/patches/pciutils-hurd-configure.patch		\
   %D%/packages/patches/pciutils-hurd-fix.patch			\
-  %D%/packages/patches/pjproject-install-libpjsua2.patch	\
   %D%/packages/patches/plasma-framework-fix-KF5PlasmaMacros.cmake.patch \
   %D%/packages/patches/pokerth-boost.patch			\
   %D%/packages/patches/ppsspp-disable-upgrade-and-gold.patch		\

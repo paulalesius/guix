@@ -116,6 +116,7 @@
 ;;; Copyright © 2022 Haider Mirza <haider@haider.gq>
 ;;; Copyright © 2022 Jose G Perez Taveras <josegpt27@gmail.com>
 ;;; Copyright © 2022 Hilton Chain <hako@ultrarare.space>
+;;; Copyright © 2022 Nicolas Graves <ngraves@ngraves.fr>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -139,6 +140,7 @@
   #:use-module (guix download)
   #:use-module (guix bzr-download)
   #:use-module (guix gexp)
+  #:use-module (guix i18n)
   #:use-module (guix git-download)
   #:use-module (guix hg-download)
   #:use-module (guix build-system gnu)
@@ -240,6 +242,9 @@
   #:use-module (gnu packages photo)
   #:use-module (gnu packages uml)
   #:use-module (gnu packages finance)
+  #:use-module (gnu packages ocaml)
+  #:use-module (gnu packages erlang)
+  #:use-module (gnu packages statistics)
   #:use-module (guix utils)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match))
@@ -2675,6 +2680,29 @@ letter to each link using avy.")
 command, which uses Emacs standard completion to select an application
 installed on your machine and launch it.")
       (license license:gpl3+))))
+
+(define-public emacs-alchemist
+  (package
+    (name "emacs-alchemist")
+    (version "1.8.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://stable.melpa.org/packages/"
+                           "alchemist-" version ".tar"))
+       (sha256
+        (base32 "0ygwf9d739zqc8dcckw0j0bqkipw7cmxbrx3l281x237a3d384yw"))))
+    (build-system emacs-build-system)
+    (propagated-inputs
+     (list emacs-elixir-mode emacs-dash emacs-company emacs-pkg-info))
+    (home-page "http://www.github.com/tonini/alchemist.el")
+    (synopsis "Elixir tooling integration into Emacs")
+    (description
+     "This package brings you all the Elixir tooling and power inside your Emacs
+editor.  It comes with commands to compile, execute and test your code, spawn
+an interactive shell, and look up definitions and documentation as well as
+code completion and project management support.")
+    (license license:gpl3+)))
 
 (define-public emacs-auto-sudoedit
   (package
@@ -11114,6 +11142,27 @@ errors and strict-mode warnings, smart line-wrapping within comments and
 strings, and code folding.")
     (license license:gpl3+)))
 
+(define-public emacs-js-comint
+  (package
+    (name "emacs-js-comint")
+    (version "1.2.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://stable.melpa.org/packages/"
+                           "js-comint-" version ".el"))
+       (sha256
+        (base32 "1qin0hclm3ly62nl5ddiim64bcd2k74b1yqsqqc61cf9k2q8k287"))))
+    (build-system emacs-build-system)
+    (home-page "https://github.com/redguardtoo/js-comint")
+    (synopsis "Interacting with a JavaScript interpeter")
+    (description
+     "This program is a comint mode for Emacs which allows you to run a
+compatible JavaScript REPL, such as node, SpiderMonkey or Rhino.
+It also defines a few functions for sending JavaScript input to this REPL from
+an Emacs buffer.")
+    (license license:gpl3+)))
+
 (define-public emacs-nodejs-repl
   (package
     (name "emacs-nodejs-repl")
@@ -16340,25 +16389,42 @@ highlighting.")
     (license license:gpl3+)))
 
 (define-public emacs-jsonrpc
-  (package
-    (name "emacs-jsonrpc")
-    (version "1.0.15")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "https://elpa.gnu.org/packages/"
-                           "jsonrpc-" version ".tar"))
-       (sha256
-        (base32 "1hx378rg12jz2zm105cvrqk0nqyzsn04l59d903l98d6lbd96rsw"))))
-    (build-system emacs-build-system)
-    (home-page "http://elpa.gnu.org/packages/jsonrpc.html")
-    (synopsis "JSON-RPC library")
-    (description
-     "This library implements the JSONRPC 2.0 specification as
+  ;; Commit refers to a commit in the Emacs repository, as jsonrpc.el was
+  ;; upstreamed.  By convention, it should refer to a commit in which
+  ;; jsonrpc.el was actually touched.
+  (let ((commit "50654cf0b1bf6210fc8f46d8e7ae13bbeeccecb5")
+        (revision "0"))                 ; Currently a version bump
+    (package
+      (name "emacs-jsonrpc")
+      (version (git-version "1.0.15" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://git.savannah.gnu.org/git/emacs.git")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "0srwb171dxha1nfzppk6x9v4bdj3lk74pksqnhalw8jw9c67b72y"))))
+      (build-system emacs-build-system)
+      (arguments
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 (replace 'unpack
+                   (lambda* (#:key source #:allow-other-keys)
+                     (mkdir "source")
+                     (chdir "source")
+                     (copy-file (string-append source "/lisp/jsonrpc.el")
+                                "jsonrpc.el"))))))
+      (home-page "http://elpa.gnu.org/packages/jsonrpc.html")
+      (synopsis "JSON-RPC library")
+      (description
+       "This library implements the JSONRPC 2.0 specification as
 described in @url{http://www.jsonrpc.org/}.  As the name suggests,
 JSONRPC is a generic Remote Procedure Call protocol designed around
 JSON objects.")
-    (license license:gpl3+)))
+      (license license:gpl3+))))
 
 (define-public emacs-jsonnet-mode
   (package
@@ -27374,6 +27440,169 @@ to be examined using Ediff.")
 outline-enabled table of contents, additional metadata association for Info
 nodes, and more.")
       (license license:gpl2+))))
+
+(define-public emacs-eval-in-repl
+  (package
+    (name "emacs-eval-in-repl")
+    (version "0.9.7")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/kaz-yos/eval-in-repl")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1mrssbl0wyc6iij8zk1y3h9bd3rv53nnrxsij7fn67l1m4z0clyn"))))
+    (build-system emacs-build-system)
+    (arguments
+     (list #:include
+           #~(list "eval-in-repl\\.el" "eval-in-repl-test\\.el" "README\\.md")))
+    (propagated-inputs (list emacs-dash emacs-paredit emacs-ace-window))
+    (home-page "https://github.com/kaz-yos/eval-in-repl")
+    (synopsis "One keybinding to communicate with REPLs")
+    (description
+     "@code{eval-in-repl} provides a consistent ESS-like evaluation interface
+for various REPLs.  In particular, it mimics ESS' C-RET binding, which sends a
+line or region to an appropriately configured shell.  This package provides
+just the core of @code{eval-in-repl}---for the languages themselves, see their
+respective packages.")
+    (license license:expat)))
+
+(define* (make-emacs-eval-in-repl repl #:key
+                                  (eval-in-repl-package emacs-eval-in-repl)
+                                  (language (string-capitalize repl))
+                                  (inputs '()))
+  "Construct an emacs-eval-in-repl package for REPL, which interprets LANGUAGE.
+Optionally propagate INPUTS or use a different EVAL-IN-REPL-PACKAGE."
+  (package
+    (inherit eval-in-repl-package)
+    (name (string-append "emacs-eval-in-repl-" repl))
+    (arguments
+     (list #:include
+           #~(list #$(string-append "eval-in-repl-" repl "\\.el"))))
+    (propagated-inputs (cons* eval-in-repl-package
+                              (cond
+                               ((procedure? inputs) (inputs))
+                               ((promise? inputs) (force inputs))
+                               (else inputs))))
+    (description
+     (format #f (G_ "This package provides an ESS-like binding to send lines
+or regions to a REPL from ~a buffers.") language))))
+
+(define-public emacs-eval-in-repl-cider
+  (make-emacs-eval-in-repl "cider" #:language "Clojure"
+                           #:inputs (list emacs-cider)))
+
+(define-public emacs-eval-in-repl-elm
+  (make-emacs-eval-in-repl "elm" #:inputs (list emacs-elm-mode)))
+
+(define-public emacs-eval-in-repl-erlang
+  (make-emacs-eval-in-repl "erlang" #:inputs (list emacs-erlang)))
+
+(define-public emacs-eval-in-repl-geiser
+  (make-emacs-eval-in-repl "geiser" #:language "Scheme"
+                           #:inputs (list emacs-geiser)))
+
+(define-public emacs-eval-in-repl-hy
+  (make-emacs-eval-in-repl "hy" #:inputs (list emacs-hy-mode)))
+
+(define-public emacs-eval-in-repl-ielm
+  (make-emacs-eval-in-repl "ielm" #:language "Emacs Lisp"))
+
+(define-public emacs-eval-in-repl-iex
+  (make-emacs-eval-in-repl
+   "iex" #:language "Elixir"
+   #:inputs (delay
+              (list emacs-elixir-mode emacs-alchemist))))
+
+(define-public emacs-eval-in-repl-javascript
+  (make-emacs-eval-in-repl "javascript"
+                           #:inputs (list emacs-js2-mode emacs-js-comint)))
+
+(define-public emacs-eval-in-repl-lua
+  (make-emacs-eval-in-repl "lua" #:inputs (list emacs-lua-mode)))
+
+(define-public emacs-eval-in-repl-ocaml
+  (make-emacs-eval-in-repl "ocaml" #:language "OCaml"
+                           #:inputs (delay (list emacs-tuareg))))
+
+(define-public emacs-eval-in-repl-prolog
+  (make-emacs-eval-in-repl "prolog"))
+
+(define-public emacs-eval-in-repl-python
+  (make-emacs-eval-in-repl "python"))
+
+(define-public emacs-eval-in-repl-racket
+  (make-emacs-eval-in-repl "racket" #:inputs (list emacs-racket-mode)))
+
+(define-public emacs-eval-in-repl-ruby
+  (make-emacs-eval-in-repl "ruby" #:inputs (list emacs-inf-ruby)))
+
+(define-public emacs-eval-in-repl-scheme
+  (make-emacs-eval-in-repl "scheme"))
+
+(define-public emacs-eval-in-repl-shell
+  (make-emacs-eval-in-repl "shell"))
+
+(define-public emacs-eval-in-repl-slime
+  (make-emacs-eval-in-repl "slime" #:language "Common Lisp"
+                           #:inputs (list emacs-slime)))
+
+(define-public emacs-eval-in-repl-sly
+  (make-emacs-eval-in-repl "sly" #:language "Common Lisp"
+                           #:inputs (list emacs-sly)))
+
+(define-public emacs-eval-in-repl-sml
+  (make-emacs-eval-in-repl "sml" #:language "Standard ML"
+                           #:inputs (list emacs-sml-mode)))
+
+(define-public emacs-ob-elm
+  (let ((commit "d3a9fbc2f56416894c9aed65ea9a20cc1d98f15d")
+        (revision "0"))
+    (package
+      (name "emacs-ob-elm")
+      (version (git-version "0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/BonfaceKilz/ob-elm")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1wdlr0cbsb2drdmcn2bnivjkj1f2v52l6yizwsnjgi4xq3w6k56h"))))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/BonfaceKilz/ob-elm")
+      (synopsis "Org-Babel support for Elm code")
+      (description
+       "This package adds support to Org-Babel for evaluating Elm code.")
+      (license license:gpl3+))))
+
+(define-public emacs-org-babel-eval-in-repl
+  (package
+    (name "emacs-org-babel-eval-in-repl")
+    (version "1.6")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://stable.melpa.org/packages/"
+                           "org-babel-eval-in-repl-" version ".tar"))
+       (sha256
+        (base32 "0bdnps6m3kcvsagz8cfm3kf2rvxzl2p252pfggwbdbl43kzvl35h"))
+       (modules '((guix build utils)))
+       (snippet
+        #~(begin (delete-file "eval-in-repl-matlab.el")))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-eval-in-repl emacs-ess))
+    (home-page "https://github.com/diadochos/org-babel-eval-in-repl")
+    (synopsis "Eval org-mode babel code blocks in various REPLs")
+    (description
+     "This package allows you to execute org-mode source code blocks with
+@code{eval-in-repl}.  It can execute code blocks asynchronously, without
+needing to write the result into the buffer.")
+    (license license:expat)))
 
 (define-public emacs-eval-sexp-fu-el
   (package
