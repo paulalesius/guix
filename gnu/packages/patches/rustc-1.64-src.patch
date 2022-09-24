@@ -1,0 +1,15 @@
+diff --git a/src/bootstrap/bootstrap.py b/src/bootstrap/bootstrap.py
+index 03eec02a8bf..db925a3964c 100644
+--- a/src/bootstrap/bootstrap.py
++++ b/src/bootstrap/bootstrap.py
+@@ -761,8 +761,8 @@ class RustBuild(object):
+             args.append("--verbose")
+         if self.use_locked_deps:
+             args.append("--locked")
+-        if self.use_vendored_sources:
+-            args.append("--frozen")
++        #if self.use_vendored_sources:
++        #    args.append("--frozen")
+         if self.get_toml("metrics", "build"):
+             args.append("--features")
+             args.append("build-metrics")
