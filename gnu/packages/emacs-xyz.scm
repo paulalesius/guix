@@ -2623,6 +2623,29 @@ framework as the user interface, which integrates well with Vertico or
 Selectrum.")
     (license license:gpl3+)))
 
+(define-public emacs-marginalia-emprise
+  (package
+    (name "emacs-marginalia-emprise")
+    (version "0.2.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.sr.ht/~plattfot/marginalia-emprise")
+             (commit (string-append "v" version))))
+       (sha256
+        (base32
+         "1kbk3kgvv1k5zdysvpgcsbxiwn4la3vvnmv3sbzxq7q5v5cr4a54"))
+       (file-name (git-file-name name version))))
+    (build-system emacs-build-system)
+    (propagated-inputs
+     (list emacs-emprise emacs-marginalia))
+    (home-page "https://sr.ht/~plattfot/emprise/")
+    (synopsis "Annotate Emprise with Marginalia")
+    (description "This package provides an annotation function to show
+playback status, artist name and title for Emprise using Marginalia.")
+    (license license:gpl3+)))
+
 
 ;;;
 ;;; Miscellaneous.
@@ -6010,6 +6033,29 @@ heading, other headings can be refiled to it with one command, and back to
 their original location with another.")
       (license license:gpl3+))))
 
+(define-public emacs-orgmdb
+  (package
+    (name "emacs-orgmdb")
+    (version "0.5")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/isamert/orgmdb.el")
+             (commit "66c13abdb84e0f0a31bae6cfda27478771d58d8e")))
+       (sha256
+        (base32
+         "1hvxha0ih9jhvwj07l6jnpf2vzhgvb6ii73g49c8saxld61l0frf"))
+       (file-name (git-file-name name version))))
+    (build-system emacs-build-system)
+    (propagated-inputs
+     (list emacs-dash emacs-org emacs-s))
+    (home-page "https://github.com/isamert/orgmdb.el")
+    (synopsis "Emacs' Org mode watchlist manager and OMDb API client")
+    (description "This package adds tools for managing your watchlist in Emacs'
+Org mode and some functions for interacting with the OMDb API.")
+    (license license:gpl3+)))
+
 (define-public emacs-rich-minority
   (package
     (name "emacs-rich-minority")
@@ -7008,6 +7054,34 @@ source code using IPython.")
     (description "@code{ob-async} enables asynchronous execution of org-babel
 src blocks.")
     (license license:gpl3+)))
+
+(define-public emacs-ol-notmuch
+  (let ((commit "1a53d6c707514784cabf33d865b577bf77f45913")
+        (revision "0"))
+    (package
+      (name "emacs-ol-notmuch")
+      (version (git-version "2.0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://git.sr.ht/~tarsius/ol-notmuch")
+               (commit commit)))
+         (sha256
+          (base32
+           "16p7j51z8r047alwn2hkb6944f7ds29ckb97b4k8ia00vwch0d67"))
+         (file-name (git-file-name name version))))
+      (build-system emacs-build-system)
+      (propagated-inputs
+       (list emacs-compat emacs-notmuch emacs-org))
+      (home-page "https://git.sr.ht/~tarsius/ol-notmuch")
+      (synopsis "Links to notmuch messages for Emacs' Org mode")
+      (description
+       "This package implements links to Notmuch messages and searches for
+Emacs' Org mode.  A search is a query to be performed by Notmuch; it is the
+equivalent to folders in other mail clients.  Similarly, mails are referred to
+by a query, so both a link can refer to several mails.")
+      (license license:gpl3+))))
 
 (define-public emacs-debbugs
   (package
@@ -9053,6 +9127,40 @@ variants.")
      "Solarized for Emacs is a port of the Solarized theme for Vim.  This
 package provides a light and a dark variant.")
     (license license:gpl3+)))
+
+(define-public emacs-color-theme-solarized
+  ;; From 2017-10-24.  No releases available.
+  (let ((commit "f3ca8902ea056fb8e46cb09f09c96294e31cd4ee")
+        (revision "0"))
+    (package
+      (name "emacs-color-theme-solarized")
+      (version (git-version "0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url
+                       "https://github.com/sellout/emacs-color-theme-solarized")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "16d7adqi07lzzr0qipl1fbag9l8kiyr3xrqxi528pimcisbg85d3"))))
+      (build-system emacs-build-system)
+      (arguments
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 ;; These are intended for old versions of Emacs and do not
+                 ;; compile with emacs>=24.
+                 (add-before 'install 'remove-color-theme
+                   (lambda _
+                     (delete-file "./color-theme-solarized.el")
+                     (delete-file "./color-theme-solarized-pkg.el"))))))
+      (home-page "https://github.com/sellout/emacs-color-theme-solarized")
+      (synopsis "Solarized color scheme for Emacs")
+      (description
+       "This package provides Emacs highlighting using Ethan Schoonover’s
+Solarized color scheme.")
+      (license license:expat))))
 
 (define-public emacs-poet-theme
   (let ((commit "16eb694f0755c04c4db98614d0eca1199fddad70")
@@ -14132,7 +14240,7 @@ you to deal with multiple log levels.")
 (define-public emacs-denote
   (package
     (name "emacs-denote")
-    (version "0.5.1")
+    (version "0.6.0")
     (source
      (origin
        (method git-fetch)
@@ -14141,7 +14249,7 @@ you to deal with multiple log levels.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "00f50dhw0x1hn87rc6vkrdwpybnbphg5z0g2c6c4r4cbgaiia8bi"))))
+        (base32 "0wqrl2fdprmgffxg5xak881gs0g4ffdy2n8wcb4wbz3f6anhfaa5"))))
     (build-system emacs-build-system)
     (native-inputs (list texinfo))
     (home-page "https://protesilaos.com/emacs/denote/")
@@ -14290,6 +14398,33 @@ stuff (words, region, lines) around in Emacs.")
        "This package provides support for the Bazel build system.  See
 @uref{https://bazel.build/} for background on Bazel.")
       (license license:asl2.0))))
+
+(define-public emacs-clue
+  ;; There are no releases so far.
+  (let ((commit "41895da52cf76f964d97cb8204406ab9828c4839")
+        (revision "0"))
+    (package
+      (name "emacs-clue")
+      (version (git-version "0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/AmaiKinono/clue")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32 "08xpdpac82v5vwqqqgbh5imakl4pys6bpfacfk05pk88lw925ql8"))))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/AmaiKinono/clue/")
+      (synopsis "Connecting clues while reading code")
+      (description
+       "Clue is a tool for helping you take notes while reading code.
+
+Code reading is all about finding connections between different locations in
+a project.  With Clue, you can take notes about these connections in plain
+text (or your favorite markup language), and insert links to take you to these
+locations.")
+      (license license:gpl3+))))
 
 (define-public emacs-gntp
   (package
@@ -20612,6 +20747,30 @@ collapse macro forms one step at a time, and evaluate or instrument the
 expansions for debugging with Edebug as normal.")
       (license license:gpl3+))))
 
+(define-public emacs-macrostep-geiser
+  ;; XXX: Upstream does not tag commits (yet).  The commit below matches the
+  ;; version bump.
+  (let ((commit "7927651b188cac07113bce5b2cd0de12b2b082f7"))
+    (package
+      (name "emacs-macrostep-geiser")
+      (version "0.2.0")
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/nbfalcon/macrostep-geiser")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "1gz2kypyrb4k76dn4j02c8s6a3dqb1la5jcrdcifv8saa8lvqyli"))))
+      (build-system emacs-build-system)
+      (propagated-inputs (list emacs-geiser emacs-macrostep))
+      (home-page "https://github.com/nbfalcon/macrostep-geiser")
+      (synopsis "Macrostep for Geiser and Cider")
+      (description
+       "This plug-in implements a Macrostep back-end powered by Geiser.")
+      (license license:gpl3+))))
+
 (define-public emacs-parent-mode
   (package
     (name "emacs-parent-mode")
@@ -23577,6 +23736,31 @@ and @code{C++} files through the @code{ccls} language server.")
     "Aim for this project is to make it easier to generate preprocessor macros
 from Emacs for C/C++ code that needs to be build against multiple incompatible
 versions of third party libraries or @code{C++} standards.")
+   (license license:gpl3+)))
+
+(define-public emacs-cpreproc-openvdb
+  (package
+   (name "emacs-cpreproc-openvdb")
+   (version "3.0.0")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+           (url "https://git.sr.ht/~plattfot/cpreproc-openvdb")
+           (commit version)))
+     (sha256
+      (base32
+       "0n1y8cxx6xipvip8y6nk9ig1dpjdksz77956wlql3lhqcrcn5hzg"))
+     (file-name (git-file-name name version))))
+   (build-system emacs-build-system)
+   (propagated-inputs
+    (list emacs-cpreproc))
+   (home-page "https://sr.ht/~plattfot/cpreproc")
+   (synopsis "Create preprocessor macros for C++ that uses OpenVDB")
+   (description
+    "This project makes it easier to generate preprocessor macros from Emacs
+for C++ code that uses OpenVDB and needs to be build against multiple
+incompatible versions of it.")
    (license license:gpl3+)))
 
 (define-public emacs-org-brain
