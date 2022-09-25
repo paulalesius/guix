@@ -967,6 +967,8 @@ on stdout instead of using a socket as the Emacsclient does.")
                  (install #:outputs outputs
                           #:include (cons "\\.so$"
                                           emacs:%default-include)))))
+           (add-after 'unpack 'emacs-add-install-to-native-load-path
+             (assoc-ref emacs:%standard-phases 'add-install-to-native-load-path))
            (add-after 'install 'make-autoloads
              (assoc-ref emacs:%standard-phases 'make-autoloads))
            (add-after 'make-autoloads 'enable-autoloads-compilation
@@ -4047,7 +4049,9 @@ during idle time, while Emacs is doing nothing else.")
                ("pdf-tools-handle-upgrades" '()))))
          (add-after 'emacs-patch-variables 'emacs-expand-load-path
            (assoc-ref emacs:%standard-phases 'expand-load-path))
-         (add-after 'emacs-expand-load-path 'emacs-install
+         (add-after 'emacs-expand-load-path 'emacs-add-install-to-native-load-path
+           (assoc-ref emacs:%standard-phases 'add-install-to-native-load-path))
+         (add-after 'emacs-add-install-to-native-load-path 'emacs-install
            (assoc-ref emacs:%standard-phases 'install))
          (add-after 'emacs-install 'emacs-build
            (assoc-ref emacs:%standard-phases 'build))
