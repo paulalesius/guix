@@ -95,7 +95,7 @@
 ;;; Copyright © 2021 Alexey Abramov <levenson@mmer.org>
 ;;; Copyright © 2021 Xinglu Chen <public@yoctocell.xyz>
 ;;; Copyright © 2021, 2022 Stefan Reichör <stefan@xsteve.at>
-;;; Copyright © 2021 Simon Tournier <zimon.toutoune@gmail.com>
+;;; Copyright © 2021, 2022 Simon Tournier <zimon.toutoune@gmail.com>
 ;;; Copyright © 2021 Eugene Klimov <lipklim@mailbox.org>
 ;;; Copyright © 2021 Zheng Junjie <873216071@qq.com>
 ;;; Copyright © 2021 David Dashyan <mail@davie.li>
@@ -6918,14 +6918,14 @@ user.")
 (define-public emacs-subed
   (package
     (name "emacs-subed")
-    (version "1.0.9")
+    (version "1.0.10")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://elpa.nongnu.org/nongnu/subed-"
                                   version ".tar"))
               (sha256
                (base32
-                "192m7pg8hiqx7ppr1sk6n5qjcbz78dmcg6m14syq12ll07zfpcm0"))))
+                "08vw9sv2g76yj8sfnx53dd28zkj4s0842i7qi92jam993v9s8h0z"))))
     (arguments
      (list
       #:tests? #t
@@ -7037,6 +7037,43 @@ prefer the listing of bugs as TODO items of @code{org-mode}, you could use
 
 A minor mode @code{debbugs-browse-mode} let you browse URLs to the GNU Bug
 Tracker as well as bug identifiers prepared for @code{bug-reference-mode}.")
+    (license license:gpl3+)))
+
+(define-public emacs-piem
+  (package
+    (name "emacs-piem")
+    (version "0.4.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.kyleam.com/piem")
+             (commit (string-append "v" version))))
+       (file-name (string-append name "-" version "-checkout"))
+       (sha256
+        (base32 "0wr6n6wvznngjdp4c0pmdr4xz05dark0kxi5svzhzxsg3rdaql3z"))))
+    (build-system emacs-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'configure
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   (emacs-substitute-variables "piem-b4.el"
+                     ("piem-b4-b4-executable"
+                      (search-input-file inputs "/bin/b4"))))))))
+    (inputs
+     (list b4))
+    (propagated-inputs
+     (list emacs-elfeed
+           emacs-notmuch
+           emacs-transient))
+    (home-page "https://docs.kyleam.com/piem")
+    (synopsis "Glue for working with public-inbox archives")
+    (description "This packages provides a collection of Emacs libraries for
+working with public-inbox archives.  As much of the hard work here is already
+done by other Emacs libraries—things like mail clients, news readers, Git
+interfaces, and even web browsers—piem is mostly about bridging some of these
+parts for convenience.")
     (license license:gpl3+)))
 
 (define-public emacs-ert-expectations
@@ -9777,7 +9814,7 @@ regexp that matches all known keywords.")
 (define-public emacs-perspective
   (package
     (name "emacs-perspective")
-    (version "2.17")
+    (version "2.18")
     (source
      (origin
        (method git-fetch)
@@ -9786,7 +9823,7 @@ regexp that matches all known keywords.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1nmz39pcaa969g1966ykblzrz6lr3ddb0ip465y5in1fj498as6y"))))
+        (base32 "1r026cw6p2ss5wg8mxgzf6iv1lb9pdnqyf6yrqb914aibkrvp9b6"))))
     (build-system emacs-build-system)
     (arguments
      `(#:tests? #t
@@ -12865,7 +12902,7 @@ using package inferred style.")
      `(#:tests? #t
        #:test-command '("buttercup" "-l" "lua-mode.el")))
     (native-inputs
-     (list emacs-buttercup lua))
+     (list emacs-buttercup-1.25 lua))
     (synopsis "Major mode for lua")
     (description
      "This Emacs package provides a mode for @uref{https://www.lua.org/,
@@ -14378,7 +14415,7 @@ automatically discovered and presented in recency order.")
 (define-public emacs-mentor
   (package
     (name "emacs-mentor")
-    (version "0.3.5")
+    (version "0.4")
     (source
      (origin
        (method url-fetch)
@@ -14386,7 +14423,7 @@ automatically discovered and presented in recency order.")
                            version ".tar"))
        (sha256
         (base32
-         "01zrvfk2njzyzjzkvp5hv5cjl1k1qjrila1ab4bv26gf6bkq5xh3"))))
+         "1n51yabm4npx62fpfn8rhky09x4y779ismdxa026fycy7va7ynzz"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-async emacs-xml-rpc))
@@ -16830,7 +16867,7 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
 (define-public emacs-ement
   (package
     (name "emacs-ement")
-    (version "0.1.4")
+    (version "0.2")
     (source
      (origin
        (method git-fetch)
@@ -16839,7 +16876,7 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1kms6l14h6ig8kphzpkxv16z7gpvcwvcfsp5ljssdnrx0c7dzz16"))))
+        (base32 "1f1a00lywzzaaj4sqziz43bbxjfc0gdkqgbfqmai1drn8ihgnhxn"))))
     (build-system emacs-build-system)
     (arguments
      `(#:emacs ,emacs))               ;need libxml support
@@ -17598,8 +17635,8 @@ through them using @key{C-c C-SPC}.")
     (license license:gpl3+)))
 
 (define-public emacs-slack
-  (let ((commit "1f6a40faec0d8d9c9de51c444508d05a3e995ccd")
-        (revision "9"))
+  (let ((commit "ff46d88726482211e3ac3d0b9c95dd4fdffe11c2")
+        (revision "10"))
     (package
       (name "emacs-slack")
       (version (git-version "0.0.2" revision commit))
@@ -17611,7 +17648,7 @@ through them using @key{C-c C-SPC}.")
                 (file-name (git-file-name name commit))
                 (sha256
                  (base32
-                  "19lan9nd8qfw2ws7mx814vrin04c892yn5c8g3nad7lpnzszgr1r"))))
+                  "15g4dmy4iqqpk8ivhkpsngzllbw0nc5d2sc9j36sdnhwkajzhidj"))))
       (build-system emacs-build-system)
       (arguments
        `(#:phases
@@ -24743,6 +24780,23 @@ testing Emacs Lisp code.  It groups related tests so they can share
 common set-up and tear-down code, and allows the programmer to \"spy\" on
 functions to ensure they are called with the right arguments during testing.")
     (license license:gpl3+)))
+
+;;; Required by emacs-lua-mode
+(define emacs-buttercup-1.25
+  (package
+    (inherit emacs-buttercup)
+    (name "emacs-buttercup")
+    (version "1.25")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/jorgenschaefer/emacs-buttercup")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "0fsysvsypda6b7azc15bpaprq3bwx4gb6rlq2mj6f8rgwdqc8153"))))))
 
 (define-public emacs-cort
   (package

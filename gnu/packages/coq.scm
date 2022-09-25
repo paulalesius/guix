@@ -8,6 +8,7 @@
 ;;; Copyright © 2020 Robin Green <greenrd@greenrd.org>
 ;;; Copyright © 2021 Xinglu Chen <public@yoctocell.xyz>
 ;;; Copyright © 2021 Simon Tournier <zimon.toutoune@gmail.com>
+;;; Copyright © 2022 Garek Dyszel <garekdyszel@disroot.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -43,6 +44,7 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system ocaml)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
@@ -694,3 +696,78 @@ for goals involving set operations.
 @end itemize")
     (home-page "https://gitlab.mpi-sws.org/iris/stdpp")
     (license license:bsd-3)))
+
+(define-public coq-mathcomp-finmap
+  (package
+    (name "coq-mathcomp-finmap")
+    (version "1.5.2")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/math-comp/finmap")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1k72wpp15xa5ag358jl8a71gschng0bgbaqjx0l5a0in6x5adafh"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(;; No tests supplied in Makefile.common.
+       ;; The project doesn't appear to have plans to include tests in
+       ;; the future.
+       #:tests? #f
+       #:make-flags (list (string-append "COQLIBINSTALL="
+                                         (assoc-ref %outputs "out")
+                                         "/lib/coq/user-contrib"))
+       #:phases (modify-phases %standard-phases
+                  (delete 'configure))))
+    (inputs (list coq coq-stdlib coq-mathcomp which))
+    (synopsis "Finite sets and finite types for coq-mathcomp")
+    (description
+     "This library is an extension of coq-mathcomp which supports finite sets
+and finite maps on choicetypes (rather than finite types).  This includes
+support for functions with finite support and multisets.  The library also
+contains a generic order and set libary, which will eventually be used to
+subsume notations for finite sets.")
+    (home-page "https://math-comp.github.io/")
+    (license license:cecill-b)))
+
+(define-public coq-mathcomp-bigenough
+  (package
+    (name "coq-mathcomp-bigenough")
+    (version "1.0.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/math-comp/bigenough")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "02f4dv4rz72liciwxb2k7acwx6lgqz4381mqyq5854p3nbyn06aw"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(;; No references to tests in Makefile.common.
+       ;; It doesn't appear as though tests will be included
+       ;; by the packaged project in the future.
+       #:tests? #f
+       #:make-flags ,#~(list (string-append "COQBIN="
+                                            #$(this-package-input "coq-core")
+                                            "/bin/")
+                             (string-append "COQMF_COQLIB="
+                                            (assoc-ref %outputs "out")
+                                            "/lib/ocaml/site-lib/coq")
+                             (string-append "COQLIBINSTALL="
+                                            (assoc-ref %outputs "out")
+                                            "/lib/coq/user-contrib"))
+       #:phases (modify-phases %standard-phases
+                  (delete 'configure))))
+    (propagated-inputs (list coq coq-core coq-mathcomp which))
+    (home-page "https://math-comp.github.io/")
+    (synopsis "Small library to do epsilon - N reasoning")
+    (description
+     "The package is used for reasoning with big enough objects (mostly
+natural numbers).  This package is essentially for backward compatibility
+purposes as @code{bigenough} will be subsumed by the near tactics.  The
+formalization is based on the Mathematical Components library.")
+    (license license:cecill-b)))
