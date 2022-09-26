@@ -179,11 +179,24 @@ and the maven-build-system."
 
 (define-team emacs
   (team 'emacs
-        #:name "Emacs team"))
+        #:name "Emacs team"
+        #:description "The extensible, customizable text editor and its
+ecosystem."
+        #:scope (list (make-regexp "^gnu/packages/emacs(-.+|)\\.scm$")
+                      "guix/build/emacs-build-system.scm"
+                      "guix/build/emacs-utils.scm"
+                      "guix/build-system/emacs.scm")))
 
 (define-team lisp
   (team 'lisp
-        #:name "Lisp team"))
+        #:name "Lisp team"
+        #:description
+        "Common Lisp and similar languages, Common Lisp packages and the
+asdf-build-system."
+        #:scope (list (make-regexp "^gnu/packages/lisp(-.+|)\\.scm$")
+                      "guix/build/asdf-build-system.scm"
+                      "guix/build/lisp-utils.scm"
+                      "guix/build-system/asdf.scm")))
 
 (define-team ruby
   (team 'ruby
@@ -292,7 +305,14 @@ and the maven-build-system."
 
 (define-team games
   (team 'games
-        #:name "Games and Videos"))
+        #:name "Games and Toys"
+        #:description "Packaging programs for amusement."
+        #:scope (list "gnu/packages/games.scm"
+                      "gnu/packages/game-development.scm"
+                      "gnu/packages/minetest.scm"
+                      "gnu/packages/esolangs.scm" ; granted, rather niche
+                      "gnu/packages/motti.scm"
+                      "guix/build/minetest-build-system.scm")))
 
 (define-team translations
   (team 'translations
