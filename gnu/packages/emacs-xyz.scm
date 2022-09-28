@@ -15674,13 +15674,13 @@ containing words from the Rime project.")
 (define-public emacs-pyim
   (package
     (name "emacs-pyim")
-    (version "5.2.4")
+    (version "5.2.5")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/pyim-" version ".tar"))
        (sha256
-        (base32 "1dzl4xaf31nyjb5hnwwf29i75x0i8dakpmmagbn4ks5hi3jl2ig0"))))
+        (base32 "00f23pl53rdy9iwp4gj2656wik7c6vnmhsglg7z4pz3ippz3f4hq"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-async emacs-popup emacs-posframe emacs-xr))
@@ -16996,7 +16996,7 @@ multiplexer.")
 (define-public emacs-plz
   (package
     (name "emacs-plz")
-    (version "0.2")
+    (version "0.2.1")
     (source
      (origin
        (method git-fetch)
@@ -17005,7 +17005,7 @@ multiplexer.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "170pbqiywk1zyhd0ig4f25qnjf7r1gwy0c6h343bcnl6qxvkvlv2"))))
+        (base32 "0p0xd532xa8icysyxwqk481lr9xanmp68gf97fd9n2936gp12chv"))))
     (build-system emacs-build-system)
     (inputs (list curl))
     (home-page "https://github.com/alphapapa/plz.el")

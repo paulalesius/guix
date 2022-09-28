@@ -2736,7 +2736,7 @@ and readability.  This package bundles those icons into a font.")
 (define-public font-lxgw-wenkai
   (package
     (name "font-lxgw-wenkai")
-    (version "1.240")
+    (version "1.245.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -2744,7 +2744,7 @@ and readability.  This package bundles those icons into a font.")
                     version "/lxgw-wenkai-v" version ".tar.gz"))
               (sha256
                (base32
-                "1rg6i6fqs1b0b2g4kijimkyqbxfn6n8ac74rppsizq65n6crvfib"))))
+                "13hvr1jz9xpb0cgi4xk3zfbn6w5x258zja55hznbgny2sijnjn8a"))))
     (build-system font-build-system)
     (home-page "https://lxgw.github.io/2021/01/28/Klee-Simpchin/")
     (synopsis "Simplified Chinese Imitation Song typeface")
@@ -2758,7 +2758,7 @@ within GB 2312, standard glyphs for Mainland China is used.")
   (package
     (inherit font-lxgw-wenkai)
     (name "font-lxgw-wenkai-tc")
-    (version "0.921")
+    (version "0.922.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -2766,7 +2766,7 @@ within GB 2312, standard glyphs for Mainland China is used.")
                     version "/lxgw-wenkai-tc-v" version ".tar.gz"))
               (sha256
                (base32
-                "0s7zvb8i1f7ziw8r94l1f3rcv21b80dbgc43zjwz34s43465lwrb"))))
+                "0a1n0yfnh3sc3ldgjxxglw4xyg82i2pk432sk8hfdzrrl4zzjyz3"))))
     (home-page "https://github.com/lxgw/LxgwWenKaitc")
     (synopsis "Traditional Chinese Imitation Song typeface")
     (description
@@ -2777,7 +2777,7 @@ dialects in Hong Kong and Taiwan.")))
 (define-public font-chiron-sung-hk
   (package
     (name "font-chiron-sung-hk")
-    (version "1.005")
+    (version "1.006")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2786,7 +2786,7 @@ dialects in Hong Kong and Taiwan.")))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0iqlnb7825kisg2avhr9hwwvb4jw8f642vvmms5dw6m9czzydpgw"))))
+                "0cibyhy363yqmif31lwv4qmcaar5np2gdd3nbnxxp55mb4qn0kms"))))
     (build-system font-build-system)
     (home-page "https://chiron-fonts.github.io/")
     (synopsis "Traditional Chinese Song typeface")
@@ -2801,7 +2801,7 @@ prevalent typefaces in Traditional Chinese regions.")
   (package
     (inherit font-chiron-sung-hk)
     (name "font-chiron-hei-hk")
-    (version "2.503")
+    (version "2.504")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2810,7 +2810,7 @@ prevalent typefaces in Traditional Chinese regions.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "00av598lcsvbwfxabs8m1bfvlk3zq98nziynsrg5p2s5mhz2pkvk"))))
+                "0d0k88sbhgr597sv2jzz2rcg8g4k60lcjka1xlnkv08n3bdgvmhr"))))
     (synopsis "Traditional Chinese Gothic typeface")
     (description
      "Chiron Hei HK is a Traditional Chinese Gothic typeface based on the Hong
