@@ -1848,7 +1848,7 @@ audio/video codec library.")
                (format #t "setting LD_LIBRARY_PATH to ~s~%" path)
                (setenv "LD_LIBRARY_PATH" path)))))))))
 
-(define-public ffmpeg ffmpeg-4)
+(define-public ffmpeg ffmpeg-5)
 
 (define-public ffmpeg-for-stepmania
   (hidden-package
