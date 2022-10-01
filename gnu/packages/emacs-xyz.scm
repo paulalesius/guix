@@ -3085,7 +3085,7 @@ while paused.")
   (package
     (name "emacs-async")
     (home-page "https://github.com/jwiegley/emacs-async")
-    (version "1.9.6")
+    (version "1.9.7")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3094,7 +3094,7 @@ while paused.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1q480ss2jgijdpy6pa4xrjni9pf5q6dwf8hv052fhdpi55bmfdn2"))))
+                "18pysi1pf6hbv6w0nq50j5xclvgd006iqqijh44wck9hxhdwyfr1"))))
     (build-system emacs-build-system)
     (synopsis "Asynchronous processing in Emacs")
     (description
@@ -8238,7 +8238,7 @@ for compilation, debugging, documentation lookup, and so on.")
 (define-public emacs-popup
   (package
     (name "emacs-popup")
-    (version "0.5.8")
+    (version "0.5.9")
     (source
      (origin
        (method git-fetch)
@@ -8247,7 +8247,7 @@ for compilation, debugging, documentation lookup, and so on.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0qrsz4z9q2bfq9xv4n94mvyslm232v2ql9r1fjycx7rnmpqggiwl"))))
+        (base32 "13ww7hld5pa32myj9krr6prmc99s7hnpsw8mw9krpxffykkblj2f"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/auto-complete/popup-el")
     (synopsis "Visual Popup User Interface for Emacs")
@@ -8455,6 +8455,91 @@ the locations of docstrings, arguments, and functions.")
      "This package provides a Company backend for Python.")
     (license license:gpl3+)))
 
+(define-public emacs-elquery
+  (package
+    (name "emacs-elquery")
+    (version "1.1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri
+        (git-reference
+         (url "https://github.com/AdamNiederer/elquery")
+         (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "035zjzmd7yfw0rsjpaklc2wwiqw6brkjadch9x8n8n2gjyxg05mn"))))
+    (build-system emacs-build-system)
+    (arguments
+     (list
+      #:emacs emacs-no-x
+      #:tests? #t
+      #:test-command #~(list "ert-runner")
+      #:phases #~(modify-phases %standard-phases
+                   (add-after 'unpack 'fix-native-compilation
+                     (lambda _
+                       (substitute* "elquery.el"
+                         (("\\(1- \\(/ length \\(match-data\\)\\) 2\\)")
+                          "(1- (/ (length (match-data)) 2))"))))
+                   (add-before 'check 'disable-failing-tests
+                     (lambda _
+                       (substitute* "test/elquery-test.el"
+                         (("\\(ert-deftest elquery--write-test .*" all)
+                          (string-append all "(skip-unless nil)\n"))))))))
+    (native-inputs
+     (list emacs-ert-runner emacs-undercover))
+    (propagated-inputs
+     (list emacs-dash))
+    (home-page "https://github.com/AdamNiederer/elquery/")
+    (synopsis "Read and manipulate HTML in Emacs")
+    (description
+     "Elquery is a library that lets you parse, query, set, and format HTML using
+Emacs Lisp.  It implements most of the @code{querySelector} API, and can get
+and set HTML attributes.")
+    (license license:gpl3+)))
+
+(define-public emacs-cov
+  ;; XXX: Upstream made no release nor any tag so far.
+  (let ((commit "cd3e1995c596cc227124db9537792d8329ffb696")
+        (revision "0"))
+    (package
+      (name "emacs-cov")
+      (version (git-version "0.1.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://github.com/AdamNiederer/cov")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "1gyc0si60czhgrkm7kink1p1zj1h5j5nzif4ivm5bg78l28skmpm"))))
+      (build-system emacs-build-system)
+      (arguments
+       (list
+        #:emacs emacs-no-x              ;for libxml
+        #:tests? #t
+        #:test-command #~(list "ert-runner")
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-before 'check 'disable-failing-tests
+              (lambda _
+                (substitute* "test/cov-test.el"
+                  (("\\(ert-deftest cov--load-coverage-test-mtime-check .*" all)
+                   (string-append all "(skip-unless nil)\n"))))))))
+      (native-inputs
+       (list emacs-ert-runner emacs-mocker emacs-undercover))
+      (propagated-inputs
+       (list emacs-elquery emacs-f emacs-s))
+      (home-page "https://github.com/AdamNiederer/cov/")
+      (synopsis "Emacs extension for displaying coverage data")
+      (description
+       "Cov shows code coverage data for your program in Emacs.  It supports
+currently @code{gcov}, @code{lcov}, @code{coverage.py}, and @code{clover}
+output, as well as the Coveralls format produced by Undercover.")
+      (license license:gpl3+))))
+
 (define-public emacs-puppet-mode
   (package
     (name "emacs-puppet-mode")
@@ -8510,6 +8595,29 @@ linting of manifests and integration with Puppet Debugger.")
       (synopsis "Emacs major mode and related tools for Purescript")
       (description "This package provides an Emacs major mode for writing Purescript.")
       (license license:gpl3+))))
+
+(define-public emacs-new-purescript-mode
+  (let ((commit "9f7bb73e26340fcd2ea1946dbad165f0406eb3e1")
+        (revision "0"))
+    (package
+      (name "emacs-new-purescript-mode")
+      (version (git-version "0.0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://github.com/justinwoo/new-purescript-mode")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0b3499df0gfz8yrdxz9dpgwal21h50sciigwz25ri1hwv1c1i7k0"))))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/justinwoo/new-purescript-mode/")
+      (synopsis "Simple PureScript mode for cheap syntax highlighting")
+      (description "New PureScript mode is a simple PureScript Emacs mode that
+just provides syntax highlighting.")
+      (license license:expat))))
 
 (define-public emacs-god-mode
   (package
@@ -12443,7 +12551,7 @@ ack, ag, helm and pt.")
 (define-public emacs-helm
   (package
     (name "emacs-helm")
-    (version "3.8.7")
+    (version "3.8.8")
     (source
      (origin
        (method git-fetch)
@@ -12452,7 +12560,7 @@ ack, ag, helm and pt.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1a8zkp00ahb84ww5072naxwllzbjhi7ccarkk2d7xsykn5lig54c"))))
+        (base32 "1i8hbdp5sg99h3imqydk4wd7mqsa04113yavk5sx1wgc17jm1l42"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-async emacs-popup))
@@ -17018,7 +17126,7 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
 (define-public emacs-ement
   (package
     (name "emacs-ement")
-    (version "0.2.1")
+    (version "0.3")
     (source
      (origin
        (method git-fetch)
@@ -17027,7 +17135,7 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0kfh0vlsz4qnx4vwkwhkxawk5cpxgnvkar72wha9cxj8s6j51vx0"))))
+        (base32 "0ing4pdqh4z3jsk9qb8qc5n968c27mxn0yq0h102plrb7fafd8ic"))))
     (build-system emacs-build-system)
     (arguments
      `(#:emacs ,emacs))               ;need libxml support
@@ -17505,7 +17613,7 @@ groups.")
 (define-public emacs-taxy-magit-section
   (package
     (name "emacs-taxy-magit-section")
-    (version "0.10")
+    (version "0.11")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -17513,7 +17621,7 @@ groups.")
                     ".tar"))
               (sha256
                (base32
-                "1g58nvpb04ldhn5qnjw2q5idrv6vhlfa0qmb46cvis6bkz46cxkw"))))
+                "058z95c0z2hxplr5pfgph1cdq68zcrkmwx1wqyd5fy4a5h43yknq"))))
     (build-system emacs-build-system)
     (propagated-inputs (list emacs-magit emacs-taxy))
     (home-page "https://github.com/alphapapa/taxy.el")
@@ -18971,24 +19079,27 @@ match and total match information in the mode-line in various search modes.")
     (license license:gpl3+)))
 
 (define-public emacs-pg
-  (let ((commit "4f6516ec3946d95dcef49abb6703cc89ecb5183d"))
-    (package
-      (name "emacs-pg")
-      (version (git-version "0.1" "1" commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference (url "https://github.com/cbbrowne/pg.el")
-                                    (commit commit)))
-                (file-name (git-file-name name version))
-                (sha256
-                 (base32
-                  "1zh7v4nnpzvbi8yj1ynlqlawk5bmlxi6s80b5f2y7hkdqb5q26k0"))))
-      (build-system emacs-build-system)
-      (home-page "https://github.com/cbbrowne/pg.el")
-      (synopsis "Emacs Lisp interface for PostgreSQL")
-      (description
-       "This package provides an Emacs Lisp interface for PostgreSQL.")
-      (license license:gpl3+))))
+  (package
+    (name "emacs-pg")
+    (version "0.16")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference (url "https://github.com/emarsden/pg-el")
+                                  (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1jdnslpgdm16klaga02p33g7c8bjzg164kxz3jd7gs5v9gqa6ppz"))))
+    (build-system emacs-build-system)
+    (home-page "https://github.com/emarsden/pg-el")
+    (synopsis "Emacs Lisp interface for PostgreSQL")
+    (description
+     "This module lets you access the PostgreSQL object-relational DBMS from
+Emacs, using its socket-level frontend/backend protocol.  The module is
+capable of automatic type coercions from a range of SQL types to the
+equivalent Emacs Lisp type.  This is a low level API, and won't be useful to
+end users.")
+    (license license:gpl2+)))
 
 (define-public emacs-finalize
   (package
@@ -27905,14 +28016,14 @@ well as an option for visually flashing evaluated s-expressions.")
 (define-public emacs-tramp
   (package
     (name "emacs-tramp")
-    (version "2.5.3.2")
+    (version "2.5.3.3")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/"
                            "tramp-" version ".tar"))
        (sha256
-        (base32 "1jcicb9f7c1nmaqg20yy2j4wd0qfch4llc26ga7q3ckhx41pvbiw"))))
+        (base32 "05w04qwk1lk50fzwl6fxyf6pb1jd2lx4as99zm1dpa858jab6w4a"))))
     (build-system emacs-build-system)
     (arguments
      (list
