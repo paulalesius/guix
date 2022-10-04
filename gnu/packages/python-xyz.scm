@@ -130,6 +130,7 @@
 ;;; Copyright © 2022 Tomasz Jeneralczyk <tj@schwi.pl>
 ;;; Copyright © 2022 Mathieu Laparie <mlaparie@disr.it>
 ;;; Copyright © 2022 Garek Dyszel <garekdyszel@disroot.org>
+;;; Copyright © 2022 Baptiste Strazzulla <bstrazzull@hotmail.fr>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -7297,6 +7298,30 @@ buffer transformation, compression, and decompression functions for use in the
 tifffile, czifile, and other scientific image input/output modules.")
     (license license:bsd-3)))
 
+(define-public python-property-manager
+  (package
+    (name "python-property-manager")
+    (version "3.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "property-manager" version))
+       (sha256
+        (base32 "0m3w4spr8f39xnm65naw29ncal4r453kn7ndqb63rwbsmslnvrwk"))))
+    (build-system python-build-system)
+    (native-inputs
+     (list python-pytest-cov))
+    (propagated-inputs
+     (list python-verboselogs
+           python-humanfriendly
+           python-coloredlogs))
+    (home-page "https://github.com/xolox/python-property-manager")
+    (synopsis "Useful property variants for Python programming")
+    (description "The @code{property-manager} package defines several custom
+property variants for Python programming including required properties,
+writable properties, cached properties, etc.")
+    (license license:expat))) ; MIT license
+
 (define-public python-executing
   (package
     (name "python-executing")
@@ -7317,6 +7342,32 @@ tifffile, czifile, and other scientific image input/output modules.")
     (description "This package lets you get information about what a frame is
 currently doing, particularly the AST node being executed.")
     (license license:expat)))
+
+(define-public python-executor
+  (package
+    (name "python-executor")
+    (version "23.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "executor" version))
+       (sha256
+        (base32 "0g83yr54j0vcwhy6h7n0jsd7q0q630kwa6v9kqzlzrm9xj6c3ip1"))))
+    (build-system python-build-system)
+    (arguments
+    `(#:tests? #f)) ; TODO: tests require root/sudo
+    (propagated-inputs
+     (list python-six
+           python-property-manager
+           python-fasteners
+           python-virtualenv))
+    (home-page "https://github.com/xolox/python-executor")
+    (synopsis "Programmer friendly subprocess wrapper")
+    (description "The @code{executor} package is a simple wrapper for Python’s
+subprocess module that makes it very easy to handle subprocesses on UNIX
+systems with proper escaping of arguments and error checking currently doing,
+particularly the AST node being executed.")
+    (license license:expat))) ; MIT license
 
 (define-public python-roifile
   (package

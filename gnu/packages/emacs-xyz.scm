@@ -8866,7 +8866,7 @@ cards created in Org mode.")
 (define-public emacs-org-mime
   (package
     (name "emacs-org-mime")
-    (version "0.3.1")
+    (version "0.3.2")
     (source
      (origin
        (method git-fetch)
@@ -8875,7 +8875,7 @@ cards created in Org mode.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "17380kpf08j5ai30nn5iks0k3x8sm3kmz8lkyr1v0qvpr5a8s70b"))))
+        (base32 "1w5z9irzk918mj75z5m0j2h8mms8v27x50kp7r3b01wblf0jd2zc"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/org-mime/org-mime")
     (synopsis "Send HTML email using Org mode HTML export")
@@ -18558,7 +18558,7 @@ the format.")
 (define-public emacs-nov-el
   (package
     (name "emacs-nov-el")
-    (version "0.3.4")
+    (version "0.4.0")
     (source
      (origin
        (method git-fetch)
@@ -18568,18 +18568,18 @@ the format.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0va9xjrq30cv5kb59a4rq5mcm83ggnv774r8spmskff3hj8012wf"))))
+         "10507fdfx02wb3j7g34w4ii8rgnjbmriq63ir6x1agf38s3i9p52"))))
     (build-system emacs-build-system)
     (arguments
-     `(#:emacs ,emacs                   ;need libxml
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'embed-path-to-unzip
-           (lambda _
-             (substitute* "nov.el"
-               (("\\(executable-find \"unzip\"\\)")
-                (string-append "\"" (which "unzip") "\"")))
-             #t)))))
+     (list
+      #:emacs emacs                    ;need libxml
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'embed-path-to-unzip
+            (lambda _
+              (substitute* "nov.el"
+                (("\\(executable-find \"unzip\"\\)")
+                 (string-append "\"" (which "unzip") "\""))))))))
     (propagated-inputs
      (list emacs-dash emacs-esxml))
     (inputs
@@ -19640,6 +19640,35 @@ tables of contents.")
     (description "This package facilitates manipulating dates, times, and
 timestamps by providing a @code{ts} struct.")
     (license license:gpl3+)))
+
+(define-public emacs-circadian
+  (package
+    (name "emacs-circadian")
+    (version "0.3.2")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/guidoschmidt/circadian.el")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0wpsykmai3idz0bgfl07hwl9nr4x9sgprvqgw8jln4dz2wf5gdic"))))
+    (arguments
+     (list
+      #:tests? #t
+      #:test-command #~(list "ert-runner")))
+    (build-system emacs-build-system)
+    (native-inputs
+     (list emacs-el-mock emacs-ert-runner))
+    (home-page "https://github.com/guidoschmidt/circadian.el")
+    (synopsis "Theme-switching for Emacs based on daytime")
+    (description "Circadian may reduce eye strain by automatically switching
+between light and dark themes based on daytime.  It is inspired by color
+temperature shifting tools and brightness adaption software.")
+    ;; The LICENSE file is expat, but the sole ".el" file is explicitly GPL3+.
+    (license (list license:gpl3+
+                   license:expat))))
 
 (define-public emacs-peg
   (package
@@ -26180,8 +26209,8 @@ the standard @code{Dockerfile} file format.")
     (license license:asl2.0)))
 
 (define-public emacs-lsp-mode
-  (let ((commit "4aafe25e03ab7470b8d3c1cb326affa3c5e9930e")
-        (revision "0"))
+  (let ((commit "26c4d3e54ad2956623e64132312fe864274d346f")
+        (revision "1"))
     (package
       (name "emacs-lsp-mode")
       (version (git-version "8.0.1" revision commit))
@@ -26193,7 +26222,7 @@ the standard @code{Dockerfile} file format.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "01csz4vr3fg1q2py45mxj5j8bkvckn3daam1jafb2gg9gjc9bp7z"))))
+          (base32 "0klnik69b5y6s2q00vyshxymlg7k4x9x6m7wpsf7z9w12qn27alx"))))
       (build-system emacs-build-system)
       (arguments
        `(#:emacs ,emacs                 ;need libxml support
@@ -29369,36 +29398,39 @@ Emacs that integrate with major modes like Org-mode.")
     (license license:expat)))
 
 (define-public emacs-modus-themes
-  (package
-    (name "emacs-modus-themes")
-    (version "2.6.0")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://git.sr.ht/~protesilaos/modus-themes")
-             (commit version)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "1zl1gd3jlkanjmlsxmwhqaiwyblp6kzznfjnw9cq8ah2390y9n1c"))))
-    (native-inputs (list texinfo))
-    (build-system emacs-build-system)
-    (arguments
-     (list
-      #:phases
-      #~(modify-phases %standard-phases
-          (add-after 'install 'makeinfo
-            (lambda _
-              (invoke "emacs"
-                      "--batch"
-                      "--eval=(require 'ox-texinfo)"
-                      "--eval=(find-file \"doc/modus-themes.org\")"
-                      "--eval=(org-texinfo-export-to-info)")
-              (install-file "doc/modus-themes.info" (string-append #$output "/share/info")))))))
-    (home-page "https://protesilaos.com/modus-themes/")
-    (synopsis "Accessible themes (WCAG AAA)")
-    (description
-     "The Modus themes are designed for accessible readability.  They conform
+  ;; XXX: Upstream did not tag latest version bump, so we use the commit
+  ;; matching that bump.
+  (let ((commit "0b42e595fb8c1753039277ab0b068d0f4f107edf"))
+    (package
+      (name "emacs-modus-themes")
+      (version "2.7.1")
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://git.sr.ht/~protesilaos/modus-themes")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0iy1psfkhqf9a47pabl1w108niw2d4xnfvlcql2j58qlv5k9h1z7"))))
+      (native-inputs (list texinfo))
+      (build-system emacs-build-system)
+      (arguments
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'install 'makeinfo
+              (lambda _
+                (invoke "emacs"
+                        "--batch"
+                        "--eval=(require 'ox-texinfo)"
+                        "--eval=(find-file \"doc/modus-themes.org\")"
+                        "--eval=(org-texinfo-export-to-info)")
+                (install-file "doc/modus-themes.info" (string-append #$output "/share/info")))))))
+      (home-page "https://protesilaos.com/modus-themes/")
+      (synopsis "Accessible themes (WCAG AAA)")
+      (description
+       "The Modus themes are designed for accessible readability.  They conform
 with the highest standard for color contrast between any given combination of
 background and foreground values.  This corresponds to the WCAG AAA standard,
 which specifies a minimum rate of distance in relative luminance of 7:1.
@@ -29407,8 +29439,8 @@ Modus Operandi (modus-operandi) is a light theme, while Modus
 Vivendi (modus-vivendi) is dark.  Each theme’s color palette is designed to
 meet the needs of the numerous interfaces that are possible in the Emacs
 computing environment.")
-    (license (list license:gpl3+
-                   license:fdl1.3+)))) ; GFDLv1.3+ for the manual
+      (license (list license:gpl3+
+                     license:fdl1.3+))))) ; GFDLv1.3+ for the manual
 
 (define-public emacs-punpun-theme
   (let ((commit "7026684cd568cb691af3ced5de14c375fe6f5a1a")

@@ -54,6 +54,7 @@
 # Copyright © 2022 muradm <mail@muradm.net>
 # Copyright © 2022 Hilton Chain <hako@ultrarare.space>
 # Copyright © 2022 Alex Griffin <a@ajgrf.com>
+# Copyright © 2022 ( <paren@disroot.org>
 #
 # This file is part of GNU Guix.
 #
@@ -89,6 +90,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/home/services/symlink-manager.scm		\
   %D%/home/services/fontutils.scm		\
   %D%/home/services/guix.scm			\
+  %D%/home/services/pm.scm			\
   %D%/home/services/shells.scm			\
   %D%/home/services/shepherd.scm		\
   %D%/home/services/ssh.scm			\
@@ -1823,8 +1825,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/scalapack-gcc-10-compilation.patch	\
   %D%/packages/patches/scheme48-tests.patch			\
   %D%/packages/patches/scons-test-environment.patch		\
-  %D%/packages/patches/scotch-build-parallelism.patch		\
-  %D%/packages/patches/scotch-integer-declarations.patch	\
   %D%/packages/patches/screen-hurd-path-max.patch		\
   %D%/packages/patches/sdl-libx11-1.6.patch			\
   %D%/packages/patches/seed-webkit.patch			\
