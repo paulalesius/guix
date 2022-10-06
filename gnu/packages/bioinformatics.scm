@@ -2429,26 +2429,27 @@ are not included due to their size.")
 (define-public cd-hit
   (package
     (name "cd-hit")
-    (version "4.6.8")
+    (version "4.8.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/weizhongli/cdhit"
                                   "/releases/download/V" version
                                   "/cd-hit-v" version
-                                  "-2017-0621-source.tar.gz"))
+                                  "-2019-0228.tar.gz"))
               (sha256
                (base32
-                "1b4mwm2520ixjbw57sil20f9iixzw4bkdqqwgg1fc3pzm6rz4zmn"))))
+                "1phmfhgcpyfd6kj7jwzw976613lcpv1wc2pzfdfaxla062x2s5r6"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f ; there are no tests
-       #:make-flags
-       ;; Executables are copied directly to the PREFIX.
-       ,#~(list (string-append "PREFIX=" #$output "/bin")
-                ;; Support longer sequences (e.g. Pacbio sequences)
-                "MAX_SEQ=60000000")
-       #:phases
-       (modify-phases %standard-phases
+     (list
+      #:tests? #f                       ; there are no tests
+      #:make-flags
+      ;; Executables are copied directly to the PREFIX.
+      #~(list (string-append "PREFIX=" #$output "/bin")
+              ;; Support longer sequences (e.g. Pacbio sequences)
+              "MAX_SEQ=60000000")
+      #:phases
+      '(modify-phases %standard-phases
          ;; No "configure" script
          (delete 'configure)
          ;; Remove sources of non-determinism
@@ -2458,15 +2459,13 @@ are not included due to their size.")
                ((" \\(built on \" __DATE__ \"\\)") ""))
              (substitute* "cdhit-common.c++"
                (("__DATE__") "\"0\"")
-               (("\", %s, \" __TIME__ \"\\\\n\", date") ""))
-             #t))
+               (("\", %s, \" __TIME__ \"\\\\n\", date") ""))))
          ;; The "install" target does not create the target directory.
          (add-before 'install 'create-target-dir
            (lambda* (#:key outputs #:allow-other-keys)
-             (mkdir-p (string-append (assoc-ref outputs "out") "/bin"))
-             #t)))))
+             (mkdir-p (string-append (assoc-ref outputs "out") "/bin")))))))
     (inputs
-     (list perl))
+     (list perl zlib))
     (home-page "http://weizhongli-lab.org/cd-hit/")
     (synopsis "Cluster and compare protein or nucleotide sequences")
     (description
@@ -2476,6 +2475,26 @@ databases.")
     ;; The manual says: "It can be copied under the GNU General Public License
     ;; version 2 (GPLv2)."
     (license license:gpl2)))
+
+(define-public cd-hit-auxtools
+  (package
+    (inherit cd-hit)
+    (name "cd-hit-auxtools")
+    (arguments
+     (list
+      #:tests? #f                       ; there are no tests
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'chdir (lambda _ (chdir "cd-hit-auxtools")))
+          ;; No "configure" script
+          (delete 'configure)
+          ;; There is no install target.
+          (replace 'install
+            (lambda _
+              (for-each (lambda (file)
+                          (install-file file (string-append #$output "/bin")))
+                        '("cd-hit-dup" "cd-hit-lap" "read-linker")))))))
+    (inputs '())))
 
 (define-public clipper
   (package
@@ -16311,6 +16330,38 @@ reading whole-genome coverage from BAM files and writing either indexed TSV or
 BigWig files, as well as efficient region coverage summary over intervals from
 both types of files.")
     (license license:expat)))
+
+(define-public megahit
+  (package
+    (name "megahit")
+    (version "1.2.9")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/voutcn/megahit.git")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1r5d9nkdmgjsbrpj43q9hy3s8jwsabaz3ji561v18hy47v58923c"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:test-target "simple_test"
+      #:phases
+      '(modify-phases %standard-phases
+         (add-after 'unpack 'fix-tests
+           (lambda _
+             (substitute* "src/megahit"
+               (("os.path.join\\(script_path, '..'\\)")
+                "os.path.join(script_path, '../source')")))))))
+    (inputs (list python-wrapper zlib))
+    (home-page "https://www.ncbi.nlm.nih.gov/pubmed/25609793")
+    (synopsis "Meta-genome assembler")
+    (description "Megahit is a fast and memory-efficient NGS assembler.  It is
+optimized for metagenomes, but also works well on generic single genome
+assembly (small or mammalian size) and single-cell assembly.")
+    (license license:gpl3)))
 
 (define-public mudskipper
   (package
