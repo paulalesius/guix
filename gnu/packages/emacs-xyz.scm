@@ -2481,14 +2481,14 @@ incrementally confined in Isearch manner.")
 (define emacs-emms-print-metadata
   (package
     (name "emacs-emms-print-metadata")
-    (version "11")
+    (version "12")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/"
                            "emms-" version ".tar"))
        (sha256
-        (base32 "000lqhsafyh1n293ksnlyavxv1pzl5pazds4sgxjcqd45lyn55ii"))))
+        (base32 "048ijrpw6s4k7zr78fzc3ksjjri6mnyp6c47h5lp5nw5gvm4np7a"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -7106,14 +7106,14 @@ by a query, so both a link can refer to several mails.")
 (define-public emacs-debbugs
   (package
     (name "emacs-debbugs")
-    (version "0.33")
+    (version "0.34")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/debbugs-"
                            version ".tar"))
        (sha256
-        (base32 "1s4p3jf9yrm8pn5pljpkrw05n2p9v6fpl141rh1df7f7l0w80qbk"))))
+        (base32 "06nxia4myhysiw12vsflgllrp9nyhmjnybrrcl1vyf4pw0fc6yrx"))))
     (build-system emacs-build-system)
     (arguments '(#:include '("\\.el$" "\\.wsdl$" "\\.info$")))
     (propagated-inputs
@@ -17130,7 +17130,7 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
 (define-public emacs-ement
   (package
     (name "emacs-ement")
-    (version "0.3")
+    (version "0.3.1")
     (source
      (origin
        (method git-fetch)
@@ -17139,7 +17139,7 @@ which avoids some of the issues with using Emacs’s built-in Url library.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0ing4pdqh4z3jsk9qb8qc5n968c27mxn0yq0h102plrb7fafd8ic"))))
+        (base32 "1ap4zxn2ba8bvmzm77aa4bnxgb1hnz5cymcim9jzy7b67bgapmy7"))))
     (build-system emacs-build-system)
     (arguments
      `(#:emacs ,emacs))               ;need libxml support
@@ -17199,7 +17199,7 @@ editing RPM spec files.")
 (define-public emacs-lcr
   (package
     (name "emacs-lcr")
-    (version "1.1")
+    (version "1.2")
     (source
      (origin
        (method git-fetch)
@@ -17208,7 +17208,7 @@ editing RPM spec files.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0mc55icihxqpf8b05990q1lc2nj2792wcgyr73xsiqx0963sjaj8"))))
+        (base32 "1856i3xll0pjrnh9r1xvi8lywpnixps2znvkvvd5505wcp20bcxf"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-dash))
@@ -21380,7 +21380,7 @@ powerful Org contents.")
 (define-public emacs-org-re-reveal
   (package
     (name "emacs-org-re-reveal")
-    (version "3.15.0")
+    (version "3.16.0")
     (source
      (origin
        (method git-fetch)
@@ -21389,7 +21389,7 @@ powerful Org contents.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0mn7qn80289gizvnxyjjs00b7qmlf0692kai7qgzgfj6i87pjc38"))))
+        (base32 "0w6v7x4y0wn8af48vfn8m5h46w09wncwgcc9q8pl3zf92s50drg7"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-htmlize emacs-org))

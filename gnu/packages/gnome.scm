@@ -1763,7 +1763,11 @@ client devices can handle.")
                 "0h095a26w3sgbspsf7wzz8ddg62j3jb9ckrrv41k7cdp0k2dkhsg"))))
     (build-system meson-build-system)
     (arguments
-     `(#:configure-flags (list "-Dlibnma_gtk4=true")
+     ;; GTK 4.x depends on Rust (indirectly) so pull it only on platforms
+     ;; where it is supported.
+     `(#:configure-flags ,(if (supported-package? gtk)
+                              `(list "-Dlibnma_gtk4=true")
+                              `(list "-Dlibnma_gtk4=false"))
        #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'patch-docbook-xml
@@ -1782,7 +1786,7 @@ client devices can handle.")
            vala))
     (inputs
      (list gcr
-           gtk
+           (if (supported-package? gtk) gtk gtk+)
            iso-codes
            mobile-broadband-provider-info
            network-manager))
@@ -4738,33 +4742,39 @@ and RDP protocols.")
                (base32
                 "0cs5nayg080y8pb9b7qccm1ni8wkicdmqp1jsgc22110r6j24zyg"))))
     (build-system meson-build-system)
+    (arguments
+     (list
+      #:glib-or-gtk? #t
+      ;; Configure sysconfdir to /etc so that gconf profiles can be written
+      ;; there and loaded without having to set GCONF_PROFILE, which cannot be
+      ;; safely set globally (as a gconf profile is a per-user thing).
+      #:configure-flags #~(list "--sysconfdir=/etc"
+                                "-Dgtk_doc=true")
+      #:phases #~(modify-phases %standard-phases
+                   (add-after 'unpack 'increase-test-timeout
+                     (lambda _
+                       ;; On big-memory systems, the engine test may take
+                       ;; much longer than the default of 30 seconds.
+                       (substitute* "tests/meson.build"
+                         (("test\\(unit_test\\[0\\], exe" all)
+                          (string-append all ", timeout: 300"))))))))
+    (native-inputs
+     (list bash-completion
+           libxslt                      ;for xsltproc
+           libxml2                      ;for XML_CATALOG_FILES
+           docbook-xml-4.2
+           docbook-xsl
+           `(,glib "bin")
+           gtk-doc/stable
+           pkg-config
+           python
+           vala))
+    (inputs
+     (list gtk+
+           dbus))
     (propagated-inputs
      ;; In Requires of dconf.pc.
      (list glib))
-    (inputs
-     (list gtk+ dbus))
-    (native-inputs
-     `(("bash-completion" ,bash-completion)
-       ("libxslt" ,libxslt)                     ;for xsltproc
-       ("libxml2" ,libxml2)                     ;for XML_CATALOG_FILES
-       ("docbook-xml" ,docbook-xml-4.2)
-       ("docbook-xsl" ,docbook-xsl)
-       ("glib:bin" ,glib "bin")
-       ("gtk-doc" ,gtk-doc/stable)
-       ("pkg-config" ,pkg-config)
-       ("python" ,python)
-       ("vala" ,vala)))
-    (arguments
-     `(#:glib-or-gtk? #t
-       #:configure-flags '("-Dgtk_doc=true")
-       #:phases (modify-phases %standard-phases
-                  (add-after 'unpack 'increase-test-timeout
-                    (lambda _
-                      ;; On big-memory systems, the engine test may take
-                      ;; much longer than the default of 30 seconds.
-                      (substitute* "tests/meson.build"
-                        (("test\\(unit_test\\[0\\], exe" all)
-                         (string-append all ", timeout: 300"))))))))
     (home-page "https://developer.gnome.org/dconf/")
     (synopsis "Low-level GNOME configuration system")
     (description "Dconf is a low-level configuration system.  Its main purpose
@@ -4995,7 +5005,10 @@ libxml to ease remote use of the RESTful API.")
     (arguments (substitute-keyword-arguments (package-arguments rest)
                  ((#:tests? _ #f) #t)
                  ((#:configure-flags _)
-                  #~(list))
+                  ;; Do not build the optional 'librest-demo' program as it
+                  ;; depends on gtksourceview and libadwaita and thus,
+                  ;; indirectly, on Rust.
+                  #~(list "-Dexamples=false"))
                  ((#:phases phases '%standard-phases)
                   #~(modify-phases #$phases
                       (add-after 'unpack 'disable-problematic-tests
@@ -5012,7 +5025,7 @@ libxml to ease remote use of the RESTful API.")
        (append gettext-minimal
                gi-docgen
                gsettings-desktop-schemas)))
-    (inputs (list gtksourceview json-glib libadwaita))
+    (inputs (list json-glib))
     (propagated-inputs
      (modify-inputs (package-propagated-inputs rest)
        (replace "libsoup" libsoup)
@@ -5806,7 +5819,19 @@ faster results and to avoid unnecessary server load.")
               ;; If not specified, udev will try putting history information
               ;; in /gnu/store.
               "-Dhistorydir=/var/lib/upower"
-              (string-append "-Dudevrulesdir=" #$output "/bin/udev/rules.d"))))
+              (string-append "-Dudevrulesdir=" #$output "/bin/udev/rules.d"))
+      #:phases (if (target-x86-32?)
+                   #~(modify-phases %standard-phases
+                       (add-after 'unpack 'adjust-test-for-excess-precision
+                         (lambda _
+                           ;; Address test failure caused by excess precision
+                           ;; on i686:
+                           ;; <https://gitlab.freedesktop.org/upower/upower/-/issues/214>.
+                           (substitute* "src/linux/integration-test.py"
+                             (("assertEqual(.*)40\\.0" _ middle)
+                              (string-append
+                               "assertAlmostEqual" middle "40.0"))))))
+                   #~%standard-phases)))
     (native-inputs
      (list `(,glib "bin")               ; for gdbus-codegen
            gobject-introspection
@@ -8855,7 +8880,10 @@ library.")
                                   "gdm_session_set_environment_variable "
                                   "(self, \"" name "\","
                                   "g_getenv (\"" name "\"));\n"))
-                               propagate)))))
+                               propagate)))
+                  ;; This is used by remote sessions, such as when using VNC.
+                  (("\\(GDMCONFDIR \"/Xsession \\\\\"%s\\\\\"\", command)")
+                   "(\"%s \\\"%s\\\"\", g_getenv (\"GDM_X_SESSION\"), command)")))
               ;; Find the configuration file using an environment variable.
               (substitute* '("common/gdm-settings.c")
                 (("GDM_CUSTOM_CONF")
@@ -13010,7 +13038,7 @@ profiler via Sysprof, debugging support, and more.")
 (define-public komikku
   (package
     (name "komikku")
-    (version "1.0.0")
+    (version "1.1.0")
     (source
      (origin
        (method git-fetch)
@@ -13020,7 +13048,7 @@ profiler via Sysprof, debugging support, and more.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0k0s644ylbyq3a4vhdn9ymmk7kb0jgcpxxrhpr1g2nrcq7fqn116"))))
+         "0ik3dwyq3r44d0h7r7x8j2sah9fhzilyvds1d6bbgbccqxzw4lnh"))))
     (build-system meson-build-system)
     (arguments
      (list

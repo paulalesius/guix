@@ -9,7 +9,7 @@
 # Copyright © 2020 Daniel Brooks <db48x@db48x.net>
 # Copyright © 2021 Jakub Kądziołka <kuba@kadziolka.net>
 # Copyright © 2021 Chris Marusich <cmmarusich@gmail.com>
-# Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+# Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 #
 # This file is part of GNU Guix.
 #
@@ -92,15 +92,31 @@ _debug()
     fi
 }
 
-# Return true if user answered yes, false otherwise.
+_flush()
+{
+    while read -t0; do
+        read -N1
+    done
+}
+
+die()
+{
+    _err "${ERR}$*"
+    exit 1
+}
+
+# Return true if user answered yes, false otherwise.  It defaults to "yes"
+# when a single newline character is input.
 # $1: The prompt question.
 prompt_yes_no() {
     while true; do
-        read -rp "$1 " yn
+        _flush
+        read -N1 -rsp "$1 [Y/n]" yn
         case $yn in
-            [Yy]*) return 0;;
-            [Nn]*) return 1;;
-            *) _msg "Please answer yes or no."
+            $'\n') echo && return 0;;
+            [Yy]*) echo && return 0;;
+            [Nn]*) echo && return 1;;
+            *) echo && _msg "Please answer yes or no."
         esac
     done
 }
@@ -137,7 +153,7 @@ chk_gpg_keyring()
         if ! gpg --dry-run --list-keys "$gpg_key_id" >/dev/null 2>&1; then
             if prompt_yes_no "${INF}The following OpenPGP public key is \
 required to verify the Guix binary signature: $gpg_key_id.
-Would you like me to fetch it for you? (yes/no)"; then
+Would you like me to fetch it for you?"; then
                 wget "https://sv.gnu.org/people/viewgpg.php?user_id=$user_id" \
                      --no-verbose -O- | gpg --import -
             else
@@ -220,8 +236,7 @@ chk_sys_arch()
             local arch=powerpc64le
             ;;
         *)
-            _err "${ERR}Unsupported CPU type: ${arch}"
-            exit 1
+            die "Unsupported CPU type: ${arch}"
     esac
 
     case "$os" in
@@ -229,8 +244,7 @@ chk_sys_arch()
             local os=linux
             ;;
         *)
-            _err "${ERR}Your operation system (${os}) is not supported."
-            exit 1
+            die "Your operation system (${os}) is not supported."
     esac
 
     ARCH_OS="${arch}-${os}"
@@ -254,7 +268,7 @@ chk_sys_nscd()
 configure_substitute_discovery() {
     if grep -q -- '--discover=no' "$1" && \
             prompt_yes_no "Would you like the Guix daemon to automatically \
-discover substitute servers on the local network? (yes/no)"; then
+discover substitute servers on the local network?"; then
         sed -i 's/--discover=no/--discover=yes/' "$1"
     fi
 }
@@ -285,8 +299,7 @@ guix_get_bin_list()
     if [[ "${#bin_ver_ls}" -ne "0" ]]; then
         _msg "${PAS}Release for your system: ${default_ver}"
     else
-        _err "${ERR}Could not obtain list of Guix releases."
-        exit 1
+        die "Could not obtain list of Guix releases."
     fi
 
     # Use default to download according to the list and local ARCH_OS.
@@ -311,8 +324,7 @@ guix_get_bin()
             "${url}/${bin_ver}.tar.xz" "${url}/${bin_ver}.tar.xz.sig"; then
         _msg "${PAS}download completed."
     else
-        _err "${ERR}could not download ${url}/${bin_ver}.tar.xz."
-        exit 1
+        die "could not download ${url}/${bin_ver}.tar.xz."
     fi
 
     pushd "${dl_path}" >/dev/null
@@ -320,8 +332,7 @@ guix_get_bin()
         _msg "${PAS}Signature is valid."
         popd >/dev/null
     else
-        _err "${ERR}could not verify the signature."
-        exit 1
+        die "could not verify the signature."
     fi
 }
 
@@ -333,8 +344,7 @@ sys_create_store()
     _debug "--- [ ${FUNCNAME[0]} ] ---"
 
     if [[ -e "/var/guix" || -e "/gnu" ]]; then
-        _err "${ERR}A previous Guix installation was found.  Refusing to overwrite."
-        exit 1
+        die "A previous Guix installation was found.  Refusing to overwrite."
     fi
 
     cd "$tmp_path"
@@ -490,7 +500,7 @@ sys_enable_guix_daemon()
 sys_authorize_build_farms()
 { # authorize the public key of the build farm
     if prompt_yes_no "Permit downloading pre-built package binaries from the \
-project's build farm? (yes/no)"; then
+project's build farm?"; then
         guix archive --authorize \
              < ~root/.config/guix/current/share/guix/ci.guix.gnu.org.pub \
             && _msg "${PAS}Authorized public key for ci.guix.gnu.org"
@@ -557,6 +567,24 @@ sys_create_shell_completion()
         _msg "${PAS}installed shell completion"
 }
 
+sys_customize_bashrc()
+{
+    prompt_yes_no "Customize users Bash shell prompt for Guix?" || return
+    for bashrc in /home/*/.bashrc /root/.bashrc; do
+        test -f "$bashrc" || continue
+        grep -Fq '$GUIX_ENVIRONMENT' "$bashrc" && continue
+        cp "${bashrc}" "${bashrc}.bak"
+        echo '
+# Automatically added by the Guix install script.
+if [ -n "$GUIX_ENVIRONMENT" ]; then
+    if [[ $PS1 =~ (.*)"\\$" ]]; then
+        PS1="${BASH_REMATCH[1]} [env]\\\$ "
+    fi
+fi
+' >> "$bashrc"
+    done
+    _msg "${PAS}Bash shell prompt successfully customized for Guix"
+}
 
 welcome()
 {
@@ -626,6 +654,7 @@ main()
     sys_authorize_build_farms
     sys_create_init_profile
     sys_create_shell_completion
+    sys_customize_bashrc
 
     _msg "${INF}cleaning up ${tmp_path}"
     rm -r "${tmp_path}"

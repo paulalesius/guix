@@ -2312,7 +2312,7 @@ notifications, and Python scripting support.")
 (define-public libqmatrixclient
   (package
     (name "libqmatrixclient")
-    (version "0.5.3.2")
+    (version "0.6.11")
     (source
      (origin
        (method git-fetch)
@@ -2321,7 +2321,7 @@ notifications, and Python scripting support.")
               (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0gkwr3yw6k2m0j8cc085b5p2q788rf5nhp1p5hc5d55pc7mci2qs"))))
+        (base32 "072d3irpdd0p4w77s5pp0baqf74hk7vqggw7ic7i42lzjdwp3yql"))))
     (build-system cmake-build-system)
     (inputs
      (list qtbase-5 qtmultimedia-5))
@@ -2483,7 +2483,7 @@ notification, emojis, E2E encryption, and voip calls.")
 (define-public quaternion
   (package
     (name "quaternion")
-    (version "0.0.9.4f")
+    (version "0.0.95.1")
     (outputs '("out" "debug"))
     (source
      (origin
@@ -2493,12 +2493,13 @@ notification, emojis, E2E encryption, and voip calls.")
               (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1q9ddz4rs02a0w3lwrsjnh59khv38cq9f0kv09vnwvazvayn87ck"))))
+        (base32 "10mzcr4rpyq5bl3h8wzxxlk8rdz7slhiq863xs77bmsq2pzf6lp8"))))
     (build-system qt-build-system)
     (inputs
      (list libqmatrixclient
            qtbase-5
            qtdeclarative-5
+           qtgraphicaleffects
            qtmultimedia-5
            qtquickcontrols-5
            qtquickcontrols2-5
@@ -3397,7 +3398,7 @@ Weechat communicate over the Matrix protocol.")
 (define-public weechat-wee-slack
   (package
     (name "weechat-wee-slack")
-    (version "2.8.0")
+    (version "2.9.0")
     (source
      (origin
        (method git-fetch)
@@ -3407,7 +3408,7 @@ Weechat communicate over the Matrix protocol.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0xfklr0gsc9jgxfyrrb2j756lclz9g8imcb0pk0xgyj8mhsw23zk"))))
+         "01h9n6a39sgpczvjywvxb5z5vz3jb3h2xx2vspjkkz06gzwniijq"))))
     (build-system python-build-system)
     (arguments
      `(#:phases

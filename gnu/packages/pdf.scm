@@ -112,7 +112,7 @@
 (define-public extractpdfmark
   (package
     (name "extractpdfmark")
-    (version "1.1.0")
+    (version "1.1.1")
     (source
      (origin
        (method git-fetch)
@@ -121,21 +121,21 @@
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "14aa6zly53j8gx5d32caiabk2j4b102xha0v9149yahz6kbn5b80"))))
+        (base32 "0yzc3ajgdfb4ssxp49g2vrki45kl144j39bg0wdn6h9dc14kzmx4"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before 'check 'start-xorg-server
-           ;; The test suite wants to write to /homeless-shelter
-           (lambda _ (setenv "HOME" (getcwd)))))))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'check 'set-home
+                 ;; The test suite wants to write to /homeless-shelter
+                 (lambda _ (setenv "HOME" (getcwd)))))))
     (native-inputs
-     `(("autoconf" ,autoconf)
-       ("automake" ,automake)
-       ("gettext" ,gettext-minimal)
-       ("ghostscript" ,ghostscript)
-       ("pkg-config" ,pkg-config)
-       ("texlive" ,texlive-tiny)))
+     (list autoconf
+           automake
+           gettext-minimal
+           ghostscript
+           pkg-config
+           texlive-tiny))
     (inputs
      (list poppler))
     (home-page "https://github.com/trueroad/extractpdfmark")

@@ -694,6 +694,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/services/sysctl.scm			\
   %D%/services/telephony.scm			\
   %D%/services/version-control.scm              \
+  %D%/services/vnc.scm				\
   %D%/services/vpn.scm				\
   %D%/services/web.scm				\
   %D%/services/xorg.scm				\
@@ -775,6 +776,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/tests/telephony.scm		        \
   %D%/tests/version-control.scm			\
   %D%/tests/virtualization.scm			\
+  %D%/tests/vnc.scm				\
   %D%/tests/web.scm
 
 INSTALLER_MODULES =                             \
@@ -1185,6 +1187,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/ghostscript-no-header-id.patch		\
   %D%/packages/patches/ghostscript-no-header-uuid.patch		\
   %D%/packages/patches/ghostscript-no-header-creationdate.patch \
+  %D%/packages/patches/giac-pari-gp-anyarg.patch		\
   %D%/packages/patches/giara-fix-login.patch                      \
   %D%/packages/patches/glib-appinfo-watch.patch			\
   %D%/packages/patches/glib-networking-gnutls-binding.patch	\
