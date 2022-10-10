@@ -1798,35 +1798,33 @@ programs.")
       (license license:gpl3+))))
 
 (define-public emacs-dante
-  (let ((commit "38b589417294c7ea44bf65b73b8046d950f9531b")
-        (revision "1"))
-    (package
-      (name "emacs-dante")
-      (version (git-version "1.6" revision commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://github.com/jyp/dante")
-                      (commit commit)))
-                (sha256
-                 (base32
-                  "1mnmn635552zlwd4zr68jbvdjipl6gi4mi6wiyck28fsmq8kw96h"))
-                (file-name (git-file-name name version))))
-      (build-system emacs-build-system)
-      (propagated-inputs
-       (list emacs-dash
-             emacs-f
-             emacs-flycheck
-             emacs-haskell-mode
-             emacs-s
-             emacs-company
-             emacs-lcr))
-      (home-page "https://github.com/jyp/dante")
-      (synopsis "Minor mode for interactive Haskell")
-      (description
-       "This package provides a minor mode for Haskell development that
+  (package
+    (name "emacs-dante")
+    (version "1.7")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/jyp/dante")
+                    (commit version)))
+              (sha256
+               (base32
+                "0q7hackvaplh1f645ngd76f2ls5mvg93xicr3rkxr07hd36yihag"))
+              (file-name (git-file-name name version))))
+    (build-system emacs-build-system)
+    (propagated-inputs
+     (list emacs-company
+           emacs-dash
+           emacs-f
+           emacs-flycheck
+           emacs-haskell-mode
+           emacs-lcr
+           emacs-s))
+    (home-page "https://github.com/jyp/dante")
+    (synopsis "Minor mode for interactive Haskell")
+    (description
+     "This package provides a minor mode for Haskell development that
 supports type hints, definition-jumping, completion, and more.")
-      (license license:gpl3+))))
+    (license license:gpl3+)))
 
 (define-public emacs-flycheck
   (package
@@ -10549,11 +10547,12 @@ matched.")
            "18crb4zh2pjf0cmv3b913m9vfng27girjwfqc3mk7vqd1r5a49yk"))))
       (build-system emacs-build-system)
       (propagated-inputs
-       (list emacs-ivy emacs-password-store password-store))
+       (list emacs-ivy emacs-password-store))
       (home-page "https://github.com/ecraven/ivy-pass")
-      (synopsis "Ivy interface for password store (pass)")
-      (description "This package provides an Ivy interface for working with
-the password store @code{pass}.")
+      (synopsis "Ivy interface to the @code{pass} password store")
+      (description
+       "This package provides an Ivy interface for working with the password
+store (@code{pass}) in Emacs.")
       (license license:gpl3))))
 
 (define-public emacs-ivy-yasnippet
@@ -15874,14 +15873,14 @@ the center of the screen and not at the bottom.")
 (define-public emacs-posframe
   (package
     (name "emacs-posframe")
-    (version "1.1.7")
+    (version "1.1.8")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://elpa.gnu.org/packages/"
                            "posframe-" version ".tar"))
        (sha256
-        (base32 "13i2wxx079gfq0vbq0iwmsig5b7x4aspd1q02yqc79846f1dsx4w"))))
+        (base32 "0560f05c2rh6jkdba4yq9qbazfz6qbdrymqm5zcihvz7cy019dzm"))))
     (build-system emacs-build-system)
     ;; emacs-minimal does not include the function font-info.
     (arguments
@@ -17199,7 +17198,7 @@ editing RPM spec files.")
 (define-public emacs-lcr
   (package
     (name "emacs-lcr")
-    (version "1.2")
+    (version "1.3")
     (source
      (origin
        (method git-fetch)
@@ -17208,7 +17207,7 @@ editing RPM spec files.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1856i3xll0pjrnh9r1xvi8lywpnixps2znvkvvd5505wcp20bcxf"))))
+        (base32 "1xhrjvlx3vbjkwx31w18y854hk15qf7h5ccg8yb3jdxl0pm9f41f"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-dash))
@@ -18920,30 +18919,37 @@ close, copy, cut, paste, undo, redo.")
                 (uri (git-reference
                       (url "git://git.zx2c4.com/password-store")
                       (commit commit)))
+                (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "0ni62f4pq96g0i0q66bch1dl9k4zqwhg7xaf746k3gbbqxcdh3vi"))
-                (file-name (git-file-name name version))))
+                  "0ni62f4pq96g0i0q66bch1dl9k4zqwhg7xaf746k3gbbqxcdh3vi"))))
       (build-system emacs-build-system)
       (arguments
-       `(#:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'extract-el-file
-             (lambda _
-               (copy-file "contrib/emacs/password-store.el" "password-store.el")
-               (delete-file-recursively "contrib")
-               (delete-file-recursively "man")
-               (delete-file-recursively "src")
-               (delete-file-recursively "tests"))))))
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 (add-after 'unpack 'extract-el-file
+                   (lambda _
+                     (copy-file "contrib/emacs/password-store.el"
+                                "password-store.el")
+                     (delete-file-recursively "contrib")
+                     (delete-file-recursively "man")
+                     (delete-file-recursively "src")
+                     (delete-file-recursively "tests")))
+                 (add-after 'extract-el-file 'patch-executables
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     (emacs-substitute-variables "password-store.el"
+                       ("password-store-executable"
+                        (search-input-file inputs "/bin/pass"))))))))
+      (inputs
+       (list password-store))
       (propagated-inputs
-       (list emacs-auth-source-pass emacs-s emacs-with-editor
-             password-store))
+       (list emacs-auth-source-pass emacs-s emacs-with-editor))
       (home-page "https://git.zx2c4.com/password-store/tree/contrib/emacs")
       (synopsis "Password store (pass) support for Emacs")
       (description
        "This package provides functions for working with pass (\"the
 standard Unix password manager\").")
-      (license license:gpl2+))))
+      (license license:gpl3+))))
 
 (define-public emacs-password-store-otp
   (package
@@ -21380,7 +21386,7 @@ powerful Org contents.")
 (define-public emacs-org-re-reveal
   (package
     (name "emacs-org-re-reveal")
-    (version "3.16.0")
+    (version "3.16.1")
     (source
      (origin
        (method git-fetch)
@@ -21389,7 +21395,7 @@ powerful Org contents.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0w6v7x4y0wn8af48vfn8m5h46w09wncwgcc9q8pl3zf92s50drg7"))))
+        (base32 "1jzr7xlzinhfb0197anbkrr5zrs13f7kyznr5q3zyxdndhg6a53n"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-htmlize emacs-org))
