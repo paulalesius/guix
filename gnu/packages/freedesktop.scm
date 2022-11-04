@@ -517,7 +517,7 @@ freedesktop.org project.")
                                   "/libinput-" version ".tar.gz"))
               (sha256
                (base32
-                "0h5lz54rrl48bhi3vki6s08m6rn2h62rlf08dhgchdm9nmqaaczz"))))
+                "0pv8vdq734dwpadbz9l350ccp3i99c9jmh6vd1ddvd4kbn0y7wx2"))))
     (build-system meson-build-system)
     (arguments
      `(#:configure-flags '("-Ddocumentation=false")
