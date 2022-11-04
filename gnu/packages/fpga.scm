@@ -6,6 +6,7 @@
 ;;; Copyright © 2020 Vinicius Monego <monego@posteo.net>
 ;;; Copyright © 2021 Andrew Miloradovsky <andrew@interpretmath.pw>
 ;;; Copyright © 2022 Christian Gelinek <cgelinek@radlogic.com.au>
+;;; Copyright © 2022 jgart <jgart@dismail.de>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -24,6 +25,7 @@
 
 (define-module (gnu packages fpga)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
@@ -35,6 +37,7 @@
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages elf)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages tcl)
   #:use-module (gnu packages readline)
@@ -352,7 +355,7 @@ FOSS FPGA place and route tool.")
 (define-public gtkwave
   (package
     (name "gtkwave")
-    (version "3.3.111")
+    (version "3.3.113")
     (source
      (origin
        (method url-fetch)
@@ -362,23 +365,20 @@ FOSS FPGA place and route tool.")
                   (string-append "http://gtkwave.sourceforge.net/"
                                  "gtkwave-" version ".tar.gz")))
        (sha256
-        (base32 "15n2gv2hd7h23cci95ij7yr71fkxppb209sfdsmmngh3fik09rpn"))))
+        (base32 "1zqkfchmns5x90qxa8kg39bfhax3vxf1mrdz3lhyb9fz1gp4difn"))))
     (build-system gnu-build-system)
     (native-inputs
      (list gperf pkg-config))
     (inputs
-     `(("tcl" ,tcl)
-       ("tk" ,tk)
-       ("gtk+-2" ,gtk+-2)))
+     (list tcl tk gtk+-2))
     (arguments
-     `(#:configure-flags
-       (list (string-append "--with-tcl="
-                            (assoc-ref %build-inputs "tcl")
-                            "/lib")
-             (string-append "--with-tk="
-                            (assoc-ref %build-inputs "tk")
-                            "/lib"))))
-
+     (list #:configure-flags
+           #~(list (string-append "--with-tcl="
+                                  (assoc-ref %build-inputs "tcl")
+                                  "/lib")
+                   (string-append "--with-tk="
+                                  (assoc-ref %build-inputs "tk")
+                                  "/lib"))))
     (synopsis "Waveform viewer for FPGA simulator trace files")
     (description "This package is a waveform viewer for FPGA
 simulator trace files (@dfn{FST}).")
@@ -434,7 +434,7 @@ a hardware description and verification language.")
 (define-public nvc
   (package
     (name "nvc")
-    (version "1.5.3")
+    (version "1.7.2")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -443,10 +443,11 @@ a hardware description and verification language.")
               (file-name (string-append name "-" version "-checkout"))
               (sha256
                (base32
-                "1gjpwblp8isplyad3b6fl7cb5qv1rn3lf9qgf4l139y97cp2mm4s"))))
+                "01b0yhr0fw59nxwi4pz04mp9b71mg6s7zaysp0r8h0m2nd5pbpgc"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:configure-flags
+     `(#:out-of-source? #t
+       #:configure-flags
        '("--enable-vhpi")
        #:phases
        (modify-phases %standard-phases
@@ -463,10 +464,11 @@ a hardware description and verification language.")
            which
            check)) ; for the tests
     (inputs
-     (list llvm-9))
+     (list elfutils
+           llvm-9))
     (synopsis "VHDL compiler and simulator")
     (description "This package provides a VHDL compiler and simulator.")
-    (home-page "https://github.com/nickg/nvc")
+    (home-page "https://www.nickg.me.uk/nvc/")
     (license license:gpl3+)))
 
 (define-public systemc

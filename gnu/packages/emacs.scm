@@ -388,8 +388,8 @@ languages.")
     (license license:gpl3+)))
 
 (define-public emacs-next
-  (let ((commit "c754f277a67549bb8346c77a4962bcbf03590ece")
-        (revision "1"))
+  (let ((commit "22e8a775838ef12bd43102315f13d202e2f215bd")
+        (revision "3"))
     (package
       (inherit emacs)
       (name "emacs-next")
@@ -402,9 +402,13 @@ languages.")
                (url "https://git.savannah.gnu.org/git/emacs.git/")
                (commit commit)))
          (file-name (git-file-name name version))
+         ;; emacs-source-date-epoch.patch is no longer necessary
+         (patches (search-patches "emacs-exec-path.patch"
+                                  "emacs-fix-scheme-indent-function.patch"
+                                  "emacs-native-comp-driver-options.patch"))
          (sha256
           (base32
-           "0dqmrawkvbypxp8gcnspnhhmfamzp3l62gfgp1pw2l6svz58v991"))))
+           "1byp8m13d03swifmc6s9f1jq4py4xm6bqpzzgsbnari7v70zayyg"))))
       (inputs
        (modify-inputs (package-inputs emacs)
          (prepend sqlite)))
@@ -450,11 +454,10 @@ GTK and also enables xwidgets.")))
        ((#:modules _) (%emacs-modules build-system))
        ((#:phases phases)
         #~(modify-phases #$phases
+            (delete 'set-libgccjit-path)
             (delete 'restore-emacs-pdmp)
             (delete 'strip-double-wrap)))))
-    (inputs (list ncurses coreutils gzip
-                  (make-ld-wrapper "ld-wrapper" #:binutils binutils)
-                  binutils glibc libgccjit zlib))
+    (inputs (list ncurses coreutils gzip))
     (native-inputs (list autoconf pkg-config))))
 
 (define-public emacs-xwidgets

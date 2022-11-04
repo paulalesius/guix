@@ -250,7 +250,6 @@
         "--enable-libquicktime"
         "--enable-lzo"
         "--enable-a52"
-        "--enable-faac"
         "--enable-libxml2"
         ;;; XXX: Not available.
         ;"--enable-ibp"
@@ -274,7 +273,6 @@
            python-wrapper))
     (inputs
      (list alsa-lib
-           faac
            ffmpeg
            freetype
            imagemagick
@@ -335,6 +333,7 @@ the SVT-HEVC encoder, it is possible to spread video encoding processing across
 multiple Intel's Xeon processors to achieve a real advantage of processing
 efficiency.")
     (home-page "https://01.org/svt")
+    ;; Specifically targets x86_64 Intel hardware.
     (supported-systems '("x86_64-linux"))
     (license (license:non-copyleft "file:///LICENSE.md"))))
 
@@ -1500,14 +1499,14 @@ quality and performance.")
 (define-public libva
   (package
     (name "libva")
-    (version "2.13.0")
+    (version "2.15.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/intel/libva/releases/download/"
                            version "/libva-" version ".tar.bz2"))
        (sha256
-        (base32 "0q6l193x9whd80sjd5mx8cb7c0fcljb19nhfpla5h49nkzrq7lzs"))))
+        (base32 "1jhy8qzfp4ydbxs9qd9km7k5wq8r4s2vq20r1q07lgld8l4x93i5"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
@@ -1519,27 +1518,24 @@ quality and performance.")
            mesa
            wayland))
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before
-          'build 'fix-dlopen-paths
-          (lambda* (#:key outputs #:allow-other-keys)
-            (let ((out (assoc-ref outputs "out")))
+     (list
+      ;; Most drivers are in mesa's $prefix/lib/dri, so use that.  (Can be
+      ;; overridden at run-time via LIBVA_DRIVERS_PATH.)
+      #:configure-flags
+      #~(list (string-append "--with-drivers-path="
+                             (search-input-directory %build-inputs "lib/dri")))
+      ;; However, we can't write to mesa's store directory, so override the
+      ;; following make variable to install the dummy driver to libva's
+      ;; $prefix/lib/dri directory.
+      #:make-flags
+      #~(list (string-append "dummy_drv_video_ladir=" #$output "/lib/dri"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'build 'fix-dlopen-paths
+            (lambda _
               (substitute* "va/drm/va_drm_auth_x11.c"
                 (("\"libva-x11\\.so\\.%d\"")
-                 (string-append "\"" out "/lib/libva-x11.so.%d\"")))
-              #t))))
-       ;; Most drivers are in mesa's $prefix/lib/dri, so use that.  (Can be
-       ;; overridden at run-time via LIBVA_DRIVERS_PATH.)
-       #:configure-flags
-       (list (string-append "--with-drivers-path="
-                            (assoc-ref %build-inputs "mesa") "/lib/dri"))
-       ;; However, we can't write to mesa's store directory, so override the
-       ;; following make variable to install the dummy driver to libva's
-       ;; $prefix/lib/dri directory.
-       #:make-flags
-       (list (string-append "dummy_drv_video_ladir="
-                            (assoc-ref %outputs "out") "/lib/dri"))))
+                 (string-append "\"" #$output "/lib/libva-x11.so.%d\""))))))))
     (home-page "https://www.freedesktop.org/wiki/Software/vaapi/")
     (synopsis "Video acceleration library")
     (description "The main motivation for VA-API (Video Acceleration API) is
@@ -1646,7 +1642,6 @@ operate properly.")
       ;;   --enable-libcelt         enable CELT decoding via libcelt [no]
       ;;   --enable-libdc1394       enable IIDC-1394 grabbing using libdc1394
       ;;                            and libraw1394 [no]
-      ;;   --enable-libfaac         enable AAC encoding via libfaac [no]
       ;;   --enable-libfdk-aac      enable AAC de/encoding via libfdk-aac [no]
       ;;   --enable-libflite        enable flite (voice synthesis) support via
       ;;                            libflite [no]
@@ -1727,6 +1722,10 @@ operate properly.")
 
          ;; The static libraries are 23 MiB
          "--disable-static"
+
+         #$@(if (target-riscv64?)
+              '("--extra-cflags=-fPIC")
+              '())
 
          ;; Runtime cpu detection is not implemented on
          ;; MIPS, so we disable some features.
@@ -2169,79 +2168,77 @@ SVCD, DVD, 3ivx, DivX 3/4/5, WMV and H.264 movies.")
               (sha256
                (base32 "12qxwm1ww5vhjddl8yvj1xa0n1fi9z3lmzwhaiday2v59ca0qgsk"))))
     (build-system waf-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-file-names
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "player/lua/ytdl_hook.lua"
+		(("\"yt-dlp\",")
+                 (string-append
+                  "\"" (search-input-file inputs "bin/yt-dlp") "\",")))))
+          (add-before 'configure 'build-reproducibly
+            (lambda _
+              ;; Somewhere in the build system library dependencies are enumerated
+              ;; and passed as linker flags, but the order in which they are added
+              ;; varies.  See <https://github.com/mpv-player/mpv/issues/7855>.
+              ;; Set PYTHONHASHSEED as a workaround for deterministic results.
+              (setenv "PYTHONHASHSEED" "1")))
+          (add-before 'configure 'set-up-waf
+            (lambda* (#:key inputs #:allow-other-keys)
+              (copy-file (search-input-file inputs "bin/waf") "waf")
+              (setenv "CC" #$(cc-for-target)))))
+      #:configure-flags
+      #~(list "--enable-libmpv-shared"
+              "--enable-cdda"
+              "--enable-dvdnav"
+              "--disable-build-date")
+      ;; No check function defined.
+      #:tests? #f))
     (native-inputs
      (list perl ; for zsh completion file
            pkg-config python-docutils))
-    ;; Missing features: libguess, V4L2
+    ;; Missing features: libguess, V4L2.
     (inputs
-     `(("alsa-lib" ,alsa-lib)
-       ("enca" ,enca)
-       ("ffmpeg" ,ffmpeg)
-       ("jack" ,jack-1)
-       ("ladspa" ,ladspa)
-       ("lcms" ,lcms)
-       ("libass" ,libass)
-       ("libbluray" ,libbluray)
-       ("libcaca" ,libcaca)
-       ("libbs2b" ,libbs2b)
-       ("libcdio-paranoia" ,libcdio-paranoia)
-       ("libdvdread" ,libdvdread)
-       ("libdvdnav" ,libdvdnav)
-       ("libjpeg" ,libjpeg-turbo)
-       ("libva" ,libva)
-       ("libvdpau" ,libvdpau)
-       ("libx11" ,libx11)
-       ("libxext" ,libxext)
-       ("libxinerama" ,libxinerama)
-       ("libxrandr" ,libxrandr)
-       ("libxscrnsaver" ,libxscrnsaver)
-       ("libxv" ,libxv)
-       ;; XXX: lua > 5.2 is not currently supported; see
-       ;; waftools/checks/custom.py
-       ("lua" ,lua-5.2)
-       ("mesa" ,mesa)
-       ("mpg123" ,mpg123)
-       ("pulseaudio" ,pulseaudio)
-       ("rsound" ,rsound)
-       ("shaderc" ,shaderc)
-       ("vulkan-headers" ,vulkan-headers)
-       ("vulkan-loader" ,vulkan-loader)
-       ("waf" ,python-waf)
-       ("wayland" ,wayland)
-       ("wayland-protocols" ,wayland-protocols)
-       ("libxkbcommon" ,libxkbcommon)
-       ("yt-dlp" ,yt-dlp)
-       ("zlib" ,zlib)))
-    (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-paths
-           (lambda* (#:key inputs #:allow-other-keys)
-             (let ((ytdl (assoc-ref inputs "yt-dlp")))
-               (substitute* "player/lua/ytdl_hook.lua"
-                 (("\"yt-dlp\",")
-                  (string-append "\"" ytdl "/bin/yt-dlp\","))))))
-         (add-before 'configure 'build-reproducibly
-           (lambda _
-             ;; Somewhere in the build system library dependencies are enumerated
-             ;; and passed as linker flags, but the order in which they are added
-             ;; varies.  See <https://github.com/mpv-player/mpv/issues/7855>.
-             ;; Set PYTHONHASHSEED as a workaround for deterministic results.
-             (setenv "PYTHONHASHSEED" "1")
-             #t))
-         (add-before
-          'configure 'setup-waf
-          (lambda* (#:key inputs #:allow-other-keys)
-            (let ((waf (assoc-ref inputs "waf")))
-              (copy-file (string-append waf "/bin/waf") "waf"))
-            (setenv "CC" "gcc")
-            #t)))
-       #:configure-flags (list "--enable-libmpv-shared"
-                               "--enable-cdda"
-                               "--enable-dvdnav"
-                               "--disable-build-date")
-       ;; No check function defined.
-       #:tests? #f))
+     (list alsa-lib
+           enca
+           ffmpeg
+           jack-1
+           ladspa
+           lcms
+           libass
+           libbluray
+           libcaca
+           libbs2b
+           libcdio-paranoia
+           libdvdread
+           libdvdnav
+           libjpeg-turbo
+           libva
+           libvdpau
+           libx11
+           libxext
+           libxkbcommon
+           libxinerama
+           libxrandr
+           libxscrnsaver
+           libxv
+           ;; XXX: lua > 5.2 is not currently supported; see
+           ;; waftools/checks/custom.py
+           lua-5.2
+           mesa
+           mpg123
+           pulseaudio
+           python-waf
+           rsound
+           shaderc
+           vulkan-headers
+           vulkan-loader
+           wayland
+           wayland-protocols
+           yt-dlp
+           zlib))
     (home-page "https://mpv.io/")
     (synopsis "Audio and video player")
     (description "mpv is a general-purpose audio and video player.  It is a
@@ -2331,7 +2328,7 @@ images and image hosting sites.")
 (define-public mpv-mpris
   (package
     (name "mpv-mpris")
-    (version "0.6")
+    (version "0.9")
     (source
       (origin
         (method git-fetch)
@@ -2340,7 +2337,7 @@ images and image hosting sites.")
                (commit version)))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "03gldk149i2108w3ylyfmci77kdq4whdzfavh7hjviwyj534101r"))))
+         (base32 "1c7avpzcd3sry3q7g5spcl3ywybpjzl2gjarmnlrp74k4nhbprcm"))))
     (build-system copy-build-system)
     (arguments
      '(#:install-plan
@@ -2495,7 +2492,7 @@ YouTube.com and many more sites.")
 (define-public yt-dlp
   (package/inherit youtube-dl
     (name "yt-dlp")
-    (version "2022.09.01")
+    (version "2022.10.04")
     (source
      (origin
        (method git-fetch)
@@ -2504,7 +2501,7 @@ YouTube.com and many more sites.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0h46624zdqhjf79m78303v00m2r013yaccanv0010rls17v7y6pq"))))
+        (base32 "0g2nvslzb9yx2axv6yqxdcdh49ckyipyy9apx1lx6bg6y9rjvx6v"))))
     (arguments
      (substitute-keyword-arguments (package-arguments youtube-dl)
        ((#:tests? _) (not (%current-target-system)))
@@ -4388,7 +4385,7 @@ tools for styling them, including a built-in real-time video preview.")
            (gst-plugins/selection gst-plugins-bad #:plugins
                                   '("debugutils" "transcode")
                                   #:configure-flags
-                                  '("-Dintrospection=enabled"))
+                                  #~'("-Dintrospection=enabled"))
            gst-libav
            gsound
            gtk+

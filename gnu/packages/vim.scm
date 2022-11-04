@@ -77,7 +77,7 @@
 (define-public vim
   (package
     (name "vim")
-    (version "9.0.0594")
+    (version "9.0.0820")
     (source (origin
              (method git-fetch)
              (uri (git-reference
@@ -86,7 +86,7 @@
              (file-name (git-file-name name version))
              (sha256
               (base32
-               "0rb1385pwz75z342b4915gp8212xipp38z9qlaxdqdy3x5m16lcp"))))
+               "00zl1g4m6hcwzdla2m770wcq3p5amh3pr7y88hi852x8dn74gssp"))))
     (build-system gnu-build-system)
     (arguments
      `(#:test-target "test"
@@ -94,18 +94,21 @@
        #:phases
        (modify-phases %standard-phases
          (add-after 'configure 'patch-absolute-paths
-           (lambda _
+           (lambda* (#:key inputs #:allow-other-keys)
              (substitute* '("src/testdir/Makefile"
                             "src/testdir/test_filetype.vim"
                             "src/testdir/test_normal.vim"
                             "src/testdir/test_popupwin.vim"
+                            "src/testdir/test_prompt_buffer.vim"
                             "src/testdir/test_shell.vim"
                             "src/testdir/test_suspend.vim"
                             "src/testdir/test_terminal.vim"
                             "src/testdir/test_terminal2.vim")
                (("/bin/sh") (which "sh")))
              (substitute* "src/testdir/test_autocmd.vim"
-               (("/bin/kill") (which "kill")))))
+               (("/bin/kill") (which "kill")))
+             (substitute* "src/if_cscope.c"
+               (("/bin/sh") (search-input-file inputs "/bin/sh")))))
          (add-before 'check 'set-environment-variables
            (lambda* (#:key inputs #:allow-other-keys)
              ;; One of the tests tests timezone-dependent functions.
@@ -125,6 +128,9 @@
              ;; actions.  The path of the bash binary is shown, which results in
              ;; a difference being detected.  Patching the expected result is
              ;; non-trivial due to the special format used, so skip the test.
+             (substitute* "src/testdir/test_messages.vim"
+               ((".*Test_echo_verbose_system.*" line)
+                (string-append line "return\n")))
              (substitute* "src/testdir/test_terminal.vim"
                ((".*Test_open_term_from_cmd.*" line)
                 (string-append line "return\n"))

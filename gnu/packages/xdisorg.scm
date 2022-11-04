@@ -313,7 +313,7 @@ used to further tweak the behaviour of the different profiles.")
 (define-public bemenu
   (package
     (name "bemenu")
-    (version "0.6.4")
+    (version "0.6.13")
     (source
      (origin
        (method git-fetch)
@@ -322,27 +322,28 @@ used to further tweak the behaviour of the different profiles.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "18vplvnymgc6576sdh84lm5rlwyb9d038plqpjs638hzskf4q577"))))
+        (base32 "0pjlm3gl85k7yhj594pmvfg6xfr1r3rmb68bb7212r4mxhj80rk0"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f
-       #:make-flags (list ,(string-append "CC=" (cc-for-target))
-                          "CFLAGS=-O2 -fPIC"
-                          (string-append "LDFLAGS=-Wl,-rpath="
-                                         (assoc-ref %outputs "out") "/lib")
-                          (string-append "PREFIX=" (assoc-ref %outputs "out")))
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure))))         ; no configure script
+     (list
+      #:tests? #f
+      #:make-flags
+      #~(list (string-append "CC=" #$(cc-for-target))
+              "CFLAGS=-O2 -fPIC"
+              (string-append "LDFLAGS=-Wl,-rpath=" #$output "/lib")
+              (string-append "PREFIX=" #$output))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure))))         ; no configure script
     (inputs
-     `(("cairo" ,cairo)
-       ("libx11" ,libx11)
-       ("libxkbcomon" ,libxkbcommon)
-       ("libxinerama" ,libxinerama)
-       ("ncurses" ,ncurses)
-       ("pango" ,pango)
-       ("wayland" ,wayland)
-       ("wayland-protocols" ,wayland-protocols)))
+     (list cairo
+           libx11
+           libxkbcommon
+           libxinerama
+           ncurses
+           pango
+           wayland
+           wayland-protocols))
     (native-inputs
      (list doxygen pkg-config))
     (home-page "https://github.com/Cloudef/bemenu")
@@ -2545,7 +2546,7 @@ The cutbuffer and clipboard selection are always synchronized.")
 (define-public jgmenu
   (package
     (name "jgmenu")
-    (version "4.4.0")
+    (version "4.4.1")
     (source
      (origin
        (method git-fetch)
@@ -2554,7 +2555,7 @@ The cutbuffer and clipboard selection are always synchronized.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "08dyygclayyipa0p2qsxqa3fsfyflkrkhpi25dkc3ybkicvynk24"))))
+        (base32 "1a9irlrpa3mi3101cn9hi1ch5k1v4p0h83ni5j63qmlc5g7pcbsh"))))
     (build-system gnu-build-system)
     (native-inputs
      (list cppcheck perl pkg-config))
@@ -2574,8 +2575,7 @@ The cutbuffer and clipboard selection are always synchronized.")
            (lambda* (#:key outputs #:allow-other-keys)
              (setenv "CC" ,(cc-for-target))
              (invoke "./configure"
-                     (string-append "--prefix=" (assoc-ref outputs "out")))
-             #t)))))
+                     (string-append "--prefix=" (assoc-ref outputs "out"))))))))
     (synopsis "Simple X11 menu")
     (description
      "This is a simple menu for X11 designed for scripting and tweaking.  It
@@ -3163,8 +3163,29 @@ MouseKeys-acceleration management.")
     (synopsis "Day/night gamma adjustments for Wayland compositors")
     (home-page "https://sr.ht/~kennylevinsen/wlsunset/")
     (description
-     "wlunset adjusts gamma based on day-night cycles on Wayland compositors
+     "Wlsunset adjusts gamma based on day-night cycles on Wayland compositors
 that support @samp{wlr-gamma-control-unstable-v1}.  It is also known as a blue
 light filter or night light.")
     (license license:expat)))
 
+(define-public ydotool
+  (package
+    (name "ydotool")
+    (version "1.0.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/ReimuNotMoe/ydotool")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1h19dh7kai0iikssr7sq0wfkh0sb18dylyfg7c3dkwc158cdg9cr"))))
+    (build-system cmake-build-system)
+    (arguments '(#:tests? #f))          ; no tests
+    (native-inputs (list scdoc))
+    (home-page "https://github.com/ReimuNotMoe/ydotool")
+    (synopsis "Generic Linux command-line automation tool (no X!)")
+    (description "@code{ydotool} is a Linux command-line tool that simulates
+keyboard input, mouse actions, etc.  programmatically or manually.")
+    (license license:agpl3+)))

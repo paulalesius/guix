@@ -31,7 +31,7 @@
 ;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022 Vinicius Monego <monego@posteo.net>
 ;;; Copyright © 2020 Tanguy Le Carrour <tanguy@bioneland.org>
-;;; Copyright © 2020, 2021 Michael Rohleder <mike@rohleder.de>
+;;; Copyright © 2020, 2021, 2022 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2021 Greg Hogan <code@greghogan.com>
 ;;; Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Chris Marusich <cmmarusich@gmail.com>
@@ -46,6 +46,7 @@
 ;;; Copyright © 2022 Jai Vetrivelan <jaivetrivelan@gmail.com>
 ;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2022 Dhruvin Gandhi <contact@dhruvin.dev>
+;;; Copyright © 2015, 2022 David Thompson <davet@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -139,7 +140,8 @@
   #:use-module (gnu packages tls)
   #:use-module (gnu packages)
   #:use-module (ice-9 match)
-  #:use-module (srfi srfi-1))
+  #:use-module (srfi srfi-1)
+  #:export (make-gitolite))
 
 (define-public breezy
   (package
@@ -907,7 +909,7 @@ write native speed custom Git applications in any language with bindings.")
 (define-public git-crypt
   (package
     (name "git-crypt")
-    (version "0.6.0")
+    (version "0.7.0")
     (source
      (origin
        (method git-fetch)
@@ -916,7 +918,7 @@ write native speed custom Git applications in any language with bindings.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1ba5s0fvmd9hhnfhfsjrm40v0qpxfnwc8vmm55m0k4dryzkzx66q"))))
+        (base32 "0ymk2z0jfyhycia8hg6wbj2g06m163yzqzanfk172cxb13fa8c26"))))
     (build-system gnu-build-system)
     (inputs
      (list git openssl))
@@ -960,7 +962,7 @@ to lock down your entire repository.")
 (define-public git-remote-gcrypt
   (package
    (name "git-remote-gcrypt")
-   (version "1.4")
+   (version "1.5")
    (source (origin
              (method git-fetch)
              (uri (git-reference
@@ -969,7 +971,7 @@ to lock down your entire repository.")
              (file-name (git-file-name name version))
              (sha256
               (base32
-               "1x5ca1fi0hyn5w5mnz230x27bqr8j78adnzmlc7cbhzr13q36y5q"))))
+               "1m1wlbqpqyhh2z0ka3gjs5yabd32nnkzw5hak6czcqrhhkfsqbmv"))))
    (build-system trivial-build-system)
    (arguments
     `(#:modules ((guix build utils))
@@ -1484,7 +1486,9 @@ linear.  It will test every change between two points in the DAG.  It will
 also walk each side of a merge and test those changes individually.")
       (license (license:x11-style "file://LICENSE")))))
 
-(define-public gitolite
+(define* (make-gitolite #:optional (extra-inputs '()))
+  "Make a gitolite package object with EXTRA-INPUTS added to the binary
+wrappers, to be used for optional gitolite extensions."
   (package
     (name "gitolite")
     (version "3.6.12")
@@ -1576,16 +1580,20 @@ also walk each side of a merge and test those changes individually.")
                                          (list #$output
                                                #$coreutils
                                                #$findutils
-                                               #$git)))))
+                                               #$git
+                                               #$@extra-inputs)))))
                              '("/bin/gitolite" "/bin/gitolite-shell")))))))
     (inputs
-     (list bash-minimal coreutils findutils git inetutils openssh perl))
+     (append (list bash-minimal coreutils findutils git inetutils openssh perl)
+             extra-inputs))
     (home-page "https://gitolite.com")
     (synopsis "Git access control layer")
     (description
      "Gitolite is an access control layer on top of Git, providing fine access
 control to Git repositories.")
     (license license:gpl2)))
+
+(define-public gitolite (make-gitolite))
 
 (define-public gitile
   (package

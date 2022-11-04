@@ -35,7 +35,7 @@
 ;;; Copyright © 2020, 2021, 2022 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2020 Vincent Legoll <vincent.legoll@gmail.com>
 ;;; Copyright © 2020 Morgan Smith <Morgan.J.Smith@outlook.com>
-;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Zheng Junjie <873216071@qq.com>
 ;;; Copyright © 2021 Stefan Reichör <stefan@xsteve.at>
 ;;; Copyright © 2021 qblade <qblade@protonmail.com>
@@ -43,7 +43,6 @@
 ;;; Copyright © 2021 David Larsson <david.larsson@selfhosted.xyz>
 ;;; Copyright © 2021 WinterHound <winterhound@yandex.com>
 ;;; Copyright © 2021 Brice Waegeneire <brice@waegenei.re>
-;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2021 muradm <mail@muradm.net>
 ;;; Copyright © 2021 pineapples <guixuser6392@protonmail.com>
@@ -54,6 +53,7 @@
 ;;; Copyright © 2022 Petr Hodina <phodina@protonmail.com>
 ;;; Copyright © 2022 Andreas Rammhold <andreas@rammhold.de>
 ;;; Copyright © 2022 ( <paren@disroot.org>
+;;; Copyright © 2022 Matthew James Kraai <kraai@ftbfs.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -1488,6 +1488,7 @@ connection alive.")
                       (libexec   (string-append out "/libexec"))
                       (coreutils (assoc-ref inputs "coreutils*"))
                       (inetutils (assoc-ref inputs "inetutils"))
+                      (grep      (assoc-ref inputs "grep*"))
                       (net-tools (assoc-ref inputs "net-tools"))
                       (sed       (assoc-ref inputs "sed*")))
                  (substitute* "client/scripts/linux"
@@ -1504,7 +1505,7 @@ connection alive.")
                      ,(map (lambda (dir)
                              (string-append dir "/bin:"
                                             dir "/sbin"))
-                           (list inetutils net-tools coreutils sed))))))))))
+                           (list inetutils net-tools coreutils grep sed))))))))))
 
       (native-inputs
        (list config perl file))
@@ -1528,6 +1529,7 @@ connection alive.")
                       "1zsszgxs9043dfpxb6xs1iwk9jg7nxkl5pbawj8dlshnxkkzp3hd"))))
 
                 ("coreutils*" ,coreutils)
+                ("grep*" ,grep)
                 ("sed*" ,sed)))
 
       (home-page "https://www.isc.org/dhcp/")
@@ -1570,6 +1572,39 @@ routers.  It sends Router Advertisement messages specified by RFC 2461
 periodically and when requested by a node sending a Router Solicitation
 message.  These messages are required for IPv6 stateless autoconfiguration.")
     (license (license:non-copyleft "file://COPYRIGHT"))))
+
+(define-public ndppd
+  (package
+    (name "ndppd")
+    (version "0.2.5")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/DanielAdolfsson/ndppd")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0niri5q9qyyyw5lmjpxk19pv3v4srjvmvyd5k6ks99mvqczjx9c0"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f ; There are no tests
+           #:make-flags #~(list (string-append "PREFIX=" #$output))
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure)
+               (add-after 'unpack 'fix-paths
+                 (lambda _
+                   (substitute* "Makefile"
+                     (("/bin/gzip") "gzip")))))))
+    (synopsis "NDP Proxy Daemon")
+    (description
+     "The Neighbor Discovery Protocol Proxy Daemon (ndppd) proxies some IPv6
+NDP messages between interfaces to allow IPv6 routing between machines that
+are in the same network but not on the same local link.  It currently only
+supports Neighbor Solicitation and Neighbor Advertisement messages.")
+    (home-page "https://github.com/DanielAdolfsson/ndppd")
+    (license license:gpl3+)))
 
 (define-public libpcap
   (package
@@ -1840,66 +1875,61 @@ at once based on a Perl regular expression.")
                (base32
                 "0751mb9l2f0jrk3vj6q8ilanifd121dliwk0c34g8k0dlzsv3kd7"))
               (modules '((guix build utils)))
+              (patches (search-patches "rottlog-direntry.patch"))
               (snippet
                '(begin
-                  (substitute* "Makefile.in"
-                    (("-o \\$\\{LOG_OWN\\} -g \\$\\{LOG_GROUP\\}")
-                     ;; Don't try to chown root.
-                     "")
+                  ;; Delete outdated Autotools build system files.
+                  (for-each delete-file
+                            (list "Makefile.in"
+                                  "config.guess"
+                                  "config.sub"
+                                  "configure"
+                                  "depcomp"
+                                  "install-sh"
+                                  "mdate-sh"
+                                  "missing"
+                                  "mkinstalldirs"
+                                  "texinfo.tex"))
+                  (substitute* "Makefile.am"
                     (("mkdir -p \\$\\(ROTT_STATDIR\\)")
                      ;; Don't attempt to create /var/lib/rottlog.
-                     "true"))
-                  #t))))
+                     "true"))))))
     (build-system gnu-build-system)
     (arguments
-     `(#:configure-flags (list "ROTT_ETCDIR=/etc/rottlog" ;rc file location
-                               "--localstatedir=/var")
-
-       ;; Install example config files in OUT/etc.
-       #:make-flags (list (string-append "ROTT_ETCDIR="
-                                         (assoc-ref %outputs "out")
-                                         "/etc"))
-
-       #:phases (modify-phases %standard-phases
-                  (add-after 'unpack 'patch-paths
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (substitute* "rc/rc"
-                        (("/usr/sbin/sendmail")
-                         (search-input-file inputs "/bin/mail")))
-                      #t))
-                  (add-after 'unpack 'fix-configure
-                    (lambda* (#:key inputs native-inputs #:allow-other-keys)
-                      ;; Replace outdated config.sub and config.guess:
-                      (for-each (lambda (file)
-                                  (install-file
-                                   (string-append
-                                    (assoc-ref
-                                     (or native-inputs inputs) "automake")
-                                    "/share/automake-"
-                                    ,(version-major+minor
-                                      (package-version automake))
-                                    "/" file) "."))
-                                '("config.sub" "config.guess"))
-                      #t))
-                  (add-after 'build 'set-packdir
-                    (lambda _
-                      ;; Set a default location for archived logs.
-                      (substitute* "rc/rc"
-                        (("packdir=\"\"")
-                         "packdir=\"/var/log\""))
-                      #t))
-                  (add-before 'install 'tweak-rc-weekly
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (substitute* "rc/weekly"
-                        (("/bin/kill")
-                         (search-input-file inputs "/bin/kill"))
-                        (("syslogd\\.pid")
-                         ;; The file is called 'syslog.pid' (no 'd').
-                         "syslog.pid"))))
-                  (add-after 'install 'install-info
-                    (lambda _
-                      (invoke "make" "install-info"))))))
-    (native-inputs (list texinfo automake util-linux)) ; for 'cal'
+     (list
+      #:configure-flags #~(list "ROTT_ETCDIR=/etc/rottlog" ;rc file location
+                                "--localstatedir=/var")
+      ;; Install example config files in OUT/etc.
+      #:make-flags #~(list (string-append "ROTT_ETCDIR=" #$output "/etc")
+                           ;; Avoid the default -o root -g root arguments,
+                           ;; which fail due to not running as root.
+                           "INSTALL_RC=install"
+                           "INSTALL_SCRIPT=install")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-paths
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "rc/rc"
+                (("/usr/sbin/sendmail")
+                 (search-input-file inputs "/bin/mail")))))
+          (add-after 'build 'set-packdir
+            (lambda _
+              ;; Set a default location for archived logs.
+              (substitute* "rc/rc"
+                (("packdir=\"\"")
+                 "packdir=\"/var/log\""))))
+          (add-before 'install 'tweak-rc-weekly
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "rc/weekly"
+                (("/bin/kill")
+                 (search-input-file inputs "/bin/kill"))
+                (("syslogd\\.pid")
+                 ;; The file is called 'syslog.pid' (no 'd').
+                 "syslog.pid"))))
+          (add-after 'install 'install-info
+            (lambda _
+              (invoke "make" "install-info"))))))
+    (native-inputs (list autoconf automake texinfo util-linux)) ; for 'cal'
     (inputs (list coreutils mailutils))
     (home-page "https://www.gnu.org/software/rottlog/")
     (synopsis "Log rotation and management")
@@ -1914,7 +1944,7 @@ system administrator.")
 (define-public sudo
   (package
     (name "sudo")
-    (version "1.9.11p3")
+    (version "1.9.12")
     (source (origin
               (method url-fetch)
               (uri
@@ -1924,7 +1954,7 @@ system administrator.")
                                     version ".tar.gz")))
               (sha256
                (base32
-                "0w0z9w4vnhjsc4jjghi6wlyv4v055hsy38ncb67p08b7yp9fg1s6"))
+                "0qk3ilb35gcnqg7jyx1r22r0zc9xk2zk9zda9n1mc30pi0w765fy"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -3228,13 +3258,13 @@ platform-specific methods.")
   (package
     (name "audit")
     (home-page "https://people.redhat.com/sgrubb/audit/")
-    (version "3.0.8")
+    (version "3.0.9")
     (source (origin
               (method url-fetch)
               (uri (string-append home-page "audit-" version ".tar.gz"))
               (sha256
                (base32
-                "04w9m9ffvi58z11i344wa1hji9ba68cdklrkizhiwf39mnwxkx5m"))))
+                "0y5w8pl91xapi49ih1pw7h48lac201cj7fm89hkklmzi9m2715gx"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags (list "--with-python=no"
@@ -4257,7 +4287,7 @@ Python loading in HPC environments.")
   (let ((real-name "inxi"))
     (package
       (name "inxi-minimal")
-      (version "3.3.20-1")
+      (version "3.3.23-1")
       (source
        (origin
          (method git-fetch)
@@ -4266,7 +4296,7 @@ Python loading in HPC environments.")
                (commit version)))
          (file-name (git-file-name real-name version))
          (sha256
-          (base32 "182lczpa217gpzn58nfdzjbbinp3bw9lbm1x9lck1mkdmqklgl2a"))))
+          (base32 "0bpaffv4zqinfk46sbx82gic7572xsqiwb1lf894l1s6a6xi7zrd"))))
       (build-system trivial-build-system)
       (inputs
        `(("bash" ,bash-minimal)
@@ -4620,52 +4650,54 @@ tcpdump and snoop.")
        (sha256
         (base32 "0832nh2qf9pisgwnbgx6hkylx5d7i416l19y3ly4ifv7k1p7mxqa"))))
     (build-system gnu-build-system)
+    (arguments
+     (list
+      #:configure-flags
+      #~(list (string-append "--with-slibdir=" #$output "/lib")
+              (string-append "--with-ssbindir=" #$output "/sbin"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-file-names
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (let ((out (assoc-ref outputs "out")))
+                (substitute* "src/mtcrypt.c"
+                  (("\"(mount|umount)\";" _ command)
+                   (format #f "\"~a\";"
+                           (search-input-file inputs
+                                              (string-append "bin/" command))))
+                  (("\"(fsck)\"," _ command)
+                   (format #f "\"~a\","
+                           (search-input-file inputs
+                                              (string-append "sbin/" command)))))
+                (substitute* "src/rdconf1.c"
+                  (("\"(mount|umount)\", \"" _ command)
+                   (format #f "\"~a\", \""
+                           (search-input-file inputs
+                                              (string-append "bin/" command))))
+                  (("\"(fsck)\", \"" _ command)
+                   (format #f "\"~a\", \""
+                           (search-input-file inputs
+                                              (string-append "sbin/" command))))
+                  (("\"pmvarrun\", \"")
+                   (format #f "\"~a/sbin/pmvarrun\", \"" out)))))))))
     (native-inputs
      (list perl pkg-config))
     (inputs
-     `(("cryptsetup" ,cryptsetup)
-       ("libhx" ,libhx)
-       ("libxml2" ,libxml2)
-       ("linux-pam" ,linux-pam)
-       ("lvm2" ,lvm2)
-       ("openssl" ,openssl)
-       ("pcre2" ,pcre2)
-       ("libmount" ,util-linux "lib")
-       ("util-linux" ,util-linux)))
-    (arguments
-     `(#:configure-flags
-       (list (string-append "--with-slibdir=" %output "/lib")
-             (string-append "--with-ssbindir=" %output "/sbin"))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'fix-program-paths
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((util-linux (assoc-ref inputs "util-linux"))
-                   (out (assoc-ref outputs "out")))
-               (substitute* "src/mtcrypt.c"
-                 (("\"mount\";")
-                  (string-append "\"" util-linux "/bin/mount\";"))
-                 (("\"umount\";")
-                  (string-append "\"" util-linux "/bin/umount\";"))
-                 (("\"fsck\",")
-                  (string-append "\"" util-linux "/sbin/fsck\",")))
-               (substitute* "src/rdconf1.c"
-                 (("\"mount\", \"")
-                  (string-append "\"" util-linux "/bin/mount\", \""))
-                 (("\"umount\", \"")
-                  (string-append "\"" util-linux "/bin/umount\", \""))
-                 (("\"fsck\", \"")
-                  (string-append "\"" util-linux "/sbin/fsck\", \""))
-                 (("\"pmvarrun\", \"")
-                  (string-append "\"" out "/sbin/pmvarrun\", \""))))
-             #t)))))
-    (home-page "http://pam-mount.sourceforge.net")
+     (list cryptsetup
+           libhx
+           libxml2
+           linux-pam
+           lvm2
+           openssl
+           pcre2
+           `(,util-linux "lib")
+           util-linux))
+    (home-page "https://inai.de/projects/pam_mount/")
     (synopsis "PAM module to mount volumes for a user session")
     (description
-     "Pam-mount is a PAM module that can mount volumes when a user logs in.
-It supports mounting local filesystems of any kind the normal mount utility
-supports.  It can also mount encrypted LUKS volumes using the password
-supplied by the user when logging in.")
+     "Pam-mount is a PAM module to mount volumes when a user logs in.
+It can mount all local file systems supported by @command{mount}, as well as
+LUKS volumes encrypted with the user's log-in password.")
     (license (list license:gpl2+ license:lgpl2.1+))))
 
 (define-public jc
@@ -5201,7 +5233,7 @@ it won't take longer to install 15 machines than it would to install just 2.")
     (native-inputs
      `(("linux-pam" ,linux-pam)
        ("scdoc" ,scdoc)))
-    (synopsis "minimal and flexible login manager daemon")
+    (synopsis "Minimal and flexible login manager daemon")
     (description
      "greetd is a minimal and flexible login manager daemon
 that makes no assumptions about what you want to launch.
@@ -5229,20 +5261,18 @@ then it can be a greeter.")
                   "#define CONFIGFILE \"/etc/security/greetd_pam_mount.conf.xml\"\n")
                  (("pam_mount_config") "greetd_pam_mount_config")
                  (("pam_mount_system_authtok") "greetd_pam_mount_system_authtok"))))))))
-    (synopsis "pam-mount specifically compiled for use with greetd")
+    (synopsis "PAM module to mount volumes for a user session (greetd variant)")
     (description
-     "Pam-mount is a PAM module that can mount volumes when a user logs in.
-It supports mounting local filesystems of any kind the normal mount utility
-supports.  It can also mount encrypted LUKS volumes using the password
-supplied by the user when logging in.
+     "Pam-mount is a PAM module to mount volumes when a user logs in.
+It can mount all local file systems supported by @command{mount}, as well as
+LUKS volumes encrypted with the user's log-in password.
 
-This package inherits pam-mount in the way that it is compiled specifically
-for use with greetd daemon. It uses different configuration location and
-name space for storing data in PAM.
+This package inherits pam-mount but is compiled specifically for use with
+the @command{greetd} log-in manager.  It uses a different configuration
+location and PAM name space from the original.
 
-greetd-pam-mount is used in configuration of greetd to provide
-auto-(mounting/unmounting) of XDG_RUNTIME_DIR in the way that it will not
-interfere with default pam-mount configuration.")))
+This allows greetd-pam-mount to auto-(un)mount @env{XDG_RUNTIME_DIR} without
+interfering with any pam-mount configuration.")))
 
 (define-public wlgreet
   (package
@@ -5614,3 +5644,51 @@ several hosts in succession or in parallel.  It can also be used to copy a
 file or files to several hosts.")
     (license license:gpl3+)))
 
+(define-public doctl
+  (package
+    (name "doctl")
+    (version "1.84.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/digitalocean/doctl")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1jmqvz1rdqrsr4l0bv3ik1jla0xnbdvcmnw9892acvfs3wsmliyc"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:import-path "github.com/digitalocean/doctl/cmd/doctl"
+           #:unpack-path "github.com/digitalocean/doctl"
+           #:go go-1.19
+           #:build-flags
+           #~(list (string-append "-ldflags=-X github.com/digitalocean/doctl.Label=release"
+                                  " -X github.com/digitalocean/doctl.Major="
+                                  (car (string-split #$version #\.))
+                                  " -X github.com/digitalocean/doctl.Minor="
+                                  (cadr (string-split #$version #\.))
+                                  " -X github.com/digitalocean/doctl.Patch="
+                                  (caddr (string-split #$version #\.))))
+           #:install-source? #f
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'install 'install-completions
+                 (lambda _
+                   (define (install-completion shell file)
+                     (let ((file (string-append #$output file)))
+                       (mkdir-p (dirname file))
+                       (with-output-to-file file
+                         (lambda _
+                           (invoke (string-append #$output "/bin/doctl")
+                                   "completion" shell)))))
+                   (install-completion "bash" "/etc/bash_completion.d/doctl")
+                   (install-completion "fish"
+                                       "/etc/fish/completions/doctl.fish")
+                   (install-completion "zsh"
+                                       "/etc/zsh/site-functions/_doctl"))))))
+    (home-page "https://github.com/digitalocean/doctl")
+    (synopsis "Command line client for DigitalOcean")
+    (description
+     "@code{doctl} provides a unified command line interface to the DigitalOcean API.")
+    (license license:asl2.0)))

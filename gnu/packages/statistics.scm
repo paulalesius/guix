@@ -1975,6 +1975,7 @@ times.")
               (sha256
                (base32
                 "0arx5wna0sh0vf5q8rjhh8nqdmnvg2pdpbhljl9l0x4kwm8vjhgp"))))
+    (properties `((upstream-name . "data.table")))
     (build-system r-build-system)
     (inputs
      (list zlib))
@@ -6255,25 +6256,23 @@ completion.")
 (define-public python-rpy2
   (package
     (name "python-rpy2")
-    (version "3.4.5")
+    (version "3.5.5")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "rpy2" version))
         (sha256
          (base32
-          "1cysswxr5glrdblyl2zsmywcj7xhxn3wmyihxinrz9gm8gmaacax"))))
+          "0dyhb3xn2p6s67yxhgh4qd4hp45mhb5zvgqkdsn26kyg447c8lm2"))))
     (build-system python-build-system)
     (arguments
      '(#:phases
        (modify-phases %standard-phases
          (replace 'check
-           (lambda* (#:key outputs inputs #:allow-other-keys)
-             (let ((cwd (getcwd)))
-               (setenv "TZ" "UTC"))
-             ;; test_vector_complex has issues when run in our environment.
-             (invoke "pytest" "-v" "rpy2/tests/"
-                     "-k" "not test_vector_complex"))))))
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (setenv "TZ" "UTC")
+               (invoke "pytest" "-v" "rpy2/tests/")))))))
     (propagated-inputs
      (list python-cffi
            python-six
@@ -7115,34 +7114,39 @@ models, using simulation.  It was designed to work with models fit using the
     (license license:gpl2+)))
 
 (define-public r-mixedpower
-  (package
-    (name "r-mixedpower")
-    (version "2.0")
-    (source
-      (origin
-        ;; Not available on CRAN.
-        (method git-fetch)
-        (uri (git-reference
-               (url "https://github.com/DejanDraschkow/mixedpower")
-               (commit (string-append "v" version))))
-        (file-name (git-file-name name version))
-        (sha256
-          (base32 "1dy1i8lijbq59xl7482j17a0r4rsdy61smzddk8jsr8nygp2gqy8"))))
-    (properties `((upstream-name . "mixedpower")))
-    (build-system r-build-system)
-    (propagated-inputs
-      (list r-doparallel r-foreach r-ggplot2 r-lme4 r-reshape2))
-    (home-page "https://github.com/DejanDraschkow/mixedpower")
-    (synopsis
-      "Pilotdata based simulations for estimating power in linear mixed models")
-    (description
-      "Implementation of a simulation based aproach to power analysis.  Mixedpower uses
-lotdata and a linear mixed model fitted with lme4 to simulate new data sets.
-wer is computed seperate for every effect in the model output as the relation
-significant simulations to all simulations.  More conservative simulations as
-protection against a bias in the pilotdata are available aswell as methods for
-otting the results.")
-    (license license:gpl3)))
+  ;; This commit contains fixes for R>=4.2. A newer release does not exist.
+  (let ((commit "6520195481bca3ce01862ef80a28c53b0a35d0f5")
+        (revision "1"))
+    (package
+      (name "r-mixedpower")
+      (version (git-version "2.0" revision commit))
+      (source
+        (origin
+          ;; Not available on CRAN.
+          (method git-fetch)
+          (uri (git-reference
+                 (url "https://github.com/DejanDraschkow/mixedpower")
+                 (commit commit)))
+          (file-name (git-file-name name version))
+          (sha256
+            (base32 "114z9pvya2jg10y804ga41gq00r7zcw4a7c7234ybhmv3jqw78q1"))
+          (patches
+            (search-patches "r-mixedpower-r2power.patch"))))
+      (properties `((upstream-name . "mixedpower")))
+      (build-system r-build-system)
+      (propagated-inputs
+        (list r-doparallel r-foreach r-ggplot2 r-lme4 r-reshape2))
+      (home-page "https://github.com/DejanDraschkow/mixedpower")
+      (synopsis
+        "Pilotdata based simulations for estimating power in linear mixed models")
+      (description
+        "Implementation of a simulation based aproach to power analysis.
+Mixedpower uses lotdata and a linear mixed model fitted with lme4 to
+simulate new data sets.  wer is computed separate for every effect in the
+model output as the relation significant simulations to all simulations.
+More conservative simulations as protection against a bias in the
+pilotdata are available aswell as methods for otting the results.")
+      (license license:gpl3))))
 
 (define-public r-colorway
   (let ((commit "8ba8f0026aba37752c6770de45bf53b1b0f48afc")

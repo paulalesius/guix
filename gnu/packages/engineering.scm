@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015 Federico Beffa <beffa@fbengineering.ch>
 ;;; Copyright © 2016, 2018, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 David Thompson <davet@gnu.org>
@@ -949,7 +949,7 @@ Emacs).")
 (define-public kicad
   (package
     (name "kicad")
-    (version "6.0.7")
+    (version "6.0.8")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -957,7 +957,7 @@ Emacs).")
                     (commit version)))
               (sha256
                (base32
-                "10bqn99nif9zyi5v0lkic3na2vac5lgacw01ayil359vaw7d0pzy"))
+                "0f5iriahskzflgfzahbjihiff7m7nbdmp3ip8dx69xa28b9012w9"))
               (file-name (git-file-name name version))))
     (build-system cmake-build-system)
     (arguments
@@ -1064,7 +1064,7 @@ electrical diagrams), gerbview (viewing Gerber files) and others.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "15arkjjbzd4k09crhsrizmj8ljwpv6xjm59k58pfbd5pmqkklh2d"))))
+                "11irf3cgm6a9aii3cf3fpjkl5sincqran4mpsp0qbs253hvj9rbb"))))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags (list "-DBUILD_FORMATS=html")
@@ -1098,7 +1098,7 @@ electrical diagrams), gerbview (viewing Gerber files) and others.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "006ksx8r6cm6q7v701nalggivp21cmysj8p9zc18y3sch8n1mj4g"))))
+                "1nxz8r3h3j62fs3s77lj27333fsj5c4i01n05lv0gqx36h28hqxk"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f))                    ; no tests exist
@@ -1127,7 +1127,7 @@ libraries.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0c5fm4hlkka0ms43j02kbv7s9yrlkffn0jz6649ac3gpx6pk8lbf"))))
+                "19di37hi80rzlwd468w3b6bq5kzxbslp3daskv8xb4y4f7pk3n00"))))
     (synopsis "Official KiCad footprint libraries")
     (description "This package contains the official KiCad footprint libraries.")))
 
@@ -1144,7 +1144,7 @@ libraries.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0rdhwyhknrc63sc5ykmq097rzrl36zibnkls7q5hf54lrhn0n3k4"))))
+                "0cnrg7mr3khpglviid1adk2ihs1qwj0r7l32z2vqsl8aidzbg9kr"))))
     (synopsis "Official KiCad 3D model libraries")
     (description "This package contains the official KiCad 3D model libraries.")))
 
@@ -1786,7 +1786,7 @@ high-performance parallel differential evolution (DE) optimization algorithm.")
   ;; See <https://debbugs.gnu.org/cgi/bugreport.cgi?bug=27344#236>.
   (package
     (name "libngspice")
-    (version "37")
+    (version "38")
     (source
      (origin
        (method url-fetch)
@@ -1797,7 +1797,7 @@ high-performance parallel differential evolution (DE) optimization algorithm.")
                             "old-releases/" version
                             "/ngspice-" version ".tar.gz")))
        (sha256
-        (base32 "1gpcic6b6xk3g4956jcsqljf33kj5g43cahmydq6m8rn39sadvlv"))))
+        (base32 "0mkw66d2isyyxssziwramd08amd7l1qm6dfg86r5s5kvqkv24gic"))))
     (build-system gnu-build-system)
     (arguments
      `(;; No tests for libngspice exist.
@@ -2584,6 +2584,36 @@ computation of nodal connectivity of sub-elements (faces and edges),
 arithmetic operations on fields, entity location functionalities, and
 interpolation toolkit.")
     (license license:gpl3+)))
+
+(define-public cgns
+  (package
+    (name "cgns")
+    (version "4.3.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/CGNS/CGNS")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0jig1y7lv9qk1ri2gqws7ffpajmhxnank7gbyna9hfaghsxdlnvd"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list #:configure-flags
+           '(list "-DCGNS_ENABLE_TESTS=ON"
+                  "-DCGNS_ENABLE_FORTRAN=ON")))
+    (inputs (list hdf5 gfortran))
+    (home-page "https://cgns.org/")
+    (synopsis "Read and write computational fluid dynamics analysis data")
+    (description "This package provides software that reads, writes, and
+modifies data in the @dfn{CFD General Notation System} (CGNS) format.  The
+format is meant for recording and recovering computer data associated with the
+numerical solution of fluid dynamics equations.  The format is a conceptual
+entity established by the documentation; the software is a physical product
+supplied to enable developers to access and produce data recorded in that
+format.")
+    (license license:zlib)))
 
 (define-public libarea
   (let ((revision "1")

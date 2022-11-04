@@ -18,7 +18,7 @@
 ;;; Copyright © 2019 Ben Sturmfels <ben@sturm.com.au>
 ;;; Copyright © 2019,2020 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;; Copyright © 2020-2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
-;;; Copyright © 2020 Michael Rohleder <mike@rohleder.de>
+;;; Copyright © 2020, 2022 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2020 Timotej Lazar <timotej.lazar@araneo.si>
 ;;; Copyright © 2020, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
@@ -49,6 +49,7 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system meson)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (guix build-system qt)
   #:use-module (guix build-system trivial)
@@ -315,7 +316,8 @@ When present, Poppler is able to correctly render CJK and Cyrillic text.")
 ;; XXX: Remove it on core-updates.  It is only needed for evince 42.3 that
 ;; requires a recent poppler.
 (define-public poppler-next
-  (package/inherit poppler
+  (package
+    (inherit poppler)
     (name "poppler-next")
     (version "22.09.0")
     (source (origin
@@ -727,24 +729,22 @@ extracting content or merging files.")
 (define-public python-pydyf
   (package
     (name "python-pydyf")
-    (version "0.1.2")
+    (version "0.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pydyf" version))
        (sha256
-        (base32 "0b30g3hhxw1bg18r9ax85i1dkg8vy1y1wzas0bg0bxblh7j5sbqy"))))
-    (build-system python-build-system)
+        (base32 "18q43g5d9455msipcgd5fvnh8m4a2rz189slzfg80yycjw66rshs"))))
+    (build-system pyproject-build-system)
     (arguments
      (list
-      #:phases
-      #~(modify-phases %standard-phases
-          (replace 'check
-            (lambda* (#:key tests? #:allow-other-keys)
-              (when tests?
-                (invoke "pytest" "-vv" "-c" "/dev/null")))))))
+      #:test-flags #~'("-c" "/dev/null")))
     (propagated-inputs (list python-pillow))
-    (native-inputs (list ghostscript python-pytest))
+    (native-inputs
+     (list ghostscript
+           python-flit-core
+           python-pytest))
     (home-page "https://github.com/CourtBouillon/pydyf")
     (synopsis "Low-level PDF generator")
     (description "@code{pydyf} is a low-level PDF generator written in Python
@@ -951,7 +951,7 @@ using a stylus.")
 (define-public xournalpp
   (package
     (name "xournalpp")
-    (version "1.1.1")
+    (version "1.1.2")
     (source
      (origin
        (method git-fetch)
@@ -960,7 +960,7 @@ using a stylus.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "16pf50x1ps8dcynnvw5lz7ggl0jg7qvzv6gkd30xg3hkcxff8ch3"))))
+        (base32 "13q3fsrszq828gki3z42lda9gghm9wsnsg7iylp1ypcbj7hd5zhk"))))
     (build-system cmake-build-system)
     (arguments
      (list
@@ -1276,7 +1276,7 @@ manage or manipulate PDFs.")
 (define-public pdfarranger
   (package
     (name "pdfarranger")
-    (version "1.8.2")
+    (version "1.9.1")
     (source
      (origin
        (method git-fetch)
@@ -1285,19 +1285,19 @@ manage or manipulate PDFs.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "18bpnnwjx72d5ps06dr89mkixiwzc9hf5gr75k8qcnrkshl038v2"))))
+        (base32 "1s0ysg8kfbrvwcr80vrsx7150ixa9v7pb4xm49s97nkiq5k69hal"))))
     (build-system python-build-system)
     (arguments
-     '(#:tests? #f                      ;no tests
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'wrap-for-typelib
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((out     (assoc-ref outputs "out"))
-                    (program (string-append out "/bin/pdfarranger")))
-               (wrap-program program
-                 `("GI_TYPELIB_PATH" ":" prefix
-                   (,(getenv "GI_TYPELIB_PATH"))))))))))
+     (list
+      #:tests? #f                       ;no tests
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'wrap-for-typelib
+            (lambda _
+              (let ((program (string-append #$output "/bin/pdfarranger")))
+                (wrap-program program
+                  `("GI_TYPELIB_PATH" ":" prefix
+                    (,(getenv "GI_TYPELIB_PATH"))))))))))
     (native-inputs
      (list intltool python-distutils-extra))
     (inputs
@@ -1486,7 +1486,7 @@ manipulating PDF documents from the command line.  It supports
 (define-public weasyprint
   (package
     (name "weasyprint")
-    (version "54.3")
+    (version "56.1")
     (source
      (origin
        (method git-fetch)
@@ -1496,10 +1496,12 @@ manipulating PDF documents from the command line.  It supports
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0cn8gpgyic6pmrnhp0540nbgplpsd5aybi7k89anz6m1sshgjzgs"))))
-    (build-system python-build-system)
+         "08l0yaqg0rxnb2r3x4baf4wng5pxpjbyalnrl4glwh9l69740q7p"))))
+    (build-system pyproject-build-system)
     (arguments
      (list
+      #:test-flags #~(list "-c" "/dev/null"
+                           "-n" (number->string (parallel-job-count)))
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'patch-library-paths
@@ -1520,21 +1522,7 @@ manipulating PDF documents from the command line.  It supports
                 (("'pangoft2-1.0-0'")
                  (format #f "~s"
                          (search-input-file inputs
-                                            "lib/libpangoft2-1.0.so"))))))
-          ;; XXX: PEP 517 manual build copied from python-isort.
-          (replace 'build
-            (lambda _
-              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
-          (replace 'check
-            (lambda* (#:key tests? #:allow-other-keys)
-              (when tests?
-                (invoke "pytest" "-vv" "-c" "/dev/null"
-                        "-n" (number->string (parallel-job-count))))))
-          (replace 'install
-            (lambda _
-              (let ((whl (car (find-files "dist" "\\.whl$"))))
-                (invoke "pip" "--no-cache-dir" "--no-input"
-                        "install" "--no-deps" "--prefix" #$output whl)))))))
+                                            "lib/libpangoft2-1.0.so")))))))))
     (inputs (list fontconfig glib harfbuzz pango))
     (propagated-inputs
      (list gdk-pixbuf
@@ -1552,7 +1540,6 @@ manipulating PDF documents from the command line.  It supports
      (list font-dejavu                  ;tests depend on it
            ghostscript
            python-flit-core
-           python-pypa-build
            python-pytest
            python-pytest-xdist))
     (home-page "https://weasyprint.org/")

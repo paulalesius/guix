@@ -618,6 +618,21 @@ Unix-style DSV format and RFC 4180 format.")
                (search-patches "guile-fibers-wait-for-io-readiness.patch"
                                "guile-fibers-epoll-instance-is-dead.patch"))))
     (build-system gnu-build-system)
+    (arguments
+     (list #:make-flags
+           #~(list "GUILE_AUTO_COMPILE=0")
+           #:phases
+           (if (target-x86-64?)
+             #~%standard-phases
+             #~(modify-phases %standard-phases
+                 (add-before 'check 'disable-some-tests
+                   (lambda _
+                     ;; This test can take more than an hour on some systems.
+                     (substitute* "tests/basic.scm"
+                       ((".*spawn-fiber loop-to-1e4.*") ""))
+                     ;; These tests can take more than an hour and/or segfault.
+                     (substitute* "Makefile"
+                       (("tests/speedup.scm") ""))))))))
     (native-inputs
      (list texinfo pkg-config autoconf automake libtool
            guile-3.0            ;for 'guild compile
@@ -1624,7 +1639,7 @@ for MySQL.")
      (list autoconf automake pkg-config texinfo))
     (inputs (list guile-3.0))
     (synopsis
-     "Guile application configuration parsing library.")
+     "Guile application configuration parsing library")
     (description
      "Guile Config is a library providing a declarative approach to
 application configuration specification.  The library provides clean
@@ -4426,6 +4441,50 @@ Discovery (DNS-SD).")
       (home-page "https://www.nongnu.org/guile-avahi/")
       (license license:lgpl3+))))
 
+(define-public guile-dns
+  (package
+    (name "guile-dns")
+    (version "0.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://git.lysator.liu.se/hugo/guile-dns")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "18skivracv6jh1zab9dknkcpbizc416n0pb2mcwb20dpzc2md9yf"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:make-flags #~(list (string-append "PREFIX=" #$output)
+                                ;; Prevent guild warnings.
+                                "GUILE_AUTO_COMPILE=0"
+                                ;; Make tests verbose and disable coverage
+                                ;; report. The coverage report fails on
+                                ;; i686-linux.
+                                "TEST_FLAGS=--verbose")
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-makefile
+                 (lambda _
+                   (substitute* "Makefile"
+                     ;; CURDIR is a standard GNU Make variable. Prefer it to
+                     ;; PWD. PWD is set by the shell and is absent in the
+                     ;; build process.
+                     (("PWD") "CURDIR")
+                     ;; Install info file at share/info, not at share.
+                     (("share doc") "share/info doc"))))
+               (delete 'configure))))
+    (inputs
+     (list guile-3.0))
+    (native-inputs
+     (list texinfo))
+    (home-page "https://git.lysator.liu.se/hugo/guile-dns")
+    (synopsis "Guile DNS library")
+    (description "@code{guile-dns} is a DNS library written in pure Guile
+Scheme.")
+    (license license:gpl3+)))
+
 (define-public guile-jwt
   (package
     (name "guile-jwt")
@@ -4485,15 +4544,15 @@ tools.")
 (define-public guile-eris
   (package
     (name "guile-eris")
-    (version "0.2.0")
+    (version "1.0.0")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://inqlab.net/git/eris.git")
+             (url "https://codeberg.org/eris/guile-eris.git")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
-       (sha256 (base32 "1ijglmwkdy1l87gj429qfjis0v8b1zlxhbyfhx5za8664h68nqka"))))
+       (sha256 (base32 "0d4wbjwwaxk0zn5gjhl86qhvk1aisgzp1vnvy4xbvrv5ydqpgyqm"))))
     (build-system gnu-build-system)
     (arguments '())
     (native-inputs
@@ -4502,17 +4561,18 @@ tools.")
            pkg-config
            texinfo
            ;; test dependency
-           guile-srfi-180))
+           guile-srfi-180
+           guile-quickcheck))
     (inputs (list guile-3.0))
     (propagated-inputs
      (list guile-sodium))
     (synopsis "Guile implementation of the Encoding for Robust Immutable Storage (ERIS)")
     (description
-     "Guile-ERIS is the reference implementation of the Encoding for Robust
-Immutable Storage (ERIS).  ERIS allows arbitrary content to be encoded into
-uniformly sized, encrypted blocks that can be reassembled using a short
-read-capability.")
-    (home-page "https://inqlab.net/git/eris.git")
+     "Guile-ERIS is a Guile implementation of the @url{http://purl.org/eris,
+Encoding for Robust Immutable Storage (ERIS)}.  ERIS allows arbitrary content
+to be encoded into uniformly sized, encrypted blocks that can be reassembled
+using a short read-capability.")
+    (home-page "https://codeberg.org/eris/guile-eris")
     (license license:gpl3+)))
 
 (define-public guile-r6rs-protobuf

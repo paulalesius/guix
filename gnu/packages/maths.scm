@@ -4442,7 +4442,7 @@ to BMP, JPEG or PNG image formats.")
                (wrap-program (string-append out "/bin/maxima")
                  `("PATH" prefix (,binutils))))
              #t))
-         ;; The Maxima command ‘describe’ allows to pick the relevant portions
+         ;; The Maxima command ‘describe’ allows picking the relevant portions
          ;; from Maxima’s Texinfo docs.  However it does not support reading
          ;; gzipped info files.
          (delete 'compress-documentation))))
@@ -4873,7 +4873,7 @@ Fresnel integrals, and similar related functions as well.")
 (define-public suitesparse
   (package
     (name "suitesparse")
-    (version "5.10.1")
+    (version "5.12.0")
     (source
      (origin
        (method git-fetch)
@@ -4883,7 +4883,7 @@ Fresnel integrals, and similar related functions as well.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "19gx5wlgqnqpgz6mvam9lalyzpbfwgqhppps8z3np9sh0mgaiyw9"))
+         "0zpl51pfpv7ap7z97jlryba2la1qdmzm11bhzkn55wlb03xzi6k6"))
        (patches (search-patches "suitesparse-mongoose-cmake.patch"))
        (modules '((guix build utils)))
        (snippet
@@ -7690,7 +7690,8 @@ when an application performs repeated divisions by the same divisor.")
                 (sha256
                  (base32
                   "05mm4vrxsac35hjf5djif9r6rdxj9ippg97ia3p6q6b8lrp7srwv"))
-                (patches (search-patches "fp16-system-libraries.patch"))))
+                (patches (search-patches "fp16-implicit-double.patch"
+                                         "fp16-system-libraries.patch"))))
       (build-system cmake-build-system)
       (arguments
        `(#:imported-modules ((guix build python-build-system)

@@ -108,6 +108,7 @@ Copyright @copyright{} 2022 Justin Veilleux@*
 Copyright @copyright{} 2022 Reily Siegel@*
 Copyright @copyright{} 2022 Simon Streit@*
 Copyright @copyright{} 2022 (@*
+Copyright @copyright{} 2022 John Kehayias@*
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -949,9 +950,11 @@ version 3.0.3 or later;
 @item @url{https://notabug.org/cwebber/guile-gcrypt, Guile-Gcrypt}, version
 0.1.0 or later;
 @item
-@uref{https://gnutls.org/, GnuTLS}, specifically its Guile bindings
-(@pxref{Guile Preparations, how to install the GnuTLS bindings for
-Guile,, gnutls-guile, GnuTLS-Guile});
+@uref{https://gitlab.com/gnutls/guile/, Guile-GnuTLS} (@pxref{Guile
+Preparations, how to install the GnuTLS bindings for Guile,,
+gnutls-guile, GnuTLS-Guile})@footnote{The Guile bindings to
+@uref{https://gnutls.org/, GnuTLS} were distributed as part of GnuTLS
+until version 3.7.8 included.};
 @item
 @uref{https://notabug.org/guile-sqlite3/guile-sqlite3, Guile-SQLite3}, version 0.1.0
 or later;
@@ -2095,6 +2098,19 @@ want to avoid auto-loading the Emacs packages installed with Guix, you
 can do so by running Emacs with the @option{--no-site-file} option
 (@pxref{Init File,,, emacs, The GNU Emacs Manual}).
 
+@quotation Note
+Emacs can now compile packages natively.  Under the default
+configuration, this means that Emacs packages will now be
+just-in-time (JIT) compiled as you use them, and the results
+stored in a subdirectory of your @code{user-emacs-directory}.
+
+Furthermore, the build system for Emacs packages transparently
+supports native compilation, but note, that
+@code{emacs-minimal}---the default Emacs for building
+packages---has been configured without native compilation.
+To natively compile your emacs packages ahead of time, use a
+transformation like @option{--with-input=emacs-minimal=emacs}.
+@end quotation
 
 @node Upgrading Guix
 @section Upgrading Guix
@@ -4631,7 +4647,7 @@ but it supports the following options:
 @itemx --branch=@var{branch}
 Download code for the @code{guix} channel from the specified @var{url}, at the
 given @var{commit} (a valid Git commit ID represented as a hexadecimal
-string), or @var{branch}.
+string or the name of a tag), or @var{branch}.
 
 @cindex @file{channels.scm}, configuration file
 @cindex configuration file for channels
@@ -4783,6 +4799,25 @@ of Guix to be used is defined by a commit or by a channel
 description file created by @command{guix describe}
 (@pxref{Invoking guix describe}).
 
+Let's assume that you want to travel to those days of November 2020 when
+version 1.2.0 of Guix was released and, once you're there, run the
+@command{guile} of that time:
+
+@example
+guix time-machine --commit=v1.2.0 -- \
+  environment -C --ad-hoc guile -- guile
+@end example
+
+The command above fetches Guix@tie{}1.2.0 and runs its @command{guix
+environment} command to spawn an environment in a container running
+@command{guile} (@command{guix environment} has since been subsumed by
+@command{guix shell}; @pxref{Invoking guix shell}).  It's like driving a
+DeLorean@footnote{If you don't know what a DeLorean is, consider
+traveling back to the 1980's.}!  The first @command{guix time-machine}
+invocation can be expensive: it may have to download or even build a
+large number of packages; the result is cached though and subsequent
+commands targeting the same commit are almost instantaneous.
+
 The general syntax is:
 
 @example
@@ -4799,7 +4834,7 @@ this revision are the same as for @command{guix pull} (@pxref{Invoking guix pull
 @itemx --branch=@var{branch}
 Use the @code{guix} channel from the specified @var{url}, at the
 given @var{commit} (a valid Git commit ID represented as a hexadecimal
-string), or @var{branch}.
+string or the name of a tag), or @var{branch}.
 
 @item --channels=@var{file}
 @itemx -C @var{file}
@@ -6195,6 +6230,27 @@ directory:
 guix shell --container --expose=$HOME=/exchange guile -- guile
 @end example
 
+@cindex file system hierarchy standard (FHS)
+@cindex FHS (file system hierarchy standard)
+@item --emulate-fhs
+@itemx -F
+When used with @option{--container}, emulate a
+@uref{https://refspecs.linuxfoundation.org/fhs.shtml, Filesystem
+Hierarchy Standard (FHS)} configuration within the container, providing
+@file{/bin}, @file{/lib}, and other directories and files specified by
+the FHS.
+
+As Guix deviates from the FHS specification, this
+option sets up the container to more closely mimic that of other
+GNU/Linux distributions.  This is useful for reproducing other
+development environments, testing, and using programs which expect the
+FHS specification to be followed.  With this option, the container will
+include a version of glibc that will read
+@file{/etc/ld.so.cache} within the container for the shared library
+cache (contrary to glibc in regular Guix usage) and set up the
+expected FHS directories: @file{/bin}, @file{/etc}, @file{/lib}, and
+@file{/usr} from the container's profile.
+
 @item --rebuild-cache
 @cindex caching, of profiles
 @cindex caching, in @command{guix shell}
@@ -6613,6 +6669,22 @@ directory:
 @example
 guix environment --container --expose=$HOME=/exchange --ad-hoc guile -- guile
 @end example
+
+@item --emulate-fhs
+@item -F
+For containers, emulate a Filesystem Hierarchy Standard (FHS)
+configuration within the container, see
+@uref{https://refspecs.linuxfoundation.org/fhs.shtml, the official
+specification}.  As Guix deviates from the FHS specification, this
+option sets up the container to more closely mimic that of other
+GNU/Linux distributions.  This is useful for reproducing other
+development environments, testing, and using programs which expect the
+FHS specification to be followed.  With this option, the container will
+include a version of @code{glibc} which will read
+@code{/etc/ld.so.cache} within the container for the shared library
+cache (contrary to @code{glibc} in regular Guix usage) and set up the
+expected FHS directories: @code{/bin}, @code{/etc}, @code{/lib}, and
+@code{/usr} from the container's profile.
 
 @end table
 
@@ -9241,7 +9313,37 @@ instead of the default @code{"out"} output. This is useful for packages that
 include a Python package as only a part of the software, and thus want to
 combine the phases of @code{python-build-system} with another build system.
 Python bindings are a common usecase.
+@end defvr
 
+@defvr {Scheme Variable} pyproject-build-system
+This is a variable exported by @code{guix build-system pyproject}.  It
+is based on @var{python-build-system}, and adds support for
+@file{pyproject.toml} and @url{https://peps.python.org/pep-0517/, PEP 517}.
+It also supports a variety of build backends and test frameworks.
+
+The API is slightly different from @var{python-build-system}:
+@itemize
+@item
+@code{#:use-setuptools?} and @code{#:test-target} is removed.
+@item
+@code{#:build-backend} is added.  It defaults to @code{#false} and will try
+to guess the appropriate backend based on @file{pyproject.toml}.
+@item
+@code{#:test-backend} is added.  It defaults to @code{#false} and will guess
+an appropriate test backend based on what is available in package inputs.
+@item
+@code{#:test-flags} is added.  The default is @code{'()}.  These flags are
+passed as arguments to the test command.  Note that flags for verbose output
+is always enabled on supported backends.
+@end itemize
+
+It is considered ``experimental'' in that the implementation details are
+not set in stone yet, however users are encouraged to try it for new
+Python projects (even those using @file{setup.py}).  The API is subject to
+change, but any breaking changes in the Guix channel will be dealt with.
+
+Eventually this build system will be deprecated and merged back into
+@var{python-build-system}, probably some time in 2024.
 @end defvr
 
 @defvr {Scheme Variable} perl-build-system
@@ -16313,7 +16415,7 @@ The default set includes core utilities and it is good practice to
 install non-core utilities in user profiles (@pxref{Invoking guix
 package}).
 
-@item @code{timezone}
+@item @code{timezone} (default: @code{"Etc/UTC"})
 A timezone identifying string---e.g., @code{"Europe/Paris"}.
 
 You can run the @command{tzselect} command to find out which timezone
@@ -16474,6 +16576,7 @@ This is a list of symbols denoting mount flags.  Recognized flags
 include @code{read-only}, @code{bind-mount}, @code{no-dev} (disallow
 access to special files), @code{no-suid} (ignore setuid and setgid
 bits), @code{no-atime} (do not update file access times),
+@code{no-diratime} (likewise for directories only),
 @code{strict-atime} (update file access time), @code{lazy-time} (only
 update time on the in-memory version of the file inode),
 @code{no-exec} (disallow program execution), and @code{shared} (make the
@@ -17608,17 +17711,19 @@ and the second element is its target.  By default it is:
 @cindex @file{/bin/sh}
 @cindex @file{sh}, in @file{/bin}
 @lisp
-`(("/bin/sh" ,(file-append bash "/bin/sh")))
+`(("/bin/sh" ,(file-append bash "/bin/sh"))
+  ("/usr/bin/env" ,(file-append coreutils "/bin/env")))
 @end lisp
 
 @cindex @file{/usr/bin/env}
 @cindex @file{env}, in @file{/usr/bin}
-If you want to add, say, @code{/usr/bin/env} to your system, you can
+If you want to add, say, @code{/bin/bash} to your system, you can
 change it to:
 
 @lisp
 `(("/bin/sh" ,(file-append bash "/bin/sh"))
-  ("/usr/bin/env" ,(file-append coreutils "/bin/env")))
+  ("/usr/bin/env" ,(file-append coreutils "/bin/env"))
+  ("/bin/bash" ,(file-append bash "/bin/bash")))
 @end lisp
 
 Since this is part of @code{%base-services}, you can use
@@ -18679,6 +18784,81 @@ before starting command. One should note that, @code{extra-env} variables
 are set right after mentioned variables, so that they can be overriden.
 
 @end table
+@end deftp
+
+@deftp {Data Type} greetd-wlgreet-session
+Generic configuration record for the wlgreet greetd greeter.
+
+@table @asis
+@item @code{wlgreet} (default: @code{wlgreet})
+The package with the @command{/bin/wlgreet} command.
+
+@item @code{command} (default: @code{(file-append sway "/bin/sway")})
+Command to be started by @command{/bin/wlgreet} on successful login.
+
+@item @code{command-args} (default: @code{'()})
+Command arguments to pass to command.
+
+@item @code{output-mode} (default: @code{"all"})
+Option to use for @code{outputMode} in the TOML configuration file.
+
+@item @code{scale} (default: @code{1})
+Option to use for @code{scale} in the TOML configuration file.
+
+@item @code{background} (default: @code{'(0 0 0 0.9)})
+RGBA list to use as the background colour of the login prompt.
+
+@item @code{headline} (default: @code{'(1 1 1 1)})
+RGBA list to use as the headline colour of the UI popup.
+
+@item @code{prompt} (default: @code{'(1 1 1 1)})
+RGBA list to use as the prompt colour of the UI popup.
+
+@item @code{prompt-error} (default: @code{'(1 1 1 1)})
+RGBA list to use as the error colour of the UI popup.
+
+@item @code{border} (default: @code{'(1 1 1 1)})
+RGBA list to use as the border colour of the UI popup.
+
+@item @code{extra-env} (default: @code{'()})
+Extra environment variables to set on login.
+
+@end table
+@end deftp
+
+@deftp {Data Type} greetd-wlgreet-sway-session
+Sway-specific configuration record for the wlgreet greetd greeter.
+
+@table @asis
+@item @code{wlgreet-session} (default: @code{(greetd-wlgreet-session)})
+A @code{greetd-wlgreet-session} record for generic wlgreet configuration,
+on top of the Sway-specific @code{greetd-wlgreet-sway-session}.
+
+@item @code{sway} (default: @code{sway})
+The package providing the @command{/bin/sway} command.
+
+@item @code{sway-configuration} (default: #f)
+File-like object providing an additional Sway configuration file to be
+prepended to the mandatory part of the configuration.
+
+@end table
+
+Here is an example of a greetd configuration that uses wlgreet and Sway:
+
+@lisp
+  (greetd-configuration
+   ;; We need to give the greeter user these permissions, otherwise
+   ;; Sway will crash on launch.
+   (greeter-supplementary-groups (list "video" "input" "seat"))
+   (terminals
+    (list (greetd-terminal-configuration
+           (terminal-vt "1")
+           (terminal-switch #t)
+           (default-session-command
+            (greetd-wlgreet-sway-session
+             (sway-configuration
+              (local-file "sway-greetd.conf"))))))))
+@end lisp
 @end deftp
 
 @node Scheduled Job Execution
@@ -21501,7 +21681,7 @@ The name of the icon theme to use.
 The name of the cursor theme to use.
 
 @item @code{cursor-theme-size} (default: @code{16}) (type: number)
-The size to use for the the cursor theme.
+The size to use for the cursor theme.
 
 @item @code{allow-debugging?} (type: maybe-boolean)
 Set to #t to enable debug log level.
@@ -22836,7 +23016,7 @@ Enable polling the kernel for battery level changes.
 Ignore the lid state, this can be useful if it's incorrect on a device.
 
 @item @code{use-percentage-for-policy?} (default: @code{#t})
-Whether a to use a policy based on battery percentage rather than on
+Whether to use a policy based on battery percentage rather than on
 estimated time left.  A policy based on battery percentage is usually
 more reliable.
 
@@ -26626,7 +26806,7 @@ When left unspecified, the value from the account archive prevails.
 Whether peer discovery should be enabled.  Peer discovery is used to
 discover other OpenDHT nodes on the local network, which can be useful
 to maintain communication between devices on such network even when the
-connection to the the Internet has been lost.  When left unspecified,
+connection to the Internet has been lost.  When left unspecified,
 the value from the account archive prevails.
 
 @item @code{bootstrap-hostnames} (type: maybe-string-list)
@@ -30863,7 +31043,7 @@ can run on headless servers.  The Xvnc implementations provided by the
 
 The @code{xvnc-server-type} service can be configured via the
 @code{xvnc-configuration} record, documented below.  A second virtual
-display could be made available on a remote machine for via the
+display could be made available on a remote machine via the
 following configuration:
 @end defvar
 
@@ -30872,7 +31052,7 @@ following configuration:
 @end lisp
 
 As a demonstration, the @command{xclock} command could then be started
-on the remote machine on display number 10, and it could be display
+on the remote machine on display number 10, and it could be displayed
 locally via the @command{vncviewer} command:
 @example
 # Start xclock on the remote machine.
@@ -31294,6 +31474,24 @@ the file does not exist.
 @item @code{peers} (default: @code{'()})
 The authorized peers on this interface.  This is a list of
 @var{wireguard-peer} records.
+
+@item @code{pre-up} (default: @code{'()})
+The script commands to be run before setting up the interface.
+
+@item @code{post-up} (default: @code{'()})
+The script commands to be run after setting up the interface.
+
+@item @code{pre-down} (default: @code{'()})
+The script commands to be run before tearing down the interface.
+
+@item @code{post-down} (default: @code{'()})
+The script commands to be run after tearing down the interface.
+
+@item @code{table} (default: @code{"auto"})
+The routing table to which routes are added, as a string.  There are two
+special values: @code{"off"} that disables the creation of routes
+altogether, and @code{"auto"} (the default) that adds routes to the
+default table and enables special handling of default routes.
 
 @end table
 @end deftp
@@ -33743,7 +33941,7 @@ cluster node that supports multiple storage backends, and installs the
 @end lisp
 
 Users are advised to read the
-@url{http://docs.ganeti.org/ganeti/master/html/admin.html,Ganeti
+@url{https://docs.ganeti.org/docs/ganeti/3.0/html/admin.html,Ganeti
 administrators guide} to learn about the various cluster options and
 day-to-day operations.  There is also a
 @url{https://guix.gnu.org/blog/2020/running-a-ganeti-cluster-on-guix/,blog post}
@@ -33832,12 +34030,30 @@ The name for this OS provider.  It is only used to specify where the
 configuration ends up.  Setting it to ``debootstrap'' will create
 @file{/etc/ganeti/instance-debootstrap}.
 
-@item @code{extension}
-The file extension for variants of this OS type.  For example
-@file{.conf} or @file{.scm}.
+@item @code{extension} (default: @code{#f})
+The file extension for variants of this OS type.  For example @file{.conf}
+or @file{.scm}.  It will be appended to the variant file name if set.
 
 @item @code{variants} (default: @code{'()})
-List of @code{ganeti-os-variant} objects for this OS.
+This must be either a list of @code{ganeti-os-variant} objects for this OS,
+or a ``file-like'' object (@pxref{G-Expressions, file-like objects})
+representing the variants directory.
+
+To use the Guix OS provider with variant definitions residing in a local
+directory instead of declaring individual variants (see @var{guix-variants}
+below), you can do:
+
+@lisp
+(ganeti-os
+ (name "guix")
+ (variants (local-file "ganeti-guix-variants"
+                       #:recursive? #true)))
+@end lisp
+
+Note that you will need to maintain the @file{variants.list} file
+(see @code{@url{https://docs.ganeti.org/docs/ganeti/3.0/man/ganeti-os-interface.html,
+ganeti-os-interface(7)}})
+manually in this case.
 
 @end table
 @end deftp
@@ -34120,7 +34336,7 @@ via a JSON-based RPC protocol.
 Most query operations are allowed without authentication (unless
 @var{require-authentication?} is set), whereas write operations require
 explicit authorization via the @file{/var/lib/ganeti/rapi/users} file.  See
-the @url{http://docs.ganeti.org/ganeti/master/html/rapi.html, Ganeti Remote
+the @url{https://docs.ganeti.org/docs/ganeti/3.0/html/rapi.html, Ganeti Remote
 API documentation} for more information.
 
 The value of this service must be a @code{ganeti-rapi-configuration} object.
@@ -35452,7 +35668,21 @@ Data type representing the configuration for @code{gitolite-service-type}.
 
 @table @asis
 @item @code{package} (default: @var{gitolite})
-Gitolite package to use.
+Gitolite package to use.  There are optional Gitolite dependencies that
+are not included in the default package, such as Redis and git-annex.
+These features can be made available by using the @code{make-gitolite}
+procedure in the @code{(gnu packages version-control}) module to produce
+a variant of Gitolite with the desired additional dependencies.
+
+The following code returns a package in which the Redis and git-annex
+programs can be invoked by Gitolite's scripts:
+
+@example
+(use-modules (gnu packages databases)
+             (gnu packages haskell-apps)
+             (gnu packages version-control))
+(make-gitolite (list redis git-annex))
+@end example
 
 @item @code{user} (default: @var{git})
 User to use for Gitolite.  This will be user that you use when accessing
@@ -35864,6 +36094,9 @@ will use the current system it's running on as the default.
 
 @item @code{max-parallel-builds} (default: @code{1})
 The number of builds to perform in parallel.
+
+@item @code{max-allocated-builds} (default: @code{#f})
+The maximum number of builds this agent can be allocated.
 
 @item @code{max-1min-load-average} (default: @code{#f})
 Load average value to look at when considering starting new builds, if
@@ -41182,6 +41415,20 @@ format.
 
 @end table
 
+@end deftp
+
+@defvr {Scheme Variable} home-dbus-service-type
+This is the service type for running a session-specific D-Bus, for
+unprivileged applications that require D-Bus to be running.
+@end defvr
+
+@deftp {Data Type} home-dbus-configuration
+The configuration record for @code{home-dbus-service-type}.
+
+@table @asis
+@item @code{dbus} (default: @code{dbus})
+The package providing the @code{/bin/dbus-daemon} command.
+@end table
 @end deftp
 
 @node Guix Home Services

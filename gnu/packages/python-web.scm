@@ -79,6 +79,7 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix build-system copy)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (guix gexp)
   #:use-module (guix utils)
@@ -781,7 +782,7 @@ for resource properties and best practices.")
     (propagated-inputs (list python-attrs python-jsonpickle python-pbr))
     (native-inputs (list python-pytest))
     (home-page "https://github.com/microsoft/jschema-to-python")
-    (synopsis "Generate Python classes from a JSON schema.")
+    (synopsis "Generate Python classes from a JSON schema")
     (description "This package generates source code for Python classes from a
 @url{http://jschema.org,JSchema} JSON schema.")
     (license license:expat)))
@@ -800,7 +801,7 @@ for resource properties and best practices.")
     (propagated-inputs (list python-attrs))
     (native-inputs (list python-pbr))
     (home-page "https://github.com/microsoft/sarif-python-om")
-    (synopsis "Python implementation of the SARIF 2.1.0 object model.")
+    (synopsis "Python implementation of the SARIF 2.1.0 object model")
     (description "This module contains classes for the object model defined
 by the @url{https://sarifweb.azurewebsites.net,Static Analysis Results
 Interchange Format (SARIF)} file format.")
@@ -1601,7 +1602,7 @@ is Python’s.")
        (sha256
         (base32
          "1swm8h74nhg63nxk347blwq9f1qn6iiq3zisndcvm7axkq3pc2df"))))
-    (build-system python-build-system)
+    (build-system pyproject-build-system)
     (arguments
      (list
       #:phases
@@ -1609,21 +1610,8 @@ is Python’s.")
           (add-after 'unpack 'remove-coverage-pytest-options
             (lambda _
               (substitute* "pyproject.toml"
-                (("^--cov.*") ""))))
-          ;; XXX: PEP 517 manual build copied from python-isort.
-          (replace 'build
-            (lambda _
-              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
-          (replace 'check
-            (lambda* (#:key tests? #:allow-other-keys)
-              (when tests?
-                (invoke "pytest"))))
-          (replace 'install
-            (lambda _
-              (let ((whl (car (find-files "dist" "\\.whl$"))))
-                (invoke "pip" "--no-cache-dir" "--no-input"
-                        "install" "--no-deps" "--prefix" #$output whl)))))))
-    (native-inputs (list python-poetry-core python-pypa-build python-pytest))
+                (("^--cov.*") "")))))))
+    (native-inputs (list python-poetry-core python-pytest))
     (propagated-inputs
      (list python-isodate
            python-jsonschema
@@ -1655,33 +1643,19 @@ JSON Schema Specification Draft 2020-12.
        (sha256
         (base32
          "1q09sjh4hsc0c8yqbd97h5mp6rwh427y6zyn8kv8wljk6sa0fs4q"))))
-    (build-system python-build-system)
+    (build-system pyproject-build-system)
     (arguments
      (list
+      ;; The example tests attempt to fetch resources from the Internet
+      ;; (see: https://github.com/p1c2u/openapi-spec-validator/issues/151).
+      #:test-flags #~'("-k" "not Example and not Exampe")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'remove-coverage-pytest-options
             (lambda _
               (substitute* "pyproject.toml"
-                (("^--cov.*") ""))))
-          ;; XXX: PEP 517 manual build copied from python-isort.
-          (replace 'build
-            (lambda _
-              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
-          (replace 'check
-            (lambda* (#:key tests? #:allow-other-keys)
-              (when tests?
-                (invoke "pytest" "-vv"
-                        ;; The example tests attempt to fetch resources from
-                        ;; the Internet (see:
-                        ;; https://github.com/p1c2u/openapi-spec-validator/issues/151).
-                        "-k" "not Example and not Exampe"))))
-          (replace 'install
-            (lambda _
-              (let ((whl (car (find-files "dist" "\\.whl$"))))
-                (invoke "pip" "--no-cache-dir" "--no-input"
-                        "install" "--no-deps" "--prefix" #$output whl)))))))
-    (native-inputs (list python-poetry-core python-pypa-build python-pytest))
+                (("^--cov.*") "")))))))
+    (native-inputs (list python-poetry-core python-pytest))
     (propagated-inputs
      (list python-jsonschema
            python-openapi-schema-validator
@@ -2453,6 +2427,30 @@ internationalized messages within program source text.")
 defining data schemas.")
     (license license:zpl2.1)))
 
+(define-public python-zope-sqlalchemy
+  (package
+    (name "python-zope-sqlalchemy")
+    (version "1.6")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "zope.sqlalchemy" version))
+              (sha256
+               (base32
+                "1azm2awl2ra10xl6wps3yvy14jk2rpzvsyfsb9cncm97aydbwlww"))))
+    (build-system python-build-system)
+    (propagated-inputs
+     (list python-sqlalchemy
+           python-transaction
+           python-zope-interface))
+    (native-inputs (list python-zope-testing))
+    (home-page "https://github.com/zopefoundation/zope.sqlalchemy")
+    (synopsis "Minimal SQLAlchemy transaction integration for Zope")
+    (description "The aim of this package is to unify the plethora of existing
+packages integrating SQLAlchemy with Zope's transaction management.  As such,
+it only provides a data manager and makes no attempt to define a @i{zopeish}
+way to configure engines.")
+    (license license:zpl2.1)))
+
 (define-public python-zope-configuration
   (package
     (name "python-zope-configuration")
@@ -2841,13 +2839,13 @@ APIs.")
 (define-public python-requests
   (package
     (name "python-requests")
-    (version "2.27.1")
+    (version "2.28.1")
     (source (origin
              (method url-fetch)
              (uri (pypi-uri "requests" version))
              (sha256
               (base32
-               "0qcsbi919d689xqlgyhw9zkppp1fs6k09wwffa3ri6d8smpwbmv8"))))
+               "10vrr7bijzrypvms3g2sgz8vya7f9ymmcv423ikampgy0aqrjmbw"))))
     (build-system python-build-system)
     (propagated-inputs
      (list python-certifi
@@ -3191,14 +3189,14 @@ addon for removing tracking fields from URLs.")
 (define-public python-urllib3
   (package
     (name "python-urllib3")
-    (version "1.26.8")
+    (version "1.26.9")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "urllib3" version))
         (sha256
          (base32
-          "0g18xk7gfm88gr4bp3f58vgvsbzwps3sq2kqhv5xyz9ylvck6z0f"))))
+          "13j4mkk6vgix4bixfqk3fhydsl3r5f61z94ss4fmwsl0fxjg3fma"))))
     (build-system python-build-system)
     (arguments `(#:tests? #f))
     (propagated-inputs
@@ -5740,6 +5738,12 @@ files.")
         (base32
          "1vk7g5z977mi89hamwiqawpmibwvv9ghrf3pqva1waxmyc7gyjb5"))))
     (build-system python-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'check 'extend-test-timeout
+                 (lambda _
+                   (setenv "WEBSOCKETS_TESTS_TIMEOUT_FACTOR" "10"))))))
     (home-page "https://github.com/aaugustin/websockets")
     (synopsis
      "Python implementation of the WebSocket Protocol (RFC 6455 & 7692)")
@@ -6665,7 +6669,7 @@ your code non-blocking and speedy.")
         (base32 "1b64j45w35jzhjhnq44bnyad9ydh1iyyd7a6j2c8phxmllyyp2zq"))))
     (build-system python-build-system)
     (home-page "https://github.com/sethmlarson/socksio")
-    (synopsis "Sans-I/O implementation of SOCKS4, SOCKS4A, and SOCKS5.")
+    (synopsis "Sans-I/O implementation of SOCKS4, SOCKS4A, and SOCKS5")
     (description "The @code{socksio} Python module is a client-side sans-I/O
 SOCKS proxy implementation.  It supports SOCKS4, SOCKS4A, and SOCKS5.
 @code{socksio} is a sans-I/O library similar to @code{h11} or @code{h2}; this
@@ -6716,7 +6720,7 @@ SOCKS protocols.  It can be paired with any I/O library.")
            python-pytest-asyncio
            python-pytest-trio))
     (home-page "https://github.com/Azure/msrest-for-python")
-    (synopsis "AutoRest swagger generator Python client runtime.")
+    (synopsis "AutoRest swagger generator Python client runtime")
     (description "This package provides the runtime library @code{msrest} for
 AutoRest-generated Python clients.")
     (license license:expat)))

@@ -269,11 +269,11 @@ protocols.")
                                            (assoc-ref %outputs "out"))))
        #:test-target "test"))
     (home-page "https://librecast.net/lcrq.html")
-    (synopsis "librecast RaptorQ library")
+    (synopsis "Librecast RaptorQ library")
     (description
      "C library implementation of RaptorQ Forward Error Correction for
 Librecast.  RFC6330 (IETF) describes the RaptorQ proposed standard, which LCRQ
-more-or-less follows. The primary focus has been on building a fast, simple
+more-or-less follows.  The primary focus has been on building a fast, simple
 and dependency-free FEC implementation for use with Librecast, and not on
 strict standards compliance.  The code does, however, fairly closely follow
 the RFC.")
@@ -331,7 +331,7 @@ the RFC.")
     (inputs (list librecast libsodium))
     (native-inputs (list simde))
     (home-page "https://librecast.net/lcsync.html")
-    (synopsis "librecast file and data syncing tool")
+    (synopsis "Librecast file and data syncing tool")
     (description
      "lcsync is a tool to sync files over IPv6 multicast or the
 local filesystem.  It splits the file into blocks, hashes them, and compares
@@ -524,7 +524,7 @@ GLib-based library, libnice, as well as GStreamer elements to use it.")
                       (delete-file "./test/0000-0039.c")
                       (delete-file "./test/0000-0040.c"))))))
     (inputs (list libsodium lcrq))
-    (synopsis "librecast IPv6 multicast library")
+    (synopsis "IPv6 multicast library")
     (description "Librecast is a C library which supports IPv6 multicast
 networking.")
     (home-page "https://librecast.net/librecast.html")
@@ -872,14 +872,14 @@ systems with no further dependencies.")
 (define-public blueman
   (package
     (name "blueman")
-    (version "2.3.2")
+    (version "2.3.4")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/blueman-project/blueman/releases"
                            "/download/" version "/blueman-" version ".tar.xz"))
        (sha256
-        (base32 "1bjh0cx9j2akygiqyxm7g0q74jyx9hpgf186gv3m31vks5zpvkw4"))))
+        (base32 "0lh1aqpdq6vi4agrgmm7fifjbxz2s5qcs3hr7nfjrwrp2j1361n2"))))
     (build-system glib-or-gtk-build-system)
     (arguments
      `(#:configure-flags (list "--enable-polkit"
@@ -1760,14 +1760,14 @@ of the same name.")
 (define-public wireshark
   (package
     (name "wireshark")
-    (version "4.0.0")
+    (version "4.0.1")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://www.wireshark.org/download/src/wireshark-"
                            version ".tar.xz"))
        (sha256
-        (base32 "1vddvizywy6kfxg0i3m0627f675i7sdp7k3ld9sjlp78hppjbh9x"))))
+        (base32 "1hpxkw0ww6b8fnda5bhgpma2836bfarpxgnkkrzz9fqkkpwh5c5k"))))
     (build-system cmake-build-system)
     (arguments
      `(#:phases
@@ -2666,7 +2666,7 @@ that block port 22.")
 (define-public iperf
   (package
     (name "iperf")
-    (version "3.11")
+    (version "3.12")
     (source
      (origin
        (method git-fetch)
@@ -2675,7 +2675,7 @@ that block port 22.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "064sb8f9jxi5ii43swd73c0mm50lvk51v7awhgbj6p129c1a4nn5"))))
+        (base32 "0bkmlah8lsm9vciaa9k84x3g1fd0k6nwnsrzp8y04piyiplrvpsi"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags
@@ -2766,7 +2766,7 @@ procedure calls (RPCs).")
 (define-public openvswitch
   (package
     (name "openvswitch")
-    (version "3.0.0")
+    (version "3.0.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -2774,7 +2774,7 @@ procedure calls (RPCs).")
                     version ".tar.gz"))
               (sha256
                (base32
-                "17hr7x9iahhmskp70pv59v4bsn86r2jmbaw37vs03jsz3k1a57gs"))))
+                "0s5xbcchnfqlgrabjs76bwd5d6qhvjx352r274r5p7wis0b1g8g4"))))
     (build-system gnu-build-system)
     (arguments
      '(#:configure-flags
@@ -4214,14 +4214,14 @@ realistic with today's hardware.")
 (define-public lldpd
   (package
     (name "lldpd")
-    (version "1.0.14")
+    (version "1.0.15")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://media.luffy.cx/files/lldpd/lldpd-"
                            version ".tar.gz"))
        (sha256
-        (base32 "1s0j5p0mjh1pda1aq5wm4hd41fh1m864jgbs82y5sshi9whijj57"))
+        (base32 "09iidaan6gq384n7ykdwwsll3vmq6q7zd7j7j721k2p91c9kmzpp"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -4410,7 +4410,7 @@ IPv6 Internet connectivity - it also works over IPv4.")
 (define-public netdiscover
   (package
    (name "netdiscover")
-   (version "0.7")
+   (version "0.10")
    (source
     (origin
       (method git-fetch)
@@ -4418,10 +4418,10 @@ IPv6 Internet connectivity - it also works over IPv4.")
             (url "https://github.com/netdiscover-scanner/netdiscover")
             (commit version)))
       (sha256
-       (base32 "0g8w8rlg16dsibxi4dnyn7v7r8wwi5ypd51c4w59j0ps2id0w8yj"))
+       (base32 "1ljkj280qja9rz0zwkilsa4051fdxsygjqhfch0wpkxxa5zx3prx"))
       (file-name (string-append "netdiscover-" version))))
    (arguments
-    `(#:tests? #f)) ;; no tests
+    `(#:tests? #f))                     ; no tests
    (build-system gnu-build-system)
    (inputs
     (list libnet libpcap))

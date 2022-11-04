@@ -5,7 +5,7 @@
 ;;; Copyright © 2020, 2021, 2022 Guillaume Le Vaillant <glv@posteo.net>
 ;;; Copyright © 2020 Danny Milosavljevic <dannym@scratchpost.org>
 ;;; Copyright © 2020 Charlie Ritter <chewzerita@posteo.net>
-;;; Copyright © 2020, 2021 Tobias Geerinckx-Rice <me@tobias.gr>
+;;; Copyright © 2020–2022 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2021 João Pedro Simas <jpsimas@gmail.com>
 ;;; Copyright © 2021 Jack Hill <jackhill@jackhill.us>
 ;;; Copyright © 2022 Jai Vetrivelan <jaivetrivelan@gmail.com>
@@ -1226,20 +1226,35 @@ you must extend 'udev-service-type' with this package.  E.g.:
         (base32 "11r4i8gmxnb6ixpk4ns38c9xwj3qibp2v3pkhy2z0lhz0xxi1w4b"))))
     (build-system gnu-build-system)
     (native-inputs
-     (list doxygen
-           lua
+     (list autoconf
+           automake
+           doxygen
+           libtool
            pkg-config
            python-wrapper
-           swig
-           tcl))
+           swig))
     (inputs
-     (list gd libusb libxml2 readline))
+     (list gd
+           libusb
+           libxml2
+           lua
+           python
+           readline
+           tcl))
     (arguments
-     `(#:configure-flags '("--disable-static"
-                           "--with-lua-binding"
-                           "--with-python-binding"
-                           "--with-tcl-binding"
-                           "--with-xml-support")))
+     `(#:configure-flags
+       '("--disable-static"
+         "--with-lua-binding"
+         "--with-python-binding"
+         "--with-tcl-binding"
+         "--with-xml-support")
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'bootstrap 'force-bootstrap
+           ;; The included configure script is misbuilt.  It will never find
+           ;; pkg-config, and hence any libraries that rely on it.  Rebuild it.
+           (lambda _
+             (delete-file "configure"))))))
     (synopsis "Tools and API to control radios")
     (description
      "The Ham Radio Control Library (Hamlib) is a project to provide programs
@@ -2291,6 +2306,18 @@ voice formats.")
                                #$(this-package-input "soapysdr")))
        #:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'fix-CPU-extension-detection
+           ;; ‘Fix’ in the static sense.  TODO: Make this -tune'able.
+           (lambda _
+             (let ((file "cmake/Modules/DetectArchitecture.cmake"))
+               ;; Disable all build-time CPU extension detection…
+               (substitute* file
+                 (("detect_extensions\\(.*") ""))
+               (when ,(target-x86-64?)
+                 ;; …but force extensions that are guaranteed to be available.
+                 (substitute* file
+                   ((".*cmake_pop_check_state" eof)
+                    (string-append "force_ext_available(SSE2)\n" eof)))))))
          (add-after 'unpack 'fix-boost-compatibility
            (lambda _
              (substitute*

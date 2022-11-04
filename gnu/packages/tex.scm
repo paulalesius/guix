@@ -159,6 +159,7 @@ copied to their outputs; otherwise the TEXLIVE-BUILD-SYSTEM is used."
     (file-name (string-append "hyph-utf8-scripts-"
                               (number->string %texlive-revision)
                               "-checkout"))
+    (patches (search-patches "texlive-hyph-utf8-no-byebug.patch"))
     (sha256
      (base32
       "04xzf5gr3ylyh3ls09imrx4mwq3qp1k97r9njzlan6hlff875rx2"))))
@@ -188,7 +189,8 @@ files from LOCATIONS with expected checksum HASH.  CODE is not currently in use.
                          (string-append root "/tex/generic/hyph-utf8/patterns/quote")))
                    (mkdir "scripts")
                    (copy-recursively
-                    (assoc-ref inputs "hyph-utf8-scripts") "scripts")
+                    (dirname (search-input-file inputs "hyph-utf8.rb"))
+                    "scripts")
 
                    ;; Prepare target directories
                    (mkdir-p patterns)
@@ -226,9 +228,7 @@ files from LOCATIONS with expected checksum HASH.  CODE is not currently in use.
                         (string-append "File.join(\"" ptex "\"")))
                      (invoke "ruby" "generate-ptex-patterns.rb")))))))))
       (native-inputs
-       `(("ruby" ,ruby)
-         ("ruby-hydra" ,ruby-hydra)
-         ("hyph-utf8-scripts" ,hyph-utf8-scripts)))
+       (list ruby ruby-hydra-minimal hyph-utf8-scripts))
       (home-page "https://ctan.org/pkg/hyph-utf8"))))
 
 (define texlive-extra-src
@@ -1636,7 +1636,7 @@ discussed in the book).")
 lines by words rather than, as done by TeX, by characters.  The primary use for
 these facilities is to aid the generation of messages sent to the log file or
 console output to display messages to the user.  Package authors may also find
-this useful when writing out arbitary text to an external file.")
+this useful when writing out arbitrary text to an external file.")
     (license license:lppl1.3+)))
 
 (define-public texlive-helvetic
@@ -3075,7 +3075,7 @@ contain.")
     (home-page "https://www.ctan.org/pkg/atveryend")
     (synopsis "Hooks at the very end of a document")
     (description
-     "This LaTeX packages provides two hooks for @code{\\end@{document@}}
+     "This LaTeX package provides two hooks for @code{\\end@{document@}}
 that are executed after the hook of @code{\\AtEndDocument}:
 @code{\\AfterLastShipout} can be used for code that is to be executed right
 after the last @code{\\clearpage} before the @file{.aux} file is closed.
@@ -3429,12 +3429,10 @@ XML, using UTF-8 or a suitable 8-bit encoding.")
              texlive-latex-refcount
              texlive-latex-rerunfilecheck
              texlive-url
-             ;; TODO: Add this in next rebuild cycle.
-             ;;texlive-cm
-             ;;texlive-latex-graphics    ;for keyval
-             ;;texlive-stringenc
-             ;;texlive-zapfding
-             ))
+             texlive-cm
+             texlive-latex-graphics     ;for keyval
+             texlive-stringenc
+             texlive-zapfding))
       (home-page "https://www.ctan.org/pkg/hyperref")
       (synopsis "Extensive support for hypertext in LaTeX")
       (description
@@ -6802,6 +6800,23 @@ splines, and filled circles and ellipses.  The package uses @code{tpic}
      "This package allows nested endnotes, supports @code{hyperref} and
 provides means for easy customization of the list of notes.")
     (license license:lppl1.3c+)))
+
+(define-public texlive-endnotes
+  (package
+    (inherit (simple-texlive-package
+              "texlive-endnotes"
+              (list "doc/latex/endnotes/"
+                    "tex/latex/endnotes/")
+              (base32
+               "1s7j5sg8fbhifng0gfqnghbvalbbh0p7j9v06r660w089364ypwz")
+              #:trivial? #t))
+    (home-page "https://www.ctan.org/pkg/endnotes")
+    (synopsis "Deal with endnotesings in strings")
+    (description
+     "Accumulates notes (using the @code{\\endnote} command, which can be used
+as a replacement for @code{\\footnote}), and places them at the end of
+the section, chapter or document.")
+    (license license:lppl1.0+)))
 
 (define-public texlive-enumitem
   (package
@@ -11112,6 +11127,20 @@ and selecting references used in a publication.")
               (base32
                "08jn8piyaad4zln33c0gikyhdkcsk2s3ms9l992riq2hbpbm9lcf")
               #:trivial? #t))
+    (propagated-inputs (list texlive-apacite
+                             texlive-babel
+                             texlive-booktabs
+                             texlive-endnotes
+                             texlive-etoolbox
+                             texlive-generic-xstring
+                             texlive-latex-draftwatermark
+                             texlive-latex-fancyhdr
+                             texlive-latex-float
+                             texlive-latex-graphics
+                             texlive-lm
+                             texlive-substr
+                             texlive-times
+                             texlive-tools))
     (home-page "https://www.ctan.org/pkg/apa6")
     (synopsis "Format documents in APA style (6th edition)")
     (description "The class formats documents in APA style (6th
@@ -11124,6 +11153,28 @@ for copies for use in masked peer review.
 The class is a development of the apa class (which is no longer
 maintained).")
     (license license:lppl1.3c+)))
+
+(define-public texlive-apacite
+  (package
+    (inherit (simple-texlive-package
+              "texlive-apacite"
+              (list "tex/latex/apacite/")
+              (base32
+               "0bcfpcmflhvxwzmdj8dgf43mzaywx2asahp52nqn3wwvq64bqym6")
+              #:trivial? #t))
+    (propagated-inputs (list texlive-latex-natbib
+                             texlive-tools))
+    (home-page "https://www.ctan.org/pkg/apacite")
+    (synopsis "Citation style following the rules of the APA")
+    (description "Apacite provides a BibTeX style and a LaTeX package which
+are designed to match the requirements of the American Psychological
+Association’s style for citations.  The package follows the 6th edition
+of the APA manual, and is designed to work with the apa6 class.  A test
+document is provided.  The package is compatible with chapterbib and
+(to some extent) with hyperref (for limits of compatibility, see the
+documentation).  The package also includes a means of generating an author
+index for a document.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-endfloat
   (package
@@ -11917,6 +11968,28 @@ recurrences of, a substring.  The package works equally in Plain TeX and LaTeX
 (though e-TeX is always required).  The strings to be processed may contain
 (expandable) macros.")
       (license license:lppl1.3c))))
+
+(define-public texlive-substr
+  (package
+    (inherit (simple-texlive-package
+              "texlive-substr"
+              (list "doc/latex/substr/"
+                    "tex/latex/substr/")
+              (base32
+               "0kfd4kq5yrg65f2mpric1cs1xr416wgj9bdixpibgjsdg5fb73sw")
+              #:trivial? #t))
+    (home-page "https://www.ctan.org/pkg/substr")
+    (synopsis "Deal with substrings in strings")
+    (description
+     "The package provides commands to deal with substrings of strings.  Macros
+are provided to:
+
+@itemize
+@item determine if one string is a substring of another,
+@item return the parts of a string before or after a substring, and
+@item count the number of occurrences of a substring.
+@end itemize")
+    (license license:lppl1.0+)))
 
 (define-public texlive-latex-totcount
   (package

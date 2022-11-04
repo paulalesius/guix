@@ -402,6 +402,36 @@ wrapper functions.  The core applies McBane's Fortran functions that use
 Gaussian quadrature for a numerical solution.")
     (license license:gpl3)))
 
+(define-public r-dmwr2
+  (package
+    (name "r-dmwr2")
+    (version "0.0.2")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "DMwR2" version))
+              (sha256
+               (base32
+                "1vzfbz2k05j8r2hpig3d2grb99rnnh2s1sviii3prcyqicxfh0i9"))))
+    (properties `((upstream-name . "DMwR2")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-class
+           r-dbi
+           r-dplyr
+           r-quantmod
+           r-readr
+           r-rpart
+           r-xts
+           r-zoo))
+    (home-page "https://github.com/ltorgo/DMwR2")
+    (synopsis
+     "Functions and data for the second edition of \"Data Mining with R\"")
+    (description
+     "This package provides functions and data accompanying the second
+edition of the book \"Data Mining with R, learning with case studies\"
+by Luis Torgo, published by CRC Press.")
+    (license license:gpl2+)))
+
 (define-public r-emdist
   (package
     (name "r-emdist")
@@ -6456,6 +6486,47 @@ University Press.  It provides smoothing methods for nonparametric regression
 and density estimation")
     (license license:gpl2+)))
 
+(define-public r-smurf
+  (package
+    (name "r-smurf")
+    (version "1.1.2")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "smurf" version))
+              (sha256
+               (base32
+                "00q54pg42anilhcshhjvv277mkszbpzpkf1g7srs7cjd5skjvsaf"))))
+    (properties `((upstream-name . "smurf")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-catdata
+           r-glmnet
+           r-mass
+           r-matrix
+           r-mgcv
+           r-rcolorbrewer
+           r-rcpp
+           r-rcpparmadillo
+           r-speedglm))
+    (native-inputs (list r-knitr))
+    (home-page "https://gitlab.com/TReynkens/smurf")
+    (synopsis "Sparse multi-type regularized feature modeling")
+    (description
+     "The @code{smurf} package contains the implementation of the
+@dfn{Sparse Multi-type Regularized Feature} (SMuRF) modeling algorithm
+to fit @dfn{generalized linear models} (GLMs) with multiple types of
+predictors via regularized maximum likelihood.  Next to the fitting
+procedure, following functionality is available:
+
+@itemize
+@item Selection of the regularization tuning parameter lambda using
+  three different approaches: in-sample, out-of-sample or using
+  cross-validation.
+@item S3 methods to handle the fitted object including visualization
+  of the coefficients and a model summary.
+@end itemize")
+    (license license:gpl2+)))
+
 (define-public r-venndiagram
   (package
     (name "r-venndiagram")
@@ -8824,6 +8895,29 @@ Dependencies of the distribution of the specified variable (response
 variable) to other variables (explanatory variables) are derived and
 evaluated by the @dfn{Akaike Information Criterion} (AIC).")
     (license license:gpl2+)))
+
+(define-public r-catdata
+  (package
+    (name "r-catdata")
+    (version "1.2.2")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "catdata" version))
+              (sha256
+               (base32
+                "14kx7yi0cv6dyh9wjasb8gn6cp1bhglgwql7dc2a7lqvdcp0d5vj"))))
+    (properties `((upstream-name . "catdata")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-mass))
+    (home-page "https://cran.r-project.org/package=catdata")
+    (synopsis
+     "Datasets and examples used in the book @emph{Regression for Categorical Data}")
+    (description
+     "This R package contains examples from the book @emph{Regression
+for Categorical Data}, Tutz 2012, Cambridge University Press.  The
+names of the examples refer to the chapter and the data set that is
+used.")
+    (license license:gpl2)))
 
 (define-public r-arules
   (package
@@ -17142,7 +17236,7 @@ effects from the jQuery UI library.")
     (home-page "https://github.com/datastorm-open/shinymanager")
     (synopsis "Authentication management for Shiny applications")
     (description
-     "This package provides simple and secure authentification mechanism for
+     "This package provides simple and secure authentication mechanism for
 single Shiny applications.  Credentials are stored in an encrypted SQLite
 database.")
     (license license:gpl3)))
@@ -19574,6 +19668,35 @@ This focus has led to a lack of facilities for composing specialized plots.
 This package aims to be a collection of mainly new statistics and geometries
 that fills this gap.")
     (license license:expat)))
+
+(define-public r-eulerr
+  (package
+    (name "r-eulerr")
+    (version "6.1.1")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "eulerr" version))
+              (sha256
+               (base32
+                "0lldp2319qd08y87f862gx8a77rvikcnkmdl9xgx4glynfs3hk19"))))
+    (properties `((upstream-name . "eulerr")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-gensa
+           r-polyclip
+           r-polylabelr
+           r-rcpp
+           r-rcpparmadillo))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/jolars/eulerr")
+    (synopsis "Area-proportional Euler and Venn diagrams with ellipses")
+    (description
+     "This package generates area-proportional Euler diagrams using
+numerical optimization.  An Euler diagram is a generalization of a
+Venn diagram, relaxing the criterion that all interactions need to be
+represented.  Diagrams may be fit with ellipses and circles via a wide
+range of inputs and can be visualized in numerous ways.")
+    (license license:gpl3)))
 
 (define-public r-europepmc
   (package
@@ -25572,6 +25695,33 @@ univariate time series forecasts including exponential smoothing via state
 space models and automatic ARIMA modelling.")
     (license license:gpl3)))
 
+(define-public r-forestplot
+  (package
+    (name "r-forestplot")
+    (version "3.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "forestplot" version))
+              (sha256
+               (base32
+                "0xk30mpb87sab2afnk2j474qjjf4j6x1ifh9j5n7w690f481iqqb"))))
+    (properties `((upstream-name . "forestplot")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-abind r-checkmate))
+    (native-inputs (list r-knitr))
+    (home-page "https://gforge.se/packages/")
+    (synopsis "Advanced forest plot using @code{grid} graphics")
+    (description
+     "This package provides a forest plot that allows for multiple
+confidence intervals per row, custom fonts for each text element,
+custom confidence intervals, text mixed with expressions, and more.
+The aim is to extend the use of forest plots beyond meta-analyses.
+This is a more general version of the original @code{rmeta} package's
+@code{forestplot()} function and relies heavily on the @code{grid}
+package.")
+    (license license:gpl2)))
+
 (define-public r-formattable
   (package
     (name "r-formattable")
@@ -29710,7 +29860,7 @@ sliding windows are to be created.")
     (build-system r-build-system)
     (propagated-inputs (list r-data-table r-jsonlite r-xml r-yaml))
     (home-page "https://renkun-ken.github.io/rlist/")
-    (synopsis "A Toolbox for Non-Tabular Data Manipulation")
+    (synopsis "Toolbox for Non-Tabular Data Manipulation")
     (description
      "This package provides a set of functions for data manipulation with
 list objects, including mapping, filtering, grouping, sorting, updating,
@@ -30576,14 +30726,14 @@ data to rasters.  It speeds up plotting of data with millions of points.")
 (define-public r-seuratobject
   (package
     (name "r-seuratobject")
-    (version "4.1.1")
+    (version "4.1.2")
     (source
      (origin
        (method url-fetch)
        (uri (cran-uri "SeuratObject" version))
        (sha256
         (base32
-         "1h8b90vg9ysczk3p625n07bfrhmph3cxv9ymh896hqr7rn2qbwd6"))))
+         "03bd4fazcafaf5mp37cf9w6bxm9zwrlxkrqm9bjdnwxm07slanba"))))
     (properties `((upstream-name . "SeuratObject")))
     (build-system r-build-system)
     (propagated-inputs
@@ -30609,13 +30759,13 @@ other R users.")
 (define-public r-seurat
   (package
     (name "r-seurat")
-    (version "4.1.1")
+    (version "4.2.0")
     (source (origin
               (method url-fetch)
               (uri (cran-uri "Seurat" version))
               (sha256
                (base32
-                "1klamxk6dj0jgpfwll5frcnj9h8lh8c5fxdn9ky7h8xk35lsj6i0"))))
+                "1vzb2k21nnzlky5dbf586wnixffz7wc9ncrpbgdw8md2kcmd58r2"))))
     (properties `((upstream-name . "Seurat")))
     (build-system r-build-system)
     (propagated-inputs

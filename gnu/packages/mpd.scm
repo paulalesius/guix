@@ -9,7 +9,7 @@
 ;;; Copyright © 2019 Evan Straw <evan.straw99@gmail.com>
 ;;; Copyright © 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2020 Lars-Dominik Braun <lars@6xq.net>
-;;; Copyright © 2020, 2021 Simon Streit <simon@netpanic.org>
+;;; Copyright © 2020–2022 Simon Streit <simon@netpanic.org>
 ;;; Copyright © 2021 Noah Evans <noah@nevans.me>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -63,6 +63,7 @@
   #:use-module (gnu packages glib)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages mp3)
+  #:use-module (gnu packages music)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages pcre)
   #:use-module (gnu packages pkg-config)
@@ -109,7 +110,7 @@ interfacing MPD in the C, C++ & Objective C languages.")
 (define-public mpd
   (package
     (name "mpd")
-    (version "0.23.8")
+    (version "0.23.10")
     (source (origin
               (method url-fetch)
               (uri
@@ -118,7 +119,7 @@ interfacing MPD in the C, C++ & Objective C languages.")
                               "/mpd-" version ".tar.xz"))
               (sha256
                (base32
-                "1kvq9shd6b7y02r386s1chjmvs44wij5bfzn6qgq46dmyfdmdfw6"))))
+                "1a764k504nh9vqmsd92qh8sg03fwns19d7mypm618j6c8bmqqp30"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -157,6 +158,7 @@ interfacing MPD in the C, C++ & Objective C languages.")
                   libsndfile
                   libvorbis
                   opus
+                  pipewire-0.3
                   pulseaudio
                   sqlite
                   zlib))
@@ -442,7 +444,7 @@ support")
 (define-public cantata
   (package
     (name "cantata")
-    (version "2.4.2")
+    (version "2.5.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/CDrummond/"
@@ -450,16 +452,18 @@ support")
                                   "cantata-" version ".tar.bz2"))
               (sha256
                (base32
-                "10pcrpmb4n1mkgr21xd580nrbmh57q7s72cbs1zay847hc65vliy"))))
+                "090ph8kb2vicjaajn64kmfppb90ix0pnxj525shglyjn7ymh0zpb"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f)) ; No test suite
     (native-inputs
      (list pkg-config))
     (inputs
-     (list eudev
+     (list avahi
+           eudev
            ffmpeg
            libcdio-paranoia
+           libmusicbrainz
            libebur128
            libmtp
            mpg123
@@ -480,42 +484,41 @@ artists along with albumart.")
 (define-public mcg
   (package
     (name "mcg")
-    (version "2.1.2")
-    (source
-     (origin
-       (method git-fetch)
-       (uri
-        (git-reference
-         (url "https://gitlab.com/coderkun/mcg")
-         (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "01iqxydssxyi4s644dwl64vm7xhn0szd99hdpywbipvb7kwp5196"))))
-    (build-system python-build-system)
-    (native-inputs
-     `(("glib:bin" ,glib "bin")
-       ("gobject-introspection" ,gobject-introspection)
-       ("pkg-config" ,pkg-config)))
-    (inputs
-     (list avahi dconf gsettings-desktop-schemas gtk+ python-pygobject))
+    (version "3.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.com/coderkun/mcg")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "087d3gvx8z1yj7rg9d9h1x02vkw57h4v6xf5pxqyhqyk2435kk17"))))
+    (build-system meson-build-system)
     (arguments
-     `(#:imported-modules ((guix build glib-or-gtk-build-system)
-                           ,@%python-build-system-modules)
-       #:modules ((guix build python-build-system)
-                  ((guix build glib-or-gtk-build-system) #:prefix glib-or-gtk:)
-                  (guix build utils))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'wrap-program
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((prog (string-append (assoc-ref outputs "out")
-                                        "/bin/mcg")))
-               (wrap-program prog
-                 `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH")))
-                 `("GI_TYPELIB_PATH" = (,(getenv "GI_TYPELIB_PATH")))))))
-         (add-after 'wrap-program 'glib-or-gtk-wrap
-           (assoc-ref glib-or-gtk:%standard-phases 'glib-or-gtk-wrap)))))
+     (list
+      #:glib-or-gtk? #t
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'wrap-program
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let ((prog (string-append (assoc-ref outputs "out")
+                                         "/bin/mcg")))
+                (wrap-program prog
+                  `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH")))
+                  `("GI_TYPELIB_PATH" = (,(getenv "GI_TYPELIB_PATH"))))))))))
+    (inputs (list avahi
+                  dconf
+                  gsettings-desktop-schemas
+                  gtk+
+                  python
+                  python-pygobject))
+    (native-inputs (list desktop-file-utils
+                         gettext-minimal
+                         `(,glib "bin")
+                         gobject-introspection
+                         `(,gtk+ "bin")
+                         pkg-config))
     (synopsis "Covergrid for the MPD")
     (description
      "mcg (CoverGrid) is a client for the Music Player Daemon (MPD), focusing

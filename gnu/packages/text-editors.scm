@@ -20,6 +20,7 @@
 ;;; Copyright © 2022 Luis Henrique Gomes Higino <luishenriquegh2701@gmail.com>
 ;;; Copyright © 2022 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;; Copyright © 2022 zamfofex <zamfofex@twdb.moe>
+;;; Copyright © 2022 jgart <jgart@dismail.de>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -65,6 +66,7 @@
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages graphics)
+  #:use-module (gnu packages gnome)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages haskell-xyz)
@@ -95,7 +97,7 @@
 (define-public vis
   (package
     (name "vis")
-    (version "0.7")                     ; also update the vis-test input
+    (version "0.8")                     ; also update the vis-test input
     (source
      (origin
        (method git-fetch)
@@ -103,7 +105,7 @@
              (url "https://git.sr.ht/~martanne/vis")
              (commit (string-append "v" version))))
        (sha256
-        (base32 "1g05ncsnk57kcqm9wsv6sz8b24kyzj8r5rfpa1wfwj8qkjzx3vji"))
+        (base32 "0ija192c9i13gbikm707jynf6my212i040ls0f8pgkbiyvls7xay"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (arguments
@@ -138,14 +140,8 @@
                (substitute* "test/core/ccan-config.c"
                  (("\"cc\"")
                   (format #f "\"~a\"" ,(cc-for-target))))
-
                ;; Use the ‘vis’ executable that we wrapped above.
-               (install-file (string-append out "/bin/vis") ".")
-
-               ;; XXX Delete 2 failing tests.  TODO: make them not fail. :-)
-               (for-each delete-file
-                         (find-files "test/vis/selections" "^complement"))
-               #t))))))
+               (install-file (string-append out "/bin/vis") ".")))))))
     (native-inputs
      `(("vis-test"
         ,(origin
@@ -899,6 +895,64 @@ Octave.  TeXmacs is completely extensible via Guile.")
     (license license:gpl3+)
     (home-page "https://www.texmacs.org/tmweb/home/welcome.en.html")))
 
+(define-public textpieces
+  (package
+    (name "textpieces")
+    (version "3.2.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/liferooter/textpieces")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "14zq2c7js80m4cq8wpdb3kyz5sw96l8znbz027w8s94gqhm632ff"))))
+    (arguments
+     '(;; The test suite fails to validate appstream file due to lack of
+       ;; network access
+       #:tests? #f
+       #:glib-or-gtk? #t))
+    (build-system meson-build-system)
+    (native-inputs
+     (list appstream-glib
+           blueprint-compiler
+           desktop-file-utils
+           gettext-minimal
+           `(,glib "bin")
+           `(,gtk "bin")
+           pkg-config
+           vala))
+    (inputs
+     (list gtk
+           gtksourceview
+           json-glib
+           libadwaita
+           libgee
+           python
+           python-pygobject
+           python-pyyaml))
+    (home-page "https://github.com/liferooter/textpieces")
+    (synopsis "Quick text processor")
+    (description
+     "Text Pieces is a tool for quick text transformations such as checksums,
+encoding, decoding, etc.
+
+The basic features of Text Pieces are:
+@itemize
+@item Base64 encoding and decoding
+@item SHA-1, SHA-2 and MD5 checksums
+@item Prettify and minify JSON
+@item Covert JSON to YAML and vice versa
+@item Count lines, symbols and words
+@item Escape and unescape string, URL and HTML
+@item Remove leading and trailing whitespaces
+@item Sort and reverse sort lines
+@item Reverse lines and whole text
+@item You can write your own scripts and create custom tools
+@end itemize")
+    (license license:gpl3)))
+
 (define-public scintilla
   (package
     (name "scintilla")
@@ -1077,7 +1131,8 @@ card.  It offers:
     (arguments
      `(#:tests? #f
        #:make-flags
-       (list "CC=gcc"
+       (list "STRIP=true"               ; don't
+             (string-append "CC=" ,(cc-for-target))
              (string-append "PREFIX=" (assoc-ref %outputs "out"))
              (string-append "LDFLAGS=-L" (assoc-ref %build-inputs "ncurses")
                             "/lib"))

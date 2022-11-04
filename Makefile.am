@@ -166,6 +166,7 @@ MODULES =					\
   guix/build-system/maven.scm			\
   guix/build-system/node.scm			\
   guix/build-system/perl.scm			\
+  guix/build-system/pyproject.scm		\
   guix/build-system/python.scm			\
   guix/build-system/renpy.scm			\
   guix/build-system/ocaml.scm			\
@@ -222,6 +223,7 @@ MODULES =					\
   guix/build/minetest-build-system.scm		\
   guix/build/node-build-system.scm		\
   guix/build/perl-build-system.scm		\
+  guix/build/pyproject-build-system.scm		\
   guix/build/python-build-system.scm		\
   guix/build/ocaml-build-system.scm		\
   guix/build/qt-build-system.scm		\
@@ -397,6 +399,10 @@ AUX_FILES =						\
   gnu/packages/aux-files/chromium/master-preferences.json		\
   gnu/packages/aux-files/emacs/guix-emacs.el		\
   gnu/packages/aux-files/guix.vim			\
+  gnu/packages/aux-files/linux-libre/6.0-arm.conf	\
+  gnu/packages/aux-files/linux-libre/6.0-arm64.conf	\
+  gnu/packages/aux-files/linux-libre/6.0-i686.conf	\
+  gnu/packages/aux-files/linux-libre/6.0-x86_64.conf	\
   gnu/packages/aux-files/linux-libre/5.19-arm.conf	\
   gnu/packages/aux-files/linux-libre/5.19-arm64.conf	\
   gnu/packages/aux-files/linux-libre/5.19-i686.conf	\

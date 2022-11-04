@@ -116,6 +116,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
@@ -2127,7 +2128,7 @@ is also scriptable and extensible via Guile.")
 (define-public libstrophe
   (package
     (name "libstrophe")
-    (version "0.12.0")
+    (version "0.12.2")
     (source
      (origin
        (method git-fetch)
@@ -2136,7 +2137,7 @@ is also scriptable and extensible via Guile.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1apply301lxyjax2677bd5mc0a3233nm5qb7fiqpawq2n7vh17v0"))))
+        (base32 "1ispq6sf7pq02irrqfga4i1xhrg1pg0f86qvvnix15clm8i1agld"))))
     (build-system gnu-build-system)
     (arguments
      (list #:configure-flags '(list "--disable-static")
@@ -2168,7 +2169,7 @@ are both supported).")
 (define-public profanity
   (package
     (name "profanity")
-    (version "0.12.1")
+    (version "0.13.0")
     (source
      (origin
        (method url-fetch)
@@ -2177,7 +2178,7 @@ are both supported).")
                        version ".tar.gz"))
        (sha256
         (base32
-         "0vihmlzxr6n3y6v0vdzzxh5p1i09p0hx6sd1b2pnpcgkgcg4hi73"))))
+         "14n45zwc6fxjargqhwqan8fyb7x0ql0hmw56rbjkjfkhpba2qmks"))))
     (build-system glib-or-gtk-build-system)
     (arguments
      `(#:configure-flags
@@ -2384,7 +2385,7 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
 (define-public nheko
   (package
     (name "nheko")
-    (version "0.10.1")
+    (version "0.10.2")
     (source
      (origin
        (method git-fetch)
@@ -2393,7 +2394,7 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0a3wvv7vzh60hvyzy6776v6wa9d6n020684dqbcl4dw608mf4ahk"))
+        (base32 "114hbv58209bwar6qjdjg2l1vh3xk20ppv6n301i7zkmwrf7q9w2"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -2403,7 +2404,6 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
       #:tests? #f                       ;no test target
       #:configure-flags
       #~(list "-DCMAKE_BUILD_TYPE=Release"
-              "-DBUILD_DOCS=ON"
               ;; Fix required because we are using a static SingleApplication
               "-DCMAKE_CXX_FLAGS= \"-DQAPPLICATION_CLASS=QApplication\" "
               ;; Compile Qml will make Nheko faster, but you will need to recompile
@@ -2469,7 +2469,7 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
            xcb-util-wm
            zlib))
     (native-inputs
-     (list asciidoc doxygen graphviz pkg-config qttools-5))
+     (list asciidoc pkg-config qttools-5))
     (home-page "https://github.com/Nheko-Reborn/nheko")
     (synopsis "Desktop client for Matrix using Qt and C++14")
     (description "@code{Nheko} want to provide a native desktop app for the
@@ -3461,7 +3461,7 @@ for notification of events.")
     (build-system python-build-system)
     (propagated-inputs
      (list python-pillow python-requests python-esprima python-pygobject gobject-introspection gtk+))
-    (synopsis "Show CAPTCHA without running proprietary code.")
+    (synopsis "Show CAPTCHA without running proprietary code")
     (description "This package shows CAPTCHA without running proprietary code.")
     (home-page "https://github.com/taylordotfish/librecaptcha")
     (license license:gpl3+)))

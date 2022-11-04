@@ -14,7 +14,7 @@
 ;;; Copyright © 2020 Jakub Kądziołka <kuba@kadziolka.net>
 ;;; Copyright © 2019, 2020 Adrian Malacoda <malacoda@monarch-pass.net>
 ;;; Copyright © 2020, 2021, 2022 Jonathan Brielmaier <jonathan.brielmaier@web.de>
-;;; Copyright © 2020 Marius Bakke <marius@gnu.org>
+;;; Copyright © 2020, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2021 Brice Waegeneire <brice@waegenei.re>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
@@ -98,16 +98,16 @@
 (define-public mozjs
   (package
     (name "mozjs")
-    (version "78.15.0")
+    (version "102.2.0")
     (source (origin
               (method url-fetch)
               ;; TODO: Switch to IceCat source once available on ftp.gnu.org.
-              (uri (string-append "https://archive.mozilla.org/pub/firefox"
+              (uri (string-append "https://ftp.mozilla.org/pub/firefox"
                                   "/releases/" version "esr/source/firefox-"
                                   version "esr.source.tar.xz"))
               (sha256
                (base32
-                "0l91cxdc5v9fps79ckb1kid4gw6v5qng1jd9zvaacwaiv628shx4"))))
+                "1zwpgis7py1bf8p88pz3mpai6a02qrdb8ww2fa9kxxdl9b8r2k81"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -128,10 +128,6 @@
          "--enable-hardening"
          "--enable-optimize"
          "--enable-release"
-         ;; FIXME: rust-simd is disabled otherwise the build fails with
-         ;; "error: `[u32; 64]` is forbidden as the type of a const generic
-         ;; parameter".
-         "--disable-rust-simd"
          "--enable-readline"
          "--enable-shared-js"
          "--with-system-icu"
@@ -153,7 +149,7 @@
                 (for-each generate-all-checksums
                           '("js" "third_party/rust")))))
           (replace 'configure
-            (lambda* (#:key inputs configure-flags #:allow-other-keys)
+            (lambda* (#:key configure-flags #:allow-other-keys)
               ;; The configure script does not accept environment variables as
               ;; arguments.  It also must be run from a different directory,
               ;; but not the root directory either.
@@ -162,43 +158,11 @@
               (setenv "SHELL" (which "sh"))
               (setenv "CONFIG_SHELL" (which "sh"))
               (setenv "AUTOCONF" (which "autoconf"))
-              (apply invoke "../js/src/configure"
-                     (cons (string-append "--prefix=" #$output)
-                           configure-flags))))
-          (add-after 'unpack 'adjust-for-icu-68
-            (lambda _
-              (with-directory-excursion "js/src/tests"
-                ;; The test suite expects a lightly patched ICU 67.  Since
-                ;; Guix is about to switch to ICU 68, massage the tests to
-                ;; work with that instead of patching ICU.  Try removing this
-                ;; phase for newer versions of mozjs.
-
-                ;; These tests look up locale names and expects to get
-                ;; "GB" instead of "UK".
-                (substitute* "non262/Intl/DisplayNames/language.js"
-                  (("Traditionell, GB")
-                   "Traditionell, UK"))
-                (substitute* "non262/Intl/DisplayNames/region.js"
-                  (("\"GB\": \"GB\"")
-                   "\"GB\": \"UK\""))
-
-                ;; XXX: Some localized time formats have changed, and
-                ;; substitution fails for accented characters, even though
-                ;; it works in the REPL(?).  Just delete these for now.
-                (delete-file "non262/Intl/Date/toLocaleString_timeZone.js")
-                (delete-file "non262/Intl/Date/toLocaleDateString_timeZone.js")
-
-                ;; Similarly, these get an unexpected "A" suffix when looking
-                ;; up a time in the "ar-MA-u-ca-islamicc" locale, which is
-                ;; tricky to substitute.
-                (delete-file "non262/Intl/DateTimeFormat/format_timeZone.js")
-                (delete-file "non262/Intl/DateTimeFormat/format.js")
-
-                ;; This file compares a generated list of ICU locale names
-                ;; with actual lookups.  Some have changed slightly, i.e.
-                ;; daf-Latn-ZZ -> daf-Latn-CI, so drop it for simplicity.
-                (delete-file "non262/Intl/Locale/likely-subtags-generated.js"))))
-          (add-before 'check 'pre-check
+              (apply invoke "python" "../configure.py"
+                     "--enable-project=js"
+                     (string-append "--prefix=" #$output)
+                     configure-flags)))
+          (add-before 'check 'adjust-tests
             (lambda _
               (with-directory-excursion "../js/src/tests"
                 (substitute* "shell/os.js"
@@ -206,35 +170,44 @@
                   ((".*killed process should not have exitStatus.*")
                    ""))
 
-                ;; XXX: Delete all tests that test time zone functionality,
-                ;; because the test suite uses /etc/localtime to figure out
-                ;; the offset from the hardware clock, which does not work
-                ;; in the build container.  See <tests/non262/Date/shell.js>.
-                (delete-file-recursively "non262/Date")
-                (delete-file "non262/Intl/DateTimeFormat/tz-environment-variable.js")
+                ;; The test suite expects a lightly patched ICU.  Disable tests
+                ;; that do not work with the system version.  See
+                ;; "intl/icu-patches" for clues.
 
-                (setenv "JSTESTS_EXTRA_ARGS"
-                        (string-join
-                         (list
-                          ;; Do not run tests marked as "random".
-                          "--exclude-random"
-                          ;; Exclude web platform tests.
-                          "--wpt=disabled"
-                          ;; Respect the daemons configured number of jobs.
-                          (string-append "--worker-count="
-                                         (number->string (parallel-job-count))))))))))))
+                ;; See <https://unicode-org.atlassian.net/browse/ICU-20992> and
+                ;; <https://bugzilla.mozilla.org/show_bug.cgi?id=1636984> and
+                ;; related patch for why this is failing.
+                (delete-file "non262/Intl/DateTimeFormat/\
+fractional-second-digits-append-item.js")
+                ;; FIXME: got "0 \u251CAM/PM: noon\u2524", expected "0 (AM/PM: noon)"
+                (delete-file "non262/Intl/DateTimeFormat/day-period-hour-cycle.js")
+                ;; FIXME: got "en-US-posix", expected "en-US-POSIX".
+                (delete-file "non262/Intl/available-locales-supported.js")
+                ;; FIXME: got "en-US", expected "en-US-POSIX"
+                (delete-file "non262/Intl/available-locales-resolved.js"))))
+          (add-before 'check 'pre-check
+            (lambda _
+              (setenv "JSTESTS_EXTRA_ARGS"
+                      (string-join
+                       (list
+                        ;; Do not run tests marked as "random".
+                        "--exclude-random"
+                        ;; Exclude web platform tests.
+                        "--wpt=disabled"
+                        ;; Respect the daemons configured number of jobs.
+                        (string-append "--worker-count="
+                                       (number->string (parallel-job-count)))))))))))
     (native-inputs
-     (list autoconf-2.13
-           automake
-           ;; TODO(staging): Use the default LLVM in the next rebuild cycle.
-           llvm-9                       ;for llvm-objdump
+     (list autoconf
+           llvm                         ;for llvm-objdump
+           m4
            perl
            pkg-config
-           python-3
+           python-wrapper
            rust
            `(,rust "cargo")))
     (inputs
-     (list icu4c readline zlib))
+     (list icu4c-71 readline zlib))
     (propagated-inputs
      (list nspr))                ; in the Requires.private field of mozjs-*.pc
     (home-page
@@ -260,7 +233,39 @@ in C/C++.")
      (substitute-keyword-arguments (package-arguments mozjs)
        ((#:phases phases)
         #~(modify-phases #$phases
-            (delete 'adjust-for-icu-68)
+            (add-before 'check 'disable-timezone-tests
+              (lambda _
+                (with-directory-excursion "../js/src/tests"
+                  ;; FIXME: Assertion failed: got "2021a", expected "2021a3"?
+                  (delete-file "non262/Intl/DateTimeFormat/timeZone_version.js")
+                  ;; XXX: Delete all tests that test time zone functionality,
+                  ;; because the test suite uses /etc/localtime to figure out
+                  ;; the offset from the hardware clock, which does not work
+                  ;; in the build container.  See <tests/non262/Date/shell.js>.
+                  (delete-file-recursively "non262/Date")
+                  (delete-file
+                   "non262/Intl/DateTimeFormat/tz-environment-variable.js"))))))))
+    (inputs (modify-inputs (package-inputs mozjs)
+              (replace "icu4c" icu4c)))))
+
+(define-public mozjs-78
+  (package
+    (inherit mozjs)
+    (name "mozjs")
+    (version "78.15.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://archive.mozilla.org/pub/firefox"
+                                  "/releases/" version "esr/source/firefox-"
+                                  version "esr.source.tar.xz"))
+              (sha256
+               (base32
+                "0l91cxdc5v9fps79ckb1kid4gw6v5qng1jd9zvaacwaiv628shx4"))))
+    (build-system gnu-build-system)
+    (arguments
+     (substitute-keyword-arguments (package-arguments mozjs)
+       ((#:phases phases)
+        #~(modify-phases #$phases
             (replace 'configure
               (lambda* (#:key configure-flags #:allow-other-keys)
                 ;; The configure script does not accept environment variables as
@@ -271,11 +276,43 @@ in C/C++.")
                 (setenv "SHELL" (which "sh"))
                 (setenv "CONFIG_SHELL" (which "sh"))
                 (setenv "AUTOCONF" (which "autoconf"))
-                (apply invoke "python" "../configure.py"
-                       "--enable-project=js"
-                       (string-append "--prefix=" #$output)
-                       configure-flags)))
-            (add-before 'check 'adjust-tests
+                (apply invoke "../js/src/configure"
+                       (cons (string-append "--prefix=" #$output)
+                             configure-flags))))
+            (replace 'adjust-tests
+              (lambda _
+                (with-directory-excursion "../js/src/tests"
+                  ;; The test suite expects a lightly patched ICU 67.  Since
+                  ;; Guix is about to switch to ICU 68, massage the tests to
+                  ;; work with that instead of patching ICU.  Try removing this
+                  ;; phase for newer versions of mozjs.
+
+                  ;; These tests look up locale names and expects to get
+                  ;; "GB" instead of "UK".
+                  (substitute* "non262/Intl/DisplayNames/language.js"
+                    (("Traditionell, GB")
+                     "Traditionell, UK"))
+                  (substitute* "non262/Intl/DisplayNames/region.js"
+                    (("\"GB\": \"GB\"")
+                     "\"GB\": \"UK\""))
+
+                  ;; XXX: Some localized time formats have changed, and
+                  ;; substitution fails for accented characters, even though
+                  ;; it works in the REPL(?).  Just delete these for now.
+                  (delete-file "non262/Intl/Date/toLocaleString_timeZone.js")
+                  (delete-file "non262/Intl/Date/toLocaleDateString_timeZone.js")
+
+                  ;; Similarly, these get an unexpected "A" suffix when looking
+                  ;; up a time in the "ar-MA-u-ca-islamicc" locale, which is
+                  ;; tricky to substitute.
+                  (delete-file "non262/Intl/DateTimeFormat/format_timeZone.js")
+                  (delete-file "non262/Intl/DateTimeFormat/format.js")
+
+                  ;; This file compares a generated list of ICU locale names
+                  ;; with actual lookups.  Some have changed slightly, i.e.
+                  ;; daf-Latn-ZZ -> daf-Latn-CI, so drop it for simplicity.
+                  (delete-file "non262/Intl/Locale/likely-subtags-generated.js"))))
+            (replace 'pre-check
               (lambda _
                 (with-directory-excursion "../js/src/tests"
                   (substitute* "shell/os.js"
@@ -283,69 +320,35 @@ in C/C++.")
                     ((".*killed process should not have exitStatus.*")
                      ""))
 
-                  ;; The test suite expects a lightly patched ICU.  Disable tests
-                  ;; that do not work with the system version.  See
-                  ;; "intl/icu-patches" for clues.
-
-                  ;; See <https://unicode-org.atlassian.net/browse/ICU-20992> and
-                  ;; <https://bugzilla.mozilla.org/show_bug.cgi?id=1636984> and
-                  ;; related patch for why this is failing.
-                  (delete-file "non262/Intl/DateTimeFormat/\
-fractional-second-digits-append-item.js")
-                  ;; FIXME: got "0 \u251CAM/PM: noon\u2524", expected "0 (AM/PM: noon)"
-                  (delete-file "non262/Intl/DateTimeFormat/day-period-hour-cycle.js")
-                  ;; FIXME: got "en-US-posix", expected "en-US-POSIX".
-                  (delete-file "non262/Intl/available-locales-supported.js")
-                  ;; FIXME: got "en-US", expected "en-US-POSIX"
-                  (delete-file "non262/Intl/available-locales-resolved.js")
-
-                  ;; FIXME: Assertion failed: got "2021a", expected "2021a3"?
-                  (delete-file "non262/Intl/DateTimeFormat/timeZone_version.js")
                   ;; XXX: Delete all tests that test time zone functionality,
                   ;; because the test suite uses /etc/localtime to figure out
                   ;; the offset from the hardware clock, which does not work
                   ;; in the build container.  See <tests/non262/Date/shell.js>.
                   (delete-file-recursively "non262/Date")
-                  (delete-file
-                   "non262/Intl/DateTimeFormat/tz-environment-variable.js"))))
-            (replace 'pre-check
-              (lambda _
-                (setenv "JSTESTS_EXTRA_ARGS"
-                        (string-join
-                         (list
-                          ;; Do not run tests marked as "random".
-                          "--exclude-random"
-                          ;; Exclude web platform tests.
-                          "--wpt=disabled"
-                          ;; Respect the daemons configured number of jobs.
-                          (string-append "--worker-count="
-                                         (number->string (parallel-job-count))))))))))))
-    (native-inputs (modify-inputs (package-native-inputs mozjs)
-                     (replace "autoconf" autoconf)
-                     (replace "llvm" llvm)
-                     (replace "python" python-wrapper)
-                     (append m4)))))
+                  (delete-file "non262/Intl/DateTimeFormat/tz-environment-variable.js")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Temporary packaging of rust-1.59, pending inclusion in (gnu packages rust)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define rust-1.58-promise
-  (delay
-    (let ((rust-bootstrapped-package
-           (@@ (gnu packages rust)
-               rust-bootstrapped-package)))
-      (rust-bootstrapped-package
-       rust "1.58.1" "1iq7kj16qfpkx8gvw50d8rf7glbm6s0pj2y1qkrz7mi56vfsyfd8"))))
-
-(define rust-1.59-promise
-  (delay
-    (let ((rust-bootstrapped-package
-           (@@ (gnu packages rust)
-               rust-bootstrapped-package)))
-      (rust-bootstrapped-package
-       (force rust-1.58-promise)
-       "1.59.0" "1yc5bwcbmbwyvpfq7zvra78l0r8y3lbv60kbr62fzz2vx2pfxj57"))))
+                  (setenv "JSTESTS_EXTRA_ARGS"
+                          (string-join
+                           (list
+                            ;; Do not run tests marked as "random".
+                            "--exclude-random"
+                            ;; Exclude web platform tests.
+                            "--wpt=disabled"
+                            ;; Respect the daemons configured number of jobs.
+                            (string-append "--worker-count="
+                                           (number->string
+                                            (parallel-job-count)))))))))))))
+    (native-inputs
+     (list autoconf-2.13
+           automake
+           llvm                         ;for llvm-objdump
+           perl
+           pkg-config
+           python-3
+           rust
+           `(,rust "cargo")))
+    (inputs
+     (list icu4c readline zlib))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Temporary packaging of rust-cbindgen-0.23 and its dependencies
@@ -618,8 +621,8 @@ fractional-second-digits-append-item.js")
 ;; XXXX: Workaround 'snippet' limitations.
 (define computed-origin-method (@@ (guix packages) computed-origin-method))
 
-(define %icecat-version "102.3.0-guix0-preview1")
-(define %icecat-build-id "20220920000000") ;must be of the form YYYYMMDDhhmmss
+(define %icecat-version "102.4.0-guix0-preview1")
+(define %icecat-build-id "20221019000000") ;must be of the form YYYYMMDDhhmmss
 
 ;; 'icecat-source' is a "computed" origin that generates an IceCat tarball
 ;; from the corresponding upstream Firefox ESR tarball, using the 'makeicecat'
@@ -641,11 +644,11 @@ fractional-second-digits-append-item.js")
                   "firefox-" upstream-firefox-version ".source.tar.xz"))
             (sha256
              (base32
-              "0nmm861p4zakdvi9lj0ac8dkf9v17250rzcmrx1f6r7rvjv273ih"))))
+              "0klh3lbm0zdmv90kmmpkzgn15pfjibr7zsjy3kvbzpql97fhv7z7"))))
 
-         (upstream-icecat-base-version "102.3.0") ; maybe older than base-version
+         (upstream-icecat-base-version "102.4.0") ; maybe older than base-version
          ;;(gnuzilla-commit (string-append "v" upstream-icecat-base-version))
-         (gnuzilla-commit "f82b5b40943fe7723486fadccb48d454ee3e9dad")
+         (gnuzilla-commit "8f1aa117ddca6e8cd0114265fb4ca9b5a927565a")
          (gnuzilla-source
           (origin
             (method git-fetch)
@@ -657,7 +660,7 @@ fractional-second-digits-append-item.js")
                                       (string-take gnuzilla-commit 8)))
             (sha256
              (base32
-              "1d7lfvwi9mvaxcfiqcgch3idhyxpdf56r9b71r54yiifv6xlr7x9"))))
+              "0ryrn8ivm763swd0qbqhlgdwc2dj4xjd81d9i2r6hb7bsb4ky3y5"))))
 
          ;; 'search-patch' returns either a valid file name or #f, so wrap it
          ;; in 'assume-valid-file-name' to avoid 'local-file' warnings.
@@ -863,8 +866,8 @@ fractional-second-digits-append-item.js")
       ;; ("icecat-use-system-media-libs.patch"
       ;;  ,(search-patch "icecat-use-system-media-libs.patch"))
       ;; TODO: Change the following lines to use 'rust' when it's >= 1.59.
-      (force rust-1.59-promise)
-      `(,(force rust-1.59-promise) "cargo")
+      rust
+      `(,rust "cargo")
       (force rust-cbindgen-0.23-promise)
       llvm
       clang
@@ -1239,225 +1242,238 @@ standards of the IceCat project.")
        (cpe-name . "firefox_esr")
        (cpe-version . ,(first (string-split version #\-)))))))
 
-;; Update this together with icecat!
-(define %icedove-build-id "20220928000000") ;must be of the form YYYYMMDDhhmmss
+(define %icedove-build-id "20221026000000") ;must be of the form YYYYMMDDhhmmss
+(define %icedove-version "102.4.1")
+
+;; Provides the "comm" folder which is inserted into the icecat source.
+;; Avoids the duplication of Icecat's source tarball.
+(define thunderbird-source
+  (origin
+    (method hg-fetch)
+    (uri (hg-reference
+          (url "https://hg.mozilla.org/releases/comm-esr102")
+          (changeset "e572bc3cfa07492189aec439e98378b0811ae3bb")))
+    (file-name (string-append "thunderbird-" %icedove-version "-checkout"))
+    (sha256
+     (base32
+      "1qmf8j9yrc815h7j06m3id6h7cck6d5b0rhzr82wgmwf1xnngxl7"))))
+
 (define-public icedove
   (package
     (name "icedove")
-    (version "102.3.1")
+    (version %icedove-version)
     (source icecat-source)
     (properties
      `((cpe-name . "thunderbird_esr")))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f                              ; no check target
-       #:imported-modules ,%cargo-utils-modules ;for `generate-all-checksums'
-       #:modules ((guix build utils)            ;find-files
+     (list
+      #:tests? #f                             ;no check target
+      #:imported-modules %cargo-utils-modules ;for `generate-all-checksums'
+      #:modules `((guix build utils)          ;find-files
                   (sxml simple)
                   (ice-9 regex)
                   ,@%gnu-build-system-modules)
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'prepare-thunderbird-sources
-           (lambda* (#:key inputs #:allow-other-keys)
-             (mkdir "comm")
-             (copy-recursively (assoc-ref inputs "thunderbird-sources")
-                               "comm")
-             (delete-file "sourcestamp.txt")))
-         (add-after 'patch-source-shebangs 'patch-cargo-checksums
-           (lambda _
-             (use-modules (guix build cargo-utils))
-             (let ((null-hash "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
-               (for-each (lambda (file)
-                           (format #t "patching checksums in ~a~%" file)
-                           (substitute* file
-                             (("^checksum = \".*\"")
-                              (string-append "checksum = \"" null-hash "\""))))
-                         (find-files "." "Cargo.lock$"))
-               (for-each generate-all-checksums
-                         '("third_party/rust"
-                           "toolkit/library/rust")))))
-         (add-after 'patch-cargo-checksums 'remove-cargo-frozen-flag
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'prepare-thunderbird-sources
+            (lambda _
+              (mkdir "comm")
+              (copy-recursively #$thunderbird-source "comm")
+              (delete-file "sourcestamp.txt")))
+          (add-after 'patch-source-shebangs 'patch-cargo-checksums
+            (lambda _
+              (use-modules (guix build cargo-utils))
+              (let ((null-hash "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934\
+ca495991b7852b855"))
+                (for-each (lambda (file)
+                            (format #t "patching checksums in ~a~%" file)
+                            (substitute* file
+                              (("^checksum = \".*\"")
+                               (string-append "checksum = \"" null-hash "\""))))
+                          (find-files "." "Cargo.lock$"))
+                (for-each generate-all-checksums
+                          '("third_party/rust"
+                            "toolkit/library/rust")))))
+          (add-after 'patch-cargo-checksums 'remove-cargo-frozen-flag
             (lambda _
               ;; Remove --frozen flag from cargo invokation, otherwise it'll
               ;; complain that it's not able to change Cargo.lock.
               ;; https://bugzilla.mozilla.org/show_bug.cgi?id=1726373
               (substitute* "build/RunCbindgen.py"
                 (("\"--frozen\",") ""))))
-         ;; Fixes issue where each installation directory generates its own profile.
-         ;; See e.g. https://trac.torproject.org/projects/tor/ticket/31457
-         (add-after 'patch-source-shebangs 'fix-profile-setting
-           (lambda _
-             (substitute* "comm/mail/moz.configure"
-               (("MOZ_DEDICATED_PROFILES, True")
-                "MOZ_DEDICATED_PROFILES, False"))))
-         (add-after 'prepare-thunderbird-sources 'rename-to-icedove
-           (lambda _
-             (substitute* "comm/mail/confvars.sh"
-               (("MOZ_APP_NAME=thunderbird")
-                "MOZ_APP_NAME=icedove")
-               (("MOZ_UPDATER=1")
-                "MOZ_UPDATER=0"))
-             ;; Remove branding to comply with Mozilla's trademark policy
-             (with-directory-excursion "comm/mail/branding/nightly"
-               (delete-file "content/about-wordmark.svg")
-               (call-with-output-file "content/about-wordmark.svg"
-                 (lambda (port)
-                   (sxml->xml '(svg (@ (xmlns "http://www.w3.org/2000/svg")
-                                       (viewBox "0 0 789.1 90.78")
-                                       (width "333")
-                                       (height "48")
-                                       (fill "#fff"))
-                                    (text (@ (x "400") (y "70")
-                                             (text-anchor "middle")
-                                             (font-size "90"))
-                                          "Icedove Daily"))
-                              port)))
-               (substitute* '("locales/en-US/brand.properties"
-                              "locales/en-US/brand.ftl"
-                              "locales/en-US/brand.dtd"
-                              "configure.sh")
-                 (("Thunderbird") "Icedove")
-                 (("mozilla.org") "guix.gnu.org")))
-             ;; Remove other mentions of Thunderbird in user-visible text.
-             (with-directory-excursion "comm/mail/base/content"
-               (substitute* '("overrides/app-license-name.html")
-                 (("Thunderbird") "Icedove")))
-             (with-directory-excursion "comm/mail/components/"
-               (substitute* '("MailGlue.jsm"
-                              "extensions/schemas/addressBook.json"
-                              "extensions/schemas/tabs.json"
-                              "extensions/schemas/cloudFile.json"
-                              "extensions/schemas/chrome_settings_overrides.json"
-                              "extensions/schemas/windows.json"
-                              "extensions/parent/ext-mail.js"
-                              "im/messages/mail/Info.plist"
-                              "enterprisepolicies/moz.build"
-                              "enterprisepolicies/helpers/moz.build"
-                              "enterprisepolicies/schemas/moz.build")
-                 (("Thunderbird") "Icedove")))
-             (substitute* '("comm/mailnews/base/prefs/content/accountUtils.js"
-                            "comm/mail/base/content/customizeToolbar.js"
-                            "comm/suite/components/customizeToolbar.js")
-               (("AppConstants.MOZ_APP_NAME (.)= \"thunderbird" _ e)
-                (format #f "AppConstants.MOZ_APP_NAME ~a= \"icedove" e)))
+          ;; Fixes issue where each installation directory generates its own
+          ;; profile (see:
+          ;; https://trac.torproject.org/projects/tor/ticket/31457).
+          (add-after 'patch-source-shebangs 'fix-profile-setting
+            (lambda _
+              (substitute* "comm/mail/moz.configure"
+                (("MOZ_DEDICATED_PROFILES, True")
+                 "MOZ_DEDICATED_PROFILES, False"))))
+          (add-after 'prepare-thunderbird-sources 'rename-to-icedove
+            (lambda _
+              (substitute* "comm/mail/confvars.sh"
+                (("MOZ_APP_NAME=thunderbird")
+                 "MOZ_APP_NAME=icedove")
+                (("MOZ_UPDATER=1")
+                 "MOZ_UPDATER=0"))
+              ;; Remove branding to comply with Mozilla's trademark policy
+              (with-directory-excursion "comm/mail/branding/nightly"
+                (delete-file "content/about-wordmark.svg")
+                (call-with-output-file "content/about-wordmark.svg"
+                  (lambda (port)
+                    (sxml->xml '(svg (@ (xmlns "http://www.w3.org/2000/svg")
+                                        (viewBox "0 0 789.1 90.78")
+                                        (width "333")
+                                        (height "48")
+                                        (fill "#fff"))
+                                     (text (@ (x "400") (y "70")
+                                              (text-anchor "middle")
+                                              (font-size "90"))
+                                           "Icedove Daily"))
+                               port)))
+                (substitute* '("locales/en-US/brand.properties"
+                               "locales/en-US/brand.ftl"
+                               "locales/en-US/brand.dtd"
+                               "configure.sh")
+                  (("Thunderbird") "Icedove")
+                  (("mozilla.org") "guix.gnu.org")))
+              ;; Remove other mentions of Thunderbird in user-visible text.
+              (with-directory-excursion "comm/mail/base/content"
+                (substitute* '("overrides/app-license-name.html")
+                  (("Thunderbird") "Icedove")))
+              (with-directory-excursion "comm/mail/components/"
+                (substitute* '("MailGlue.jsm"
+                               "extensions/schemas/addressBook.json"
+                               "extensions/schemas/tabs.json"
+                               "extensions/schemas/cloudFile.json"
+                               "extensions/schemas/chrome_settings_overrides.json"
+                               "extensions/schemas/windows.json"
+                               "extensions/parent/ext-mail.js"
+                               "im/messages/mail/Info.plist"
+                               "enterprisepolicies/moz.build"
+                               "enterprisepolicies/helpers/moz.build"
+                               "enterprisepolicies/schemas/moz.build")
+                  (("Thunderbird") "Icedove")))
+              (substitute* '("comm/mailnews/base/prefs/content/accountUtils.js"
+                             "comm/mail/base/content/customizeToolbar.js"
+                             "comm/suite/components/customizeToolbar.js")
+                (("AppConstants.MOZ_APP_NAME (.)= \"thunderbird" _ e)
+                 (format #f "AppConstants.MOZ_APP_NAME ~a= \"icedove" e)))
 
-             ;; Override addon URLs and settings
-             (substitute* "comm/mail/app/profile/all-thunderbird.js"
-               (("(pref\\(\"extensions.webservice.discoverURL\").*" _ m)
-                (string-append m ", \"https://directory.fsf.org/wiki/Icedove\");"))
-               (("(pref\\(\"extensions.getAddons.search.url\").*" _ m)
-                (string-append m ", \"https://guix.gnu.org/packages\");"))
-               (("(pref\\(\"extensions.update.enabled\").*" _ m)
-                (string-append m ", false);"))
-               (("(pref\\(\"extensions.systemAddon.update.enabled\").*" _ m)
-                (string-append m ", false);"))
-               (("(pref\\(\"lightweightThemes.update.enabled\").*" _ m)
-                (string-append m ", false);")))))
-         (add-after 'build 'neutralize-store-references
-           (lambda _
-             ;; Mangle the store references to compilers & other build tools in
-             ;; about:buildconfig, reducing Icedove's closure significant.
-             ;; The resulting files are saved in lib/thunderbird/omni.ja
-             (substitute*
-                 ;; Use find because the path "obj-x86_64-pc-linux-gnu" contains
-                 ;; the architecture and the system -> more complicated.
-                 (find-files "." "buildconfig.html")
-               (((format #f "(~a/)([0-9a-df-np-sv-z]{32})"
-                         (regexp-quote (%store-directory)))
-                 _ store hash)
-                (string-append store
-                               (string-take hash 8)
-                               "<!-- Guix: not a runtime dependency -->"
-                               (string-drop hash 8))))))
-         (delete 'bootstrap)
-         (replace 'configure
-           (lambda* (#:key inputs outputs configure-flags #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bash (which "bash"))
-                    (abs-srcdir (getcwd))
-                    (srcdir (string-append "../" (basename abs-srcdir)))
-                    (flags `(,(string-append "--prefix=" out)
-                             ,@configure-flags))
-                    (mozconfig (string-append (getcwd) "/.mozconfig")))
-               (setenv "SHELL" bash)
-               (setenv "CONFIG_SHELL" bash)
-               (setenv "QA_CONFIGURE_OPTIONS" ".*")
-               (setenv "MOZBUILD_STATE_PATH"
-                       (string-append (getcwd) "/mach_state"))
-               (setenv "MOZCONFIG"
-                       (string-append (getcwd) "/.mozconfig"))
+              ;; Override addon URLs and settings
+              (substitute* "comm/mail/app/profile/all-thunderbird.js"
+                (("(pref\\(\"extensions.webservice.discoverURL\").*" _ m)
+                 (string-append m ", \"https://directory.fsf.org/wiki/Icedove\");"))
+                (("(pref\\(\"extensions.getAddons.search.url\").*" _ m)
+                 (string-append m ", \"https://guix.gnu.org/packages\");"))
+                (("(pref\\(\"extensions.update.enabled\").*" _ m)
+                 (string-append m ", false);"))
+                (("(pref\\(\"extensions.systemAddon.update.enabled\").*" _ m)
+                 (string-append m ", false);"))
+                (("(pref\\(\"lightweightThemes.update.enabled\").*" _ m)
+                 (string-append m ", false);")))))
+          (add-after 'build 'neutralize-store-references
+            (lambda _
+              ;; Mangle the store references to compilers & other build tools in
+              ;; about:buildconfig, reducing Icedove's closure significant.
+              ;; The resulting files are saved in lib/thunderbird/omni.ja
+              (substitute*
+                  ;; Use find because the path "obj-x86_64-pc-linux-gnu" contains
+                  ;; the architecture and the system -> more complicated.
+                  (find-files "." "buildconfig.html")
+                (((format #f "(~a/)([0-9a-df-np-sv-z]{32})"
+                          (regexp-quote (%store-directory)))
+                  _ store hash)
+                 (string-append store
+                                (string-take hash 8)
+                                "<!-- Guix: not a runtime dependency -->"
+                                (string-drop hash 8))))))
+          (delete 'bootstrap)
+          (replace 'configure
+            (lambda* (#:key inputs configure-flags #:allow-other-keys)
+              (let* ((bash (which "bash"))
+                     (abs-srcdir (getcwd))
+                     (srcdir (string-append "../" (basename abs-srcdir)))
+                     (flags `(,(string-append "--prefix=" #$output)
+                              ,@configure-flags))
+                     (mozconfig (string-append (getcwd) "/.mozconfig")))
+                (setenv "SHELL" bash)
+                (setenv "CONFIG_SHELL" bash)
+                (setenv "QA_CONFIGURE_OPTIONS" ".*")
+                (setenv "MOZBUILD_STATE_PATH"
+                        (string-append (getcwd) "/mach_state"))
+                (setenv "MOZCONFIG"
+                        (string-append (getcwd) "/.mozconfig"))
 
-               (setenv "AR" "llvm-ar")
-               (setenv "NM" "llvm-nm")
-               (setenv "CC" "clang")
-               (setenv "CXX" "clang++")
+                (setenv "AR" "llvm-ar")
+                (setenv "NM" "llvm-nm")
+                (setenv "CC" "clang")
+                (setenv "CXX" "clang++")
 
-               (setenv "MOZ_NOSPAM" "1")
-               (setenv "MACH_USE_SYSTEM_PYTHON" "1")
-               (setenv "PYTHON"
-                       (search-input-file inputs "/bin/python"))
-               (setenv "MOZ_BUILD_DATE" ,%icedove-build-id) ; avoid timestamp
-               (setenv "MOZ_APP_NAME" "icedove")
-               (setenv "LDFLAGS" (string-append "-Wl,-rpath="
-                                                (assoc-ref outputs "out")
-                                                "/lib/icedove"))
-               (mkdir-p (string-append (getcwd) "/builddir"))
-               (with-output-to-file mozconfig
-                 (lambda ()
-                   (display
-                    (string-append
-                     "ac_add_options --disable-crashreporter\n"
-                     "ac_add_options --disable-debug\n"
-                     "ac_add_options --disable-debug-symbols\n"
-                     "ac_add_options --disable-elf-hack\n"
-                     "ac_add_options --disable-jit\n"
-                     "ac_add_options --disable-necko-wifi\n"
-                     "ac_add_options --disable-official-branding\n"
-                     "ac_add_options --disable-tests\n"
-                     "ac_add_options --disable-updater\n"
-                     "ac_add_options --disable-webrtc\n"
-                     "ac_add_options --enable-application=comm/mail\n"
-                     "ac_add_options --enable-default-toolkit=\"cairo-gtk3\"\n"
-                     "ac_add_options --enable-optimize\n"
-                     "ac_add_options --enable-pulseaudio\n"
-                     "ac_add_options --enable-release\n"
-                     "ac_add_options --enable-strip\n"
-                     "ac_add_options --enable-system-ffi\n"
-                     "ac_add_options --enable-system-pixman\n"
-                     "ac_add_options --prefix=" out "\n"
-                     "ac_add_options --with-clang-path=" (assoc-ref %build-inputs "clang") "/bin/clang\n"
-                     "ac_add_options --with-distribution-id=org.gnu\n"
-                     "ac_add_options --with-libclang-path=" (assoc-ref %build-inputs "clang") "/lib\n"
-                     "ac_add_options --with-system-bz2\n"
-                     "ac_add_options --with-system-icu\n"
-                     "ac_add_options --with-system-jpeg\n"
-                     "ac_add_options --with-system-libevent\n"
-                     "ac_add_options --with-system-nspr\n"
-                     ;"ac_add_options --with-system-nss\n"
-                     "ac_add_options --with-system-zlib\n"
-                     "ac_add_options --without-wasm-sandboxed-libraries\n"
-                     "mk_add_options MOZ_MAKE_FLAGS=-j"
-                     (number->string (parallel-job-count)) "\n"))))
-               (display (getcwd))
-               (newline)
-               (display "mach configure")
-               (invoke "./mach" "configure"))))
-         (replace 'build
-           (lambda _ (invoke "./mach" "build")))
-         (replace 'install
-           (lambda _ (invoke "./mach" "install")))
-         ;; Thunderbird doesn't provide any .desktop file.
-         ;; See https://bugzilla.mozilla.org/show_bug.cgi?id=1637575
-         (add-after 'install 'install-desktop-file
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (apps (string-append out "/share/applications")))
-               (mkdir-p apps)
-               (with-output-to-file (string-append apps "/icedove.desktop")
-                 (lambda _
-                   (format #t
-                           "[Desktop Entry]~@
+                (setenv "MOZ_NOSPAM" "1")
+                (setenv "MACH_USE_SYSTEM_PYTHON" "1")
+                (setenv "PYTHON"
+                        (search-input-file inputs "/bin/python"))
+                (setenv "MOZ_BUILD_DATE" #$%icedove-build-id) ; avoid timestamp
+                (setenv "MOZ_APP_NAME" "icedove")
+                (setenv "LDFLAGS" (string-append "-Wl,-rpath=" #$output
+                                                 "/lib/icedove"))
+                (mkdir-p (string-append (getcwd) "/builddir"))
+                (with-output-to-file mozconfig
+                  (lambda ()
+                    (display
+                     (string-append
+                      "ac_add_options --disable-crashreporter\n"
+                      "ac_add_options --disable-debug\n"
+                      "ac_add_options --disable-debug-symbols\n"
+                      "ac_add_options --disable-elf-hack\n"
+                      "ac_add_options --disable-jit\n"
+                      "ac_add_options --disable-necko-wifi\n"
+                      "ac_add_options --disable-official-branding\n"
+                      "ac_add_options --disable-tests\n"
+                      "ac_add_options --disable-updater\n"
+                      "ac_add_options --disable-webrtc\n"
+                      "ac_add_options --enable-application=comm/mail\n"
+                      "ac_add_options --enable-default-toolkit=\"cairo-gtk3\"\n"
+                      "ac_add_options --enable-optimize\n"
+                      "ac_add_options --enable-pulseaudio\n"
+                      "ac_add_options --enable-release\n"
+                      "ac_add_options --enable-strip\n"
+                      "ac_add_options --enable-system-ffi\n"
+                      "ac_add_options --enable-system-pixman\n"
+                      "ac_add_options --prefix=" #$output "\n"
+                      "ac_add_options --with-clang-path=" (assoc-ref %build-inputs "clang") "/bin/clang\n"
+                      "ac_add_options --with-distribution-id=org.gnu\n"
+                      "ac_add_options --with-libclang-path=" (assoc-ref %build-inputs "clang") "/lib\n"
+                      "ac_add_options --with-system-bz2\n"
+                      "ac_add_options --with-system-icu\n"
+                      "ac_add_options --with-system-jpeg\n"
+                      "ac_add_options --with-system-libevent\n"
+                      "ac_add_options --with-system-nspr\n"
+                                        ;"ac_add_options --with-system-nss\n"
+                      "ac_add_options --with-system-zlib\n"
+                      "ac_add_options --without-wasm-sandboxed-libraries\n"
+                      "mk_add_options MOZ_MAKE_FLAGS=-j"
+                      (number->string (parallel-job-count)) "\n"))))
+                (display (getcwd))
+                (newline)
+                (display "mach configure")
+                (invoke "./mach" "configure"))))
+          (replace 'build
+            (lambda _ (invoke "./mach" "build")))
+          (replace 'install
+            (lambda _ (invoke "./mach" "install")))
+          ;; Thunderbird doesn't provide any .desktop file.
+          ;; See https://bugzilla.mozilla.org/show_bug.cgi?id=1637575
+          (add-after 'install 'install-desktop-file
+            (lambda _
+              (let ((apps (string-append #$output "/share/applications")))
+                (mkdir-p apps)
+                (with-output-to-file (string-append apps "/icedove.desktop")
+                  (lambda _
+                    (format #t
+                            "[Desktop Entry]~@
                             Name=Icedove~@
                             Exec=~a/bin/icedove~@
                             Icon=icedove~@
@@ -1471,20 +1487,19 @@ standards of the IceCat project.")
                             [Desktop Action ComposeMessage]~@
                             Name=Write new message~@
                             Exec=~@*~a/bin/icedove -compose~%"
-                           out))))))
-         (add-after 'install 'wrap-program
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (lib (string-append out "/lib"))
-                    (gtk (assoc-ref inputs "gtk+"))
-                    (gtk-share (string-append gtk "/share"))
-                    (pulseaudio (assoc-ref inputs "pulseaudio"))
-                    (pulseaudio-lib (string-append pulseaudio "/lib"))
-                    (eudev (assoc-ref inputs "eudev"))
-                    (eudev-lib (string-append eudev "/lib")))
-               (wrap-program (car (find-files lib "^icedove$"))
-                 `("XDG_DATA_DIRS" prefix (,gtk-share))
-                 `("LD_LIBRARY_PATH" prefix (,pulseaudio-lib ,eudev-lib)))))))))
+                            #$output))))))
+          (add-after 'install 'wrap-program
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let* ((lib (string-append #$output "/lib"))
+                     (gtk #$(this-package-input "gtk+"))
+                     (gtk-share (string-append gtk "/share"))
+                     (pulseaudio #$(this-package-input "pulseaudio"))
+                     (pulseaudio-lib (string-append pulseaudio "/lib"))
+                     (eudev #$(this-package-input "eudev"))
+                     (eudev-lib (string-append eudev "/lib")))
+                (wrap-program (car (find-files lib "^icedove$"))
+                  `("XDG_DATA_DIRS" prefix (,gtk-share))
+                  `("LD_LIBRARY_PATH" prefix (,pulseaudio-lib ,eudev-lib)))))))))
     (inputs
      (list alsa-lib
            bzip2
@@ -1526,34 +1541,19 @@ standards of the IceCat project.")
            zip
            zlib))
     (native-inputs
-     `(("thunderbird-sources"
-        ;; The changeset identifier is taken from the file "sourcestamp.txt"
-        ;; in the Thunderbird release tarball.  We don't use the release
-        ;; tarball because it duplicates the Icecat sources and only adds the
-        ;; "comm" directory, which is provided by this repository.
-        ,(let ((changeset "07a17b101f904a686bbdf798ba2e820079a8323f"))
-           (origin
-             (method hg-fetch)
-             (uri (hg-reference
-                   (url "https://hg.mozilla.org/releases/comm-esr102")
-                   (changeset changeset)))
-             (file-name (string-append "thunderbird-" version "-checkout"))
-             (sha256
-              (base32
-               "16wlpcv1n64crcgk4gcl92r37dlpw26izvam82pbp5f8c25amlnk")))))
-       ("cargo" ,(force rust-1.59-promise) "cargo")
-       ("clang" ,clang)
-       ("llvm" ,llvm)
-       ("m4" ,m4)
-       ("nasm" ,nasm)
-       ("node" ,node)
-       ("perl" ,perl)
-       ("pkg-config" ,pkg-config)
-       ("python" ,python-wrapper)
-       ("rust" ,(force rust-1.59-promise))
-       ("rust-cbindgen" ,(force rust-cbindgen-0.23-promise))
-       ("which" ,which)
-       ("yasm" ,yasm)))
+     (list `(,rust "cargo")
+           clang
+           llvm
+           m4
+           nasm
+           node
+           perl
+           pkg-config
+           python-wrapper
+           rust
+           (force rust-cbindgen-0.23-promise)
+           which
+           yasm))
     (home-page "https://www.thunderbird.net")
     (synopsis "Rebranded Mozilla Thunderbird email client")
     (description

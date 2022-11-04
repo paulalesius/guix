@@ -7509,7 +7509,7 @@ GenomicRanges operations.")
              r-stringr
              r-variantannotation))
       (home-page "https://github.com/mskilab/skitools/")
-      (synopsis "Various mskilab R utilties")
+      (synopsis "Various mskilab R utilities")
       (description
        "This package provides R miscellaneous utilities for basic data
 manipulation, debugging, visualization, lsf management, and common mskilab
@@ -7859,7 +7859,7 @@ single-cell data.")
 to dissect cell communication in a global manner.  It integrates an original
 expert-curated database of ligand-receptor interactions taking into account
 multiple subunits expression.  Based on transcriptomic profiles (gene
-expression), this package allows to compute communication scores between cells
+expression), this package computes communication scores between cells
 and provides several visualization modes that can be helpful to dig into
 cell-cell interaction mechanism and extend biological knowledge.")
       (license license:gpl3))))
@@ -10538,6 +10538,65 @@ single-cell RNA-seq data.")
     (synopsis "Python client for BioThings API services")
     (description "This package provides a Python client for BioThings
 API services.")
+    (license license:bsd-3)))
+
+(define-public python-multivelo
+  (package
+    (name "python-multivelo")
+    (version "0.1.2")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "multivelo" version))
+              (sha256
+               (base32
+                "1b4qyngwagh5sc2ygyfqyirg63myzh1g1glk03a1ykxfii32cjlp"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:tests? #f                       ;pypi source does not contain tests
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'build
+            (lambda _
+              ;; ZIP does not support timestamps before 1980.
+              (setenv "SOURCE_DATE_EPOCH" "315532800")
+              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
+          (replace 'install
+            (lambda _
+              (for-each
+               (lambda (wheel)
+                 (format #t wheel)
+                 (invoke "python" "-m" "pip" "install"
+                         wheel (string-append "--prefix=" #$output)))
+               (find-files "dist" "\\.whl$"))))
+          (add-before 'sanity-check 'set-env
+            (lambda _
+              ;; numba RuntimeError: cannot cache function 'rdist'
+              (setenv "NUMBA_CACHE_DIR" "/tmp"))))))
+    (native-inputs (list python-pypa-build))
+    (propagated-inputs
+     (list python-anndata
+           python-h5py
+           python-ipywidgets
+           python-joblib
+           python-loompy
+           python-matplotlib
+           python-numba
+           python-numpy
+           python-pandas
+           python-scanpy
+           python-scikit-learn
+           python-scipy
+           python-seaborn
+           python-tqdm
+           python-umap-learn
+           scvelo))
+    (home-page "https://github.com/welch-lab/MultiVelo")
+    (synopsis "Velocity inference from single-cell multi-omic data")
+    (description "MultiVelo uses a probabilistic latent variable model to
+estimate the switch time and rate parameters of gene regulation, providing a
+quantitative summary of the temporal relationship between epigenomic and
+transcriptomic changes.")
     (license license:bsd-3)))
 
 (define-public python-mygene
@@ -14211,6 +14270,44 @@ information...  The package can also be used to extract data from @code{.loom}
 files.")
       (license license:expat))))
 
+(define-public r-seuratwrappers
+  ;; There are no releases or tags.
+  (let ((commit "d28512f804d5fe05e6d68900ca9221020d52cf1d")
+        (revision "1"))
+    (package
+      (name "r-seuratwrappers")
+      (version (git-version "0.3.1" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/satijalab/seurat-wrappers")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0rm74y2fj3cmiqn7jz1ald8jbw53c2qxkj3mgl4pxih9vx39jhgy"))))
+      (properties `((upstream-name . "SeuratWrappers")))
+      (build-system r-build-system)
+      (propagated-inputs
+       (list r-biocmanager
+             r-cowplot
+             r-ggplot2
+             r-igraph
+             r-matrix
+             r-remotes
+             r-rlang
+             r-rsvd
+             r-r-utils
+             r-seurat))
+      (home-page "https://github.com/satijalab/seurat-wrappers")
+      (synopsis "Community-provided methods and extensions for the Seurat object")
+      (description
+       "SeuratWrappers is a collection of community-provided methods and
+extensions for Seurat, curated by the Satija Lab at NYGC.  These methods
+comprise functionality not presently found in Seurat, and are able to be
+updated much more frequently.")
+      (license license:gpl3))))
+
 (define-public python-ctxcore
   (package
     (name "python-ctxcore")
@@ -16428,7 +16525,7 @@ assembly (small or mammalian size) and single-cell assembly.")
     (inputs
      (list zlib xz))
     (home-page "https://github.com/OceanGenomics/mudskipper")
-    (synopsis "Convert genomic alignments to transcriptomic BAM/RAD files.")
+    (synopsis "Convert genomic alignments to transcriptomic BAM/RAD files")
     (description "Mudskipper is a tool for projecting genomic alignments to
 transcriptomic coordinates.")
     (license license:bsd-3)))
@@ -16917,7 +17014,7 @@ module capable of computing base-level alignments for very large sequences.")
 (define-public flair
   (package
     (name "flair")
-    (version "1.6.2")
+    (version "1.6.4")
     (source
      (origin
        (method git-fetch)
@@ -16927,7 +17024,7 @@ module capable of computing base-level alignments for very large sequences.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "106swb2q7l20ki58fca1hg95q5f79bgp9gjb0clr2243ycrzyxf8"))))
+         "0jviacx6qx5rwgi3wvl7a8a8ml19r6cpngddivlk13f6g9072din"))))
     (build-system python-build-system)
     (arguments
      (list
@@ -16946,13 +17043,34 @@ module capable of computing base-level alignments for very large sequences.")
             (lambda _
               (apply invoke "pip" "--no-cache-dir" "--no-input"
                      "install" "--no-deps" "--prefix" #$output
-                     (find-files "dist" "\\.whl$")))))))
+                     (find-files "dist" "\\.whl$"))))
+          (add-after 'install 'wrap-executable
+            (lambda _
+              (for-each
+               (lambda (script)
+                 (wrap-program script
+                   `("R_HOME" ":" = (,(string-append #$r-minimal "/lib/R")))
+                   `("R_LIBS_SITE" ":" = (,(getenv "R_LIBS_SITE")))))
+               (find-files (string-append #$output "/bin"))))))))
     (propagated-inputs
      (list python-mappy
+           python-numpy
            python-ncls
            python-pybedtools
            python-pysam
+           python-rpy2
+           python-scipy
            python-tqdm))
+    ;; Used by rpy2
+    (inputs
+     (list r-minimal  ;for R_LIBS_SITE
+           r-apeglm   ;for runDE
+           r-deseq2   ;for runDE
+           r-drimseq  ;for runDS
+           r-ggplot2  ;runDS, runDU
+           r-lazyeval ;for rpy2
+           r-qqman    ;for runDE
+           r-rlang))  ;for rpy2
     (native-inputs
      (list python-pypa-build python-setuptools))
     (home-page "https://flair.readthedocs.io/en/latest/")

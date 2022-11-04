@@ -559,7 +559,7 @@ stacking and changing parameters in SWFs.
 @item
 @command{swfstrings} Scans SWFs for text data.
 @item
-@command{swfdump} Prints out various informations about SWFs.
+@command{swfdump} Prints out various information about SWFs.
 
 @item
 @command{jpeg2swf} Takes one or more JPEG pictures and generates a SWF
@@ -579,14 +579,14 @@ slideshow from them.
 @command{font2swf} Converts font files (TTF, Type1) to SWF.
 
 @item
-@command{swfbbox} Allows to read out, optimize and readjust SWF bounding boxes.
+@command{swfbbox} reads out, optimizes and readjusts SWF bounding boxes.
 
 @item
 @command{swfc} A tool for creating SWF files from simple script files.  Supports
 both ActionScript 2.0 aand 3.0.
 
 @item
-@command{swfextract} Allows to extract Movieclips, Sounds, Images etc. from SWF
+@command{swfextract} extracts Movieclips, Sounds, Images etc. from SWF
  files.
 
 @item

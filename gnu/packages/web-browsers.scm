@@ -159,14 +159,14 @@ management, extensions such as advertisement blocker and colorful tabs.")
 (define-public links
   (package
     (name "links")
-    (version "2.27")
+    (version "2.28")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://links.twibright.com/download/"
                                   "links-" version ".tar.bz2"))
               (sha256
                (base32
-                "1d7bz6bbis94jq82xydwnazaczzmb1ij62pbmf0dxkg7xpycppfq"))))
+                "1d2lyj9k2s6brk38k51qfpddwh2w96w6gh9jq5br9rfy2fdlkm9g"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -829,7 +829,7 @@ http, and https via third-party applications.")
 (define-public tinmop
   (package
     (name "tinmop")
-    (version "0.9.6")
+    (version "0.9.9")
     (source
      (origin
        (method git-fetch)
@@ -838,7 +838,7 @@ http, and https via third-party applications.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "19rr1wcadm4698q5gyq0pxv81220l5g8zfnp61s43a4q7kn4mi1z"))))
+        (base32 "0s73587wf29jzymlqrgcnci7w6wsfj1vcs7szxshsmaiszf0skwk"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf
@@ -912,10 +912,11 @@ http, and https via third-party applications.")
                  '("LISP_COMPILER) --eval \"(require 'asdf)\" "
                    "--eval \"(push \\\"$$(pwd)/\\\" asdf:*central-registry*)\"  "))))
              #t)))))
-    (synopsis "Gemini, kami and pleroma client with a terminal interface")
+    (synopsis
+     "Gemini, gopher, kami and pleroma client with a terminal interface")
     (description
-     "This package provides a Gemini, kami and pleroma client with a terminal
-interface.")
+     "This package provides a Gemini, gopher, kami and pleroma client with a
+terminal interface.")
     (home-page "https://www.autistici.org/interzona/tinmop.html")
     (license license:gpl3+)))
 

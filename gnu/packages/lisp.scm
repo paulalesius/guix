@@ -20,8 +20,8 @@
 ;;; Copyright © 2021 Sharlatan Hellseher <sharlatanus@gmail.com>
 ;;; Copyright © 2021 Paul A. Patience <paul@apatience.com>
 ;;; Copyright © 2021 Charles Jackson <charles.b.jackson@protonmail.com>
-;;; Copyright © 2021 jgart <jgart@dismail.de>
 ;;; Copyright © 2022 Joeke de Graaf <joeke@posteo.net>
+;;; Copyright © 2021, 2022 jgart <jgart@dismail.de>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -417,14 +417,14 @@ an interpreter, a compiler, a debugger, and much more.")
 (define-public sbcl
   (package
     (name "sbcl")
-    (version "2.2.6")
+    (version "2.2.10")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "mirror://sourceforge/sbcl/sbcl/" version "/sbcl-"
                            version "-source.tar.bz2"))
        (sha256
-        (base32 "18044dqx37mkipnrzs7jrp0cbnwp6snb5gi06a8zn9m8iy6088ry"))))
+        (base32 "0cq8x4svkawirxq5s5gs4qxkl23m4q5p722a2kpss8qjfslc7hwc"))))
     (build-system gnu-build-system)
     (outputs '("out" "doc"))
     (native-inputs
@@ -552,11 +552,6 @@ an interpreter, a compiler, a debugger, and much more.")
                  (("\\(deftest grent\\.[12]" all)
                   (string-append "#+nil ;disabled by Guix\n" all))))
              #t))
-         (add-before 'build 'fix-shared-library-makefile
-           (lambda _
-             (substitute* '("src/runtime/GNUmakefile")
-               (("	cc") "	$(CC)"))
-             #t))
          (add-before 'build 'fix-contrib-library-path
            (lambda* (#:key inputs #:allow-other-keys)
              (let ((gmp (assoc-ref inputs "gmp"))
@@ -584,8 +579,7 @@ an interpreter, a compiler, a debugger, and much more.")
                      "--with-sb-xref-for-internals"
                      ;; SB-SIMD will only be built on x86_64 CPUs supporting
                      ;; AVX2 instructions. Some x86_64 CPUs don't, so for reproducibility
-                     ;; we disable it and we don't build its documentation (see the
-                     ;; 'build-doc' phase).
+                     ;; we disable it.
                      "--without-sb-simd")))
          (add-after 'build 'build-shared-library
            (lambda* (#:key outputs #:allow-other-keys)
@@ -596,11 +590,6 @@ an interpreter, a compiler, a debugger, and much more.")
              (invoke "sh" "install.sh")))
          (add-after 'build 'build-doc
            (lambda _
-             ;; Don't build the documentation for SB-SIMD as it is disabled in
-             ;; the 'build' phase.
-             (substitute* "doc/manual/generate-texinfo.lisp"
-               (("exclude '\\(\"asdf\"\\)")
-                "exclude '(\"asdf\" \"sb-simd\")"))
              (with-directory-excursion "doc/manual"
                (and  (invoke "make" "info")
                      (invoke "make" "dist")))))
@@ -1236,7 +1225,7 @@ including a built-in database engine and a GUI system.")
 (define-public janet
   (package
     (name "janet")
-    (version "1.24.1")
+    (version "1.25.1")
     (source
      (origin
        (method git-fetch)
@@ -1245,7 +1234,7 @@ including a built-in database engine and a GUI system.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1zaf2z2x5mgfp2nwj3q6pmcj558mw1772a09xn8b8na0cahxlrmq"))))
+        (base32 "0d601imsndkmjyanja6pqp234fwmn9jxzpcbigwpra969x4a4qjd"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags

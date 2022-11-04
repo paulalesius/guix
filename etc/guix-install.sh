@@ -3,7 +3,7 @@
 # Copyright © 2017 sharlatan <sharlatanus@gmail.com>
 # Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 # Copyright © 2018 Efraim Flashner <efraim@flashner.co.il>
-# Copyright © 2019, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
+# Copyright © 2019–2020, 2022 Tobias Geerinckx-Rice <me@tobias.gr>
 # Copyright © 2020 Morgan Smith <Morgan.J.Smith@outlook.com>
 # Copyright © 2020 Simon Tournier <zimon.toutoune@gmail.com>
 # Copyright © 2020 Daniel Brooks <db48x@db48x.net>
@@ -33,7 +33,7 @@ then
     exec bash "$0" "$@"
 fi
 
-set -e
+set -eo pipefail
 
 [ "$UID" -eq 0 ] || { echo "This script must be run as root."; exit 1; }
 
@@ -92,33 +92,20 @@ _debug()
     fi
 }
 
-_flush()
-{
-    while read -t0; do
-        read -N1
-    done
-}
-
 die()
 {
     _err "${ERR}$*"
     exit 1
 }
 
-# Return true if user answered yes, false otherwise.  It defaults to "yes"
-# when a single newline character is input.
+# Return true if user answered yes, false otherwise.  The prompt is
+# yes-biased, that is, when the user simply enter newline, it is equivalent to
+# answering "yes".
 # $1: The prompt question.
 prompt_yes_no() {
-    while true; do
-        _flush
-        read -N1 -rsp "$1 [Y/n]" yn
-        case $yn in
-            $'\n') echo && return 0;;
-            [Yy]*) echo && return 0;;
-            [Nn]*) echo && return 1;;
-            *) echo && _msg "Please answer yes or no."
-        esac
-    done
+    local -l yn
+    read -rp "$1 [Y/n]" yn
+    [[ ! $yn || $yn = y || $yn = yes ]] || return 1
 }
 
 chk_require()
@@ -150,21 +137,27 @@ chk_gpg_keyring()
         gpg_key_id=${GPG_SIGNING_KEYS[$user_id]}
         # Without --dry-run this command will create a ~/.gnupg owned by root on
         # systems where gpg has never been used, causing errors and confusion.
-        if ! gpg --dry-run --list-keys "$gpg_key_id" >/dev/null 2>&1; then
-            if prompt_yes_no "${INF}The following OpenPGP public key is \
+        if gpg --dry-run --list-keys "$gpg_key_id" >/dev/null 2>&1; then
+            continue
+        fi
+        if prompt_yes_no "${INF}The following OpenPGP public key is \
 required to verify the Guix binary signature: $gpg_key_id.
 Would you like me to fetch it for you?"; then
-                wget "https://sv.gnu.org/people/viewgpg.php?user_id=$user_id" \
-                     --no-verbose -O- | gpg --import -
-            else
-                _err "${ERR}Missing OpenPGP public key ($gpg_key_id).
+            # Use a reasonable time-out here so users don't report silent
+            # ‘freezes’ when Savannah goes out to lunch, as has happened.
+            if wget "https://sv.gnu.org/people/viewgpg.php?user_id=$user_id" \
+                    --timeout=30 --no-verbose -O- | gpg --import -; then
+                continue
+            fi
+        fi
+	# If we reach this point, the key is (still) missing.  Report further
+	# missing keys, if any, but then abort the installation.
+        _err "${ERR}Missing OpenPGP public key ($gpg_key_id).
 Fetch it with this command:
 
   wget \"https://sv.gnu.org/people/viewgpg.php?user_id=$user_id\" -O - | \
 sudo -i gpg --import -"
-                exit_flag=yes
-            fi
-        fi
+        exit_flag=yes
     done
     if [ "$exit_flag" = yes ]; then
         exit 1
@@ -588,6 +581,7 @@ fi
 
 welcome()
 {
+    local char
     cat<<"EOF"
     ░░░                                     ░░░
     ░░▒▒░░░░░░░░░               ░░░░░░░░░▒▒░░
@@ -613,8 +607,15 @@ This script installs GNU Guix on your system
 
 https://www.gnu.org/software/guix/
 EOF
-    echo -n "Press return to continue..."
-    read -r
+    # Don't use ‘read -p’ here!  It won't display when run non-interactively.
+    echo -n "Press return to continue..."$'\r'
+    read -r char
+    if [ "$char" ]; then
+	echo
+	echo "...that ($char) was not a return!"
+	_msg "${WAR}Use newlines to automate installation, e.g.: yes '' | ${0##*/}"
+	_msg "${WAR}Any other method is unsupported and likely to break in future."
+    fi
 }
 
 main()

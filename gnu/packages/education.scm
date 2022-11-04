@@ -582,7 +582,7 @@ a pen-tablet display and a beamer.")
 (define-public fet
   (package
     (name "fet")
-    (version "6.6.2")
+    (version "6.7.0")
     (source
      (origin
        (method url-fetch)
@@ -591,7 +591,7 @@ a pen-tablet display and a beamer.")
               (list (string-append directory base)
                     (string-append directory "old/" base))))
        (sha256
-        (base32 "0w3fp367r8gx35qmfcx9v8z2lrwfm0fjqbadyk3lhwf28gb1csxr"))))
+        (base32 "1z6zjydk3d04akv1zc8kcz8kgg5fdy8drcwwv30rj9ldh59kqi37"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -646,14 +646,14 @@ language and very flexible regarding to new or unknown keyboard layouts.")
 (define-public ktouch
   (package
     (name "ktouch")
-    (version "20.12.1")
+    (version "21.12.2")
     (source
       (origin
         (method url-fetch)
         (uri (string-append "mirror://kde/stable/release-service/"
                             version "/src/ktouch-" version ".tar.xz"))
         (sha256
-         (base32 "10lm2p8w26c9n6lhvw3301myfss0dq7hl7rawzb3hsy1lqvmvdib"))))
+         (base32 "1rq2n8395sb17rqd295axv2pbwzhqs8ikjqx5ryn4lv1713alabl"))))
     (build-system qt-build-system)
     (native-inputs
      (list extra-cmake-modules kdoctools pkg-config))

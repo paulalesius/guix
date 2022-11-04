@@ -1,7 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2013, 2015 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2013 Aljosha Papsch <misc@rpapsch.de>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2014-2022 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014, 2015, 2016 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2018 Raoul Jean Pierre Bonnal <ilpuccio.febo@gmail.com>
@@ -384,14 +384,14 @@ the same, being completely separated from the Internet.")
     ;; Track the ‘mainline’ branch.  Upstream considers it more reliable than
     ;; ’stable’ and recommends that “in general you deploy the NGINX mainline
     ;; branch at all times” (https://www.nginx.com/blog/nginx-1-6-1-7-released/)
-    (version "1.23.1")
+    (version "1.23.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://nginx.org/download/nginx-"
                                   version ".tar.gz"))
               (sha256
                (base32
-                "1qpibmnz5kjkd5z61abism1qn5z6dbrz2cjmlivr8fryqb8ipvjy"))))
+                "0ihbkfcqlqadzkdk813raq15qqrahss1gdd81bkswanpsdrc4358"))))
     (build-system gnu-build-system)
     (inputs (list libxml2 libxslt openssl pcre zlib))
     (arguments
@@ -408,6 +408,7 @@ the same, being completely separated from the Internet.")
               "--with-pcre-jit"
               "--with-debug"
               "--with-stream"
+              "--with-stream_ssl_module"
               ;; Even when not cross-building, we pass the
               ;; --crossbuild option to avoid customizing for the
               ;; kernel version on the build machine.
@@ -480,8 +481,8 @@ and as a proxy to reduce the load on back-end HTTP or mail servers.")
 (define-public nginx-documentation
   ;; This documentation should be relevant for the current nginx package.
   (let ((version "1.23.1")
-        (revision 2869)
-        (changeset "9383e934e546"))
+        (revision 2898)
+        (changeset "0b7e004b5061"))
     (package
       (name "nginx-documentation")
       (version (simple-format #f "~A-~A-~A" version revision changeset))
@@ -493,7 +494,7 @@ and as a proxy to reduce the load on back-end HTTP or mail servers.")
                (file-name (string-append name "-" version))
                (sha256
                 (base32
-                 "0zq89cjj8vpxaanx378yaypvmcxk0my8c773acx545c5p75ghvbk"))))
+                 "027q7gnx7k3hgj7qana44g383fvvj6ndz1kavr30mj2z87cnq3dp"))))
       (build-system gnu-build-system)
       (arguments
        '(#:tests? #f                    ; no test suite
@@ -1380,15 +1381,12 @@ current version of any major web browser.")
                   (delete-file-recursively "bin/jsonchecker")))))
     (build-system cmake-build-system)
     (arguments
-     (if (string-prefix? "aarch64" (or (%current-target-system)
-                                       (%current-system)))
-         '(#:phases
-           (modify-phases %standard-phases
-             (add-after 'unpack 'patch-aarch-march-detection
-               (lambda _
-                 (substitute* (find-files "." "^CMakeLists\\.txt$")
-                   (("native") "armv8-a"))))))
-         '()))
+     '(#:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'fix-march=native
+           (lambda _
+             (substitute* "CMakeLists.txt"
+               (("-m[^-]*=native") "")))))))
     (home-page "https://github.com/Tencent/rapidjson")
     (synopsis "JSON parser/generator for C++ with both SAX/DOM style API")
     (description
@@ -6242,19 +6240,19 @@ inspired by Ruby's @code{fakeweb}.")
 (define-public jo
   (package
     (name "jo")
-    (version "1.6")
+    (version "1.9")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/jpmens/jo/releases/download/"
                            version "/jo-" version ".tar.gz"))
        (sha256
-        (base32 "18fizi0368jgajrmy13xpdiks76jwch8lhx1d1sagmd63cpmj5gb"))))
+        (base32 "17y73657z5v792ik3plcvk9f5g5h2yawv6afahhkq42159pwv581"))))
     (build-system gnu-build-system)
     (home-page "https://github.com/jpmens/jo")
     (synopsis "Output JSON from a shell")
-    (description "jo is a command-line utility to create JSON objects or
-arrays.  It creates a JSON string on stdout from words provided as
+    (description "@command{jo} is a command-line utility to create JSON objects
+or arrays.  It creates a JSON string on stdout from words provided as
 command-line arguments or read from stdin.")
     (license (list license:gpl2+
                    license:expat)))) ; json.c, json.h
@@ -7629,18 +7627,15 @@ compressed JSON header blocks.
                  `("GUILE_LOAD_PATH" ":" prefix (,path))
                  `("GUILE_LOAD_COMPILED_PATH" ":" prefix (,gopath)))))))))
     (native-inputs
-     `(("autoconf" ,autoconf)
-       ("automake" ,automake)
-       ("uglify-js" ,uglify-js)
-       ("pkg-config" ,pkg-config)
-       ("guile" ,@(assoc-ref (package-native-inputs guix) "guile"))))
+     (list autoconf automake uglify-js pkg-config
+           (lookup-package-native-input guix "guile")))
     (inputs
-     `(("guile" ,@(assoc-ref (package-native-inputs guix) "guile"))
-       ("guix" ,guix)
-       ("guile-zlib" ,guile-zlib)
-       ("guile-commonmark" ,guile-commonmark)
-       ("guile-json" ,guile-json-4)
-       ("bash-minimal" ,bash-minimal)))
+     (list (lookup-package-native-input guix "guile")
+           guix
+           guile-zlib
+           guile-commonmark
+           guile-json-4
+           bash-minimal))
     (home-page "https://github.com/UMCUGenetics/hpcguix-web")
     (synopsis "Web interface for cluster deployments of Guix")
     (description "Hpcguix-web provides a web interface to the list of packages

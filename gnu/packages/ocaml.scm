@@ -1718,7 +1718,7 @@ full_split, cut, rcut, etc..")
 (define dune-bootstrap
   (package
     (name "dune")
-    (version "3.4.1")
+    (version "3.5.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1727,7 +1727,7 @@ full_split, cut, rcut, etc..")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "02zn79l7y7rvy7b6bimlf5qymrvzc43w8q7l4jx3k8wzn2g5326z"))))
+                "10fpybiqqkmm7y9xmhy4qs451dydmffcjg13k7w8g2p9dd09jb6l"))))
     (build-system ocaml-build-system)
     (arguments
      `(#:tests? #f; require odoc
@@ -2562,7 +2562,7 @@ lets the client choose the concrete timeline.")
 (define-public ocaml-ssl
   (package
     (name "ocaml-ssl")
-    (version "0.5.12")
+    (version "0.5.13")
     (source
       (origin
         (method git-fetch)
@@ -2571,7 +2571,7 @@ lets the client choose the concrete timeline.")
               (commit version)))
         (file-name (git-file-name name version))
         (sha256 (base32
-                  "1dr7yghbv0wncvggd2105bj097msgrdzxd9wjkw1xxf2vvp0j1bi"))))
+                  "1bg5vagklq6yfxsvcnj2i76xis8hb59088hkic82smyrxdjd1kjs"))))
     (build-system dune-build-system)
     (arguments
      `(#:test-target "."))
@@ -3191,7 +3191,7 @@ This package includes:
 (define-public ocaml-ocp-index
   (package
     (name "ocaml-ocp-index")
-    (version "1.3.3")
+    (version "1.3.4")
     (source
       (origin
         (method git-fetch)
@@ -3201,7 +3201,7 @@ This package includes:
         (file-name (git-file-name name version))
         (sha256
          (base32
-          "1gbigw5s2cafkr82n9vkxbb892qfkykj0adj0hrdkrkw8j6rfl0j"))))
+          "031b3s8ppqkpw1n6h87h6jzjkmny6yig9wfimmgwnljafcc83d3b"))))
     (build-system dune-build-system)
     (arguments
      `(#:package "ocp-index"))
@@ -3568,7 +3568,7 @@ compatibility with older compiler to use these new features in their code.")
 (define-public ocaml-fileutils
   (package
     (name "ocaml-fileutils")
-    (version "0.6.3")
+    (version "0.6.4")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3577,7 +3577,7 @@ compatibility with older compiler to use these new features in their code.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0aa7p5qymi8p7iqym42yk2akjd1ff81fvaks82nhjc533zl01pnf"))))
+                "1s2az5lv52r0fig4624652zn3jj5dy30d1xlw6gzd0s086i4bvjh"))))
     (build-system dune-build-system)
     (propagated-inputs
      (list ocaml-stdlib-shims))
@@ -4675,7 +4675,7 @@ cross-platform SDL C library.")
 (define-public dedukti
   (package
     (name "dedukti")
-    (version "2.6.0")
+    (version "2.7")
     (home-page "https://deducteam.github.io/")
     (source
      (origin
@@ -4686,31 +4686,12 @@ cross-platform SDL C library.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0frl3diff033i4fmq304b8wbsdnc9mvlhmwd7a3zd699ng2lzbxb"))))
-    (inputs
-     `(("menhir" ,ocaml-menhir)))
-    (native-inputs
-     (list ocamlbuild))
-    (build-system ocaml-build-system)
+         "1dsr3s88kgmcg3najhc29cwfvsxa2plvjws1127fz75kmn15np28"))))
+    (build-system dune-build-system)
     (arguments
-     `(#:phases
-       ,#~(modify-phases %standard-phases
-            (delete 'configure)
-            (replace 'build
-              (lambda _
-                (invoke "make")))
-            (replace 'check
-              (lambda _
-                (invoke "make" "tests")))
-            (add-before 'install 'set-binpath
-              ;; Change binary path in the makefile
-              (lambda _
-                (substitute* "GNUmakefile"
-                  (("BINDIR = (.*)$")
-                   (string-append "BINDIR = " #$output "/bin")))))
-            (replace 'install
-              (lambda _
-                (invoke "make" "install"))))))
+     `(#:test-target "tests"))
+    (inputs (list gmp ocaml-cmdliner ocaml-z3 z3))
+    (native-inputs (list ocaml-menhir))
     (synopsis "Proof-checker for the λΠ-calculus modulo theory, an extension of
 the λ-calculus")
     (description "Dedukti is a proof-checker for the λΠ-calculus modulo
@@ -4720,61 +4701,6 @@ dependent types.  The λΠ-calculus modulo theory is itself an extension of the
 rules.  This system is not designed to develop proofs, but to check proofs
 developed in other systems.  In particular, it enjoys a minimalistic syntax.")
     (license license:cecill-c)))
-
-(define-public emacs-dedukti-mode
-  (let ((commit "d7c3505a1046187de3c3aeb144455078d514594e"))
-    (package
-      (name "emacs-dedukti-mode")
-      (version (git-version "0" "0" commit))
-      (home-page "https://github.com/rafoo/dedukti-mode")
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url home-page)
-                      (commit commit)))
-                (sha256
-                 (base32
-                  "1842wikq24c8rg0ac84vb1qby9ng1nssxswyyni4kq85lng5lcrp"))
-                (file-name (git-file-name name version))))
-      (inputs
-       (list dedukti))
-      (build-system emacs-build-system)
-      (arguments
-       '(#:phases
-         (modify-phases %standard-phases
-           (add-before 'install 'patch-dkpath
-             (lambda _
-               (let ((dkcheck-path (which "dkcheck")))
-                 (substitute* "dedukti-mode.el"
-                   (("dedukti-path \"(.*)\"")
-                    (string-append "dedukti-path \"" dkcheck-path "\"")))))))))
-      (synopsis "Emacs major mode for Dedukti files")
-      (description "This package provides an Emacs major mode for editing
-Dedukti files.")
-      (license license:cecill-b))))
-
-(define-public emacs-flycheck-dedukti
-  (let ((commit "3dbff5646355f39d57a3ec514f560a6b0082a1cd"))
-    (package
-      (name "emacs-flycheck-dedukti")
-      (version (git-version "0" "0" commit))
-      (home-page "https://github.com/rafoo/flycheck-dedukti")
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url home-page)
-                      (commit commit)))
-                (sha256
-                 (base32
-                  "1ffpxnwl3wx244n44mbw81g00nhnykd0lnid29f4aw1av7w6nw8l"))
-                (file-name (git-file-name name version))))
-      (build-system emacs-build-system)
-      (inputs
-       (list emacs-dedukti-mode emacs-flycheck))
-      (synopsis "Flycheck integration for the dedukti language")
-      (description "This package provides a frontend for Flycheck to perform
-syntax checking on dedukti files.")
-      (license license:cecill-b))))
 
 (define-public ocaml-jst-config
   (package
@@ -7283,7 +7209,7 @@ thousands of times faster than fork.
 (define-public ocaml-core
   (package
     (name "ocaml-core")
-    (version "0.15.0")
+    (version "0.15.1")
     (source
       (origin
         (method git-fetch)
@@ -7292,7 +7218,7 @@ thousands of times faster than fork.
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-          (base32 "1m2ybvlz9zlb2d0jc0j7wdgd18mx9sh3ds2ylkv0cfjx1pzi0l25"))))
+          (base32 "17vc2i5qb53dr0civ8pkrnnsn2nkydlq44ash7fhh93yb4sffy28"))))
     (build-system dune-build-system)
     (arguments
      `(#:package "core"
@@ -8002,7 +7928,7 @@ support for Mparser.")))
 (define-public lablgtk3
   (package
     (name "lablgtk")
-    (version "3.1.2")
+    (version "3.1.3")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -8011,25 +7937,13 @@ support for Mparser.")))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0b17w9qb1f02h3313cm62mrqlhwxficppzm72n7sf8mmwrylxbm7"))))
+                "0rhdr89w7yj8pkga5xc7iqmqvrs28034wb7sm7vx7faaxczwjifn"))))
     (build-system dune-build-system)
     (arguments
      `(#:package "lablgtk3"
-       #:test-target "."
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'make-writable
-           (lambda _
-             (for-each (lambda (file)
-                         (chmod file #o644))
-                       (find-files "." "."))))
-         (add-before 'build 'set-version
-           (lambda _
-             (substitute* "dune-project"
-               (("\\(name lablgtk3\\)")
-                (string-append "(name lablgtk3)\n(version " ,version ")"))))))))
+       #:test-target "."))
     (propagated-inputs
-     (list ocaml-cairo2))
+     (list ocaml-cairo2 ocaml-camlp-streams))
     (inputs
      (list camlp5 gtk+))
     (native-inputs
@@ -8699,7 +8613,7 @@ constant-time to avoid timing-attack with crypto stuff.")
 (define-public ocaml-digestif
   (package
     (name "ocaml-digestif")
-    (version "1.1.2")
+    (version "1.1.3")
     (home-page "https://github.com/mirage/digestif")
     (source
      (origin
@@ -8710,7 +8624,7 @@ constant-time to avoid timing-attack with crypto stuff.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0mc233d63y04jznsn3bxncgv7fkvyngbv6hcka412iq0y3x4qsmq"))))
+         "0x5iskavqkclr5mk2q6jvh5h1v81krqi4v353rj4xsmdqb33s0f1"))))
     (build-system dune-build-system)
     (propagated-inputs (list ocaml-eqaf))
     (native-inputs

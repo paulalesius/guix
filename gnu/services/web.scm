@@ -807,7 +807,6 @@ of index files."
                           #~#t
                           #~(read-pid-file #$pid-file))))))))
 
-     ;; TODO: Add 'reload' action.
      (list (shepherd-service
             (provision '(nginx))
             (documentation "Run the nginx daemon.")
@@ -815,7 +814,17 @@ of index files."
             (modules `((ice-9 match)
                        ,@%default-modules))
             (start (nginx-action "-p" run-directory))
-            (stop (nginx-action "-s" "stop")))))))
+            (stop (nginx-action "-s" "stop"))
+            (actions
+              (list
+               (shepherd-action
+                 (name 'reload)
+                 (documentation "Reload nginx configuration file and restart worker processes.
+This has the effect of killing old worker processes and starting new ones, using
+the same configuration file.  It is useful for situations where the same nginx
+configuration file can point to different things after a reload, such as
+renewed TLS certificates, or @code{include}d files.")
+                 (procedure (nginx-action "-s" "reload"))))))))))
 
 (define nginx-service-type
   (service-type (name 'nginx)

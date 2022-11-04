@@ -389,6 +389,12 @@ selected keymap."
                          (ice-9 match)
                          (ice-9 textual-ports))
 
+            ;; Enable core dump generation.
+            (setrlimit 'core #f #f)
+            (call-with-output-file "/proc/sys/kernel/core_pattern"
+              (lambda (port)
+                (format port %core-dump)))
+
             ;; Initialize gettext support so that installers can use
             ;; (guix i18n) module.
             #$init-gettext
@@ -447,11 +453,21 @@ selected keymap."
                                           key args)
                       (define dump-dir
                         (prepare-dump key args #:result %current-result))
+
+                      (define user-abort?
+                        (match args
+                          (((? user-abort-error? obj)) #t)
+                          (_ #f)))
+
                       (define action
-                        ((installer-exit-error current-installer)
-                         (get-string-all
-                          (open-input-file
-                           (string-append dump-dir "/installer-backtrace")))))
+                        (if user-abort?
+                            'dump
+                            ((installer-exit-error current-installer)
+                             (get-string-all
+                              (open-input-file
+                               (string-append dump-dir
+                                              "/installer-backtrace"))))))
+
                       (match action
                         ('dump
                          (let* ((dump-files

@@ -901,7 +901,7 @@ commodity hardware.")
 (define-public ganeti-instance-guix
   (package
     (name "ganeti-instance-guix")
-    (version "0.6.1")
+    (version "0.7")
     (home-page "https://github.com/mbakke/ganeti-instance-guix")
     (source (origin
               (method git-fetch)
@@ -909,14 +909,21 @@ commodity hardware.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "18h8hdd38h1l89si8122v3ylzvvirs8hiypayklk1nr2wnfgbvff"))))
+                "13wp1g1sdamv63rj5gqllx173rrjc1cr6fv929pim7hqqfqxqni1"))))
     (build-system gnu-build-system)
     (arguments
      '(#:configure-flags '("--sysconfdir=/etc" "--localstatedir=/var")))
     (native-inputs
      (list autoconf automake))
     (inputs
-     (list util-linux qemu-minimal))
+     (list btrfs-progs
+           e2fsprogs
+           f2fs-tools
+           lvm2
+           multipath-tools
+           util-linux
+           parted
+           xfsprogs))
     (synopsis "Guix OS integration for Ganeti")
     (description
      "This package provides a guest OS definition for Ganeti that uses
@@ -1559,7 +1566,7 @@ domains, their live performance and resource utilization statistics.")
 (define-public criu
   (package
     (name "criu")
-    (version "3.17")
+    (version "3.17.1")
     (source
      (origin
        (method git-fetch)
@@ -1568,7 +1575,7 @@ domains, their live performance and resource utilization statistics.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1qql1xp2zkkd7z50vp0nylx3rqrp8xa3c6x25c886d5i1j9pak5x"))))
+        (base32 "0ff3xfcf0wfz02fc0qbj56mci1a0xdl8jzaihaw6qyjvgrsiq7fh"))))
     (build-system gnu-build-system)
     (arguments
      `(#:test-target "test"

@@ -48,6 +48,7 @@
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages haskell-xyz)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages java)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages netpbm)
   #:use-module (gnu packages python)
@@ -1384,6 +1385,29 @@ genomation package.  Included are Chip Seq, Methylation and Cage data,
 downloaded from Encode.")
     (license license:gpl3+)))
 
+(define-public r-macrophage
+  (package
+    (name "r-macrophage")
+    (version "1.12.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "macrophage" version
+                                     'experiment))
+              (sha256
+               (base32
+                "0ml8v92w021fmzsn4yl90ap3l4l3b9c1pk8pzsrm122p82wzlyms"))))
+    (properties `((upstream-name . "macrophage")))
+    (build-system r-build-system)
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/macrophage")
+    (synopsis "Human macrophage immune response data")
+    (description
+     "This package provides the output of running @code{Salmon} on a set of 24
+RNA-seq samples from Alasoo, et al. \"Shared genetic effects on chromatin and
+gene expression indicate a role for enhancer priming in immune response\", published
+in Nature Genetics, January 2018.")
+    (license license:gpl2+)))
+
 (define-public r-msdata
   (package
     (name "r-msdata")
@@ -1604,6 +1628,30 @@ cultures from 4 patients at 2 time points over 3 conditions (DPN, OHT and contro
     (description "This package provides supporting data for the
 TCGAbiolinksGUI package.")
     (license license:gpl3)))
+
+(define-public r-tximportdata
+  (package
+    (name "r-tximportdata")
+    (version "1.24.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "tximportData" version
+                                     'experiment))
+              (sha256
+               (base32
+                "0mgbwpybg2xd6x1ijrflmjh5w63qz6ylnzszbbyp437n618m7riy"))))
+    (properties `((upstream-name . "tximportData")))
+    (build-system r-build-system)
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/tximportData")
+    (synopsis "Data for the tximport package")
+    (description
+     "This package provides the output of running various transcript abundance
+quantifiers on a set of 6 RNA-seq samples from the GEUVADIS project.  The
+quantifiers were @code{Cufflinks}, @code{RSEM}, @code{kallisto}, @code{Salmon}
+and @code{Sailfish}.  Alevin example output is also included.")
+    (license license:gpl2+)))
+
 
 
 ;;; Packages
@@ -2034,6 +2082,53 @@ using the linear model features implemented in limma.  Standard Bioconductor
 objects are used so that other packages could be used as well.")
     (license license:gpl3)))
 
+(define-public r-airpart
+  (package
+    (name "r-airpart")
+    (version "1.4.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "airpart" version))
+              (sha256
+               (base32
+                "0ljankgvgf8rby4z340wxx8v7acs9yz955p3a40jl6y8rz1svc06"))))
+    (properties `((upstream-name . "airpart")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-apeglm
+           r-clue
+           r-complexheatmap
+           r-dplyr
+           r-dynamictreecut
+           r-emdbook
+           r-forestplot
+           r-ggplot2
+           r-lpsolve
+           r-matrixstats
+           r-mclust
+           r-pbapply
+           r-plyr
+           r-rcolorbrewer
+           r-rlang
+           r-s4vectors
+           r-scater
+           r-singlecellexperiment
+           r-smurf
+           r-summarizedexperiment))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/airpart")
+    (synopsis "Differential cell-type-specific allelic imbalance")
+    (description
+     "The airpart package identifies sets of genes displaying differential
+cell-type-specific allelic imbalance across cell types or states, utilizing
+single-cell allelic counts.  It makes use of a generalized fused lasso with
+binomial observations of allelic counts to partition cell types by their
+allelic imbalance.  Alternatively, a nonparametric method for partitioning
+cell types is offered.  The package includes a number of visualizations and
+quality control functions for examining single cell allelic imbalance
+datasets.")
+    (license license:gpl2)))
+
 (define-public r-amountain
   (package
     (name "r-amountain")
@@ -2270,6 +2365,605 @@ reproducible gene expression signatures capable of accurately distinguishing
 tumor samples from healthy controls.")
     (license license:artistic2.0)))
 
+(define-public r-aseb
+  (package
+    (name "r-aseb")
+    (version "1.40.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "ASEB" version))
+              (sha256
+               (base32
+                "1i0r4vimk6is4j4rr14ajp8papznpmmr0bhwd96s8w53cqdqph7p"))))
+    (properties `((upstream-name . "ASEB")))
+    (build-system r-build-system)
+    (home-page "https://bioconductor.org/packages/ASEB")
+    (synopsis "Predict acetylated lysine sites")
+    (description
+     "ASEB is an R package to predict lysine sites that can be acetylated by a
+specific @dfn{KAT} (K-acetyl-transferases) family.  Lysine acetylation is a
+well-studied posttranslational modification on kinds of proteins.  About four
+thousand lysine acetylation sites and over 20 lysine KATs have been
+identified.  However, which KAT is responsible for a given protein or lysine
+site acetylation is mostly unknown.  In this package, we use a
+@dfn{GSEA}-like (Gene Set Enrichment Analysis) method to make predictions.
+GSEA method was developed and successfully used to detect coordinated
+expression changes and find the putative functions of the long non-coding
+RNAs.")
+    (license license:gpl3+)))
+
+(define-public r-asgsca
+  (package
+    (name "r-asgsca")
+    (version "1.30.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "ASGSCA" version))
+              (sha256
+               (base32
+                "0mxrrkm2lg7gxjh8ynn6qmryn8wqda7b83sr51dpgblay83jcbaq"))))
+    (properties `((upstream-name . "ASGSCA")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-mass r-matrix))
+    (home-page "https://bioconductor.org/packages/ASGSCA")
+    (synopsis "Analysis of associations between multiple genotypes and traits")
+    (description
+     "The package @dfn{ASGSCA} (Association Study using Generalized Structured
+Component Analysis) provides tools to model and test the association between
+multiple genotypes and multiple traits, taking into account the prior
+biological knowledge.  Genes, and clinical pathways are incorporated in the
+model as latent variables.")
+    (license license:gpl3)))
+
+(define-public r-aspli
+  (package
+    (name "r-aspli")
+    (version "2.6.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "ASpli" version))
+              (sha256
+               (base32
+                "1frlcwa8m4imfx6ncav8r8yskyaf4ibha177mfnp9y84w6mphynz"))))
+    (properties `((upstream-name . "ASpli")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-annotationdbi
+           r-biocgenerics
+           r-biocstyle
+           r-data-table
+           r-dt
+           r-edger
+           r-genomicalignments
+           r-genomicfeatures
+           r-genomicranges
+           r-gviz
+           r-htmltools
+           r-igraph
+           r-iranges
+           r-limma
+           r-mass
+           r-pbmcapply
+           r-rsamtools
+           r-s4vectors
+           r-tidyr
+           r-upsetr))
+    (home-page "https://bioconductor.org/packages/ASpli")
+    (synopsis "Analysis of alternative splicing using RNA-Seq")
+    (description
+     "@dfn{AS} (alternative splicing) is a common mechanism of
+post-transcriptional gene regulation in eukaryotic organisms that expands the
+functional and regulatory diversity of a single gene by generating multiple
+mRNA isoforms that encode structurally and functionally distinct proteins.
+ASpli is an integrative pipeline and user-friendly R package that facilitates
+the analysis of changes in both annotated and novel AS events.  ASpli
+integrates several independent signals in order to deal with the complexity
+that might arise in splicing patterns.")
+    ;; The authors didn't specify any GPL version in description or in the
+    ;; sources.
+    (license (list license:gpl2+ license:gpl3+))))
+
+(define-public r-assessorf
+  (package
+    (name "r-assessorf")
+    (version "1.14.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "AssessORF" version))
+              (sha256
+               (base32
+                "1l87bpny9k3jbzbzmb9h2ijvblrj471gqv26fyzbvb3vr6y406z7"))))
+    (properties `((upstream-name . "AssessORF")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biostrings
+           r-decipher
+           r-genomicranges
+           r-iranges))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/AssessORF")
+    (synopsis "Assess gene predictions using proteomics and evolutionary conservation")
+    (description
+     "In order to assess the quality of a set of predicted genes for a genome,
+evidence must first be mapped to that genome.  Next, each gene must be
+categorized based on how strong the evidence is for or against that gene.  The
+AssessORF package provides the functions and class structures necessary for
+accomplishing those tasks, using proteomics hits and evolutionarily conserved
+start codons as the forms of evidence.")
+    (license license:gpl3)))
+
+(define-public r-asset
+  (package
+    (name "r-asset")
+    (version "2.14.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "ASSET" version))
+              (sha256
+               (base32
+                "029acl5k9d4hnvy3jia9cr4rk6w31zn8b5s79i6lazq1cp236hbg"))))
+    (properties `((upstream-name . "ASSET")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-mass r-msm r-rmeta))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/ASSET")
+    (synopsis
+     "Subset-based association analysis of heterogeneous traits and subtypes")
+    (description
+     "This package is an R program for the subset-based analysis of
+heterogeneous traits and disease subtypes.  ASSET allows the user to search
+through all possible subsets of z-scores to identify the subset of traits
+giving the best meta-analyzed z-score.  Further, it returns a p-value
+adjusting for the multiple-testing involved in the search.  It also allows for
+searching for the best combination of disease subtypes associated with each
+variant.")
+    (license license:gpl2)))
+
+(define-public r-atena
+  (package
+    (name "r-atena")
+    (version "1.2.2")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "atena" version))
+              (sha256
+               (base32
+                "0b89wb7cc44c8jd6868dn8pwgid768bprkncsi87qkdz0abbhzhp"))))
+    (properties `((upstream-name . "atena")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-annotationhub
+           r-biocgenerics
+           r-biocparallel
+           r-genomeinfodb
+           r-genomicalignments
+           r-genomicranges
+           r-iranges
+           r-matrix
+           r-rsamtools
+           r-s4vectors
+           r-scales
+           r-sparsematrixstats
+           r-squarem
+           r-summarizedexperiment))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/functionalgenomics/atena")
+    (synopsis "Analysis of transposable elements")
+    (description
+     "The atena package quantifies expression of @dfn{TEs} (transposable
+elements) from RNA-seq data through different methods, including ERVmap,
+TEtranscripts and Telescope.  A common interface is provided to use each of
+these methods, which consists of building a parameter object, calling the
+quantification function with this object and getting a
+@code{SummarizedExperiment} object as an output container of the quantified
+expression profiles.  The implementation allows quantifing TEs and gene
+transcripts in an integrated manner.")
+    (license license:artistic2.0)))
+
+(define-public r-atsnp
+  (package
+    (name "r-atsnp")
+    (version "1.12.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "atSNP" version))
+              (sha256
+               (base32
+                "0dmv34xqwr3l2rznapxmyrkyf1w78qzxdv88s5nn8s1m8qdkgwkz"))))
+    (properties `((upstream-name . "atSNP")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biocfilecache
+           r-biocparallel
+           r-bsgenome
+           r-data-table
+           r-ggplot2
+           r-lifecycle
+           r-motifstack
+           r-rappdirs
+           r-rcpp
+           r-testthat))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/sunyoungshin/atSNP")
+    (synopsis
+     "Affinity test for identifying regulatory single nucleotide polymorphisms")
+    (description
+     "The atSNP package performs affinity tests of motif matches with the
+@dfn{SNP} (single nucleotide polymorphism) or the reference genomes and
+SNP-led changes in motif matches.")
+    (license license:gpl2)))
+
+(define-public r-attract
+  (package
+    (name "r-attract")
+    (version "1.48.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "attract" version))
+              (sha256
+               (base32
+                "0f1fsv278kpnxvqg9qa5rw2k3zr8zws0ab73ldl60h6pv9cy8x82"))))
+    (properties `((upstream-name . "attract")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-annotationdbi
+           r-biobase
+           r-cluster
+           r-gostats
+           r-keggrest
+           r-limma
+           r-org-hs-eg-db
+           r-reactome-db))
+    (home-page "https://bioconductor.org/packages/attract")
+    (synopsis "Finding drivers of Kauffman's attractor landscape")
+    (description
+     "This package contains the functions to find the gene expression modules
+that represent the drivers of Kauffman's attractor landscape.  The modules are
+the core attractor pathways that discriminate between different cell types of
+groups of interest.  Each pathway has a set of synexpression groups, which show
+transcriptionally-coordinated changes in gene expression.")
+    (license license:lgpl2.0+)))
+
+(define-public r-awfisher
+  (package
+    (name "r-awfisher")
+    (version "1.10.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "AWFisher" version))
+              (sha256
+               (base32
+                "050k7w0azsl7rqx2pxgccihzc2q8pmh6fyy4gib2d42sdyijr2n1"))))
+    (properties `((upstream-name . "AWFisher")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-edger
+           r-limma))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/AWFisher")
+    (synopsis  "Fast computing for adaptively weighted fisher's method")
+    (description
+     "This package is an implementation of the Adaptively Weighted Fisher's
+method, including fast p-value computing, variability index, and
+meta-pattern.")
+    (license license:gpl3)))
+
+(define-public r-awst
+  (package
+    (name "r-awst")
+    (version "1.4.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "awst" version))
+              (sha256
+               (base32
+                "0iw3zycmj95rmdx7f2w0j4yxkzd90y87lrzgdn9cyvvzi5avflav"))))
+    (properties `((upstream-name . "awst")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-summarizedexperiment))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/drisso/awst")
+    (synopsis "Asymmetric within-sample transformation")
+    (description
+     "This package @dfn{awst} (Asymmetric Within-Sample Transformation) that
+regularizes RNA-seq read counts and reduces the effect of noise on the
+classification of samples.  AWST comprises two main steps: standardization and
+smoothing.  These steps transform gene expression data to reduce the noise of
+the lowly expressed features, which suffer from background effects and low
+signal-to-noise ratio, and the influence of the highly expressed features,
+which may be the result of amplification bias and other experimental
+artifacts.")
+    (license license:expat)))
+
+(define-public r-baalchip
+  (package
+    (name "r-baalchip")
+    (version "1.22.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "BaalChIP" version))
+              (sha256
+               (base32
+                "02qwk9n2fyg5f9xxjiiha9mi6p9ii3zi5x7w84sh5d5g58s27g6q"))))
+    (properties `((upstream-name . "BaalChIP")))
+    (build-system r-build-system)
+    (inputs (list perl)) ; extra/get.overlaps.v2_chrXY.perl
+    (propagated-inputs
+     (list r-coda
+           r-doby
+           r-doparallel
+           r-foreach
+           r-genomeinfodb
+           r-genomicalignments
+           r-genomicranges
+           r-ggplot2
+           r-iranges
+           r-reshape2
+           r-rsamtools
+           r-scales))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/BaalChIP")
+    (synopsis
+     "Analysis of allele-specific transcription factor binding in cancer genomes")
+    (description
+     "This package offers functions to process multiple @code{ChIP-seq BAM}
+files and detect allele-specific events.  It computes allele counts at
+individual variants (SNPs/SNVs), implements extensive @dfn{QC} (quality
+control) steps to remove problematic variants, and utilizes a Bayesian
+framework to identify statistically significant allele-specific events.
+BaalChIP is able to account for copy number differences between the two
+alleles, a known phenotypical feature of cancer samples.")
+    (license license:artistic2.0)))
+
+(define-public r-basespacer
+  (package
+    (name "r-basespacer")
+    (version "1.40.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "BaseSpaceR" version))
+              (sha256
+               (base32
+                "0jyw4pnybsd6ywpaamk5ywkrcib2z48farsnszmwq97zlbmra7fj"))))
+    (properties `((upstream-name . "BaseSpaceR")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-rcurl r-rjsonio))
+    (home-page "https://bioconductor.org/packages/BaseSpaceR")
+    (synopsis "R SDK for BaseSpace RESTful API")
+    (description
+     "This package provides an R interface to Illumina's BaseSpace cloud
+computing environment, enabling the fast development of data analysis and
+visualization tools.  Besides providing an easy to use set of tools for
+manipulating the data from BaseSpace, it also facilitates the access to R's
+rich environment of statistical and data analysis tools.")
+    (license license:asl2.0)))
+
+(define-public r-bac
+  (package
+    (name "r-bac")
+    (version "1.56.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "BAC" version))
+              (sha256
+               (base32
+                "0dkw7438d2sf6nb577dnzija54qs0nhlr47lb73li60fhlnvqmh2"))))
+    (properties `((upstream-name . "BAC")))
+    (build-system r-build-system)
+    (home-page "https://bioconductor.org/packages/BAC")
+    (synopsis "Bayesian analysis of Chip-chip experiment")
+    (description
+     "This package uses a Bayesian hierarchical model to detect enriched
+regions from ChIP-chip experiments.  The common goal in analyzing this
+ChIP-chip data is to detect DNA-protein interactions from ChIP-chip
+experiments.  The BAC package has mainly been tested with Affymetrix tiling
+array data.  However, we expect it to work with other platforms (e.g. Agilent,
+Nimblegen, cDNA, etc.).  Note that BAC does not deal with normalization, so
+you will have to normalize your data beforehand.")
+    (license license:artistic2.0)))
+
+(define-public r-bader
+  (package
+    (name "r-bader")
+    (version "1.34.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "BADER" version))
+              (sha256
+               (base32
+                "0i5x1r2ns1hxhqk5jyfqird81hck1hllvvgx5bn0rb5vl99g8spm"))))
+    (properties `((upstream-name . "BADER")))
+    (build-system r-build-system)
+    (home-page "https://bioconductor.org/packages/BADER")
+    (synopsis
+     "Bayesian analysis of differential expression in RNA sequencing data")
+    (description
+     "The BADER package is intended for the analysis of RNA sequencing data.
+The algorithm fits a Bayesian hierarchical model for RNA sequencing count
+data.  BADER returns the posterior probability of differential expression for
+each gene between two groups A and B.  The joint posterior distribution of the
+variables in the model can be returned in the form of posterior samples, which
+can be used for further down-stream analyses such as gene set enrichment.")
+    (license license:gpl2)))
+
+(define-public r-badregionfinder
+  (package
+    (name "r-badregionfinder")
+    (version "1.24.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "BadRegionFinder" version))
+              (sha256
+               (base32
+                "1a1pqmh5ak9s3k1lxw6flanchk24zyznwm34ixi2b78wdc3hqgm9"))))
+    (properties `((upstream-name . "BadRegionFinder")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biomart
+           r-genomicranges
+           r-rsamtools
+           r-s4vectors
+           r-variantannotation))
+    (home-page "https://bioconductor.org/packages/BadRegionFinder")
+    (synopsis "Identifying regions with bad coverage in sequence alignment data")
+    (description
+     "BadRegionFinder is a package for identifying regions with a bad,
+acceptable and good coverage in sequence alignment data available as bam
+files.  The whole genome may be considered as well as a set of target regions.
+Various visual and textual types of output are available.")
+    (license license:lgpl3)))
+
+(define-public r-bambu
+  (package
+    (name "r-bambu")
+    (version "2.2.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "bambu" version))
+              (sha256
+               (base32
+                "0dc2hpnykr575jbrq9whmdabknl70s2hcs6gkmkl4kpv7xfqdq6w"))))
+    (properties `((upstream-name . "bambu")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biocgenerics
+           r-biocparallel
+           r-bsgenome
+           r-data-table
+           r-dplyr
+           r-genomeinfodb
+           r-genomicalignments
+           r-genomicfeatures
+           r-genomicranges
+           r-iranges
+           r-rcpp
+           r-rcpparmadillo
+           r-rsamtools
+           r-s4vectors
+           r-summarizedexperiment
+           r-tidyr
+           r-xgboost))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/GoekeLab/bambu")
+    (synopsis
+     "Isoform reconstruction and quantification for long read RNA-Seq data")
+    (description
+     "This R package is for multi-sample transcript discovery and
+quantification using long read RNA-Seq data.  You can use bambu after read
+alignment to obtain expression estimates for known and novel transcripts and
+genes.  The output from bambu can directly be used for visualisation and
+downstream analysis, such as differential gene expression or transcript
+usage.")
+    (license license:gpl3)))
+
+(define-public r-bandits
+  (package
+    (name "r-bandits")
+    (version "1.12.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "BANDITS" version))
+              (sha256
+               (base32
+                "1423djb7cij68y0q2dcp8q7lrcn2fxjn6d25v4qy3w00b2w8ppg9"))))
+    (properties `((upstream-name . "BANDITS")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biocparallel
+           r-data-table
+           r-doparallel
+           r-dorng
+           r-drimseq
+           r-foreach
+           r-ggplot2
+           r-mass
+           r-r-utils
+           r-rcpp
+           r-rcpparmadillo))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/SimoneTiberi/BANDITS")
+    (synopsis "Bayesian analysis of differential splicing")
+    (description
+     "BANDITS is a Bayesian hierarchical model for detecting differential
+splicing of genes and transcripts, via @dfn{DTU} (differential transcript
+usage), between two or more conditions.  The method uses a Bayesian
+hierarchical framework, which allows for sample specific proportions in a
+Dirichlet-Multinomial model, and samples the allocation of fragments to the
+transcripts.  Parameters are inferred via @dfn{MCMC} (Markov chain Monte
+Carlo) techniques and a DTU test is performed via a multivariate Wald test on
+the posterior densities for the average relative abundance of transcripts.")
+    (license license:gpl3+)))
+
+(define-public r-banocc
+  (package
+    (name "r-banocc")
+    (version "1.20.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "banocc" version))
+              (sha256
+               (base32
+                "10vaggq1w5jkxd8r2k1mhymzvb7x3h8afwn2pvmcpj022ka7xhbx"))))
+    (properties `((upstream-name . "banocc")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-coda
+           r-mvtnorm
+           r-rstan
+           r-stringr))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/banocc")
+    (synopsis "Bayesian analysis of compositional covariance")
+    (description
+     "BAnOCC is a package designed for compositional data, where each sample
+sums to one.  It infers the approximate covariance of the unconstrained data
+using a Bayesian model coded with @code{rstan}.  It provides as output the
+@code{stanfit} object as well as posterior median and credible interval
+estimates for each correlation element.")
+    (license license:expat)))
+
+(define-public r-barcodetrackr
+  (package
+    (name "r-barcodetrackr")
+    (version "1.4.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "barcodetrackR" version))
+              (sha256
+               (base32
+                "0yxa15xkgqazw31vq4wm8v747bw4qb18m6i602pvynk0n5bgg3d3"))))
+    (properties `((upstream-name . "barcodetrackR")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-circlize
+           r-cowplot
+           r-dplyr
+           r-ggdendro
+           r-ggplot2
+           r-ggridges
+           r-magrittr
+           r-plyr
+           r-proxy
+           r-rcolorbrewer
+           r-rlang
+           r-s4vectors
+           r-scales
+           r-shiny
+           r-summarizedexperiment
+           r-tibble
+           r-tidyr
+           r-vegan
+           r-viridis))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/dunbarlabNIH/barcodetrackR")
+    (synopsis "Functions for analyzing cellular barcoding data")
+    (description
+     "This package is developed for the analysis and visualization of clonal
+tracking data.  The required data is formed by samples and tag abundances in
+matrix form, usually from cellular barcoding experiments, integration site
+retrieval analyses, or similar technologies.")
+    (license license:cc0)))
+
 (define-public r-biocversion
   (package
     (name "r-biocversion")
@@ -2367,6 +3061,69 @@ data.  In addition, provides numerous plotting functions for commonly
 used visualizations.")
    (license license:artistic2.0)))
 
+(define-public r-dama
+  (package
+    (name "r-dama")
+    (version "1.68.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "daMA" version))
+              (sha256
+               (base32
+                "1mpjvl24wsdmpgra3iasgfvy29m71318gj6j1gg6081w0n4cq72m"))))
+    (properties `((upstream-name . "daMA")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-mass))
+    (home-page "https://bioconductor.org/packages/release/bioc/html/daMA.html")
+    (synopsis
+     "Efficient design and analysis of factorial two-colour microarray data")
+    (description
+     "This package contains functions for the efficient design of factorial
+two-colour microarray experiments and for the statistical analysis of
+factorial microarray data.")
+    (license license:gpl2+)))
+
+(define-public r-damefinder
+  (package
+    (name "r-damefinder")
+    (version "1.8.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "DAMEfinder" version))
+              (sha256
+               (base32
+                "123ra94bij0m45j2fzqr7fjipj4ld9kgk0kir1zfdbbd5h8h4mdf"))))
+    (properties `((upstream-name . "DAMEfinder")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biocgenerics
+           r-biostrings
+           r-bumphunter
+           r-cowplot
+           r-genomeinfodb
+           r-genomicalignments
+           r-genomicranges
+           r-ggplot2
+           r-iranges
+           r-limma
+           r-plyr
+           r-readr
+           r-reshape2
+           r-rsamtools
+           r-s4vectors
+           r-stringr
+           r-summarizedexperiment
+           r-variantannotation))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/DAMEfinder")
+    (synopsis "Differential allelicly methylated regions")
+    (description
+     "This package offers functionality for taking methtuple or Bismark
+outputs to calculate @acronym{ASM, Allele-Specific Methylation} scores and
+compute @acronym{DAMEs, Differential Allelicly MEthylated} regions.  It also
+offers nice visualization of methyl-circle plots.")
+    (license license:expat)))
+
 (define-public r-dearseq
   (package
     (name "r-dearseq")
@@ -2405,6 +3162,45 @@ heteroscedasticity through precision weights.  Perform both gene-wise and gene
 set analyses, and can deal with repeated or longitudinal data.")
     (license license:gpl2)))
 
+(define-public r-debcam
+  (package
+    (name "r-debcam")
+    (version "1.14.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "debCAM" version))
+              (sha256
+               (base32
+                "1ynz57kkxl8nx80zhh1vhhydqb5n6r9d7p69f0k9nj8rp4hdgng7"))))
+    (properties `((upstream-name . "debCAM")))
+    (build-system r-build-system)
+    (inputs (list openjdk))
+    (propagated-inputs
+     (list r-apcluster
+           r-biobase
+           r-biocparallel
+           r-corpcor
+           r-dmwr2
+           r-geometry
+           r-nmf
+           r-nnls
+           r-pcapp
+           r-rjava
+           r-summarizedexperiment))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/debCAM")
+    (synopsis "Deconvolution by convex analysis of mixtures")
+    (description
+     "This package is an R implementation for fully unsupervised deconvolution
+of complex tissues.  DebCAM provides basic functions to perform unsupervised
+deconvolution on mixture expression profiles by @acronym{CAM, Convex Analysis
+of Mixtures} and some auxiliary functions to help understand the
+subpopulation- specific results.  It also implements functions to perform
+supervised deconvolution based on prior knowledge of molecular markers, S
+matrix or A matrix.  Combining molecular markers from CAM and from prior
+knowledge can achieve semi-supervised deconvolution of mixtures.")
+    (license license:gpl2)))
+
 (define-public r-decipher
   (package
     (name "r-decipher")
@@ -2428,6 +3224,177 @@ set analyses, and can deal with repeated or longitudinal data.")
     (description "This package provides a toolset for deciphering and managing
 biological sequences.")
     (license license:gpl3)))
+
+(define-public r-deco
+  (package
+    (name "r-deco")
+    (version "1.12.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "deco" version))
+              (sha256
+               (base32
+                "18n5zgln33c79jbjzjlivs8ihyg8zci6minfqlvagxgzcpa67k0m"))))
+    (properties `((upstream-name . "deco")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-ade4
+           r-annotationdbi
+           r-biobase
+           r-biocparallel
+           r-biocstyle
+           r-cluster
+           r-foreign
+           r-gdata
+           r-ggplot2
+           r-gplots
+           r-gridextra
+           r-limma
+           r-locfit
+           r-made4
+           r-rcolorbrewer
+           r-reshape2
+           r-scatterplot3d
+           r-sfsmisc
+           r-summarizedexperiment))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/fjcamlab/deco")
+    (synopsis "Decomposing heterogeneous cohorts using omic data profiling")
+    (description
+     "This package discovers differential features in hetero- and homogeneous
+omic data by a two-step method including subsampling LIMMA and NSCA.  DECO
+reveals feature associations to hidden subclasses not exclusively related to
+higher deregulation levels.")
+    (license license:gpl3+)))
+
+(define-public r-decomplexdisease
+  (package
+    (name "r-decomplexdisease")
+    (version "1.16.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "DEComplexDisease" version))
+              (sha256
+               (base32
+                "09a967x1rnv7byjwh29ngjhs67rgg27zblmlzx6pyqlwy5jsp89d"))))
+    (properties `((upstream-name . "DEComplexDisease")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biocparallel
+           r-complexheatmap
+           r-deseq2
+           r-edger
+           r-rcpp
+           r-summarizedexperiment))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/DEComplexDisease")
+    (synopsis "Investigations of complex diseases by bi-clustering analysis")
+    (description
+     "DEComplexDisease is designed to find the @acronym{DEGs, Differential
+Expressed Genes} for complex disease, which is characterized by the
+heterogeneous genomic expression profiles.  Different from the established DEG
+analysis tools, it does not assume the patients of complex diseases to share
+the common DEGs.  By applying a bi-clustering algorithm, DEComplexDisease
+finds the DEGs shared by as many patients.  Applying the DEComplexDisease
+analysis results, users are possible to find the patients affected by the same
+mechanism based on the shared signatures.")
+    (license license:gpl3)))
+
+(define-public r-decomptumor2sig
+  (package
+    (name "r-decomptumor2sig")
+    (version "2.12.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "decompTumor2Sig" version))
+              (sha256
+               (base32
+                "04hg9bbga2s8scjxfd8wjlmr45nzzvh8d6gr0w929sybx4nj2qz6"))))
+    (properties `((upstream-name . "decompTumor2Sig")))
+    (build-system r-build-system)
+    (inputs (list perl))                ;script/extractSpecColumns.pl
+    (propagated-inputs
+     (list r-biocgenerics
+           r-biostrings
+           r-bsgenome-hsapiens-ucsc-hg19
+           r-data-table
+           r-genomeinfodb
+           r-genomicfeatures
+           r-genomicranges
+           r-ggplot2
+           r-ggseqlogo
+           r-gridextra
+           r-matrix
+           r-plyr
+           r-quadprog
+           r-readxl
+           r-s4vectors
+           r-summarizedexperiment
+           r-txdb-hsapiens-ucsc-hg19-knowngene
+           r-variantannotation))
+    (native-inputs (list r-knitr))
+    (home-page "https://rmpiro.net/decompTumor2Sig/")
+    (synopsis "Decomposition of individual tumors into mutational signatures")
+    (description
+     "The package uses quadratic programming for signature refitting, i.e., to
+decompose the mutation catalog from an individual tumor sample into a set of
+given mutational signatures (either Alexandrov-model signatures or
+Shiraishi-model signatures), computing weights that reflect the contributions
+of the signatures to the mutation load of the tumor.")
+    (license license:gpl2)))
+
+(define-public r-deconrnaseq
+  (package
+    (name "r-deconrnaseq")
+    (version "1.38.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "DeconRNASeq" version))
+              (sha256
+               (base32
+                "10smk88srxm58hli0fhkdfd6l5z02q58xc9mww39gkn71y0127k6"))))
+    (properties `((upstream-name . "DeconRNASeq")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-ggplot2
+           r-limsolve
+           r-pcamethods))
+    (home-page "https://bioconductor.org/packages/DeconRNASeq")
+    (synopsis
+     "Deconvolution of heterogeneous tissue samples for mRNA-Seq data")
+    (description
+     "DeconSeq is an R package for deconvolution of heterogeneous tissues
+based on mRNA-Seq data.  It models the expression levels from heterogeneous
+cell populations in mRNA-Seq as the weighted average of expression from
+different constituting cell types and predicted cell type proportions of
+single expression profiles.")
+    (license license:gpl2)))
+
+(define-public r-decontam
+  (package
+    (name "r-decontam")
+    (version "1.16.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "decontam" version))
+              (sha256
+               (base32
+                "1g9hcfcfnpq6z21069yw0pyzncwznmvxb2xalg4y6y1604dy98q9"))))
+    (properties `((upstream-name . "decontam")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-ggplot2 r-reshape2))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/benjjneb/decontam")
+    (synopsis
+     "Identification of contaminants in marker-gene and metagenomics data")
+    (description
+     "This package offers simple statistical identification of contaminating
+sequence features in marker-gene or metagenomics data.  It works on any kind
+of feature derived from environmental sequencing data (e.g. ASVs, OTUs,
+taxonomic groups, MAGs, etc).  Requires DNA quantitation data or sequenced
+negative control samples.")
+    (license license:artistic2.0)))
 
 (define-public r-deconvr
   (package
@@ -14521,6 +15488,44 @@ data manipulation and visualization.")
      "This package interfaces R with the graphviz library for plotting R graph
 objects from the @code{graph} package.")
     (license license:epl1.0)))
+
+(define-public r-fishpond
+  (package
+    (name "r-fishpond")
+    (version "2.2.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "fishpond" version))
+              (sha256
+               (base32
+                "0svp4yh0srhzbbxy1grchzdd9yzchadjp3d2sy2n9xpwxzpkhrym"))))
+    (properties `((upstream-name . "fishpond")))
+    (build-system r-build-system)
+    (inputs (list zlib))
+    (propagated-inputs
+     (list r-abind
+           r-genomicranges
+           r-gtools
+           r-iranges
+           r-jsonlite
+           r-matrix
+           r-matrixstats
+           r-qvalue
+           r-rcpp
+           r-s4vectors
+           r-singlecellexperiment
+           r-summarizedexperiment
+           r-svmisc))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/mikelove/fishpond")
+    (synopsis "Downstream methods and tools for expression data")
+    (description
+     "The @code{fishpond} package contains methods for differential transcript
+and gene expression analysis of RNA-seq data using inferential replicates for
+uncertainty of abundance quantification, as generated by Gibbs sampling or
+bootstrap sampling.  Also the package contains a number of utilities for
+working with Salmon and Alevin quantification files.")
+    (license license:gpl2)))
 
 (define-public r-fithic
   (package

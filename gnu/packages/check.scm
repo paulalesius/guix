@@ -38,6 +38,8 @@
 ;;; Copyright © 2020, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Hugo Lecomte <hugo.lecomte@inria.fr>
 ;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
+;;; Copyright © 2022 David Elsing <david.elsing@posteo.net>
+;;; Copyright © 2022 Sharlatan Hellseher <sharlatanus@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -490,6 +492,63 @@ a multi-paradigm automated test framework for C++ and Objective-C.")
     (description "Catch2 stands for C++ Automated Test Cases in Headers and is
 a multi-paradigm automated test framework for C++ and Objective-C.")
     (license license:boost1.0)))
+
+(define-public cbehave
+  (let ((commit "5deaea0eaaf52f1c5ccdac0c68c003988f348fb4")
+        (revision "1"))
+    (package
+      (name "cbehave")
+      (version (git-version "0.2.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/bigwhite/cbehave")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0kicawxmxn059n3rmfc7r2q5wfjrqbr6lm8dmsi86ba76ak0f9gi"))
+                (snippet
+                 #~(begin
+                     (for-each delete-file
+                               '("aclocal.m4"
+                                 "config.guess" "config.sub" "configure"
+                                 "depcomp" "install-sh"
+                                 "libtool" "ltmain.sh" "missing"
+                                 "Makefile.in" "src/Makefile.in"
+                                 "src/example/Makefile.in"))))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:configure-flags #~(list "--enable-shared" "--disable-static")
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-before 'bootstrap 'rename-configure.in
+              (lambda _
+                (rename-file "configure.in" "configure.ac")))
+            (add-after 'rename-configure.in 'set-AM_PROG_AR
+              (lambda _
+                (substitute* "configure.ac"
+                  (("^AC_PROG_LIBTOOL.*" orig)
+                   (string-append "AM_PROG_AR\n" orig)))))
+            (add-after 'set-AM_PROG_AR 'enable-tests
+              (lambda _
+                (let ((port (open-file "src/example/Makefile.am" "a")))
+                  (display (string-append "\nTESTS = calculator_test"
+                                          " text_editor_test string_test"
+                                          " product_database_test mock_test\n")
+                           port)
+                  (close-port port))))
+            (add-before 'check 'create-dummy-file
+              (lambda _
+                (invoke "touch" "src/example/foo.txt"))))))
+      (native-inputs (list autoconf automake libtool))
+      (home-page "https://github.com/bigwhite/cbehave")
+      (synopsis "Behavior-driven development framework")
+      (description "CBehave is a behavior-driven development implemented in C.
+It allows the specification of behaviour scenarios using a given-when-then
+pattern.")
+      (license license:apsl2))))
 
 (define-public cmdtest
   (package
@@ -1034,6 +1093,28 @@ and many external plugins.")
     (license license:expat)))
 
 (define-public python-pytest-6 python-pytest)
+
+;; Astropy started using hard dependencies for Pytest 7+, which might
+;; happen for some other projects. It could be set as default in staging.
+(define-public python-pytest-7.1
+  (package
+    (inherit python-pytest)
+    (version "7.1.3")
+    (name "python-pytest")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "pytest" version))
+       (sha256
+        (base32
+         "0f8c31v5r2kgjixvy267n0nhc4xsy65g3n9lz1i1377z5pn5ydjg"))))
+    (arguments
+     (substitute-keyword-arguments (package-arguments python-pytest)
+      ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-before 'build 'pretend-version
+              (lambda _
+                (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" #$version)))))))))
 
 (define-public python-pytest-bootstrap
   (package
@@ -2193,7 +2274,7 @@ failures.")
     (home-page "https://github.com/ktosiek/pytest-freezegun")
     (synopsis "Pytest plugin to freeze time in test fixtures")
     (description "The @code{pytest-freezegun} plugin wraps tests and fixtures
-with @code{freeze_time}, which allows to control (i.e., freeze) the time seen
+with @code{freeze_time}, which controls (i.e., freeze) the time seen
 by the test.")
     (license license:expat)))
 
@@ -2720,18 +2801,29 @@ create data based on random numbers and yet remain repeatable.")
 (define-public python-freezegun
   (package
     (name "python-freezegun")
-    (version "0.3.14")
+    (version "1.2.2")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "freezegun" version))
        (sha256
-        (base32 "0al75mk829j1izxi760b7yjnknjihyfhp2mvi5qiyrxb9cpxwqk2"))))
+        (base32 "0ijlq32qvpm5zprfzbyzawpl9qjsknlxhryr1i0q84wl0sxd28nd"))
+       (modules '((guix build utils)))
+       (snippet
+        ;; Add an explicit case for static methods as they are callable
+        ;; in Python 3.10, breaking this conditional.
+        ;; XXX Taken from upstream pull request:
+        ;; https://github.com/spulec/freezegun/pull/397
+        '(substitute* "freezegun/api.py"
+           (("if not callable\\(attr_value\\) or \
+inspect\\.isclass\\(attr_value\\):")
+            "if (not callable(attr_value) or inspect.isclass(attr_value)\
+or isinstance(attr_value, staticmethod)):")))))
     (build-system python-build-system)
     (native-inputs
-     (list python-mock python-pytest))
+     (list python-pytest))
     (propagated-inputs
-     (list python-six python-dateutil))
+     (list python-dateutil))
     (arguments
      `(#:phases
        (modify-phases %standard-phases

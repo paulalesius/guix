@@ -65,6 +65,7 @@
 ;;; Copyright © 2022 Rene Saavedra <nanuui@protonmail.com>
 ;;; Copyright © 2022 muradm <mail@muradm.net>
 ;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
+;;; Copyright © 2022 Hunter Jozwiak <hunter.t.joz@gmail.com>
 
 ;;;
 ;;; This file is part of GNU Guix.
@@ -354,7 +355,23 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
 ;; The current "stable" kernels. That is, the most recently released major
 ;; versions that are still supported upstream.
 
-(define-public linux-libre-5.19-version "5.19.14")
+(define-public linux-libre-6.0-version "6.0.6")
+(define-public linux-libre-6.0-gnu-revision "gnu")
+(define deblob-scripts-6.0
+  (linux-libre-deblob-scripts
+   linux-libre-6.0-version
+   linux-libre-6.0-gnu-revision
+   (base32 "0iwbjrgiwch5v1xpnm9wk9zqw2v6lxja0k8yj2x0amxc9ma68176")
+   (base32 "1x8nqdf338gqsn8d825xgvx44nawdy28zkg3cdmfxn09g749g6pz")))
+(define-public linux-libre-6.0-pristine-source
+  (let ((version linux-libre-6.0-version)
+        (hash (base32 "1akzfkwjbxki6r41gcnp5fml389i8ng9bid9c4ysg6w65nphajw6")))
+   (make-linux-libre-source version
+                            (%upstream-linux-source version hash)
+                            deblob-scripts-6.0)))
+
+
+(define-public linux-libre-5.19-version "5.19.17")
 (define-public linux-libre-5.19-gnu-revision "gnu")
 (define deblob-scripts-5.19
   (linux-libre-deblob-scripts
@@ -364,16 +381,15 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "092myqjixvy1k3ylcj0hfc4whfxapjvxsxm4gk30a3jv5dnh7mly")))
 (define-public linux-libre-5.19-pristine-source
   (let ((version linux-libre-5.19-version)
-        (hash (base32 "1h8srn3fw4vw61qi0xxlk9fq0fqq4wl7fbrzz7sivdd8qkhjgv8x")))
+        (hash (base32 "12cly10lad12idjwlgh2g0pp4hhj57h2qi4fy6jg1lbsm62b6fy9")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.19)))
 
-
 ;; The "longterm" kernels — the older releases with long-term upstream support.
 ;; Here are the support timelines:
 ;; <https://www.kernel.org/category/releases.html>
-(define-public linux-libre-5.15-version "5.15.72")
+(define-public linux-libre-5.15-version "5.15.76")
 (define-public linux-libre-5.15-gnu-revision "gnu")
 (define deblob-scripts-5.15
   (linux-libre-deblob-scripts
@@ -383,12 +399,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "048r4synfax2ajyzlmp672b68yshxwlfccdah2vz1kh88rqfmgsc")))
 (define-public linux-libre-5.15-pristine-source
   (let ((version linux-libre-5.15-version)
-        (hash (base32 "1aq75z2spa1jvxv9m89gsaxza29n25k8j1f0pg9yj6j7bcxk5430")))
+        (hash (base32 "0zymcp88654qk896djvc2ngdksvhkzh1ndhfk1dn5qqrqhha01wh")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.15)))
 
-(define-public linux-libre-5.10-version "5.10.147")
+(define-public linux-libre-5.10-version "5.10.152")
 (define-public linux-libre-5.10-gnu-revision "gnu1")
 (define deblob-scripts-5.10
   (linux-libre-deblob-scripts
@@ -398,12 +414,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "1981axxswghza3iadp94q54y8w30h9w9vyq4cbjiiv9alvbv0pb8")))
 (define-public linux-libre-5.10-pristine-source
   (let ((version linux-libre-5.10-version)
-        (hash (base32 "16pdpjmvrdml7am7s2kydrif1l7f4aq0wh4ak0xh3dby16zkl9c5")))
+        (hash (base32 "19nq2pgy4vmn30nywdvcvsx4vhmndrj97iiclpqakzgblj1mq2zs")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.10)))
 
-(define-public linux-libre-5.4-version "5.4.217")
+(define-public linux-libre-5.4-version "5.4.221")
 (define-public linux-libre-5.4-gnu-revision "gnu1")
 (define deblob-scripts-5.4
   (linux-libre-deblob-scripts
@@ -413,12 +429,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "1vnjbdyssa7dwyjl9kg35alwvf7yh597cl74yr1wy2gk5bc9paw6")))
 (define-public linux-libre-5.4-pristine-source
   (let ((version linux-libre-5.4-version)
-        (hash (base32 "0qrfrk0g1dky5apg8gdxczj2ir0g0z41zmdmbwwcxkxjz76jdf1b")))
+        (hash (base32 "02nz9534998s922fdb0kpb09flgjmc7p78x0ypfxrd6pzv0pzcr7")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.4)))
 
-(define-public linux-libre-4.19-version "4.19.261")
+(define-public linux-libre-4.19-version "4.19.262")
 (define-public linux-libre-4.19-gnu-revision "gnu1")
 (define deblob-scripts-4.19
   (linux-libre-deblob-scripts
@@ -428,12 +444,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "00i91lx938nqlgy63hiricqd0fnbbf26vgya9c5lb7m1f4x324im")))
 (define-public linux-libre-4.19-pristine-source
   (let ((version linux-libre-4.19-version)
-        (hash (base32 "1cicb3zydpka9yjx875hbh305bsdvni2kp674pkvaw04pnc35hxy")))
+        (hash (base32 "07xnslqvmspqizng50yyprzrydwp0qdjmpsq2l1gjxr1lf3n8r5v")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.19)))
 
-(define-public linux-libre-4.14-version "4.14.295")
+(define-public linux-libre-4.14-version "4.14.296")
 (define-public linux-libre-4.14-gnu-revision "gnu1")
 (define deblob-scripts-4.14
   (linux-libre-deblob-scripts
@@ -443,12 +459,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "00i91lx938nqlgy63hiricqd0fnbbf26vgya9c5lb7m1f4x324im")))
 (define-public linux-libre-4.14-pristine-source
   (let ((version linux-libre-4.14-version)
-        (hash (base32 "0svalywqmrhav63vw0ns06c25sgyvzwfngljpham3nm7jjxbkk32")))
+        (hash (base32 "1n4vngqbywwkqrq9fwp3lp4w6d3z588hbnzfngcp07z1ffrcvm9d")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.14)))
 
-(define-public linux-libre-4.9-version "4.9.330")
+(define-public linux-libre-4.9-version "4.9.331")
 (define-public linux-libre-4.9-gnu-revision "gnu1")
 (define deblob-scripts-4.9
   (linux-libre-deblob-scripts
@@ -458,7 +474,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "0bib3641dbcqdkx3anna3caxnsg3nw9cnmhcklq0s93g3m57041h")))
 (define-public linux-libre-4.9-pristine-source
   (let ((version linux-libre-4.9-version)
-        (hash (base32 "0psrl8fcbp1bsanjmllic503dlyhkj8bjzfc20p2ksahlhv1j0mz")))
+        (hash (base32 "0v3vv02i9aqgx4g4kw0vpixxsms7w3s5fhry4wlqmsq0gkmqv3j8")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.9)))
@@ -490,6 +506,11 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
     (inherit source)
     (patches (append (origin-patches source)
                      patches))))
+
+(define-public linux-libre-6.0-source
+  (source-with-patches linux-libre-6.0-pristine-source
+                       (list %boot-logo-patch
+                             %linux-libre-arm-export-__sync_icache_dcache-patch)))
 
 (define-public linux-libre-5.19-source
   (source-with-patches linux-libre-5.19-pristine-source
@@ -605,6 +626,11 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
     (description "Headers of the Linux-Libre kernel.")
     (license license:gpl2)))
 
+(define-public linux-libre-headers-6.0
+  (make-linux-libre-headers* linux-libre-6.0-version
+                             linux-libre-6.0-gnu-revision
+                             linux-libre-6.0-source))
+
 (define-public linux-libre-headers-5.19
   (make-linux-libre-headers* linux-libre-5.19-version
                              linux-libre-5.19-gnu-revision
@@ -700,6 +726,11 @@ for ARCH and optionally VARIANT, or #f if there is no such configuration."
     ("CONFIG_ZSWAP" . #t)
     ("CONFIG_ZSMALLOC" . #t)
     ("CONFIG_ZRAM" . m)
+    ;; Accessibility support.
+    ("CONFIG_ACCESSIBILITY" . #t)
+    ("CONFIG_A11Y_BRAILLE_CONSOLE" . #t)
+    ("CONFIG_SPEAKUP" . m)
+    ("CONFIG_SPEAKUP_SYNTH_SOFT" . m)
     ;; Modules required for initrd:
     ("CONFIG_NET_9P" . m)
     ("CONFIG_NET_9P_VIRTIO" . m)
@@ -929,11 +960,20 @@ It has been modified to remove all non-free binary blobs.")
 ;;; Generic kernel packages.
 ;;;
 
+(define-public linux-libre-6.0
+  (make-linux-libre* linux-libre-6.0-version
+                     linux-libre-6.0-gnu-revision
+                     linux-libre-6.0-source
+                     '("x86_64-linux" "i686-linux" "armhf-linux"
+                       "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
+                     #:configuration-file kernel-config))
+
 (define-public linux-libre-5.19
   (make-linux-libre* linux-libre-5.19-version
                      linux-libre-5.19-gnu-revision
                      linux-libre-5.19-source
-                     '("x86_64-linux" "i686-linux" "armhf-linux" "aarch64-linux" "riscv64-linux")
+                     '("x86_64-linux" "i686-linux" "armhf-linux"
+                       "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
                      #:configuration-file kernel-config))
 
 (define-public linux-libre-version         linux-libre-5.19-version)
@@ -946,42 +986,47 @@ It has been modified to remove all non-free binary blobs.")
   (make-linux-libre* linux-libre-5.15-version
                      linux-libre-5.15-gnu-revision
                      linux-libre-5.15-source
-                     '("x86_64-linux" "i686-linux" "armhf-linux" "aarch64-linux" "riscv64-linux")
+                     '("x86_64-linux" "i686-linux" "armhf-linux"
+                       "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
                      #:configuration-file kernel-config))
 
 (define-public linux-libre-5.10
   (make-linux-libre* linux-libre-5.10-version
                      linux-libre-5.10-gnu-revision
                      linux-libre-5.10-source
-                     '("x86_64-linux" "i686-linux" "armhf-linux" "aarch64-linux" "riscv64-linux")
+                     '("x86_64-linux" "i686-linux" "armhf-linux"
+                       "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
                      #:configuration-file kernel-config))
 
 (define-public linux-libre-5.4
   (make-linux-libre* linux-libre-5.4-version
                      linux-libre-5.4-gnu-revision
                      linux-libre-5.4-source
-                     '("x86_64-linux" "i686-linux" "armhf-linux" "aarch64-linux" "riscv64-linux")
+                     '("x86_64-linux" "i686-linux" "armhf-linux"
+                       "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
                      #:configuration-file kernel-config))
 
 (define-public linux-libre-4.19
   (make-linux-libre* linux-libre-4.19-version
                      linux-libre-4.19-gnu-revision
                      linux-libre-4.19-source
-                     '("x86_64-linux" "i686-linux" "armhf-linux" "aarch64-linux")
+                     '("x86_64-linux" "i686-linux" "armhf-linux"
+                       "aarch64-linux" "powerpc64le-linux")
                      #:configuration-file kernel-config))
 
 (define-public linux-libre-4.14
   (make-linux-libre* linux-libre-4.14-version
                      linux-libre-4.14-gnu-revision
                      linux-libre-4.14-source
-                     '("x86_64-linux" "i686-linux" "armhf-linux")
+                     '("x86_64-linux" "i686-linux" "armhf-linux"
+                       "powerpc64le-linux")
                      #:configuration-file kernel-config))
 
 (define-public linux-libre-4.9
   (make-linux-libre* linux-libre-4.9-version
                      linux-libre-4.9-gnu-revision
                      linux-libre-4.9-source
-                     '("x86_64-linux" "i686-linux")
+                     '("x86_64-linux" "i686-linux" "powerpc64le-linux")
                      #:configuration-file kernel-config))
 
 ;; Linux-Libre-LTS points to the *newest* released long-term support version of
@@ -1169,7 +1214,7 @@ It has been modified to remove all non-free binary blobs.")
           linux-libre-5.19-gnu-revision
           linux-libre-5.19-source
           '("x86_64-linux" "i686-linux" "armhf-linux"
-            "aarch64-linux" "riscv64-linux")
+            "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
           #:extra-version "bpf"
           #:configuration-file kernel-config
           #:extra-options
@@ -2660,7 +2705,7 @@ Both commands are targeted at system administrators.")
 (define-public jitterentropy-rngd
   (package
     (name "jitterentropy-rngd")
-    (version "1.2.7")
+    (version "1.2.8")
     (source
      (origin
        (method git-fetch)
@@ -2669,17 +2714,18 @@ Both commands are targeted at system administrators.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "098hx09bsizin9405gh1c4rzbs2fr7qknqlr3glgyjpm3nm7bx28"))))
+        (base32 "13br8s6gqnfc844ps38ya5nny3pndsmskszv3dsp1cxcgvmscg1c"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f                      ; no test suite
-       #:make-flags
-       (list (string-append "CC=" ,(cc-for-target))
-             (string-append "PREFIX=" (assoc-ref %outputs "out"))
-             "UNITDIR=$(PREFIX)/lib/systemd/system")
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure))))         ; no ./configure script
+     (list
+      #:tests? #f                       ; no test suite
+      #:make-flags
+      #~(list (string-append "CC=" #$(cc-for-target))
+              (string-append "PREFIX=" #$output)
+              "UNITDIR=$(PREFIX)/lib/systemd/system")
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure))))         ; no ./configure script
     (home-page "https://www.chronox.de/jent.html")
     (synopsis "CPU jitter random number generator daemon")
     (description
@@ -3511,7 +3557,7 @@ compressed, transparent to other programs, without decompressing them.")
 (define-public numactl
   (package
     (name "numactl")
-    (version "2.0.14")
+    (version "2.0.16")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -3519,7 +3565,7 @@ compressed, transparent to other programs, without decompressing them.")
                     version "/numactl-" version ".tar.gz"))
               (sha256
                (base32
-                "1xngddsph43bxljywahi9d44fxr022slsap4hh91w8xnq54d2sw2"))))
+                "1j67wx3383fwqbvhg4nwqf72vpdgimmrvkpn3b9s2xzr7a4jy90v"))))
     (build-system gnu-build-system)
     (arguments
      `(,@(if (target-riscv64?)
@@ -4741,14 +4787,14 @@ isolation or root privileges.")
 (define-public hdparm
   (package
     (name "hdparm")
-    (version "9.64")
+    (version "9.65")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/hdparm/hdparm/"
                                   "hdparm-" version ".tar.gz"))
               (sha256
                (base32
-                "16l5mc6dpqkzhwsljyzks05pq89l2lw09qkx50ks1zn3a5lranri"))))
+                "0jssagggg52ssl9kg99m88afghj7bm1854vyf4p96q6h23wjjjfi"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags
@@ -4861,14 +4907,14 @@ about ACPI devices.")
 (define-public acpid
   (package
     (name "acpid")
-    (version "2.0.33")
+    (version "2.0.34")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/acpid2/acpid-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "1s6vf8lqwrcqi14k0ww47pk1kifbvxin73ha7mk1njmk7qdzfmh8"))))
+                "0cxkdbd087kj9ikprvvjpk0ixzqbipf2rmj6qyp7r15wzj65q29d"))))
     (build-system gnu-build-system)
     (home-page "https://sourceforge.net/projects/acpid2/")
     (synopsis "Daemon for delivering ACPI events to user-space programs")
@@ -5374,7 +5420,7 @@ Bluetooth audio output devices like headphones or loudspeakers.")
 (define-public bluez
   (package
     (name "bluez")
-    (version "5.61")
+    (version "5.64")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -5382,53 +5428,49 @@ Bluetooth audio output devices like headphones or loudspeakers.")
                     version ".tar.xz"))
               (sha256
                (base32
-                "0fs2kjsdhylxniqhii63i85fjszbqbz3iddwmgz4nmbr472xdbw3"))))
+                "0d6yl7l5zrlx5w3y503k72m9xsydx6gi1c65icchq1xknrjpwhxf"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:configure-flags
-       (let ((out (assoc-ref %outputs "out")))
-         (list "--sysconfdir=/etc"
-               "--localstatedir=/var"
-               "--enable-library"
-               "--disable-systemd"
-               ;; TODO: is this needed?  Not installed by default since 5.55.
-               "--enable-hid2hci"
-               ;; Install dbus/udev files to the correct location.
-               (string-append "--with-dbusconfdir=" out "/etc")
-               (string-append "--with-udevdir=" out "/lib/udev")))
-       #:phases
-       (modify-phases %standard-phases
-         ;; Test unit/test-gatt fails unpredictably. Seems to be a timing
-         ;; issue (discussion on upstream mailing list:
-         ;; https://marc.info/?t=149578476300002&r=1&w=2)
-         (add-before 'check 'skip-wonky-test
+     (list
+      #:configure-flags
+      #~(list "--sysconfdir=/etc"
+              "--localstatedir=/var"
+              "--enable-library"
+              "--disable-systemd"
+              ;; TODO: is this needed?  Not installed by default since 5.55.
+              "--enable-hid2hci"
+              ;; Install dbus/udev files to the correct location.
+              (string-append "--with-dbusconfdir=" #$output "/etc")
+              (string-append "--with-udevdir=" #$output "/lib/udev"))
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; Test unit/test-gatt fails unpredictably. Seems to be a timing
+          ;; issue (discussion on upstream mailing list:
+          ;; https://marc.info/?t=149578476300002&r=1&w=2)
+          (add-before 'check 'skip-wonky-test
             (lambda _
               (substitute* "unit/test-gatt.c"
-                (("tester_init\\(&argc, &argv\\);") "return 77;"))
-              #t))
-         (add-after 'install 'post-install
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((out        (assoc-ref outputs "out"))
-                    (servicedir (string-append out "/share/dbus-1/services"))
-                    (service    "obexd/src/org.bluez.obex.service")
-                    (rule       (string-append
-                                 out "/lib/udev/rules.d/97-hid2hci.rules")))
-               ;; Install the obex dbus service file.
-               (substitute* service
-                 (("/bin/false")
-                  (string-append out "/libexec/bluetooth/obexd")))
-               (install-file service servicedir)
-               ;; Fix paths in the udev rule.
-               (substitute* rule
-                 (("hid2hci --method")
-                  (string-append out "/lib/udev/hid2hci --method"))
-                 (("/sbin/udevadm")
-                  (search-input-file inputs "/bin/udevadm")))
-               #t))))))
+                (("tester_init\\(&argc, &argv\\);") "return 77;"))))
+          (add-after 'install 'post-install
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (let* ((out        #$output)
+                     (servicedir (string-append out "/share/dbus-1/services"))
+                     (service    "obexd/src/org.bluez.obex.service")
+                     (rule       (string-append
+                                  out "/lib/udev/rules.d/97-hid2hci.rules")))
+                ;; Install the obex dbus service file.
+                (substitute* service
+                  (("/bin/false")
+                   (string-append out "/libexec/bluetooth/obexd")))
+                (install-file service servicedir)
+                ;; Fix paths in the udev rule.
+                (substitute* rule
+                  (("hid2hci --method")
+                   (string-append out "/lib/udev/hid2hci --method"))
+                  (("/sbin/udevadm")
+                   (search-input-file inputs "/bin/udevadm")))))))))
     (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("rst2man" ,python-docutils)
-       ("gettext" ,gettext-minimal)))
+     (list pkg-config python-docutils gettext-minimal))
     (inputs
      (list glib dbus eudev libical readline))
     (home-page "http://www.bluez.org/")
@@ -5886,6 +5928,42 @@ drive that supports the ATA/ATAPI-7 IDLE IMMEDIATE command with unload
 feature, and a laptop with an accelerometer.  It has no effect on SSDs.")
     (license license:gpl2)))
 
+
+(define-public nbfc-linux
+  (let ((version "0.1.7")
+        (commit "4c2b75e4a875459e86a9892319889ff945e9cadf")
+        (revision "0"))
+    (package
+      (name "nbfc-linux")
+      (version (git-version version revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/nbfc-linux/nbfc-linux")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0mmyfaigrh3fd5v11a8p38km4m02qzsfx8yh72g0z405bzhqn5jk"))))
+      (build-system gnu-build-system)
+      (arguments
+       `(#:make-flags (list (string-append "CC="
+                                           ,(cc-for-target))
+                            (string-append "PREFIX="
+                                           (assoc-ref %outputs "out")))
+         #:tests? #f
+         #:phases (modify-phases %standard-phases
+                    (delete 'configure))))
+      (native-inputs (list pkg-config))
+      (propagated-inputs (list python dmidecode))
+      (synopsis "NoteBook FanControl ported to Linux")
+      (description
+       "This package provides a C port of NoteBook FanControl (NBFC), a fan
+control service for notebooks.  It provides the same utilities with the same
+interfaces as the original NBFC, although the implementation differs.")
+      (home-page "https://github.com/nbfc-linux/nbfc-linux")
+      (license license:gpl3+))))
+
 (define-public thinkfan
   (package
     (name "thinkfan")
@@ -6092,21 +6170,20 @@ invocations of itself.")
 (define-public ntfs-3g
   (package
     (name "ntfs-3g")
-    (version "2022.5.17")
+    (version "2022.10.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://tuxera.com/opensource/"
                                   "ntfs-3g_ntfsprogs-" version ".tgz"))
               (sha256
                (base32
-                "14zbsl7m32f796dkr334zbkj5rba7xa8smxb2ysf3095jyvgp284"))
+                "030pakw3h1z6p8phdbyb0hw0bb868znvrri96rg88jq7d3p3c3pj"))
               (modules '((guix build utils)))
               (snippet '(begin
                           ;; Install under $prefix.
                           (substitute* '("src/Makefile.in" "ntfsprogs/Makefile.in")
                             (("/sbin")
-                             "@sbindir@"))
-                          #t))))
+                             "@sbindir@"))))))
     (build-system gnu-build-system)
     (inputs (list util-linux ; libuuid
                   fuse))
@@ -6130,8 +6207,7 @@ invocations of itself.")
              (let* ((out (assoc-ref outputs "out"))
                     (sbin (string-append out "/sbin")))
                (symlink "mount.ntfs-3g"
-                        (string-append sbin "/mount.ntfs")))
-             #t)))))
+                        (string-append sbin "/mount.ntfs"))))))))
     (home-page "https://www.tuxera.com/community/open-source-ntfs-3g/")
     (synopsis "Read-write access to NTFS file systems")
     (description
@@ -6662,7 +6738,7 @@ the @code{mce-inject} module loaded if it exists.")
 (define-public mcelog
   (package
     (name "mcelog")
-    (version "188")
+    (version "189")
     (source
      (origin
        (method git-fetch)
@@ -6671,7 +6747,7 @@ the @code{mce-inject} module loaded if it exists.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1pdh0fj12wrm7whi96ak7m1f5b8ivgklabwkhfcfxd8dg134qczf"))
+        (base32 "0ml12xmmmljp22a89fw23c6gmba4dngavgnisv665w67kbnv5085"))
        (modules '((guix build utils)))
        (snippet
         `(begin
@@ -7880,14 +7956,14 @@ available in the kernel Linux.")
 (define-public cpuid
   (package
     (name "cpuid")
-    (version "20220812")
+    (version "20221003")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://www.etallen.com/cpuid/cpuid-"
                                   version ".src.tar.gz"))
               (sha256
                (base32
-                "1gss85szv4b48d93d6hzkkzggicdvw8dijiwfs84ywclgnwqzxiv"))))
+                "01w318kxcksfbjwjnnc9ly12g0yp4vm6xjgfl8mmi0jndg0cbi33"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags
@@ -9408,4 +9484,31 @@ desktop.")
      "@code{evtest} is a tool to print @code{evdev} kernel events.  It reads
 directly from the kernel device and prints a device description and the events
 with the value and the symbolic name.")
+    (license license:gpl2+)))
+
+(define-public tp-smapi-module
+  (package
+    (name "tp-smapi-module")
+    (version "0.43")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/linux-thinkpad/tp_smapi")
+                    (commit (string-append "tp-smapi/" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1rjb0njckczc2mj05cagvj0lkyvmyk6bw7wkiinv81lw8m90g77g"))))
+    (build-system linux-module-build-system)
+    (arguments
+     `(#:tests? #f))                    ;there are none.
+    (home-page "https://github.com/linux-thinkpad/tp_smapi")
+    (synopsis
+     "Linux Kernel module exposing features of ThinkPad hardware")
+    (description
+     "This package provides a Linux Kernel module that controls
+battery charging of specific ThinkPad laptops.  It also includes an improved
+version of the HDAPS driver.  The underlying hardware interfaces are
+@acronym{SMAPI, System Management Application Program Interface} and direct
+access to the embedded controller.")
     (license license:gpl2+)))

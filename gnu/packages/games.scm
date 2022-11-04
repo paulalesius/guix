@@ -65,7 +65,7 @@
 ;;; Copyright © 2021 Solene Rapenne <solene@perso.pw>
 ;;; Copyright © 2021 Noisytoot <noisytoot@disroot.org>
 ;;; Copyright © 2021 Petr Hodina <phodina@protonmail.com>
-;;; Copyright © 2021 Brendan Tildesley <mail@brendan.scot>
+;;; Copyright © 2021, 2022 Brendan Tildesley <mail@brendan.scot>
 ;;; Copyright © 2021 Christopher Baines <mail@cbaines.net>
 ;;; Copyright © 2021 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;; Copyright © 2022 Yovan Naumovski <yovan@gorski.stream>
@@ -4293,22 +4293,19 @@ falling, themeable graphics and sounds, and replays.")
 (define-public wesnoth
   (package
     (name "wesnoth")
-    (version "1.16.5")
+    (version "1.16.6")
     (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/wesnoth/wesnoth-"
-                                  (version-major+minor version)
-                                  "/wesnoth-" version "/"
-                                  "wesnoth-" version ".tar.bz2"))
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/wesnoth/wesnoth")
+                    (commit version)))
+              (file-name (string-append name "-" version ".tar.bz2"))
               (sha256
                (base32
-                "02pzijbmkgcb8hc4l3f4r3r3mxqda936dp488i9sd9d4m3xdzimh"))))
+                "0hfvxmdnwn86w254blbjacia342j47rhhahm6ca79la9d04rlz3m"))))
     (build-system cmake-build-system)
     (arguments
-     `(#:tests? #f))                    ;no check target
-    (native-inputs
-     `(("gettext" ,gettext-minimal)
-       ("pkg-config" ,pkg-config)))
+     (list #:tests? #f)) ;no test target
     (inputs
      (list boost
            dbus
@@ -4317,6 +4314,9 @@ falling, themeable graphics and sounds, and replays.")
            openssl
            pango
            (sdl-union (list sdl2 sdl2-image sdl2-mixer sdl2-ttf))))
+    (native-inputs
+     (list gettext-minimal
+           pkg-config))
     (home-page "https://www.wesnoth.org/")
     (synopsis "Turn-based strategy game")
     (description
@@ -6753,7 +6753,7 @@ fight against their plot and save his fellow rabbits from slavery.")
 (define-public 0ad-data
   (package
     (name "0ad-data")
-    (version "0.0.25b-alpha")
+    (version "0.0.26-alpha")
     (source
      (origin
        (method url-fetch)
@@ -6761,7 +6761,7 @@ fight against their plot and save his fellow rabbits from slavery.")
                            version "-unix-data.tar.xz"))
        (file-name (string-append name "-" version ".tar.xz"))
        (sha256
-        (base32 "1c9zrddmjxvvacismld6fbwbw9vrdbq6g6d3424p8w5p6xg5wlwy"))))
+        (base32 "0z9dfw2hn2fyrx70866lv5464fbagdb8dip321wq10pqb22y805j"))))
     (build-system trivial-build-system)
     (native-inputs (list tar unzip xz))
     (arguments
@@ -6800,7 +6800,7 @@ fight against their plot and save his fellow rabbits from slavery.")
 (define-public 0ad
   (package
     (name "0ad")
-    (version "0.0.25b-alpha")
+    (version "0.0.26-alpha")
     (source
      (origin
        (method url-fetch)
@@ -6808,7 +6808,7 @@ fight against their plot and save his fellow rabbits from slavery.")
                            version "-unix-build.tar.xz"))
        (file-name (string-append name "-" version ".tar.xz"))
        (sha256
-        (base32 "1p9fa8f7sjb9c5wl3mawzyfqvgr614kdkhrj2k4db9vkyisws3fp"))))
+        (base32 "0jzfq09ispi7740c01h6yqxqv9y3zx66d217z32pfbiiwgvns71f"))))
     ;; A snippet here would cause a build failure because of timestamps
     ;; reset.  See https://bugs.gnu.org/26734.
     (inputs
@@ -6816,6 +6816,7 @@ fight against their plot and save his fellow rabbits from slavery.")
            curl
            enet
            fmt
+           freetype
            gloox
            icu4c-68
            libidn
@@ -6825,7 +6826,7 @@ fight against their plot and save his fellow rabbits from slavery.")
            libxcursor
            libxml2
            miniupnpc
-           mozjs
+           mozjs-78
            openal
            sdl2
            wxwidgets
@@ -6940,7 +6941,7 @@ at their peak of economic growth and military prowess.
 (define-public open-adventure
   (package
     (name "open-adventure")
-    (version "1.9")
+    (version "1.11")
     (source
      (origin
        (method git-fetch)
@@ -6949,40 +6950,39 @@ at their peak of economic growth and military prowess.
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "123svzy7xczdklx6plbafp22yv9bcvwfibjk0jv2c9i22dfsr07f"))))
+        (base32 "1n0fzrdlbc6px88qr574ww2q85xk43bv09jpmsskzv1l2cncwm37"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:make-flags (list "CC=gcc")
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)            ;no configure script
-         (add-before 'build 'use-echo
-           (lambda _
-             (substitute* "tests/Makefile"
-               (("/bin/echo") (which "echo")))
-             #t))
-         (add-after 'build 'build-manpage
-           (lambda _
-             ;; This target is missing a dependency
-             (substitute* "Makefile"
-               ((".adoc.6:" line)
-                (string-append line " advent.adoc")))
-             (invoke "make" ".adoc.6")))
-         ;; There is no install target.
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin"))
-                    (man (string-append out "/share/man/man6")))
-               (install-file "advent" bin)
-               (install-file "advent.6" man))
-             #t)))))
+     (list
+      #:make-flags #~(list (string-append "CC=" #$(cc-for-target)))
+      #:parallel-tests? #f              ;some tests fail non-deterministically
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)           ;no configure script
+          (add-before 'build 'use-echo
+            (lambda _
+              (substitute* (list "tests/Makefile" "tests/tapview")
+                (("/bin/echo") (which "echo")))))
+          (add-after 'build 'build-manpage
+            (lambda _
+              ;; This target is missing a dependency
+              (substitute* "Makefile"
+                ((".adoc.6:" line)
+                 (string-append line " advent.adoc")))
+              (invoke "make" ".adoc.6")))
+          ;; There is no install target.
+          (replace 'install
+            (lambda _
+              (let ((bin (string-append #$output "/bin"))
+                    (man (string-append #$output "/share/man/man6")))
+                (install-file "advent" bin)
+                (install-file "advent.6" man)))))))
     (native-inputs
-     `(("asciidoc" ,asciidoc)
-       ("libedit" ,libedit)
-       ("pkg-config" ,pkg-config)
-       ("python" ,python-wrapper)
-       ("python-pyyaml" ,python-pyyaml)))
+     (list asciidoc
+           libedit
+           pkg-config
+           python-pyyaml
+           python-wrapper))
     (home-page "https://gitlab.com/esr/open-adventure")
     (synopsis "Colossal Cave Adventure")
     (description
@@ -8275,7 +8275,7 @@ your score gets higher, you level up and the blocks fall faster.")
 (define-public endless-sky
   (package
     (name "endless-sky")
-    (version "0.9.14")
+    (version "0.9.16.1")
     (source
      (origin
        (method git-fetch)
@@ -8284,31 +8284,31 @@ your score gets higher, you level up and the blocks fall faster.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "12iganf8dxiyrjznnabsarxjsr0h717j3k4mz15p0k67wxyahhmf"))))
+        (base32 "0cb2g1cb0mk6x9gq2x7n10rxlfhsq8wnssk068j6h80al3hhybly"))))
     (build-system scons-build-system)
     (arguments
-     `(#:scons ,scons-python2
-       #:scons-flags (list (string-append "PREFIX=" (assoc-ref %outputs "out")))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'fix-paths
-           (lambda* (#:key outputs #:allow-other-keys)
-             ;; Look for resources in the store directory.
-             (substitute* "source/Files.cpp"
-               (("/usr/local") (assoc-ref outputs "out")))
-             ;; Install game binary into %out/bin.
-             (substitute* "SConstruct"
-               (("games\"") "bin\""))))
-         (add-before 'build 'use-gcc-ar
-           ;; Use gcc-ar to support LTO.
-           (lambda _ (setenv "AR" "gcc-ar"))))))
+     (list #:scons-flags #~(list (string-append "PREFIX=" #$output))
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-paths
+                 (lambda _
+                   ;; Look for resources in the store directory.
+                   (substitute* "source/Files.cpp"
+                     (("/usr/local") #$output))
+                   ;; Install game binary into %out/bin.
+                   (substitute* "SConstruct"
+                     (("games\"") "bin\""))))
+               (add-before 'build 'use-gcc-ar
+                 ;; Use gcc-ar to support LTO.
+                 (lambda _ (setenv "AR" "gcc-ar"))))))
     (inputs
-     `(("glew" ,glew)
-       ("libjpeg" ,libjpeg-turbo)
-       ("libmad" ,libmad)
-       ("libpng" ,libpng)
-       ("openal" ,openal)
-       ("sdl2" ,sdl2)))
+     (list glew
+           libjpeg-turbo
+           libmad
+           libpng
+           openal
+           sdl2
+           `(,util-linux "lib"))) ; for libuuid
     (home-page "https://endless-sky.github.io/")
     (synopsis "2D space trading and combat game")
     (description "Endless Sky is a 2D space trading and combat game.  Explore
@@ -10814,7 +10814,8 @@ inside the Zenith Colony.")
     (description "Provides a large set of Go-related services for X11:
 @itemize
 @item Local games with precise implementation of the Chinese and Japanese rulesets
-@item Edition and visualization of SGF files-Connection to the NNGS or IGS Go servers
+@item Edition and visualization of SGF files
+@item Connection to the NNGS or IGS Go servers
 @item Bridge to Go modem protocol, allowing to play against Go modem-capable AIs
 such as GnuGo.
 @end itemize")
@@ -11120,7 +11121,7 @@ meant to be quick and fun.")
                    (string-append "CPPFLAGS=" "-I"
                                   #$(this-package-input "sdl-union")
                                   "/include/SDL"))))
-    (synopsis "Liquid War 6 is a unique multiplayer wargame.")
+    (synopsis "Liquid War 6 is a unique multiplayer wargame")
     (description
      "Liquid War 6 is a unique multiplayer war game.  Your army is a blob of
 liquid and you have to try and eat your opponents.  Rules are very simple yet
@@ -11153,7 +11154,7 @@ original, they have been invented by Thomas Colcombet.")
 RollerCoaster Tycoon 1 and 2, graphics- and gameplay-wise.
 
 In this game, you play as a manager of a theme park, allowing you to make a
-park of your dreams.  The list of responsiblities includes managing staff,
+park of your dreams.  The list of responsibilities includes managing staff,
 finances, landscaping, and most importantly: rides.  Good managers follow the
 principle of prioritizing the guests' happiness with a well-maintained park.
 Should they go unwise, a theme park plunge into chaos with vandalizing guests

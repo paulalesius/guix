@@ -1664,7 +1664,7 @@ an independent project by the JOSM team.")
 (define-public java-opening-hours-parser
   (package
     (name "java-opening-hours-parser")
-    (version "0.23.0")
+    (version "0.27.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1673,11 +1673,12 @@ an independent project by the JOSM team.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0yhbd2ix6h506aljh0jkrnp28m4xcqdcdpnqm30fn08kawdgxgsh"))))
+                "1sw5ccxqw4ly5hzxnnljjqx4876gyvagi10sg8r9w25n211lq0x4"))))
     (build-system ant-build-system)
     (arguments
      `(#:jar-name "java-opening-hours-parser.jar"
        #:source-dir "src/main/java"
+       #:test-exclude (list "**/IndividualTest.java")
        #:phases
        (modify-phases %standard-phases
          (add-before 'build 'copy-resources
@@ -1692,8 +1693,7 @@ an independent project by the JOSM team.")
                        "-DEBUG_TOKEN_MANAGER=false" "-JDK_VERSION=1.8"
                        "-GRAMMAR_ENCODING=UTF-8"
                        (string-append "-OUTPUT_DIRECTORY=" dir)
-                       file))
-             #t)))))
+                       file)))))))
     (inputs
      (list java-jetbrains-annotations))
     (native-inputs
@@ -1707,7 +1707,7 @@ to the OSM opening hours specification.")
 (define-public josm
   (package
     (name "josm")
-    (version "18360")
+    (version "18583")
     (source (origin
               (method svn-fetch)
               (uri (svn-reference
@@ -1716,7 +1716,7 @@ to the OSM opening hours specification.")
                      (recursive? #f)))
               (sha256
                (base32
-                "0j7fhzh6hs2b5r1a3d1xpy6f5r6q1kh79bck28raang8ldd754c6"))
+                "01ghh9kl984lr8f70jsks31p6a4cqpxqjpmbc4x6mzbmvy87dfvy"))
               (file-name (string-append name "-" version "-checkout"))
               (modules '((guix build utils)))
             (snippet
@@ -1755,15 +1755,6 @@ to the OSM opening hours specification.")
                    (string-append "<info><entry><commit revision=\"" ,version "\">"
                                   "<date>1970-01-01 00:00:00 +0000</date>"
                                   "</commit></entry></info>"))))
-             #t))
-         (add-before 'build 'fix-jcs
-           (lambda _
-             ;; This version of JOSM uses an unreleased version of commons-jcs,
-             ;; which has renamed its classes to another namespace.  Rename them
-             ;; back so they can be used with our version of jcs.
-             (substitute* (find-files "." ".*.java$")
-               (("jcs3") "jcs")
-               (("ICache.NAME_COMPONENT_DELIMITER") "\":\""))
              #t))
          (add-before 'build 'fix-classpath
            (lambda* (#:key inputs #:allow-other-keys)

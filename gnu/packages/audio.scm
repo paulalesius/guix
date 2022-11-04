@@ -236,7 +236,7 @@ promoting the market for advanced audio.")
        ("openal" ,openal)))
     (synopsis "Software Synthesizer")
     (description "WildMIDI is a simple software midi player which has a core
-softsynth library that can be use with other applications.")
+softsynth library that can be used with other applications.")
     (home-page "https://www.mindwerks.net/projects/wildmidi/")
     (license
      (list
@@ -474,31 +474,6 @@ library.  It is based on the player code of the Open ModPlug Tracker project.")
 by MusicIP.")
     (home-page "https://code.google.com/archive/p/musicip-libofa/")
     (license license:gpl2+)))
-
-(define-public faac
-  (package
-    (name "faac")
-    (version "1.30")
-    (source
-     (origin
-       (method url-fetch)
-       (uri
-        (string-append "mirror://sourceforge/faac/faac-src"
-                       "/faac-" version "/faac-1_30.tar.gz"))
-       (sha256
-        (base32 "1lmj0dib3mjp84jhxc5ddvydkzzhb0gfrdh3ikcidjlcb378ghxd"))))
-    (build-system gnu-build-system)
-    (native-inputs
-     (list autoconf automake libtool pkg-config))
-    (synopsis "Freeware Advanced Audio Coder")
-    (description "FAAC is an MPEG-4 and MPEG-2 AAC encoder.")
-    (home-page "https://www.audiocoding.com/faac.html")
-    (license
-     (list
-      ;; ISO MPEG-4 reference code.
-      license:gpl2+
-      ;; Others.
-      license:lgpl2.0+))))
 
 (define-public libtimidity
   (package
@@ -1125,6 +1100,39 @@ tools (analyzer, mono/stereo tools, crossovers).")
 guitar amplification and a small range of classic effects, signal processors and
 generators of mostly elementary and occasionally exotic nature.")
     (license license:gpl3+)))
+
+(define-public iir
+  (package
+    (name "iir")
+    (version "1.9.3")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/berndporr/iir1")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0wbh804as740kjvmyaqx4rwvwwrbwh0fnj979dvv1ljlx1p50bk0"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'delete-static-library
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let ((out (assoc-ref outputs "out")))
+                (delete-file (string-append out "/lib/libiir_static.a"))))))))
+    (home-page "https://berndporr.github.io/iir1/")
+    (synopsis
+     "Real-time C++ @acronym{IIR, infinite impulse response} filter library")
+    (description
+     "This C++ library implements the Butterworth, RBJ, and Chebychev
+@acronym{IIR, infinite impulse response} filters.  Samples are processed one by
+one, in real time.  It can easily import coefficients generated with Python
+(@code{scipy}).  It also avoids memory leaks by allocating memory at compile
+time, using templates, instead of calling @code{malloc()} or @code{new}.")
+    (license license:expat)))
 
 (define-public infamous-plugins
   (package
@@ -2605,14 +2613,13 @@ compensation, (de)interleaving, and byte-swapping
 (define-public python-pyaudio
   (package
     (name "python-pyaudio")
-    (version "0.2.11")
+    (version "0.2.12")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "PyAudio" version))
        (sha256
-        (base32
-         "0x7vdsigm7xgvyg3shd3lj113m8zqj2pxmrgdyj66kmnw0qdxgwk"))))
+        (base32 "17pvc27pn2xbisbq7nibhidyw8h2kyms7g2xbyx7nlxwfbdzbpam"))))
     (build-system python-build-system)
     (inputs
      (list portaudio))
@@ -3093,19 +3100,23 @@ different audio devices such as ALSA or PulseAudio.")
 (define-public qjackctl
   (package
     (name "qjackctl")
-    (version "0.9.7")
+    (version "0.9.8")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/qjackctl/qjackctl/"
                                   version "/qjackctl-" version ".tar.gz"))
               (sha256
                (base32
-                "104hfvr15v8cbkzil8slrqj48y3fl7lx060alj80q1sjh5hl6j2j"))))
+                "1rvxgxd7bbv7yazcpw3ily0jlra8ms5c0kkf7cybgivahw59zk87"))))
     (build-system cmake-build-system)
     (arguments
      '(#:tests? #f))                    ; no check target
     (inputs
-     (list jack-1 alsa-lib portaudio qtbase-5 qtx11extras))
+     (list alsa-lib
+           jack-1
+           portaudio
+           qtbase-5
+           qtsvg-5))
     (native-inputs
      (list pkg-config qttools-5))
     (home-page "https://qjackctl.sourceforge.io/")
@@ -4859,7 +4870,7 @@ library.")
 (define-public faudio
   (package
     (name "faudio")
-    (version "21.10")
+    (version "22.11")
     (source
      (origin
        (method git-fetch)
@@ -4868,7 +4879,7 @@ library.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0l9bicg8v1shsyq9k48zh4wv5kwfs6lfjmm9blzd13xrgmhd07w2"))))
+        (base32 "0jdfslxgzysqy0r3nfbsyj6dz0n36fncbsczm9zznxv5phic7g87"))))
     (arguments
      '(#:tests? #f                      ; No tests.
        #:configure-flags '("-DGSTREAMER=ON")))
@@ -5848,7 +5859,7 @@ and DSD streams.")
 (define-public qpwgraph
   (package
     (name "qpwgraph")
-    (version "0.3.5")
+    (version "0.3.7")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -5857,7 +5868,7 @@ and DSD streams.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "01f4zabn22dp0yl7szxck6gkbayk1p5iqajfgzls7mdkba7515b6"))))
+                "05zbwikixxp5524ps7bd0i4xialgnp1m201rfvlz284sm40wk1vv"))))
     (build-system cmake-build-system)
     (arguments (list #:tests? #f)) ;; no tests
     (inputs (list alsa-lib

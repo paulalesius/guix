@@ -265,7 +265,8 @@ VERSION is the target version of the boot-parameters record."
   (packages operating-system-packages             ; list of (PACKAGE OUTPUT...)
             (default %base-packages))             ; or just PACKAGE
 
-  (timezone operating-system-timezone)            ; string
+  (timezone operating-system-timezone
+            (default "Etc/UTC"))                  ; string
   (locale   operating-system-locale               ; string
             (default "en_US.utf8"))
   (locale-definitions operating-system-locale-definitions ; list of <locale-definition>
@@ -577,7 +578,7 @@ marked as 'needed-for-boot'."
 
 (define (boot-file-system-service os)
   "Return a service which adds, to the system profile, packages providing the
-utilites for the file systems marked as 'needed-for-boot' in OS."
+utilities for the file systems marked as 'needed-for-boot' in OS."
   (let ((file-systems (filter file-system-needed-for-boot?
                               (operating-system-file-systems os))))
     (simple-service 'boot-file-system-utilities profile-service-type
@@ -1491,8 +1492,14 @@ a list of <menu-entry>, to populate the \"old entries\" menu."
                      (cross-libc target))
                    glibc))
          (exec-server-command
-          (list (file-append libc "/lib/ld.so.1") "exec"
-                (file-append hurd "/hurd/exec") "'$(exec-task=task-create)'")))
+          ;; XXX: Run the statically-linked 'exec' to work around
+          ;; <https://issues.guix.gnu.org/58631>, which manifests on some
+          ;; machines.
+
+          ;; (list (file-append libc "/lib/ld.so.1") "exec"
+          ;;       (file-append hurd "/hurd/exec") "'$(exec-task=task-create)'")
+          (list (file-append hurd "/hurd/exec.static") "exec"
+                "'$(exec-task=task-create)'")))
     (list root-file-system-command exec-server-command)))
 
 (define* (operating-system-boot-parameters os root-device

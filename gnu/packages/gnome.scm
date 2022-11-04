@@ -3753,8 +3753,10 @@ diagrams.")
                              (system (or (%current-target-system)
                                          (%current-system))))
   ;; Since librsvg 2.50 depends on Rust, and Rust is only correctly supported
-  ;; on x86_64 so far, use the ancient C version on other platforms (FIXME).
-  (if (string-prefix? "x86_64-" system)
+  ;; on x86_64 and aarch64 so far, use the ancient C version on other
+  ;; platforms (FIXME).
+  (if (or (string-prefix? "x86_64-" system)
+          (string-prefix? "aarch64-" system))
       librsvg
       librsvg-2.40))
 
@@ -4257,7 +4259,7 @@ Hints specification (EWMH).")
 (define-public goffice
   (package
     (name "goffice")
-    (version "0.10.52")
+    (version "0.10.53")
     (source
      (origin
        (method url-fetch)
@@ -4265,7 +4267,7 @@ Hints specification (EWMH).")
                            (version-major+minor version)  "/"
                            "goffice-" version ".tar.xz"))
        (sha256
-        (base32 "0344k0ffndd79as3c4nfq3mia7mrds6aq2jg76drdw3h8gcyzfb0"))))
+        (base32 "0mrzi8bcykn1jdkvqm8zqwg8k80mafl4xhr0076d875adxwmiz97"))))
     (build-system gnu-build-system)
     (outputs '("out"
                "doc"))                  ; 4.0 MiB of gtk-doc
@@ -5211,7 +5213,7 @@ and the GLib main loop, to integrate well with GNOME applications.")
 (define-public libsecret
   (package
     (name "libsecret")
-    (version "0.20.4")
+    (version "0.20.5")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -5220,28 +5222,47 @@ and the GLib main loop, to integrate well with GNOME applications.")
                     "libsecret-" version ".tar.xz"))
               (sha256
                (base32
-                "0a4xnfmraxchd9cq5ai66j12jv2vrgjmaaxz25kl031jvda4qnij"))))
-    (build-system gnu-build-system)
-    (outputs '("out" "doc"))
+                "0k9bs47rzb3dwvznb4179d6nw7rbzjdyd4y8hx6vazfd1wscxcrz"))))
+    (build-system meson-build-system)
     (arguments
-     `(#:tests? #f ; FIXME: Testing hangs.
-       #:configure-flags
-       (list (string-append "--with-html-dir="
-                            (assoc-ref %outputs "doc")
-                            "/share/gtk-doc/html"))))
+     (list
+      #:configure-flags
+      #~(list "-Dgtk_doc=false")        ;requires gi-docgen
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'disable-problematic-tests
+            (lambda _
+              (substitute* "libsecret/meson.build"
+                ;; The test-collection test fails non-deterministically (see:
+                ;; https://gitlab.gnome.org/GNOME/libsecret/-/issues/80).
+                ((".*'test-collection',.*") ""))))
+          (delete 'check)
+          (add-after 'install 'check
+            (lambda* (#:key tests? test-options #:allow-other-keys)
+              (when tests?
+                (setenv "HOME" "/tmp")
+                (setenv "XDG_DATA_DIRS" ;for /org/freedesktop/secrets/collection
+                        (string-append #$output "/share:"
+                                       (getenv "XDG_DATA_DIRS")))
+                (apply invoke "dbus-run-session" "--"
+                       "meson" "test" "--print-errorlogs" "-t" "0"
+                       test-options)))))))
     (native-inputs
-     `(("gettext" ,gettext-minimal)
-       ("glib:bin" ,glib "bin") ; for gdbus-codegen, etc.
-       ("gobject-introspection" ,gobject-introspection)
-       ("pkg-config" ,pkg-config)
-       ("vala" ,vala)
-       ("xsltproc" ,libxslt)))
+     (list dbus
+           docbook-xml-4.2
+           docbook-xsl
+           gettext-minimal
+           `(,glib "bin")               ;for gdbus-codegen, etc.
+           gobject-introspection
+           libxml2                      ;for XML_CATALOG_FILES
+           libxslt
+           pkg-config
+           python
+           python-dbus
+           python-pygobject
+           vala))
     (propagated-inputs
-     (list glib)) ; required by libsecret-1.pc
-    (inputs
-     ;; The ‘build’ phase complains about missing docbook-xml-4.2 but adding it
-     ;; doesn't seem to affect the build result.
-     (list docbook-xsl libgcrypt libxml2)) ; for XML_CATALOG_FILES
+     (list glib libgcrypt))             ;required by libsecret-1.pc
     (home-page "https://wiki.gnome.org/Projects/Libsecret/")
     (synopsis "GObject bindings for \"Secret Service\" API")
     (description
@@ -5279,7 +5300,7 @@ and other secrets.  It communicates with the \"Secret Service\" using DBus.")
            pkg-config
            vala))
     (inputs
-     (list gtk+ libgnome-games-support librsvg libxml2))
+     (list gtk+ libgnome-games-support-1 librsvg libxml2))
     (home-page "https://wiki.gnome.org/Apps/Five%20or%20more")
     (synopsis "Logic puzzle game")
     (description "Five or More is a game where you try to align
@@ -7286,7 +7307,7 @@ a secret password store, an adblocker, and a modern UI.")
            libhandy
            libnotify
            libportal
-           librsvg                      ; for loading SVG files
+           (librsvg-for-system)         ; for loading SVG files
            libsecret
            libsoup
            libxslt
@@ -9065,7 +9086,7 @@ devices using the GNOME desktop.")
 (define-public gnome-control-center
   (package
     (name "gnome-control-center")
-    (version "42.3")
+    (version "42.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -9073,7 +9094,7 @@ devices using the GNOME desktop.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0zhw6hcrrcpq1zjkyzr5ipznxnzd2aczrqd7n2y7xbz21mjy62nf"))))
+                "1ln5rch6zbfh3vl2nnnmw39bylgg38rin6xp7ra0ra4ay3wv3gvs"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -10801,7 +10822,7 @@ is suitable as a default application in a Desktop environment.")
      (list autoconf automake
            `(,gtk+ "bin") intltool pkg-config))
     (inputs
-     (list gtksourceview libsm))
+     (list gtk+ gtksourceview-4 libsm))
     (home-page "https://wiki.gnome.org/Apps/Xpad")
     (synopsis "Virtual sticky note")
     (description
@@ -13041,7 +13062,7 @@ profiler via Sysprof, debugging support, and more.")
 (define-public komikku
   (package
     (name "komikku")
-    (version "1.1.0")
+    (version "1.2.0")
     (source
      (origin
        (method git-fetch)
@@ -13051,7 +13072,7 @@ profiler via Sysprof, debugging support, and more.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0ik3dwyq3r44d0h7r7x8j2sah9fhzilyvds1d6bbgbccqxzw4lnh"))))
+         "11pyhr8604dphsvh0pd0q5yi8f43sias37pwj1szq0l2gr5hv0q0"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -13098,6 +13119,7 @@ profiler via Sysprof, debugging support, and more.")
            python-pure-protobuf
            python-pycairo
            python-pygobject
+           python-rarfile
            python-requests
            python-unidecode
            webkitgtk-next))

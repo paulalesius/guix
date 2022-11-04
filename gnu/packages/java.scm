@@ -5197,6 +5197,42 @@ every feature for every plugin.")))
     (description "The modello XPP3 plugin generates XML readers and writers based
 on the XPP3 API (XML Pull Parser).")))
 
+(define-public java-ow-util-ant-tasks
+  (package
+    (name "java-ow-util-ant-tasks")
+    (version "1.3.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                     "mirror://debian/pool/main/o/ow-util-ant-tasks/"
+                     "ow-util-ant-tasks_" version ".orig.tar.gz"))
+              (sha256
+               (base32
+                "1y5ln1g36aligwcadqksdj18i5ghqnxn523wjbzy2zyd7w58fgy5"))))
+    (build-system ant-build-system)
+    (arguments
+     `(#:jar-name "ow-util-ant-tasks.jar"
+       #:tests? #f; no tests
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'build 'delete-cyclic-dependency
+           (lambda _
+             ;; This file depends on asm-3, which depends on this package
+             (delete-file "src/org/objectweb/util/ant/DependencyAnalyzer.java")
+             ;; This file depends on xalan
+             (delete-file "src/org/objectweb/util/ant/Xalan2Liaison.java")))
+         (add-before 'build 'fix-new-ant
+           (lambda _
+             (substitute* "src/org/objectweb/util/ant/MultipleCopy.java"
+               ((", destFile.getAbsolutePath\\(\\)")
+                ", new String[] { destFile.getAbsolutePath() }")))))))
+    (home-page "https://packages.debian.org/source/stretch/ow-util-ant-tasks")
+    (synopsis "Replacement for base ant tasks")
+    (description "This library is used in the legacy build process of several
+key frameworks developed by ObjectWeb, among them legacy versions of the
+ObjectWeb ASM bytecode manipulation framework.")
+    (license license:lgpl2.0+)))
+
 (define-public java-asm
   (package
     (name "java-asm")
@@ -5295,6 +5331,31 @@ including java-asm.")
      (substitute-keyword-arguments (package-arguments java-asm)
        ((#:tests? _) #f)))
     (native-inputs `())))
+
+(define-public java-asm-3
+  (package
+    (inherit java-asm)
+    (version "3.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                     (url "https://gitlab.ow2.org/asm/asm")
+                     (commit "ASM_3_1")))
+              (file-name (git-file-name "java-asm" version))
+              (sha256
+               (base32
+                "0xbyf2sl8j6mrvfpg2da0vjdp906rac62l66gkk82x5cn3vc30h4"))
+              (modules '((guix build utils)))
+              (snippet `(for-each delete-file (find-files "." "\\.jar$")))))
+    (arguments
+     `(#:build-target "jar"
+       #:test-target "test"
+       #:tests? #f; require legacy test software
+       #:phases
+       (modify-phases %standard-phases
+         (replace 'install (install-jars "output/dist"))
+         (delete 'generate-jar-indices))))
+    (native-inputs (list java-ow-util-ant-tasks))))
 
 (define-public java-asm-8
   (package
@@ -6308,14 +6369,14 @@ reduce that load.")
 (define-public java-commons-jcs
   (package
     (name "java-commons-jcs")
-    (version "2.2.1")
+    (version "3.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://apache/commons/jcs/source/"
-                                  "commons-jcs-dist-" version "-src.tar.gz"))
+                                  "commons-jcs3-dist-" version "-src.tar.gz"))
               (sha256
                (base32
-                "0syhq2npjbrl0azqfjm0gvash1qd5qjy4qmysxcrqjsk0nf9fa1q"))))
+                "0y1lm1xnsj99bf7y9mkvbzqfy8dr7ac8zcbkpsjgzb9vhabfsbac"))))
     (build-system ant-build-system)
     (arguments
      `(#:jar-name "commons-jcs.jar"
@@ -6324,20 +6385,16 @@ reduce that load.")
        #:tests? #f; requires hsqldb
        #:phases
        (modify-phases %standard-phases
-         (add-before 'build 'prepare
+         (add-before 'build 'copy-resources
            (lambda _
-             (with-directory-excursion
-               "commons-jcs-core/src/main/java/org/apache/commons/jcs"
-               (substitute*
-                 "auxiliary/disk/jdbc/dsfactory/SharedPoolDataSourceFactory.java"
-                 (("commons.dbcp") "commons.dbcp2")
-                 ((".*\\.setMaxActive.*") ""))
-               ;;; Remove dependency on velocity-tools
-               (delete-file "admin/servlet/JCSAdminServlet.java"))
-             #t)))))
+             (copy-recursively "commons-jcs-core/src/main/resources"
+                               "build/classes"))))))
     (propagated-inputs
-     (list java-classpathx-servletapi java-commons-logging-minimal
-           java-commons-httpclient java-commons-dbcp))
+     (list java-classpathx-servletapi
+           java-commons-dbcp
+           java-httpcomponents-httpclient
+           java-httpcomponents-httpcore
+           java-log4j-api))
     (native-inputs
      (list java-junit))
     (home-page "https://commons.apache.org/proper/commons-jcs/")
@@ -6767,40 +6824,29 @@ programs.")
 (define-public java-commons-compress
   (package
     (name "java-commons-compress")
-    (version "1.13")
+    (version "1.21")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://apache/commons/compress/source/"
                                   "commons-compress-" version "-src.tar.gz"))
               (sha256
                (base32
-                "1vjqvavrn0babffn1kciz6v52ibwq2vwhzlb95hazis3lgllnxc8"))))
+                "1rkpb6xcyly1wnbx4q6iq6p5hrr0h1d0ppb5r07psc75cbmizjry"))))
     (build-system ant-build-system)
     (arguments
      `(#:jar-name "commons-compress.jar"
+       #:source-dir "src/main/java"
+       #:tests? #f; requires java-mockito-3
        #:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'delete-bad-tests
-           (lambda _
-             (with-directory-excursion "src/test/java/org/apache/commons/compress/"
-               ;; FIXME: These tests really should not fail.  Maybe they are
-               ;; indicative of problems with our Java packaging work.
-
-               ;; This test fails with a null pointer exception.
-               (delete-file "archivers/sevenz/SevenZOutputFileTest.java")
-               ;; This test fails to open test resources.
-               (delete-file "archivers/zip/ExplodeSupportTest.java")
-
-               ;; FIXME: This test adds a dependency on powermock, which is hard to
-               ;; package at this point.
-               ;; https://github.com/powermock/powermock
-               (delete-file "archivers/sevenz/SevenZNativeHeapTest.java"))
-             #t))
          (replace 'install (install-from-pom "pom.xml")))))
     (propagated-inputs
-     (list java-xz apache-commons-parent-pom-41))
-    (native-inputs
-     (list java-junit java-mockito-1))
+     (list java-asm-3
+           java-brotli
+           java-osgi-core
+           java-xz
+           java-zstd
+           apache-commons-parent-pom-52))
     (home-page "https://commons.apache.org/proper/commons-compress/")
     (synopsis "Java library for working with compressed files")
     (description "The Apache Commons Compress library defines an API for
@@ -6862,7 +6908,12 @@ Custom formats can be created using a fluent style API.")
     (build-system ant-build-system)
     (arguments
      `(#:tests? #f ; no tests
-       #:jar-name "osgi-annotation.jar"))
+       #:jar-name "osgi-annotation.jar"
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'install 'create-pom
+           (generate-pom.xml "pom.xml" "osgi" "osgi-annotation" ,version))
+         (replace 'install (install-from-pom "pom.xml")))))
     (home-page "https://www.osgi.org")
     (synopsis "Annotation module of OSGi framework")
     (description
@@ -6887,7 +6938,12 @@ components.")
     (build-system ant-build-system)
     (arguments
      `(#:tests? #f ; no tests
-       #:jar-name "osgi-core.jar"))
+       #:jar-name "osgi-core.jar"
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'install 'create-pom
+           (generate-pom.xml "pom.xml" "org.osgi" "org.osgi.core" ,version))
+         (replace 'install (install-from-pom "pom.xml")))))
     (inputs
      (list java-osgi-annotation))
     (home-page "https://www.osgi.org")
