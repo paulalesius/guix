@@ -22,7 +22,7 @@
 ;;; Copyright © 2020 Giacomo Leidi <goodoldpaul@autistici.org>
 ;;; Copyright © 2021 Alexandru-Sergiu Marton <brown121407@posteo.ro>
 ;;; Copyright © 2021 Dmitry Polyakov <polyakov@liltechdude.xyz>
-;;; Copyright © 2020-2021 James Smith <jsubuntuxp@disroot.org>
+;;; Copyright © 2020-2022 James Smith <jsubuntuxp@disroot.org>
 ;;; Copyright © 2021 Ekaitz Zarraga <ekaitz@elenq.tech>
 ;;; Copyright © 2021 Andy Tai <atai@atai.org>
 ;;; Copyright © 2022 Felix Gruber <felgru@posteo.net>
@@ -380,9 +380,10 @@ PCM data.")
                       (substitute* (find-files "." "^Makefile\\.in$")
                         (("-Werror") ""))
                       #t)))))
-    (native-inputs `(("pkgconfig" ,pkg-config)))
+    (native-inputs (list pkg-config))
     (inputs (list bdb
                   glib
+                  gmp
                   guile-3.0
                   libmicrohttpd
                   ncurses
@@ -516,52 +517,45 @@ support.")
 (define-public slade
   (package
     (name "slade")
-    (version "3.1.13")
+    (version "3.2.1")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/sirjuddington/SLADE")
              (commit version)))
-       (sha256 (base32 "009yc5m6y074wfalvwbrnv2zsmaf9yhbi8hzgs973di0zqnqv011"))
+       (sha256 (base32 "11ab38nv190lpvkdba5r2gckdrk4h15pri0zzslz7zy8qzg5fm18"))
        (file-name (git-file-name name version))))
     (build-system cmake-build-system)
     (arguments
-     '(#:configure-flags
-       (list "-DWX_GTK3=ON" "-DNO_WEBVIEW=ON"
-             (string-append "-DWITH_WXPATH="
-                            (assoc-ref %build-inputs "wxwidgets") "/bin")
-             (string-append "-DwxWidgets_LIBRARIES="
-                            (assoc-ref %build-inputs "wxwidgets") "/lib"))
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'reset-slade.pk3-timestamps
-           ;; This is neccessary to make slade reproducible due to
-           ;; <https://bugs.gnu.org/44741>.  TODO: Remove on next core update
-           ;; cycle.
-           (lambda _
-             (invoke "find" "../source/dist/res" "-exec" "touch"
-                     "--no-dereference" "-t" "197001010000.00" "{}"
-                     "+")))
-         (add-after 'install 'wrap-with-x11-gdk-backend
-           ;; Set GDK_BACKEND to x11 to prevent crash on Wayland.
-           ;; See https://github.com/sirjuddington/SLADE/issues/1097 for details.
-           (lambda* (#:key outputs #:allow-other-keys)
-             (wrap-program
-                 (string-append (assoc-ref outputs "out")
-                                "/bin/slade")
-               '("GDK_BACKEND" = ("x11"))))))
-       #:tests? #f)) ;; No test suite.
+     (list #:configure-flags
+           #~(list "-DWX_GTK3=ON" "-DNO_WEBVIEW=ON"
+                   (string-append "-DWITH_WXPATH="
+                                  #$(this-package-input "wxwidgets") "/bin")
+                   (string-append "-DwxWidgets_LIBRARIES="
+                                  #$(this-package-input "wxwidgets") "/lib"))
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'install 'wrap-with-x11-gdk-backend
+                 ;; Set GDK_BACKEND to x11 to prevent crash on Wayland.
+                 ;; See https://github.com/sirjuddington/SLADE/issues/1097 for
+                 ;; details.
+                 (lambda _
+                   (wrap-program (string-append #$output "/bin/slade")
+                     '("GDK_BACKEND" = ("x11"))))))
+           #:tests? #f)) ;; No test suite.
     (inputs
-     `(("bash" ,bash-minimal)
-       ("curl" ,curl)
-       ("fluidsynth" ,fluidsynth)
-       ("freeimage" ,freeimage)
-       ("ftgl" ,ftgl)
-       ("glew" ,glew)
-       ("gtk+" ,gtk+)
-       ("sfml" ,sfml)
-       ("wxwidgets" ,wxwidgets-3.1)))
+     (list bash-minimal
+           curl
+           fluidsynth
+           freeimage
+           ftgl
+           glew
+           gtk+
+           lua
+           mpg123
+           sfml
+           wxwidgets))
     (native-inputs
      (list pkg-config which zip))
     (home-page "https://slade.mancubus.net")
@@ -780,7 +774,7 @@ sounds from presets such as \"explosion\" or \"powerup\".")
 (define-public surgescript
   (package
     (name "surgescript")
-    (version "0.5.5")
+    (version "0.5.6.1")
     (source
      (origin
        (method git-fetch)
@@ -789,15 +783,10 @@ sounds from presets such as \"explosion\" or \"powerup\".")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0xwd4g7n0b0rxkpbyshkzyl472h1y606ghyvf8gv034n3jz2g4jk"))))
+        (base32 "1p1pxb4iixzq7z14bpy32dx3dhfaaf6mcz4y3g3g09bkdmm1ys6j"))))
      (build-system cmake-build-system)
      (arguments
-      '(#:configure-flags
-        (let ((share (string-append (assoc-ref %outputs "out") "/share")))
-          (list "-DWANT_STATIC=NO"
-                (string-append "-DICON_PATH=" share "/pixmaps")
-                (string-append "-DMETAINFO_PATH=" share "/metainfo")))
-        #:tests? #f))
+      (list #:tests? #f)) ; there are no tests
      (home-page "https://docs.opensurge2d.org")
      (synopsis "Scripting language for games")
      (description "@code{SurgeScript} is a dynamically typed object-oriented
@@ -2456,12 +2445,20 @@ computer games, 3D authoring tools and simulation tools.")
              (commit (string-append "Chipmunk-" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1qmkn01g06p3rnhmbyffmjns6wj5vhgf9cscigk3wzxcpwv1hyxb"))))
+        (base32 "1qmkn01g06p3rnhmbyffmjns6wj5vhgf9cscigk3wzxcpwv1hyxb"))
+       (modules '((guix build utils)))
+       (snippet
+        #~(begin
+            ;; This is fixed in the upstream repository but the fix
+            ;; has not been released.
+            (substitute* "src/cpHastySpace.c"
+              (("#include <sys/sysctl.h>") ""))))))
     (build-system cmake-build-system)
     (arguments
-     `(#:tests? #f                      ;no test
-       #:configure-flags '("-DBUILD_STATIC=OFF"
-                           "-DBUILD_DEMOS=OFF")))
+     (list #:tests? #f                      ;no test
+           #:configure-flags
+           #~(list "-DBUILD_STATIC=OFF"
+                   "-DBUILD_DEMOS=OFF")))
     (inputs
      (list freeglut libxmu libxrandr))
     (home-page "https://chipmunk-physics.net/")

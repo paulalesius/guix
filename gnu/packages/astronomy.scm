@@ -33,6 +33,7 @@
   #:use-module (gnu packages bison)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages cmake)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages flex)
@@ -44,23 +45,27 @@
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages image-processing)
   #:use-module (gnu packages libusb)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages netpbm)
   #:use-module (gnu packages perl)
+  #:use-module (gnu packages photo)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages pretty-print)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
+  #:use-module (gnu packages python-compression)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-science)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages readline)
+  #:use-module (gnu packages textutils)
   #:use-module (gnu packages time)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
@@ -72,7 +77,9 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system meson)
   #:use-module (guix build-system python)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix download)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
@@ -591,6 +598,43 @@ large scale galaxy-survey data, it can perform reasonably well on moderately
 crowded star fields.")
     (license license:gpl3+)))
 
+(define-public siril
+  (package
+    (name "siril")
+    (version "1.0.6")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.com/free-astro/siril")
+                    (commit version)))
+              (sha256
+               (base32
+                "0iqxb5zmjyygg4b6lwlq8z82mngxg7kjjpahhzk52m0cypfq0l18"))
+              (file-name (git-file-name name version))))
+    (build-system meson-build-system)
+    (native-inputs (list cmake git glib libconfig pkg-config))
+    (inputs (list cfitsio
+                  exiv2
+                  fftwf
+                  gsl
+                  gtk+
+                  json-glib
+                  libraw
+                  librtprocess
+                  opencv))
+    (home-page "https://siril.org/")
+    (synopsis "Image processing software for amateur astronomy")
+    (description
+     "This package provides an astronomical image processing tool - SIRIL.  It is
+specially tailored for noise reduction and improving the signal/noise ratio of
+an image from multiple captures, as required in astronomy.  SIRIL can align
+automatically or manually, stack and enhance pictures from various file formats,
+even image sequence files (films and SER files).  It works well with limited
+system resources, like in embedded platforms, but is also very fast when run on
+more powerful computers and provides conversion to FITS from a large number of
+image formats.")
+    (license license:gpl3+)))
+
 (define-public splash
   (package
     (name "splash")
@@ -1057,7 +1101,7 @@ to access online Astronomical data.  Each web service has its own sub-package.")
 (define-public python-cdflib
   (package
     (name "python-cdflib")
-    (version "0.4.4")
+    (version "0.4.9")
     (source
      (origin
        (method git-fetch)   ; no tests in pypi archive
@@ -1066,16 +1110,14 @@ to access online Astronomical data.  Each web service has its own sub-package.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1h7750xvr6qbhnl2w3bhccs3pwp3hci3624pvvxym0yjinmskjlz"))))
-    (build-system python-build-system)
+        (base32 "1k557najk7ln293zwyghnhw48ays3nqf9s94kibsc7r70c2q7p08"))))
+    (build-system pyproject-build-system)
     (arguments
      (list #:phases
            #~(modify-phases %standard-phases
-               (replace 'check
-                 (lambda* (#:key tests? #:allow-other-keys)
-                   (when tests?
-                     (setenv "HOME" (getcwd))
-                     (invoke "pytest" "-vv" "tests")))))))
+               (add-before 'check 'set-home-env
+                 (lambda _
+                   (setenv "HOME" (getcwd)))))))
     (propagated-inputs
      (list python-attrs python-numpy))
     (native-inputs
@@ -1087,7 +1129,8 @@ to access online Astronomical data.  Each web service has its own sub-package.")
            python-xarray))
     (home-page "https://github.com/MAVENSDC/cdflib")
     (synopsis "Python library to deal with NASA's CDF astronmical data format")
-    (description "This package provides a Python CDF reader toolkit
+    (description "This package provides a Python @acronym{CDF, Computable
+Document Format} reader toolkit.
 It provides the following functionality:
 @itemize
 @item Ability to read variables and attributes from CDF files
@@ -1096,7 +1139,7 @@ It provides the following functionality:
 time formats
 @item Can convert CDF files into XArray Dataset objects and vice versa,
 attempting to maintain ISTP compliance
-@end itemize\n")
+@end itemize")
     (license license:expat)))
 
 (define-public python-ephem
@@ -1915,26 +1958,40 @@ datetime object.")
 (define-public python-asdf
   (package
     (name "python-asdf")
-    (version "2.8.3")
+    (version "2.13.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "asdf" version))
        (sha256
-        (base32 "0i4vq1hsympjgb1yvn4ql0gm8j1mki9ggmj03533kmg0nbzp03yy"))))
-    (build-system python-build-system)
+        (base32 "1zixzv4n2fryaszsfchqh2nvp0gzvarhz03fc721yw6iafdadqij"))))
+    (build-system pyproject-build-system)
     (arguments
-     ;; NOTE: (Sharlatan-20211229T201059+0000): Tests depend on astropy and
-     ;; gwcs, astropy gwcs depend on asdf.  Disable circular dependence.
+     ;; FIXME: Tests fail a lot with
+     ;;
+     ;; ERROR  - _pytest.pathlib.ImportPathMismatchError:
+     ;; ('asdf.conftest', '/gnu/sto...
+     ;;
      `(#:tests? #f))
     (native-inputs
-     (list python-setuptools-scm
+     (list python-astropy
+           python-packaging
+           python-psutil
+           python-pytest
+           python-pytest-doctestplus
+           python-pytest-openfiles
+           python-pytest-remotedata
            python-semantic-version
-           python-packaging))
+           python-setuptools-scm))
     (propagated-inputs
-     (list python-importlib-resources
-           python-jsonschema
+     (list python-asdf-standard
+           python-asdf-transform-schemas
+           python-asdf-unit-schemas
+           python-importlib-metadata
+           python-importlib-resources
            python-jmespath
+           python-jsonschema-next
+           python-lz4
            python-numpy
            python-pyyaml))
     (home-page "https://github.com/asdf-format/asdf")
@@ -1945,31 +2002,63 @@ interchange format for scientific data.  This package contains the Python
 implementation of the ASDF Standard.")
     (license license:bsd-3)))
 
+(define-public python-asdf-standard
+  (package
+    (name "python-asdf-standard")
+    (version "1.0.3")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "asdf_standard" version))
+       (sha256
+        (base32
+         "0i7xdjwn5prg2hcnf1zhw57mszc68jjr5sv4rimpzcg7f2dgzn5g"))))
+    (build-system pyproject-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (add-before 'check 'remove-blocking-tests
+                          (lambda _
+                            ;; Remove tests require python-asdf where
+                            ;; python-asdf require python-asdf-standard,
+                            ;; break circular dependencies.
+                            (for-each delete-file
+                                      (list "tests/test_manifests.py"
+                                            "tests/test_integration.py")))))))
+    (native-inputs (list python-astropy
+                         python-jsonschema-next
+                         python-pypa-build
+                         python-pytest-7.1
+                         python-packaging
+                         python-setuptools-scm))
+    (propagated-inputs (list python-importlib-resources))
+    (home-page "https://asdf-standard.readthedocs.io/")
+    (synopsis "ASDF standard schemas")
+    (description
+     "This package provides Python implementation of @acronym{ASDF, Advanced
+Scientific Data Format} - a proposed next generation interchange format for
+scientific data.  ASDF aims to exist in the same middle ground that made FITS
+so successful, by being a hybrid text and binary format: containing human
+editable metadata for interchange, and raw binary data that is fast to load
+and use.  Unlike FITS, the metadata is highly structured and is designed
+up-front for extensibility.")
+    (license license:bsd-3)))
+
 (define python-asdf-transform-schemas
   (package
     (name "python-asdf-transform-schemas")
-    (version "0.2.0")
+    (version "0.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "asdf_transform_schemas" version))
        (sha256
-        (base32 "1gmzd81hw4ppsvzrc91wcbjpcw9hhv9gavllv7nyi7qjb54c837g"))))
-    (build-system python-build-system)
+        (base32 "1midgn575970p5cnsh9y6bz77fjr392b5nfxb3z0id6c49xzzwhc"))))
+    (build-system pyproject-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key inputs outputs tests? #:allow-other-keys)
-             (when tests?
-               (add-installed-pythonpath inputs outputs)
-               (invoke "python" "-m" "pytest")))))))
-    (native-inputs
-     (list python-pytest
-           python-semantic-version
-           python-setuptools-scm))
-    (propagated-inputs
-     (list python-asdf))
+     ;; Dependency cycle with python-asdf
+     (list #:tests? #f))
+    (native-inputs (list python-setuptools-scm))
+    (propagated-inputs (list python-asdf-standard python-importlib-resources))
     (home-page "https://github.com/asdf-format/asdf-transform-schemas")
     (synopsis "ASDF schemas for transforms")
     (description
@@ -2010,25 +2099,111 @@ coordinates tags.  Users should not need to install this directly; instead,
 install an implementation package such as asdf-astropy.")
     (license license:bsd-3)))
 
+(define python-asdf-fits-schemas
+  ;; TODO: No release, change to tag when it's ready.
+  (let ((commit "572bb370d777f3a325b25c1af9d76e1b7d27dcea")
+        (revision "0"))
+    (package
+      (name "python-asdf-fits-schemas")
+      (version (git-version "0.0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/asdf-format/asdf-fits-schemas")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1yqnzd0gcrdfl0jqm8m8kz5fd36i8lgh7xkglmp1chsi1cc6mkz2"))))
+      (build-system pyproject-build-system)
+      (arguments
+       (list
+        ;; Dependency cycle with python-asdf
+        #:tests? #f
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-before 'build 'set-version
+              (lambda _
+                (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" "0.0.1"))))))
+      (native-inputs (list python-setuptools-scm))
+      (propagated-inputs (list python-asdf-standard python-importlib-resources))
+      (home-page "https://github.com/asdf-format/asdf-fits-schemas")
+      (synopsis "ASDF schemas to support the FITS format")
+      (description
+       "This package provides ASDF schemas for validating FITS tags.")
+      (license license:bsd-3))))
+
+(define python-asdf-time-schemas
+  ;; TODO: No release, change to tag when it's ready.
+  (let ((commit "e9174083d9cfd3c6f7ded9eeb360d99ccb8d9d18")
+        (revision "2"))
+    (package
+      (name "python-asdf-time-schemas")
+      (version (git-version "0.0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/asdf-format/asdf-time-schemas")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1i40hcxp8sds2zq939fwczjlshfqb9r9pnzy3a44c3wqdbwhcbdb"))))
+      (build-system pyproject-build-system)
+      (arguments
+       (list
+        ;; Dependency cycle with python-asdf
+        #:tests? #f
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-before 'build 'set-version
+              (lambda _
+                (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" "0.0.1"))))))
+      (native-inputs (list python-setuptools-scm))
+      (propagated-inputs (list python-asdf-standard
+                               python-asdf-unit-schemas
+                               python-importlib-resources))
+      (home-page "https://github.com/asdf-format/asdf-fits-schemas")
+      (synopsis "Schemas for storing time in ASDF")
+      (description
+       "This package provides ASDF schemas for validating time tags.")
+      (license license:bsd-3))))
+
+(define python-asdf-unit-schemas
+  (package
+    (name "python-asdf-unit-schemas")
+    (version "0.1.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "asdf_unit_schemas" version))
+       (sha256
+        (base32
+         "16grpx3a9h0v1wirp0zqrfsxm867v5c0xyr98pylzziy45kqvds2"))))
+    (build-system pyproject-build-system)
+    (arguments
+     ;; Dependency cycle with python-asdf
+     (list #:tests? #f))
+    (native-inputs (list python-setuptools-scm))
+    (propagated-inputs (list python-asdf-standard python-importlib-resources))
+    (home-page "https://asdf-unit-schemas.readthedocs.io/")
+    (synopsis "ASDF serialization schemas for the units defined by @code{astropy.units}")
+    (description "This package provides ASDF schemas for validating unit tags.")
+    (license license:bsd-3)))
+
 (define-public python-asdf-astropy
   (package
     (name "python-asdf-astropy")
-    (version "0.1.2")
+    (version "0.2.2")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "asdf_astropy" version))
        (sha256
-        (base32 "0bzgah7gskvnz6jcrzipvzixv8k2jzjkskqwxngzwp4nxgjbcvi4"))))
-    (build-system python-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key inputs outputs tests? #:allow-other-keys)
-             (when tests?
-               (add-installed-pythonpath inputs outputs)
-               (invoke "python" "-m" "pytest")))))))
+        (base32 "1b0v4cl7xvly3x1k5k2rvc2l32jqgqp0iyf1j20fkvj450sx74f2"))))
+    (build-system pyproject-build-system)
     (native-inputs
      (list python-coverage
            python-h5py
@@ -2088,24 +2263,16 @@ install an implementation package such as gwcs.")
 (define-public python-gwcs
   (package
     (name "python-gwcs")
-    (version "0.18.0")
+    (version "0.18.2")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "gwcs" version))
        (sha256
-        (base32 "194j49m8xjjzv9pp8cnj06igz8sdxb0nphyybcc7mhigw0f0kr30"))))
-    (build-system python-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key inputs outputs tests? #:allow-other-keys)
-             (when tests?
-               (add-installed-pythonpath inputs outputs)
-               (invoke "python" "-m" "pytest")))))))
+        (base32 "0v9qcq6zl74d6s882s6xmas144jfalvll6va8rvrxmvpx4vqjzhg"))))
+    (build-system pyproject-build-system)
     (native-inputs
-     (list python-jsonschema
+     (list python-jsonschema-next
            python-jmespath
            python-pytest
            python-pytest-doctestplus

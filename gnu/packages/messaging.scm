@@ -9,7 +9,7 @@
 ;;; Copyright © 2016 Andy Patterson <ajpatter@uwaterloo.ca>
 ;;; Copyright © 2016, 2017, 2018, 2019 Clément Lassieur <clement@lassieur.org>
 ;;; Copyright © 2017 Mekeor Melire <mekeor.melire@gmail.com>
-;;; Copyright © 2017, 2018, 2020, 2021 Arun Isaac <arunisaac@systemreboot.net>
+;;; Copyright © 2017, 2018, 2020, 2021, 2022 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2017–2021 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2017 Theodoros Foradis <theodoros@foradis.org>
 ;;; Copyright © 2017, 2018, 2019 Rutger Helling <rhelling@mykolab.com>
@@ -729,7 +729,7 @@ identi.ca and status.net).")
   ;; Version 0.4.3 of bitlbee-discord was prepared to work for
   ;; glib@2.68. However, version 2.69 of glib introduced a breaking change
   ;; causing bitlbee-discord to throw:
-  ;; 
+  ;;
   ;; discord - Login error: Failed to switch to websocket mode
   ;;
   ;; This makes the plugin unable to connect and therefore unusable:
@@ -1507,14 +1507,14 @@ Qt-based XMPP library QXmpp.")
 (define-public prosody
   (package
     (name "prosody")
-    (version "0.11.10")
+    (version "0.12.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://prosody.im/downloads/source/"
                                   "prosody-" version ".tar.gz"))
               (sha256
                (base32
-                "1q84s9cq7cgzd295qxa2iy0r3vd3v3chbck62bdx3pd6skk19my6"))))
+                "1rch9gzp9ksnniv6r1vskifvfv5wbp8wcfjr0lc2b9013zjbpv57"))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f                      ;tests require "busted"
@@ -1538,6 +1538,15 @@ Qt-based XMPP library QXmpp.")
                (("^INSTALLEDCONFIG =.*") "INSTALLEDCONFIG = /etc/prosody\n")
                ;; prosodyctl needs a place to put auto-generated certificates.
                (("^INSTALLEDDATA =.*") "INSTALLEDDATA = /var/lib/prosody\n"))))
+         (add-after 'unpack 'invoke-prosody-wrapper
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             ;; Invoke the prosody wrapper script instead of invoking lua on
+             ;; the actual executable.
+             (substitute* "util/prosodyctl.lua"
+               (("os.execute\\(lua[^;]*")
+                (string-append "os.execute(\""
+                               (assoc-ref outputs "out")
+                               "/bin/prosody -D\")")))))
          (add-after 'install 'wrap-programs
            (lambda* (#:key inputs outputs #:allow-other-keys)
              ;; Make sure all executables in "bin" find the required Lua
@@ -1575,7 +1584,9 @@ Qt-based XMPP library QXmpp.")
                              `("PATH" ":" prefix ,path)))
                          (find-files bin ".*"))))))))
     (inputs
-     (list libidn
+     (list bash-minimal
+           icu4c
+           libidn
            openssl
            lua-5.2
            lua5.2-bitop
@@ -2697,6 +2708,7 @@ support for high performance Telegram Bot creation.")
               (uri (git-reference
                     (url "https://github.com/tdlib/td")
                     (commit (string-append "v" version))))
+              (file-name (git-file-name "tdlib" version))
               (sha256
                (base32
                 "19psqpyh9a2kzfdhgqkirpif4x8pzy89phvi59dq155y30a3661q"))))))

@@ -100,6 +100,8 @@
               (make-regexp "^gnu/packages/python(-.+|)\\.scm$")
               "gnu/packages/sphinx.scm"
               "gnu/packages/tryton.scm"
+              "guix/build/pyproject-build-system.scm"
+              "guix/build-system/pyproject.scm"
               "guix/build/python-build-system.scm"
               "guix/build-system/python.scm"
               "guix/import/pypi.scm"
@@ -486,6 +488,10 @@ importer."
                        "zimon.toutoune@gmail.com")
   julia core mentors)
 
+(define-member (person "Raghav Gururajan"
+                       "rg@raghavgururajan.name")
+  mentors)
+
 
 (define (find-team name)
   (or (hash-ref %teams (string->symbol name))
@@ -528,14 +534,16 @@ TEAMS when a patch is received by Debbugs."
              prefix
              (person-name member)
              (person-email member)))
-   (team-members team)))
+   (sort
+    (team-members team)
+    (lambda (m1 m2) (string<? (person-name m1) (person-name m2))))))
 
 (define (list-teams)
   "Print all teams, their scope and their members."
   (define port* (current-output-port))
   (define width* (%text-width))
-  (hash-for-each
-   (lambda (key team)
+  (for-each
+   (lambda (team)
      (format port*
              "\
 id: ~a
@@ -556,7 +564,11 @@ description: ~a
                (scope (format #f "scope: ~{~s ~}~%" scope))))
      (list-members team port* "+ ")
      (newline))
-   %teams))
+   (sort
+    (hash-map->list (lambda (key value) value) %teams)
+    (lambda (team1 team2)
+      (string<? (symbol->string (team-id team1))
+                (symbol->string (team-id team2)))))))
 
 
 (define (diff-revisions rev-start rev-end)

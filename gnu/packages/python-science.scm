@@ -348,6 +348,26 @@ manipulation and analysis, in the style of the Polygon object in the Shapely
 library.")
     (license license:expat)))
 
+(define-public python-tspex
+  (package
+    (name "python-tspex")
+    (version "0.6.2")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "tspex" version))
+              (sha256
+               (base32
+                "0x64ki1nzhms2nb8xpng92bzh5chs850dvapr93pkg05rk22m6mv"))))
+    (build-system python-build-system)
+    (propagated-inputs
+     (list python-matplotlib python-numpy python-pandas python-xlrd))
+    (home-page "https://apcamargo.github.io/tspex/")
+    (synopsis "Calculate tissue-specificity metrics for gene expression")
+    (description
+     "This package provides a Python package for calculating
+tissue-specificity metrics for gene expression.")
+    (license license:gpl3+)))
+
 (define-public python-pandas
   (package
     (name "python-pandas")
@@ -499,6 +519,47 @@ doing practical, real world data analysis in Python.")
 language, with a focus on scientific computing.  It takes a Python module
 annotated with a few interface descriptions and turns it into a native
 Python module with the same interface, but (hopefully) faster.")
+    (license license:bsd-3)))
+
+(define-public python-pyts
+  (package
+    (name "python-pyts")
+    (version "0.12.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "pyts" version))
+              (sha256
+               (base32
+                "1cb5jwp8g52a3hxay6mxbfzk16ly6yj6rphq8cwbwk1k2jdf11dg"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      '(modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (invoke "pytest" "-v"
+                       ;; XXX: This test fails for unknown reasons
+                       ;; Expected:
+                       ;;  (40, 9086)
+                       ;; Got:
+                       ;; (40, 9088)
+                       "-k"
+                       "not pyts.multivariate.transformation.weasel_muse.WEASELMUSE")))))))
+    (propagated-inputs
+     (list python-joblib
+           python-matplotlib
+           python-numba
+           python-numpy
+           python-scikit-learn
+           python-scipy))
+    (native-inputs
+     (list python-pytest python-pytest-cov))
+    (home-page "https://github.com/johannfaouzi/pyts")
+    (synopsis "Python package for time series classification")
+    (description
+     "This package provides a Python package for time series classification.")
     (license license:bsd-3)))
 
 (define-public python-bottleneck

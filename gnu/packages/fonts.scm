@@ -1666,7 +1666,7 @@ programming.  Iosevka is completely generated from its source code.")
 (define-public font-sarasa-gothic
   (package
     (name "font-sarasa-gothic")
-    (version "0.36.8")
+    (version "0.37.4")
     (source
      (origin
        (method url-fetch)
@@ -1674,7 +1674,7 @@ programming.  Iosevka is completely generated from its source code.")
                            "/releases/download/v" version
                            "/sarasa-gothic-ttc-" version ".7z"))
        (sha256
-        (base32 "01fn5mzr1rcz0c8nbhabwbv1pq1c3ylf2msxldc9adks1pi45fmh"))))
+        (base32 "12i8lccl4ysinhz40s2fz6249r9n35in4rqmk3a0fgcjfaby3kfm"))))
     (build-system font-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
@@ -2552,7 +2552,7 @@ and heavily inspired by Creep.")
 (define-public font-montserrat
   (package
     (name "font-montserrat")
-    (version "7.210")
+    (version "7.222")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2561,14 +2561,15 @@ and heavily inspired by Creep.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0jn1yvfamq5xazw85sfnxgriji60g7mkss9mkf8d0117vdk838bn"))))
+                "03cfk45r5g694dqp2gjgg0qwra8w78nl6hc6p56qwd5dcfgr2l3r"))))
     (build-system font-build-system)
     (home-page "https://github.com/JulietaUla/Montserrat")
     (synopsis "The Montserrat font")
-    (description "The old posters and signs in the traditional Montserrat
-neighborhood of Buenos Aires inspired Julieta Ulanovsky to design this
-typeface and rescue the beauty of urban typography that emerged in the first
-half of the twentieth century.")
+    (description
+     "The old posters and signs in the traditional Montserrat neighborhood of
+Buenos Aires inspired Julieta Ulanovsky to design this typeface and rescue the
+beauty of urban typography that emerged in the first half of the twentieth
+century.")
     (license license:silofl1.1)))
 
 (define-public font-overpass
@@ -2863,7 +2864,7 @@ dialects in Hong Kong and Taiwan.")))
 (define-public font-chiron-sung-hk
   (package
     (name "font-chiron-sung-hk")
-    (version "1.006")
+    (version "1.007")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2872,7 +2873,7 @@ dialects in Hong Kong and Taiwan.")))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0cibyhy363yqmif31lwv4qmcaar5np2gdd3nbnxxp55mb4qn0kms"))))
+                "1mhw3vgahfc9kyb7sw5w5zswp93a4sz7q12f7qba069f834j5qjq"))))
     (build-system font-build-system)
     (home-page "https://chiron-fonts.github.io/")
     (synopsis "Traditional Chinese Song typeface")
@@ -2887,7 +2888,7 @@ prevalent typefaces in Traditional Chinese regions.")
   (package
     (inherit font-chiron-sung-hk)
     (name "font-chiron-hei-hk")
-    (version "2.504")
+    (version "2.505")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2896,7 +2897,7 @@ prevalent typefaces in Traditional Chinese regions.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0d0k88sbhgr597sv2jzz2rcg8g4k60lcjka1xlnkv08n3bdgvmhr"))))
+                "1h2ps2kdv2s29pp9an4gpb84xwmkizqrgsk4hs5f0g0004897hi5"))))
     (synopsis "Traditional Chinese Gothic typeface")
     (description
      "Chiron Hei HK is a Traditional Chinese Gothic typeface based on the Hong

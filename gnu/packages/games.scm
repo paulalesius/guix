@@ -177,6 +177,7 @@
   #:use-module (gnu packages ocaml)
   #:use-module (gnu packages opencl)
   #:use-module (gnu packages pcre)
+  #:autoload (gnu packages pascal) (fpc)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages perl-check)
   #:use-module (gnu packages perl-compression)
@@ -827,7 +828,7 @@ possible, while battling many vicious aliens.")
     (home-page "https://github.com/vattam/BSDGames")
     (synopsis "Collection of the old text-based games and amusements")
     (description
-     "These are the BSD games.  See the fortune-mod package for fortunes.
+     "These are the BSD games.
 
 Action: atc (keep the airplanes safe), hack (explore the dangerous Dungeon),
 hunt (kill the others for the Pair of Boots, multi-player only), robots (avoid
@@ -879,14 +880,14 @@ Quizzes: arithmetic and quiz.")
 (define-public bzflag
   (package
     (name "bzflag")
-    (version "2.4.24")
+    (version "2.4.26")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://download.bzflag.org/bzflag/source/"
                            version "/bzflag-" version ".tar.bz2"))
        (sha256
-        (base32 "1i73ijlnxsz52fhqgkj2qcvibfgav3byq1is68gab2zwnyz330az"))))
+        (base32 "050h933lmcdf4bw9z3c6g3k8c9sch9f6kq57jp2ivb96zw2h90q1"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -1662,7 +1663,7 @@ shadow mimic them to reach blocks you couldn't reach alone.")
 (define-public opensurge
   (package
     (name "opensurge")
-    (version "0.5.2.1")
+    (version "0.6.0.3")
     (source
      (origin
        (method git-fetch)
@@ -1671,40 +1672,37 @@ shadow mimic them to reach blocks you couldn't reach alone.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "13g5izss7dmgigc8iif8hid3z6i066b0z29rbql2b9qjmdj1dp41"))))
+        (base32 "0yia2qcva741a64qpls8a59lvnx5vynqkk2i3arkflw6f1m1vb55"))))
     (build-system cmake-build-system)
     (arguments
-     `(#:tests? #f                      ;there are no tests
-       #:configure-flags
-       (let* ((out (assoc-ref %outputs "out"))
-              (share (string-append out "/share")))
-         (list (string-append "-DCMAKE_INSTALL_PREFIX=" out)
-               (string-append "-DGAME_BINDIR=" out "/bin") ; not /bin/games
-               (string-append "-DGAME_DATADIR=" share "/" ,name)
-               (string-append "-DDESKTOP_ENTRY_PATH=" share "/applications")
-               (string-append "-DDESKTOP_ICON_PATH=" share "/pixmaps")
-               (string-append "-DDESKTOP_METAINFO_PATH=" share "/metainfo")))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'fix-xdg-open-path
-           (lambda* (#:key inputs #:allow-other-keys)
-             ;; Look for xdg-open in the store.
-             (substitute* "src/core/web.c"
-               (("/usr(/bin/xdg-open)" _ bin)
-                (search-input-file inputs bin)))))
-         (add-after 'unpack 'unbundle-fonts
-           (lambda* (#:key inputs #:allow-other-keys)
-             ;; Replace bundled Roboto fonts with links to the store.
-             (with-directory-excursion "fonts"
-               (let ((roboto-dir (string-append
-                                  (assoc-ref inputs "font-google-roboto")
-                                  "/share/fonts/truetype/")))
-                 (for-each
-                  (lambda (font)
-                    (delete-file font)
-                    (symlink (string-append roboto-dir font) font))
-                  '("Roboto-Black.ttf" "Roboto-Bold.ttf" "Roboto-Medium.ttf")))
-               #t))))))
+     (list #:tests? #f ; there are no tests
+           #:configure-flags
+           #~(list (string-append "-DCMAKE_INSTALL_PREFIX=" #$output)
+                   (string-append "-DGAME_BINDIR=" #$output "/bin") ; not games
+                   (string-append "-DGAME_DATADIR=" #$output "/share/" #$name)
+                   (string-append "-DDESKTOP_ENTRY_PATH=" #$output "/share/applications")
+                   (string-append "-DDESKTOP_ICON_PATH=" #$output "/share/pixmaps")
+                   (string-append "-DDESKTOP_METAINFO_PATH=" #$output "/share/metainfo"))
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-xdg-open-path
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   ;; Look for xdg-open in the store.
+                   (substitute* "src/core/web.c"
+                     (("/usr/(bin/xdg-open)" _ bin)
+                      (search-input-file inputs bin)))))
+               (add-after 'unpack 'unbundle-fonts
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   ;; Replace bundled fonts with links to the store.
+                   (with-directory-excursion "fonts"
+                     (for-each (lambda (font)
+                                 (let ((file (string-append "share/fonts/truetype/"
+                                                            font)))
+                                   (delete-file font)
+                                   (symlink (search-input-file inputs file) font)))
+                               '("Roboto-Black.ttf"
+                                 "Roboto-Bold.ttf"
+                                 "Roboto-Medium.ttf"))))))))
     (inputs
      (list allegro font-google-roboto surgescript xdg-utils))
     (home-page "https://opensurge2d.org")
@@ -3658,20 +3656,24 @@ for common mesh file formats, and collision detection.")
   (package
     (inherit irrlicht)
     (name "irrlicht-for-minetest")
-    (version "1.9.0mt5")
+    (version "1.9.0mt8")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/minetest/irrlicht")
              (commit version)))
+       (file-name (git-file-name name version))
        (sha256
         (base32
-         "1jxk1x0f60n8lrz8a6x62aj2pqg0qnbajsld3lqncvwsfbi0xjx1"))))
+         "1646pj40dqkzbbc2lxzbmq2pjyrkgggbi2lah6pa5mv420p402kg"))))
     (build-system cmake-build-system)
     (arguments
      ;; No check target.
-     (list #:tests? #f))))
+     (list #:tests? #f))
+    (inputs
+     (modify-inputs (package-inputs irrlicht)
+       (prepend libxi)))))
 
 (define-public mars
   ;; The latest release on SourceForge relies on an unreleased version of SFML
@@ -11160,6 +11162,97 @@ principle of prioritizing the guests' happiness with a well-maintained park.
 Should they go unwise, a theme park plunge into chaos with vandalizing guests
 and unsafe rides.  Which path will you take?")
     (license license:gpl2)))
+
+(define-public ultrastar-deluxe
+  ;; The last release is quite old and does not support recent ffmpeg versions.
+  (let ((commit "43484b0a10ce6aae339e19d81ae2f7b37caf6baa")
+        (revision "1"))
+    (package
+      (name "ultrastar-deluxe")
+      (version (git-version "2020.4.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/UltraStar-Deluxe/USDX.git")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "078g1rbm1ympmwq9s64v68sxvcms7rr0qid12d2wgm4r04ana47r"))
+                (patches (search-patches "ultrastar-deluxe-no-freesans.patch"))
+                (modules '((guix build utils)))
+                (snippet
+                 #~(begin
+                     ;; Remove Windows binaries.
+                     (for-each delete-file (find-files "game" "\\.dll$"))
+                     ;; Remove font blobs.
+                     (let ((font-directories
+                            (list "DejaVu" "FreeSans" "NotoSans"
+                                  "wqy-microhei")))
+                       (for-each
+                        (lambda (d) (delete-file-recursively
+                                (string-append "game/fonts/" d)))
+                        font-directories))))))
+      (build-system gnu-build-system)
+      (arguments
+        (list
+         #:tests? #f ; No tests.
+         #:phases
+         #~(modify-phases %standard-phases
+             (add-after 'unpack 'fix-configure
+               (lambda* (#:key inputs configure-flags outputs #:allow-other-keys)
+                 (define (where inputs file)
+                   (dirname (search-input-file inputs file)))
+                 ;; The configure script looks for lua$version, but we
+                 ;; provide lua-$version.
+                 (substitute* "configure.ac"
+                   (("lua\\$i") "lua-$i"))
+                 ;; fpc does not pass -lfoo to the linker, but uses its own
+                 ;; linker script, which references libs.  Pass the libraries
+                 ;; listed in that linker script, so our custom linker adds
+                 ;; a correct rpath.
+                 (substitute* "src/Makefile.in"
+                   (("linkflags\\s+:= ")
+                    (string-append
+                     "linkflags := -lpthread -lsqlite3 -lSDL2"
+                     " -lSDL2_image -ldl "
+                     " -lz -lfreetype -lportaudio -lavcodec"
+                     " -lavformat -lavutil -lswresample"
+                     " -lswscale -llua -ldl -lX11 -lportmidi"
+                     " -L" (where inputs "lib/libz.so")
+                     " -L" (where inputs "lib/libX11.so")
+                     " -L" (where inputs "lib/libportmidi.so"))))))
+             (add-after 'install 'font-paths
+               (lambda* (#:key outputs #:allow-other-keys)
+                 (substitute* (string-append
+                               (assoc-ref outputs "out")
+                               "/share/ultrastardx/fonts/fonts.ini")
+                   (("=NotoSans/") (string-append "=" #$font-google-noto
+                                                  "/share/fonts/truetype/"))
+                   (("=DejaVu/") (string-append "=" #$font-dejavu
+                                                "/share/fonts/truetype/"))))))))
+      (inputs (list ffmpeg
+                    font-dejavu
+                    font-google-noto
+                    ; Not needed, since we don’t have freesans.
+                    ;font-wqy-microhei
+                    freetype
+                    libx11
+                    lua
+                    portaudio
+                    portmidi
+                    sdl2
+                    sdl2-image
+                    sqlite
+                    zlib))
+      (native-inputs (list pkg-config fpc autoconf automake))
+      (synopsis "Karaoke game")
+      (description
+       "UltraStar Deluxe (USDX) is a karaoke game.  It allows up to six players
+to sing along with music using microphones in order to score points, depending
+on the pitch of the voice and the rhythm of singing.")
+      (home-page "https://usdx.eu/")
+      (license license:gpl2+))))
 
 (define-public steam-devices-udev-rules
   ;; Last release from 2019-04-10

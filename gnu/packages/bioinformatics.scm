@@ -946,6 +946,51 @@ Python.")
     ;; licensed lgpl2.1+
     (license (list license:expat license:lgpl2.1+))))
 
+(define-public python-bioframe
+  (package
+    (name "python-bioframe")
+    (version "0.3.3")
+    (source
+     (origin
+       (method git-fetch)
+       ;; pypi version does not contain tests and requirements.txt
+       (uri (git-reference
+             (url "https://github.com/open2c/bioframe")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "14lvb18d4npapyi6j2zqh9q94l658dzmka5riiizw1h0zb0kp9xb"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (setenv "MPLCONFIGDIR" "/tmp")
+             (when tests?
+               (invoke "pytest" "-v")))))))
+    (native-inputs
+     (list python-biopython
+           python-pysam
+           python-pytest
+           python-wheel))
+    (propagated-inputs
+     (list python-matplotlib
+           python-numpy
+           python-pandas
+           python-requests))
+    (home-page "https://github.com/open2c/bioframe")
+    (synopsis "Pandas utilities for tab-delimited and other genomic files")
+    (description
+     "This package is a library to enable flexible and scalable operations on
+genomic interval dataframes in Python.  Bioframe enables access to a rich set
+of dataframe operations.  Working in Python enables rapid visualization and
+iteration of genomic analyses.  The philosophy underlying bioframe is to
+enable flexible operations.  Instead of creating a function for every possible
+use-case, we encourage users to compose functions to achieve their goals.")
+    (license license:expat)))
+
 (define-public python-biom-format
   (package
     (name "python-biom-format")
@@ -7555,6 +7600,55 @@ tasks.")
 Pore-C concatemers.")
       (license license:gpl3))))
 
+(define-public r-pando
+  (package
+    (name "r-pando")
+    (version "1.0.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/quadbiolab/Pando")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0c83anzdrbvg47p9xns2bxpjlx5z328can3jmzilw6rygwp7hyii"))))
+    (properties `((upstream-name . "Pando")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-bayestestr
+           r-brms
+           r-foreach
+           r-genomicranges
+           r-ggplot2
+           r-ggpointdensity
+           r-ggraph
+           r-glmnetutils
+           r-iranges
+           r-irlba
+           r-matrix
+           r-motifmatchr
+           r-pals
+           r-patchwork
+           r-seurat
+           r-signac
+           r-sparsematrixstats
+           r-tfbstools
+           r-tidygraph
+           r-tidyverse
+           r-uwot
+           r-xgboost))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/quadbiolab/Pando")
+    (synopsis "Infer regulomes from multi-modal single-cell genomics data")
+    (description
+     "Pando leverages multi-modal single-cell measurements to infer gene
+regulatory networks using a flexible linear model-based framework.  By
+modeling the relationship between TF-binding site pairs with the expression of
+target genes, Pando simultaneously infers gene modules and sets of regulatory
+regions for each transcription factor.")
+    (license license:expat)))
+
 (define-public r-presto
   (let ((commit "052085db9c88aa70a28d11cc58ebc807999bf0ad")
         (revision "0"))
@@ -12007,17 +12101,57 @@ including:
     ;; the GPL, but the license headers include the "or later" clause.
     (license license:gpl3+)))
 
+(define-public r-disgenet2r
+  (let ((commit "8d8ce37da7384004038b25e784b9f7cfe2353de1")
+        (revision "1"))
+    (package
+      (name "r-disgenet2r")
+      (version (git-version "0.99.2" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://bitbucket.org/ibi_group/disgenet2r")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0dvk75s6wqssdyfn5iczldb8krvrz2s0dslxns4571cb2pr09b84"))))
+      (properties `((upstream-name . "disgenet2r")))
+      (build-system r-build-system)
+      (propagated-inputs (list r-data-table
+                               r-ggplot2
+                               r-gtable
+                               r-httr
+                               r-igraph
+                               r-jsonlite
+                               r-purrr
+                               r-reshape
+                               r-reshape2
+                               r-sparql
+                               r-stringr
+                               r-tidyr
+                               r-tidyverse
+                               r-venndiagram))
+      (native-inputs (list r-knitr))
+      (home-page "https://bitbucket.org/ibi_group/disgenet2r")
+      (synopsis "Query, visualize, and expand DisGeNET data")
+      (description
+       "This is an R package to query and expand DisGeNET data, and to
+visualize the results within R framework.  The disgenet2r package is designed
+to retrieve data from DisGeNET v6.0 (Jan, 2019).")
+      (license license:expat))))
+
 (define-public r-dyngen
   (package
     (name "r-dyngen")
-    (version "1.0.4")
+    (version "1.0.5")
     (source
      (origin
        (method url-fetch)
        (uri (cran-uri "dyngen" version))
        (sha256
         (base32
-         "1qmqy0dyiz30zpf3ii4h2ip6hg2449ghb474sjzrqa1yk9mdpy4i"))))
+         "095jqn1rd83qm3ayca9hmv6bhlaa2c338020l46vniq8n38kbnra"))))
     (properties `((upstream-name . "dyngen")))
     (build-system r-build-system)
     (propagated-inputs
@@ -12166,24 +12300,26 @@ interaction inference from scRNA-seq data.")
 (define-public r-circus
   (package
     (name "r-circus")
-    (version "0.1.5")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/BIMSBbioinfo/ciRcus")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "0jhjn3ilb057hbf6yzrihj13ifxxs32y7nkby8l3lkm28dg4p97h"))))
+    (version "0.1.7")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/BIMSBbioinfo/ciRcus")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0d1jz7r81zbcy1gkppggkjmgjxyjhva69s3cdb01m3f0790m4fv0"))))
+    (properties `((upstream-name . "ciRcus")))
     (build-system r-build-system)
     (propagated-inputs
      (list r-annotationdbi
            r-annotationhub
+           r-biocgenerics
            r-biomart
            r-data-table
            r-dbi
+           r-genomeinfodb
            r-genomicfeatures
            r-genomicranges
            r-ggplot2
@@ -12191,6 +12327,7 @@ interaction inference from scRNA-seq data.")
            r-iranges
            r-rcolorbrewer
            r-rmysql
+           r-rtracklayer
            r-s4vectors
            r-stringr
            r-summarizedexperiment))
@@ -12989,6 +13126,50 @@ fasta subsequences.")
 storage format, called @code{cool}, used to store genomic interaction data,
 such as Hi-C contact matrices.")
     (license license:bsd-3)))
+
+(define-public python-cooltools
+  (package
+    (name "python-cooltools")
+    (version "0.5.1")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "cooltools" version))
+              (sha256
+               (base32
+                "08hyzd3kazr87nvv6rwp5i1g9rwj7jmrly925lqnvippz4wp7k4g"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "pytest" "-v")))))))
+    (native-inputs
+     (list python-cython
+           python-pytest))
+    (propagated-inputs
+     (list python-bioframe
+           python-click
+           python-cooler
+           python-joblib
+           python-matplotlib
+           python-multiprocess
+           python-numba
+           python-numpy
+           python-pandas
+           python-scikit-image
+           python-scikit-learn
+           python-scipy))
+    (home-page "https://github.com/open2c/cooltools")
+    (synopsis
+     "Analysis tools for genomic interaction data stored in .cool format")
+    (description
+     "This package provides necessary tools for the analysis of the genomic
+interaction data stored in @code{.cool} format.  This collection of tools
+includes operations like compartment, insulation or peak calling.")
+    (license license:expat)))
 
 (define-public python-hicmatrix
   (package

@@ -10,6 +10,7 @@
 # Copyright © 2021 Jakub Kądziołka <kuba@kadziolka.net>
 # Copyright © 2021 Chris Marusich <cmmarusich@gmail.com>
 # Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+# Copyright © 2022 Prafulla Giri <prafulla.giri@protonmail.com>
 #
 # This file is part of GNU Guix.
 #
@@ -506,7 +507,7 @@ sys_create_init_profile()
 { # Define for better desktop integration
   # This will not take effect until the next shell or desktop session!
     [ -d "/etc/profile.d" ] || mkdir /etc/profile.d # Just in case
-    cat <<"EOF" > /etc/profile.d/guix.sh
+    cat <<"EOF" > /etc/profile.d/zzz-guix.sh
 # Explicitly initialize XDG base directory variables to ease compatibility
 # with Guix System: see <https://issues.guix.gnu.org/56050#3>.
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -535,9 +536,6 @@ GUIX_LOCPATH="$GUIX_PROFILE/lib/locale"
 export GUIX_LOCPATH
 
 [ -f "$GUIX_PROFILE/etc/profile" ] && . "$GUIX_PROFILE/etc/profile"
-
-# set XDG_DATA_DIRS to include Guix installations
-export XDG_DATA_DIRS="$GUIX_PROFILE/share:$XDG_DATA_DIRS"
 EOF
 }
 
@@ -635,7 +633,7 @@ main()
     _msg "${INF}system is ${ARCH_OS}"
 
     umask 0022
-    tmp_path="$(mktemp -t -d guix.XXX)"
+    tmp_path="$(mktemp -t -d guix.XXXXXX)"
 
     if [ -z "${GUIX_BINARY_FILE_NAME}" ]; then
         guix_get_bin_list "${GNU_URL}"

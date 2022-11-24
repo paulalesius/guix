@@ -3993,6 +3993,47 @@ definitions.")
 
 (define-deprecated-package texlive-latex-amsmath texlive-amsmath)
 
+(define-public texlive-mathdots
+  (let ((template
+         (simple-texlive-package
+          "texlive-mathdots"
+          (list "doc/generic/mathdots/"
+                "source/generic/mathdots/"
+                "tex/generic/mathdots/")
+          (base32"1jaffj343p1chdxs2g7s6lpckvihk0jfw22nw0vmijyjxfiy9yg0"))))
+    (package
+      (inherit template)
+      (outputs '("out" "doc"))
+      (arguments
+       (substitute-keyword-arguments (package-arguments template)
+         ((#:tex-directory _ '())
+          "generic/mathdots")
+         ((#:build-targets _ '())
+          '(list "mathdots.ins"))
+         ((#:phases phases)
+          #~(modify-phases #$phases
+              (add-after 'unpack 'chdir
+                (lambda _
+                  (chdir "source/generic/mathdots")))
+              (replace 'copy-files
+                (lambda* (#:key inputs outputs #:allow-other-keys)
+                  (let ((origin (assoc-ref inputs "source"))
+                        (source (string-append (assoc-ref outputs "out")
+                                               "/share/texmf-dist/source"))
+                        (doc (string-append (assoc-ref outputs "doc")
+                                            "/share/texmf-dist/doc")))
+                    (copy-recursively (string-append origin "/source") source)
+                    (copy-recursively (string-append origin "/doc") doc))))))))
+      (home-page "https://ctan.org/macros/generic/mathdots")
+      (synopsis "Commands to produce dots in math that respect font size")
+      (description
+       "Mathdots redefines @code{\\ddots} and @code{\\vdots}, and defines
+@code{\\iddots}.  The dots produced by @code{\\iddots} slant in the opposite
+direction to @code{\\ddots}.  All the commands are designed to change size
+appropriately in scripts, as well as in response to LaTeX size changing
+commands.  The commands may also be used in plain TeX.")
+      (license license:lppl))))
+
 (define-public texlive-amscls
   (let ((template (simple-texlive-package
                    "texlive-amscls"
@@ -8211,46 +8252,64 @@ develop documents with LaTeX, in a single application.")
     (license license:gpl2+)))
 
 (define-public teximpatient
-  (package
-    (name "teximpatient")
-    (version "2.4")
-    (source (origin
-              (method url-fetch/tarbomb)
-              (uri (string-append "mirror://gnu/" name "/" name "-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "0h56w22d99dh4fgld4ssik8ggnmhmrrbnrn1lnxi1zr0miphn1sd"))))
-    (build-system gnu-build-system)
-    (arguments
-     `(#:tests? #f ; there are none
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'fix-packaging-error
-           (lambda* (#:key inputs #:allow-other-keys)
-             ;; This file should have been part of the tarball.
-             (install-file (car
-                            (find-files
-                             (assoc-ref inputs "automake")
-                             "^install-sh$"))
-                           ".")
-             ;; Remove generated file.
-             (delete-file "book.pdf")
-             #t)))))
-    (native-inputs
-     `(("texlive" ,(texlive-updmap.cfg (list texlive-amsfonts
-                                        texlive-palatino
-                                        texlive-zapfding
-                                        texlive-knuth-lib
-                                        texlive-mflogo-font
-                                        texlive-pdftex)))
-       ("automake" ,automake)))
-    (home-page "https://www.gnu.org/software/teximpatient/")
-    (synopsis "Book on TeX, plain TeX and Eplain")
-    (description "@i{TeX for the Impatient} is a ~350 page book on TeX,
+  ;; The homepage seems to be distributing this version which is currently the
+  ;; most recent commit
+  (let ((commit "e3666abff186832fd9c467ceda3958058f30bac2")
+        (revision "0"))
+    (package
+      (name "teximpatient")
+      (version (git-version "2.4" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url
+                       "https://git.savannah.gnu.org/git/teximpatient.git/")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0r30383nmly7w29il6v3vmilnnyrzak0x0qmabjvnpaga9ansjmi"))))
+      (build-system gnu-build-system)
+      (arguments
+       `(#:tests? #f ;there are none
+         #:allowed-references ("out")
+         #:phases (modify-phases %standard-phases
+                    (add-after 'unpack 'fix-build
+                      (lambda* (#:key inputs #:allow-other-keys)
+                        (chdir "teximpatient")
+
+                        ;; Remove generated files
+                        (for-each delete-file
+                                  '("book.pdf"
+                                    "book.aux"
+                                    "book.ccs"
+                                    "book.log"
+                                    "book.idx"
+                                    "config.log"
+                                    "config.status"
+                                    "configure"
+                                    "Makefile"))
+                        (delete-file-recursively "autom4te.cache")
+
+                        ;; make build reproducible
+                        (substitute* "eplain.tex"
+                          (("timestamp.*%")
+                           (string-append "timestamp{"
+                                          ,version "}"))))))))
+      (native-inputs (list autoconf automake
+                           (texlive-updmap.cfg (list texlive-amsfonts
+                                                     texlive-palatino
+                                                     texlive-zapfding
+                                                     texlive-knuth-lib
+                                                     texlive-mflogo-font
+                                                     texlive-pdftex))))
+      (home-page "https://www.gnu.org/software/teximpatient/")
+      (synopsis "Book on TeX, plain TeX and Eplain")
+      (description
+       "@i{TeX for the Impatient} is a ~350 page book on TeX,
 plain TeX, and Eplain, originally written by Paul Abrahams, Kathryn Hargreaves,
 and Karl Berry.")
-    (license license:fdl1.3+)))
+      (license license:fdl1.3+))))
 
 (define-public lyx
   (package
@@ -8932,7 +8991,7 @@ as plain TeX.")
                "1vbdjmm9bi9ngzz2z1b8jnf6nzf9xsaj5pvyswg13y4dr00mnz6n")
               #:trivial? #t))
     (home-page "https://www.ctan.org/pkg/pdfescape")
-    (synopsis "pdfTeX's escape features for plain TeX")
+    (synopsis "Use escape features from pdfTeX with plain TeX")
     (description
      "This package implements pdfTeX's escape features (@code{\\pdfescapehex},
 @code{\\pdfunescapehex}, @code{\\pdfescapename}, @code{\\pdfescapestring})

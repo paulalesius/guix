@@ -49,7 +49,7 @@ Copyright @copyright{} 2017 humanitiesNerd@*
 Copyright @copyright{} 2017, 2021 Christine Lemmer-Webber@*
 Copyright @copyright{} 2017, 2018, 2019, 2020, 2021, 2022 Marius Bakke@*
 Copyright @copyright{} 2017, 2019, 2020, 2022 Hartmut Goebel@*
-Copyright @copyright{} 2017, 2019, 2020, 2021 Maxim Cournoyer@*
+Copyright @copyright{} 2017, 2019, 2020, 2021, 2022 Maxim Cournoyer@*
 Copyright @copyright{} 2017–2022 Tobias Geerinckx-Rice@*
 Copyright @copyright{} 2017 George Clemmer@*
 Copyright @copyright{} 2017 Andy Wingo@*
@@ -60,7 +60,7 @@ Copyright @copyright{} 2018, 2021 Oleg Pykhalov@*
 Copyright @copyright{} 2018 Mike Gerwitz@*
 Copyright @copyright{} 2018 Pierre-Antoine Rouby@*
 Copyright @copyright{} 2018, 2019 Gábor Boskovits@*
-Copyright @copyright{} 2018, 2019, 2020 Florian Pelz@*
+Copyright @copyright{} 2018, 2019, 2020, 2022 Florian Pelz@*
 Copyright @copyright{} 2018 Laura Lazzati@*
 Copyright @copyright{} 2018 Alex Vong@*
 Copyright @copyright{} 2019 Josh Holland@*
@@ -164,8 +164,9 @@ package management tool written for the GNU system.
 This manual is also available in Simplified Chinese (@pxref{Top,,, guix.zh_CN,
 GNU Guix参考手册}), French (@pxref{Top,,, guix.fr, Manuel de référence de GNU
 Guix}), German (@pxref{Top,,, guix.de, Referenzhandbuch zu GNU Guix}),
-Spanish (@pxref{Top,,, guix.es, Manual de referencia de GNU Guix}), and
-Russian (@pxref{Top,,, guix.ru, Руководство GNU Guix}).  If you
+Spanish (@pxref{Top,,, guix.es, Manual de referencia de GNU Guix}),
+Brazilian Portuguese (@pxref{Top,,, guix.pt_BR, Manual de referência do
+GNU Guix}), and Russian (@pxref{Top,,, guix.ru, Руководство GNU Guix}).  If you
 would like to translate it in your native language, consider joining
 @uref{https://translate.fedoraproject.org/projects/guix/documentation-manual,
 Weblate} (@pxref{Translating Guix}).
@@ -1408,7 +1409,7 @@ when transferring files to and from build machines.
 File name of the Unix-domain socket @command{guix-daemon} is listening
 to on that machine.
 
-@item @code{overload-threshold} (default: @code{0.6})
+@item @code{overload-threshold} (default: @code{0.8})
 The load threshold above which a potential offload machine is
 disregarded by the offload scheduler.  The value roughly translates to
 the total processor usage of the build machine, ranging from 0.0 (0%) to
@@ -2233,6 +2234,9 @@ Wireless-Core Revision 5), which corresponds to the @code{b43-open}
 Linux-libre driver.  Free firmware exists for both and is available
 out-of-the-box on Guix System, as part of @code{%base-firmware}
 (@pxref{operating-system Reference, @code{firmware}}).
+
+The installer warns you early on if it detects devices that are known
+@emph{not} to work due to the lack of free firmware or free drivers.
 
 @cindex RYF, Respects Your Freedom
 The @uref{https://www.fsf.org/, Free Software Foundation} runs
@@ -3419,18 +3423,24 @@ The @var{options} can be among the following:
 @itemx -i @var{package} @dots{}
 Install the specified @var{package}s.
 
-Each @var{package} may specify either a simple package name, such as
-@code{guile}, or a package name followed by an at-sign and version number,
-such as @code{guile@@1.8.8} or simply @code{guile@@1.8} (in the latter
-case, the newest version prefixed by @code{1.8} is selected).
+Each @var{package} may specify a simple package name, such as
+@code{guile}, optionally followed by an at-sign and version number,
+such as @code{guile@@3.0.7} or simply @code{guile@@3.0}.  In the latter
+case, the newest version prefixed by @code{3.0} is selected.
 
-If no version number is specified, the
-newest available version will be selected.  In addition, @var{package}
+If no version number is specified, the newest available version will be
+selected.  In addition, such a @var{package} specification
 may contain a colon, followed by the name of one of the outputs of the
 package, as in @code{gcc:doc} or @code{binutils@@2.22:lib}
-(@pxref{Packages with Multiple Outputs}).  Packages with a corresponding
+(@pxref{Packages with Multiple Outputs}).
+
+Packages with a corresponding
 name (and optionally version) are searched for among the GNU
 distribution modules (@pxref{Package Modules}).
+
+Alternatively, a @var{package} can directly specify a store file name
+such as @file{/gnu/store/...-guile-3.0.7}, as produced by, e.g.,
+@code{guix build}.
 
 @cindex propagated inputs
 Sometimes packages have @dfn{propagated inputs}: these are dependencies
@@ -4531,6 +4541,18 @@ import, unless it was started with @option{--disable-deduplication}
 this option is primarily useful when the daemon was running with
 @option{--disable-deduplication}.
 
+@item --vacuum-database
+@cindex vacuum the store database
+@comment Avoid words like 'repair,' 'compress,' and 'optimize.'
+Guix uses an sqlite database to keep track of the items in (@pxref{The Store}).
+Over time it is possible that the database may grow to a large size and become
+fragmented.  As a result, one may wish to clear the freed space and join the
+partially used pages in the database left behind from removed packages or after
+running the garbage collector.  Running @command{sudo guix gc
+--vacuum-database} will lock the database and @code{VACUUM} the store,
+defragmenting the database and purging freed pages, unlocking the database when
+it finishes.
+
 @end table
 
 @node Invoking guix pull
@@ -4547,7 +4569,7 @@ the distribution currently available on your local machine.  To update
 that distribution, along with the Guix tools, you must run @command{guix
 pull}: the command downloads the latest Guix source code and package
 descriptions, and deploys it.  Source code is downloaded from a
-@uref{https://git-scm.com, Git} repository, by default the official
+@uref{https://git-scm.com/book/en/, Git} repository, by default the official
 GNU@tie{}Guix repository, though this can be customized.  @command{guix
 pull} ensures that the code it downloads is @emph{authentic} by
 verifying that commits are signed by Guix developers.
@@ -4817,6 +4839,15 @@ traveling back to the 1980's.}!  The first @command{guix time-machine}
 invocation can be expensive: it may have to download or even build a
 large number of packages; the result is cached though and subsequent
 commands targeting the same commit are almost instantaneous.
+
+@quotation Note
+The history of Guix is immutable and @command{guix time-machine}
+provides the exact same software as they are in a specific Guix
+revision.  Naturally, no security fixes are provided for old versions
+of Guix or its channels.  A careless use of @command{guix time-machine}
+opens the door to security vulnerabilities.  @xref{Invoking guix pull,
+@option{--allow-downgrades}}.
+@end quotation
 
 The general syntax is:
 
@@ -6230,6 +6261,12 @@ directory:
 guix shell --container --expose=$HOME=/exchange guile -- guile
 @end example
 
+@cindex symbolic links, guix shell
+@item --symlink=@var{spec}
+@itemx -S @var{spec}
+For containers, create the symbolic links specified by @var{spec}, as
+documented in @ref{pack-symlink-option}.
+
 @cindex file system hierarchy standard (FHS)
 @cindex FHS (file system hierarchy standard)
 @item --emulate-fhs
@@ -7022,6 +7059,7 @@ Compress the resulting tarball using @var{tool}---one of @code{gzip},
 @code{zstd}, @code{bzip2}, @code{xz}, @code{lzip}, or @code{none} for no
 compression.
 
+@anchor{pack-symlink-option}
 @item --symlink=@var{spec}
 @itemx -S @var{spec}
 Add the symlinks specified by @var{spec} to the pack.  This option can
@@ -8057,20 +8095,20 @@ following forms:
 @item (delete @var{name}@dots{})
 Delete from the inputs packages with the given @var{name}s (strings).
 
-@item (append @var{package}@dots{})
-Add @var{package}s to the end of the input list.
-
 @item (prepend @var{package}@dots{})
 Add @var{package}s to the front of the input list.
+
+@item (append @var{package}@dots{})
+Add @var{package}s to the end of the input list.
 @end table
 
 The example below removes the GMP and ACL inputs of Coreutils and adds
-libcap to the back of the input list:
+libcap to the front of the input list:
 
 @lisp
 (modify-inputs (package-inputs coreutils)
   (delete "gmp" "acl")
-  (append libcap))
+  (prepend libcap))
 @end lisp
 
 The example below replaces the @code{guile} package from the inputs of
@@ -8081,7 +8119,7 @@ The example below replaces the @code{guile} package from the inputs of
   (replace "guile" guile-2.2))
 @end lisp
 
-The last type of clause is @code{prepend}, to add inputs to the front of
+The last type of clause is @code{append}, to add inputs at the back of
 the list.
 @end deffn
 
@@ -17631,6 +17669,17 @@ Service xorg-server has been stopped.
 Service xorg-server has been started.
 @end example
 
+@cindex configuration, action for shepherd services
+@cindex configuration file, of a shepherd service
+For some services, @command{herd configuration} returns the name of the
+service's configuration file, which can be handy to inspect its
+configuration:
+
+@example
+# herd configuration sshd
+/gnu/store/@dots{}-sshd_config
+@end example
+
 The following sections document the available services, starting with
 the core services, that may be used in an @code{operating-system}
 declaration.
@@ -18996,20 +19045,33 @@ words, it is possible to define services that provide additional mcron
 jobs to run.
 @end defvr
 
+@c Generated via (generate-documentation) at the bottom of (gnu services
+@c mcron).
+@c %start of fragment
 @deftp {Data Type} mcron-configuration
-Data type representing the configuration of mcron.
+Available @code{mcron-configuration} fields are:
 
 @table @asis
-@item @code{mcron} (default: @var{mcron})
+@item @code{mcron} (default: @code{mcron}) (type: file-like)
 The mcron package to use.
 
-@item @code{jobs}
+@item @code{jobs} (default: @code{()}) (type: list-of-gexps)
 This is a list of gexps (@pxref{G-Expressions}), where each gexp
 corresponds to an mcron job specification (@pxref{Syntax, mcron job
-specifications,, mcron, GNU@tie{}mcron}).
+specifications,, mcron,GNU@tie{}mcron}).
+
+@item @code{log?} (default: @code{#t}) (type: boolean)
+Log messages to standard output.
+
+@item @code{log-format} (default: @code{"~1@@*~a ~a: ~a~%"}) (type: string)
+@code{(ice-9 format)} format string for log messages.  The default value
+produces messages like "@samp{@var{pid} @var{name}: @var{message}"}
+(@pxref{Invoking mcron, Invoking,, mcron,GNU@tie{}mcron}).  Each message
+is also prefixed by a timestamp by GNU Shepherd.
+
 @end table
 @end deftp
-
+@c %end of fragment
 
 @node Log Rotation
 @subsection Log Rotation
@@ -31048,7 +31110,8 @@ following configuration:
 @end defvar
 
 @lisp
-(service xvnc-service-type (xvnc-configuration (display-number 10)
+(service xvnc-service-type
+         (xvnc-configuration (display-number 10)))
 @end lisp
 
 As a demonstration, the @command{xclock} command could then be started
@@ -35724,6 +35787,15 @@ A value like @code{#o0027} will give read access to the group used by Gitolite
 (by default: @code{git}).  This is necessary when using Gitolite with software
 like cgit or gitweb.
 
+@item @code{local-code} (default: @code{"$rc@{GL_ADMIN_BASE@}/local"})
+Allows you to add your own non-core programs, or even override the
+shipped ones with your own.
+
+Please supply the FULL path to this variable. By default, directory
+called "local" in your gitolite clone is used, providing the benefits of
+versioning them as well as making changes to them without having to log
+on to the server.
+
 @item @code{unsafe-pattern} (default: @code{#f})
 An optional Perl regular expression for catching unsafe configurations in
 the configuration file.  See
@@ -37823,15 +37895,17 @@ here is how to use it and customize it further.
 @cindex initrd
 @cindex initial RAM disk
 @deffn {Scheme Procedure} raw-initrd @var{file-systems} @
-       [#:linux-modules '()] [#:mapped-devices '()] @
-       [#:keyboard-layout #f] @
-       [#:helper-packages '()] [#:qemu-networking? #f] [#:volatile-root? #f]
+       [#:linux-modules '()] [#:pre-mount #t] [#:mapped-devices '()] @
+       [#:keyboard-layout #f] [#:helper-packages '()] @
+       [#:qemu-networking? #f] [#:volatile-root? #f]
 Return a derivation that builds a raw initrd.  @var{file-systems} is
 a list of file systems to be mounted by the initrd, possibly in addition to
 the root file system specified on the kernel command line via @option{root}.
 @var{linux-modules} is a list of kernel modules to be loaded at boot time.
 @var{mapped-devices} is a list of device mappings to realize before
 @var{file-systems} are mounted (@pxref{Mapped Devices}).
+@var{pre-mount} is a G-expression to evaluate before realizing
+@var{mapped-devices}.
 @var{helper-packages} is a list of packages to be copied in the initrd.
        It may
 include @code{e2fsck/static} or other packages needed by the initrd to check
@@ -39951,6 +40025,39 @@ This, as you can see, is a fairly sophisticated way to say hello.
 info on actions.
 @end deftp
 
+@cindex configuration file, of Shepherd services
+@deffn {Scheme Procedure} shepherd-configuration-action
+Return a @code{configuration} action to display @var{file}, which should
+be the name of the service's configuration file.
+
+It can be useful to equip services with that action.  For example, the
+service for the Tor anonymous router (@pxref{Networking Services,
+@code{tor-service-type}}) is defined roughly like this:
+
+@lisp
+(let ((torrc (plain-file "torrc" @dots{})))
+  (shepherd-service
+    (provision '(tor))
+    (requirement '(user-processes loopback syslogd))
+
+    (start #~(make-forkexec-constructor
+              (list #$(file-append tor "/bin/tor") "-f" #$torrc)
+              #:user "tor" #:group "tor"))
+    (stop #~(make-kill-destructor))
+    (actions (list (shepherd-configuration-action torrc)))
+    (documentation "Run the Tor anonymous network overlay.")))
+@end lisp
+
+Thanks to this action, administrators can inspect the configuration file
+passed to @command{tor} with this shell command:
+
+@example
+cat $(herd configuration tor)
+@end example
+
+This can come in as a handy debugging tool!
+@end deffn
+
 @defvr {Scheme Variable} shepherd-root-service-type
 The service type for the Shepherd ``root service''---i.e., PID@tie{}1.
 
@@ -41035,18 +41142,32 @@ jobs to run.
 @end defvr
 
 @deftp {Data Type} home-mcron-configuration
-Data type representing the configuration of mcron.
+Available @code{home-mcron-configuration} fields are:
 
+@c Auto-generated with (gnu home services mcron)'s
+@c generate-documentation procedure.
+@c %start of fragment
 @table @asis
-@item @code{mcron} (default: @var{mcron})
+@item @code{mcron} (default: @code{mcron}) (type: file-like)
 The mcron package to use.
 
-@item @code{jobs}
+@item @code{jobs} (default: @code{()}) (type: list-of-gexps)
 This is a list of gexps (@pxref{G-Expressions}), where each gexp
 corresponds to an mcron job specification (@pxref{Syntax, mcron job
-specifications,, mcron, GNU@tie{}mcron}).
+specifications,, mcron,GNU@tie{}mcron}).
+
+@item @code{log?} (default: @code{#t}) (type: boolean)
+Log messages to standard output.
+
+@item @code{log-format} (default: @code{"~1@@*~a ~a: ~a~%"}) (type: string)
+@code{(ice-9 format)} format string for log messages.  The default value
+produces messages like "@samp{@var{pid} @var{name}: @var{message}"}
+(@pxref{Invoking mcron, Invoking,, mcron,GNU@tie{}mcron}).  Each message
+is also prefixed by a timestamp by GNU Shepherd.
+
 @end table
 @end deftp
+@c %end of fragment
 
 @node Power Management Home Services
 @subsection Power Management Home Services
@@ -41459,7 +41580,7 @@ A typical extension for adding a channel might look like this:
                 (list
                  (channel
                   (name 'variant-packages)
-                  (url "https://example.org/variant-packages.git")))
+                  (url "https://example.org/variant-packages.git"))))
 @end lisp
 @end defvr
 

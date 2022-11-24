@@ -977,6 +977,27 @@ H.264 (MPEG-4 AVC) video streams.")
                       "file://extras/cl.h"
                       "See extras/cl.h in the distribution."))))))
 
+;;; TODO: Merge into libx264 on staging.
+(define-public libx264-next
+  ;; There are no tags in the repository, so we take the version number from
+  ;; the X264_BUILD variable defined in x264.h.
+  (let ((version "164")
+        (commit "b093bbe7d9bc642c8f24067cbdcc73bb43562eab")
+        (revision "0"))
+    (package
+      (inherit libx264)
+      (name "libx264")
+      (version (git-version version revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://code.videolan.org/videolan/x264.git")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "095pv8y6fqjg8mdvsfk12d0jqgyhip536a6vxhzm7qz8hfp96qhq")))))))
+
 (define-public mkvtoolnix
   (package
     (name "mkvtoolnix")
@@ -1008,7 +1029,7 @@ H.264 (MPEG-4 AVC) video streams.")
            libebml
            file
            flac
-           fmt
+           fmt-8
            libdvdread
            libmatroska
            libogg
@@ -2158,7 +2179,7 @@ SVCD, DVD, 3ivx, DivX 3/4/5, WMV and H.264 movies.")
 (define-public mpv
   (package
     (name "mpv")
-    (version "0.34.1")
+    (version "0.35.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2166,7 +2187,7 @@ SVCD, DVD, 3ivx, DivX 3/4/5, WMV and H.264 movies.")
                     (commit (string-append "v" version))))
               (file-name (git-file-name name version))
               (sha256
-               (base32 "12qxwm1ww5vhjddl8yvj1xa0n1fi9z3lmzwhaiday2v59ca0qgsk"))))
+               (base32 "1jnk1arwhf82s6q90jp70izk1wy0bkx3lr3il2jgbqsp355l6wsk"))))
     (build-system waf-build-system)
     (arguments
      (list
@@ -2221,6 +2242,7 @@ SVCD, DVD, 3ivx, DivX 3/4/5, WMV and H.264 movies.")
            libxext
            libxkbcommon
            libxinerama
+           libxpresent
            libxrandr
            libxscrnsaver
            libxv
@@ -2405,6 +2427,22 @@ To load this plugin, specify the following option when starting mpv:
     (description "libvpx is a codec for the VP8/VP9 video compression format.")
     (license license:bsd-3)
     (home-page "https://www.webmproject.org/")))
+
+;;; TODO: Merge into libvpx on staging.
+(define-public libvpx-next
+  (package
+    (inherit libvpx)
+    (name "libvpx")
+    (version "1.12.0")
+    (source (origin
+              (inherit (package-source libvpx))
+              (uri (git-reference
+                    (url "https://chromium.googlesource.com/webm/libvpx")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1x12f2bd4jqd532rnixmwvcx8d29yxiacpcxqqh86qczc49la8gm"))))))
 
 (define-public youtube-dl
   (package
@@ -4819,7 +4857,7 @@ transitions, and effects and then export your film to many common formats.")
 (define-public shotcut
   (package
     (name "shotcut")
-    (version "22.06.23")
+    (version "22.10.25")
     (source
      (origin
        (method git-fetch)
@@ -4828,7 +4866,7 @@ transitions, and effects and then export your film to many common formats.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1kvhcblzjdjiv3jggdx41djq9pz6a9hg4ilgcwin13gb19ir7dcc"))))
+        (base32 "12n179d1ymmzvlx5rzwmd89gwaa731b4y66nfl8wlr88wss4mncm"))))
     (build-system qt-build-system)
     (arguments
      `(#:tests? #f                      ;there are no tests
@@ -5354,7 +5392,7 @@ can also directly record to WebM or MP4 if you prefer.")
 (define-public wf-recorder
   (package
     (name "wf-recorder")
-    (version "0.2.1")
+    (version "0.3.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -5363,7 +5401,7 @@ can also directly record to WebM or MP4 if you prefer.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1cw6kpcbl33wh95pvy32xrsrm6kkk1awccr3phyh885xjs3b3iim"))))
+                "18csvix8fdqir52q729rgcy355xy2ngvmr05l1abflpbvsklbn52"))))
     (build-system meson-build-system)
     (native-inputs
      (list pkg-config))

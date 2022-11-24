@@ -25,6 +25,7 @@
 ;;; Copyright © 2021 Nicolò Balzarotti <nicolo@nixo.xyz>
 ;;; Copyright © 2022 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;; Copyright © 2022 Zhu Zihao <all_but_last@163.com>
+;;; Copyright © 2022 Petr Hodina <phodina@protonmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -48,6 +49,7 @@
   #:use-module (guix git-download)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system meson)
   #:use-module (guix build-system trivial)
   #:use-module (guix build-system python)
   #:use-module (guix build-system qt)
@@ -59,6 +61,7 @@
   #:use-module (gnu packages bash)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bison)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages cmake)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cups)
@@ -140,8 +143,7 @@
          (modify-phases %standard-phases
            (add-after 'unpack 'chdir
              (lambda _
-               (chdir "libqite")
-               #t)))))
+               (chdir "libqite"))))))
       (inputs
        (list qtbase-5 qtmultimedia-5))
       (home-page "https://github.com/Ri0n/qite/")
@@ -219,10 +221,10 @@ window managers, that don't provide Qt integration by themselves.")
       (native-inputs
        (list cmake-shared extra-cmake-modules pkg-config))
       (inputs
-       `(("qtbase" ,qtbase-5)
-         ("qtwayland" ,qtwayland-5)
-         ("wayland" ,wayland)
-         ("xkbcommon" ,libxkbcommon)))
+       (list qtbase-5
+             qtwayland-5
+             wayland
+             libxkbcommon))
       (synopsis "Material Decoration for Qt")
       (description "MaterialDecoration is a client-side decoration for Qt
 applications on Wayland.")
@@ -254,8 +256,7 @@ applications on Wayland.")
          (add-before 'check 'check-setup
            (lambda _
              ;; make Qt render "offscreen", required for tests
-             (setenv "QT_QPA_PLATFORM" "offscreen")
-             #t)))))
+             (setenv "QT_QPA_PLATFORM" "offscreen"))))))
     (home-page "https://github.com/steveire/grantlee")
     (synopsis "Libraries for text templating with Qt")
     (description "Grantlee Templates can be used for theming and generation of
@@ -819,6 +820,69 @@ developers using C++ or QML, a CSS & JavaScript like language.")
            (search-path-specification
             (variable "XDG_CONFIG_DIRS")
             (files '("etc/xdg")))))))
+
+(define-public qt3d-5
+  (package
+    (inherit qtbase-5)
+    (name "qt3d")
+    (version "5.15.5")
+    (source (origin
+              (method url-fetch)
+              (uri (qt-urls name version))
+              (sha256
+               (base32
+                "1m3y7d58crn0qgfwkimxcggssn2pbs8nj5b9diwns6rwqg4aqk20"))))
+    (propagated-inputs `())
+    (native-inputs (list perl))
+    (inputs (list mesa qtbase-5 vulkan-headers zlib))
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (add-before 'configure 'configure-qmake
+                          (lambda* (#:key inputs outputs #:allow-other-keys)
+                            (let* ((tmpdir (string-append (getenv "TMPDIR")))
+                                   (qmake (string-append tmpdir "/qmake"))
+                                   (qt.conf (string-append tmpdir "/qt.conf")))
+                              (symlink (which "qmake") qmake)
+                              (setenv "PATH"
+                                      (string-append tmpdir ":"
+                                                     (getenv "PATH")))
+                              (with-output-to-file qt.conf
+                                (lambda ()
+                                  (format #t "[Paths]
+Prefix=~a
+ArchData=lib/qt5
+Data=share/qt5
+Documentation=share/doc/qt5
+Headers=include/qt5
+Libraries=lib
+LibraryExecutables=lib/qt5/libexec
+Binaries=bin
+Tests=tests
+Plugins=lib/qt5/plugins
+Imports=lib/qt5/imports
+Qml2Imports=lib/qt5/qml
+Translations=share/qt5/translations
+Settings=etc/xdg
+Examples=share/doc/qt5/examples
+HostPrefix=~a
+HostData=lib/qt5
+HostBinaries=bin
+HostLibraries=lib
+
+[EffectiveSourcePaths]
+HostPrefix=~a
+HostData=lib/qt5"
+                                          #$output #$output #$(this-package-input
+                                                               "qtbase")))))))
+                        (replace 'configure
+                          (lambda* (#:key inputs outputs #:allow-other-keys)
+                            (invoke "qmake"
+                                    "QT_BUILD_PARTS = libs tools tests")))
+                        (add-before 'check 'set-display
+                          (lambda _
+                            (setenv "QT_QPA_PLATFORM" "offscreen"))))))
+    (synopsis "Qt module for 3D")
+    (description "The Qt3d module provides classes for displaying 3D.")))
 
 (define-public qt5compat
   (package
@@ -1917,12 +1981,12 @@ coloring, and many more.")))
     (native-inputs
      (list perl pkg-config))
     (inputs
-     `(("fontconfig" ,fontconfig)
-       ("freetype" ,freetype)
-       ("libxrender" ,libxrender)
-       ("sdl2" ,sdl2)
-       ("qtbase" ,qtbase-5)
-       ("qtdeclarative-5" ,qtdeclarative-5)))
+     (list fontconfig
+           freetype
+           libxrender
+           sdl2
+           qtbase-5
+           qtdeclarative-5))
     (synopsis "Qt Gamepad module")
     (description "The Qt Gamepad module is an add-on library that enables Qt
 applications to support the use of gamepad hardware and in some cases remote
@@ -2794,7 +2858,7 @@ linux/libcurl_wrapper.h"
       #:configure-flags
       ;; Use the CMake ninja generator, otherwise the build fails (see:
       ;; https://bugreports.qt.io/browse/QTBUG-96897).
-      #~(list "-GNinja"                 ;
+      #~(list "-GNinja"
               ;; Manually add the NSS library prefix to the linker
               ;; search path, otherwise it fails to be linked (see:
               ;; https://bugreports.qt.io/browse/QTBUG-105053).
@@ -2875,9 +2939,9 @@ linux/libcurl_wrapper.h"
     (native-inputs
      (modify-inputs (package-native-inputs qtwebengine-5)
        (delete "python2" "python2-six")
+       (replace "node" node-lts)
        (append clang-14
                lld-as-ld-wrapper
-               node-lts
                python-wrapper
                python-html5lib)))
     (inputs
@@ -2941,8 +3005,7 @@ system libraries.")
                      (string-append source "/" file)
                      (string-append out "/include")))
                   '("SingleApplication"
-                    "singleapplication.h" "singleapplication_p.h"))
-                 #t))))))
+                    "singleapplication.h" "singleapplication_p.h"))))))))
       (inputs
        (list qtbase-5))
       (home-page "https://github.com/itay-grudev/SingleApplication")
@@ -3088,9 +3151,7 @@ module provides support functions to the automatically generated code.")
              (let* ((qtbase (assoc-ref inputs "qtbase"))
                     (qtprinter.h (string-append "\"" qtbase "/include/qt5/QtPrintSupport/qprinter.h\"")))
                (substitute* "sip/QtPrintSupport/qprinter.sip"
-                 (("<qprinter.h>")
-                  qtprinter.h))
-               #t)))
+                 (("<qprinter.h>") qtprinter.h)))))
          (replace 'configure
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -3215,8 +3276,7 @@ contain over 620 classes.")
                  (lambda _ (display "
 from pkgutil import extend_path
 __path__ = extend_path(__path__, __name__)
-")))
-               #t))))))
+")))))))))
     (home-page "https://www.riverbankcomputing.com/software/pyqtwebengine/intro")
     (synopsis "Python bindings for QtWebEngine")
     (description
@@ -3376,8 +3436,7 @@ indicators, code completion and call tips.")
                   (string-append out "/lib")))
                ;; And fix the installed.txt file
                (substitute* "installed.txt"
-                 (("/gnu/store/[^/]+") out)))
-             #t)))))
+                 (("/gnu/store/[^/]+") out))))))))
     (inputs
      `(("qscintilla" ,qscintilla)
        ("python" ,python)
@@ -3405,8 +3464,7 @@ This package provides the Python bindings.")))
                    (match %build-inputs
                      (((names . directories) ...)
                       (union-build (assoc-ref %outputs "out")
-                                   directories)
-                      #t)))))
+                                   directories))))))
     (inputs
      `(("python-pyqt" ,python-pyqt)
        ("python-qscintilla" ,python-qscintilla)))
@@ -3484,8 +3542,7 @@ securely.  It will not store any data unencrypted unless explicitly requested.")
                    (("#include \"qtlockedfile.*\\.cpp\"") "")
                    ;; Unwrap namespace added in the vendoring process.
                    (("QtLP_Private::QtLockedFile")
-                    "QtLockedFile")))
-             #t))))
+                    "QtLockedFile")))))))
       (build-system gnu-build-system)
       (arguments
        `(#:tests? #f                    ; No target
@@ -3509,8 +3566,7 @@ securely.  It will not store any data unencrypted unless explicitly requested.")
                  (("SUBDIRS\\+=examples") ""))
                ;; Fix deprecated functions.
                (substitute* "qtsoap/src/qtsoap.cpp"
-                 (("toAscii") "toUtf8"))
-               #t))
+                 (("toAscii") "toUtf8"))))
            (replace 'configure
              (lambda _
                (for-each (lambda (solution)
@@ -3518,16 +3574,14 @@ securely.  It will not store any data unencrypted unless explicitly requested.")
                              (invoke "./configure" "-library")
                              (invoke "qmake")))
                          '("qtlockedfile" "qtpropertybrowser" "qtservice"
-                           "qtsingleapplication" "qtsoap"))
-               #t))
+                           "qtsingleapplication" "qtsoap"))))
            (replace 'build
              (lambda _
                (for-each (lambda (solution)
                            (with-directory-excursion solution
                              (invoke "make")))
                          '("qtlockedfile" "qtpropertybrowser" "qtservice"
-                           "qtsingleapplication" "qtsoap"))
-               #t))
+                           "qtsingleapplication" "qtsoap"))))
            (replace 'install
              (lambda args
                (for-each (lambda (solution)
@@ -3607,8 +3661,7 @@ that can be only started once per user.
              ;; Remove some incomplete manual pages.
              (for-each delete-file (find-files "doc/man/man3" "^_tmp.*"))
              (mkdir-p man)
-             (copy-recursively "doc/man" man)
-             #t))))))
+             (copy-recursively "doc/man" man)))))))
   (home-page "http://qwt.sourceforge.net")
   (synopsis "Qt widgets for plots, scales, dials and other technical software
 GUI components")
@@ -3741,35 +3794,32 @@ a binding language:
 @end itemize\n")
     (license license:lgpl3)))                    ;version 3 only (+ exception)
 
-;; There have been no public releases yet.
 (define-public qtcolorwidgets
-  (let ((commit "a95f72e935fe9e046061a1d1c3930cbfbcb533e0")
-        (revision "1"))
-    (package
-      (name "qtcolorwidgets")
-      (version (git-version "0" revision commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://gitlab.com/mattia.basaglia/Qt-Color-Widgets")
-                      (commit commit)))
-                (file-name (git-file-name name version))
-                (sha256
-                 (base32
-                  "0dkiwlqh2gwhlp78c1fmchj3shl4p9inspcl96ya5aa8mn6kydy8"))))
-      (build-system cmake-build-system)
-      (arguments `(#:tests? #f)) ; There are no tests
-      (native-inputs
-       (list qttools-5))
-      (inputs
-       (list qtbase-5))
-      (home-page "https://gitlab.com/mattia.basaglia/Qt-Color-Widgets")
-      (synopsis "Color management widgets")
-      (description "QtColorWidgets provides a Qt color dialog that is more
+  (package
+    (name "qtcolorwidgets")
+    (version "2.2.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.com/mattia.basaglia/Qt-Color-Widgets")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1fp7sr5a56bjp2abc6ng331q0bwvk6mf2nxdga81aj6cd9afs22q"))))
+    (build-system cmake-build-system)
+    (arguments '(#:tests? #f))          ;there are no tests
+    (native-inputs
+     (list qttools-5))
+    (inputs
+     (list qtbase-5))
+    (home-page "https://gitlab.com/mattia.basaglia/Qt-Color-Widgets")
+    (synopsis "Color management widgets")
+    (description "QtColorWidgets provides a Qt color dialog that is more
 user-friendly than the default @code{QColorDialog} and several other
 color-related widgets.")
-      ;; Includes a license exception for combining with GPL2 code.
-      (license license:lgpl3+))))
+    ;; Includes a license exception for combining with GPL2 code.
+    (license license:lgpl3+)))
 
 (define-public qcustomplot
   (package
@@ -3853,7 +3903,7 @@ color-related widgets.")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'use-shiboken-dir-only
-            (lambda _ (chdir "sources/shiboken2") #t))
+            (lambda _ (chdir "sources/shiboken2")))
           (add-before 'configure 'make-files-writable-and-update-timestamps
             (lambda _
               ;; The build scripts need to modify some files in
@@ -3864,13 +3914,11 @@ color-related widgets.")
                 (for-each (lambda (file)
                             (make-file-writable file)
                             (utime file circa-1980 circa-1980))
-                          (find-files ".")))
-              #t))
+                          (find-files ".")))))
           (add-before 'configure 'set-build-env
             (lambda _
               (let ((llvm #$(this-package-input "clang-toolchain")))
-                (setenv "CLANG_INSTALL_DIR" llvm)
-                #t))))))
+                (setenv "CLANG_INSTALL_DIR" llvm)))))))
     (home-page "https://wiki.qt.io/Qt_for_Python")
     (synopsis
      "Shiboken generates bindings for C++ libraries using CPython source code")
@@ -3908,7 +3956,7 @@ color-related widgets.")
        ((#:phases p)
         #~(modify-phases #$p
             (replace 'use-shiboken-dir-only
-              (lambda _ (chdir "sources/shiboken6") #t))))
+              (lambda _ (chdir "sources/shiboken6")))))
        ((#:configure-flags flags)
         #~(cons*
            ;; The RUNPATH of shibokenmodule contains the entry in build
@@ -3962,7 +4010,7 @@ color-related widgets.")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'go-to-source-dir
-            (lambda _ (chdir "sources/pyside2") #t))
+            (lambda _ (chdir "sources/pyside2")))
           (add-after 'go-to-source-dir 'fix-qt-module-detection
             (lambda _
               ;; Activate qt module support even if it not in the same
@@ -4057,7 +4105,7 @@ generate Python bindings for your C or C++ code.")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'go-to-source-dir
-            (lambda _ (chdir "sources/pyside6") #t))
+            (lambda _ (chdir "sources/pyside6")))
           (add-after 'go-to-source-dir 'fix-qt-module-detection
             (lambda _
               (substitute* "cmake/PySideHelpers.cmake"
@@ -4117,7 +4165,7 @@ generate Python bindings for your C or C++ code.")))
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'go-to-source-dir
-            (lambda _ (chdir "sources/pyside2-tools") #t)))))
+            (lambda _ (chdir "sources/pyside2-tools"))))))
     (home-page "https://wiki.qt.io/Qt_for_Python")
     (synopsis
      "Command line tools for PySide2")
@@ -4234,7 +4282,7 @@ data.")
     (native-inputs
       (list pkg-config cmake))
     (inputs
-      (list qtbase-5 coin3D-4))
+      (list qtbase-5 coin3D))
     (home-page "https://github.com/coin3d/soqt")
     (synopsis "Qt GUI component toolkit library for Coin")
     (description "SoQt is a Qt GUI component toolkit library for Coin.  It is
@@ -4294,8 +4342,7 @@ and import their menus over DBus.")
            (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
                (invoke "ctest" "-E" ;; These tests try connect to the internet.
-                       "(kdsoap-webcalls|kdsoap-webcalls_wsdl|kdsoap-test_calc)"))
-             #t)))))
+                       "(kdsoap-webcalls|kdsoap-webcalls_wsdl|kdsoap-test_calc)")))))))
     (home-page "https://www.kdab.com/development-resources/qt-tools/kd-soap/")
     (synopsis "Qt SOAP component")
     (description "KD SOAP is a tool for creating client applications for web
@@ -4303,6 +4350,198 @@ services using the XML based SOAP protocol and without the need for a dedicated
 web server.")
     (license (list license:gpl2 license:gpl3))))
 
+(define-public libaccounts-qt
+  (package
+    (name "libaccounts-qt")
+    (version "1.16")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.com/accounts-sso/libaccounts-qt")
+                    (commit (string-append "VERSION_" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1vmpjvysm0ld8dqnx8msa15hlhrkny02cqycsh4k2azrnijg0xjz"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f                  ;TODO
+           #:phases
+           #~(modify-phases %standard-phases
+               (replace 'configure
+                 (lambda _
+                   (substitute* "tests/tst_libaccounts.pro"
+                     (("QMAKE_RPATHDIR = \\$\\$\\{QMAKE_LIBDIR\\}")
+                      (string-append "QMAKE_RPATHDIR ="
+                                     #$output "/lib")))
+                   (invoke "qmake"
+                           (string-append "PREFIX=" #$output)
+                           (string-append "LIBDIR=" #$output "/lib")))))))
+    ;; * SignOnQt5 (required version >= 8.55), D-Bus service which performs
+    ;; user authentication on behalf of its clients,
+    ;; <https://gitlab.com/accounts-sso/signond>
+    (native-inputs (list doxygen pkg-config qtbase-5 qttools-5))
+    (inputs (list glib signond libaccounts-glib))
+    (home-page "https://accounts-sso.gitlab.io/")
+    (synopsis "Qt5 bindings for libaccounts-glib")
+    (description
+     "Accounts SSO is a framework for application developers who
+wish to acquire, use and store web account details and credentials.  It
+handles the authentication process of an account and securely stores the
+credentials and service-specific settings.")
+    (license license:lgpl2.1+)))
+
+(define-public libsignon-glib
+  (package
+    (name "libsignon-glib")
+    (version "2.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.com/accounts-sso/libsignon-glib")
+                    (commit (string-append "VERSION_" version))
+                    (recursive? #t)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0gnx9gqsh0hcfm1lk7w60g64mkn1iicga5f5xcy1j9a9byacsfd0"))))
+    (build-system meson-build-system)
+    (arguments
+     (list #:tests? #f                  ;TODO: ninja: no work to do.
+           #:imported-modules `((guix build python-build-system)
+                                ,@%meson-build-system-modules)
+           #:modules '(((guix build python-build-system)
+                        #:select (python-version))
+                       (guix build meson-build-system)
+                       (guix build utils))
+           #:configure-flags
+           #~(list "-Dtests=true"
+                   (string-append "-Dpy-overrides-dir="
+                                  #$output "/lib/python"
+                                  (python-version #$(this-package-input
+                                                     "python"))
+                                  "/site-packages/gi/overrides"))))
+    (native-inputs (list dbus
+                         dbus-test-runner
+                         `(,glib "bin")
+                         gobject-introspection
+                         gtk-doc
+                         pkg-config
+                         vala))
+    (inputs (list check signond python python-pygobject))
+    (propagated-inputs (list glib))
+    (home-page "https://accounts-sso.gitlab.io/libsignon-glib/")
+    (synopsis "Single signon authentication library for GLib applications")
+    (description
+     "This package provides single signon authentication library for
+GLib applications.")
+    (license license:lgpl2.1+)))
+
+(define-public packagekit-qt5
+  (package
+    (name "packagekit-qt5")
+    (version "1.0.2")
+    (source (origin
+              (method git-fetch)
+			  (uri (git-reference
+			  (url "https://github.com/hughsie/PackageKit-Qt")
+			  (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1d20r503msw1vix3nb6a8bmdqld7fj8k9jk33bkqsc610a2zsms6"))))
+    (build-system cmake-build-system)
+    (arguments '(#:tests? #f))          ;no test suite
+    (native-inputs (list pkg-config))
+    (inputs (list packagekit qtbase-5))
+    (home-page "https://www.freedesktop.org/software/PackageKit/pk-intro.html")
+    (synopsis "Qt5 bindings for PackageKit")
+    (description "Provides Qt5 bindings to PackageKit which is a DBUS
+abstraction layer that allows the session user to manage packages in
+a secure way.")
+    (license license:lgpl2.1+)))
+
+(define-public signond
+  (package
+    (name "signond")
+    (version "8.61")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.com/accounts-sso/signond")
+                    (commit (string-append "VERSION_" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0k6saz5spys4a4p6ws0ayrjks2gqdqvz7zfmlhdpz5axha0gbqq4"))))
+    (build-system qt-build-system)
+    (native-inputs (list doxygen pkg-config qtbase-5 qttools-5))
+    (inputs (list dbus glib libaccounts-glib))
+    (arguments
+     (list #:tests? #f                  ; Figure out how to run tests
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'validate-runpath)
+               (replace 'configure
+                 (lambda _
+                   (substitute* "src/signond/signond.pro"
+                     (("/etc/")
+                      (string-append #$output "/etc/")))
+                   (substitute*
+                       '("tests/extensions/extensions.pri"
+                         "tests/signond-tests/mock-ac-plugin/plugin.pro"
+                         "tests/signond-tests/identity-tool.pro"
+                         "tests/signond-tests/mock-ac-plugin/identity-ac-helper.pro"
+                         "tests/libsignon-qt-tests/libsignon-qt-tests.pro"
+                         "tests/signond-tests/signond-tests.pri")
+                     (("QMAKE_RPATHDIR = \\$\\$\\{QMAKE_LIBDIR\\}")
+                      (string-append "QMAKE_RPATHDIR = "
+                                     #$output "/lib:"
+                                     #$output "/lib/signon")))
+                   (invoke "qmake"
+                           (string-append "PREFIX=" #$output)
+                           (string-append "LIBDIR=" #$output "/lib")))))))
+    (home-page "http://accounts-sso.gitlab.io/signond/index.html")
+    (synopsis "Perform user authentication over D-Bus")
+    (description "This package provides a D-Bus service which performs user
+authentication on behalf of its clients.")
+    (license license:lgpl2.1+)))
+
+(define-public signon-plugin-oauth2
+  (package
+    (name "signon-plugin-oauth2")
+    (version "0.25")
+    (home-page "https://gitlab.com/accounts-sso/signon-plugin-oauth2")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url home-page)
+                    (commit (string-append "VERSION_" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "16aslnyk8jdg03zcg97rp6qzd0gmclj14hyhliksz8jgfz1l0w7c"))))
+    (build-system qt-build-system)
+    (native-inputs (list doxygen pkg-config))
+    (inputs (list signond))
+    (arguments
+     (list #:tests? #f                  ;no tests
+           #:make-flags #~(list (string-append "INSTALL_ROOT=" #$output))
+           #:phases
+           #~(modify-phases %standard-phases
+               (replace 'configure
+                 (lambda _
+                   (substitute* "common-project-config.pri"
+                     (("-Werror")
+                      ""))
+                   (invoke "qmake"
+                           (string-append "PREFIX=" #$output)
+                           (string-append "LIBDIR=" #$output "/lib")))))))
+    (synopsis "OAuth 2 plugin for signon")
+    (description
+     "This plugin for the Accounts-SSO SignOn daemon handles the OAuth
+1.0 and 2.0 authentication protocols.")
+    (license license:lgpl2.1+)))
 ;;;
 ;;; Avoid adding new packages to the end of this file. To reduce the chances
 ;;; of a merge conflict, place them above by existing packages with similar

@@ -23246,7 +23246,7 @@ getters and setters on fields.")
 (define-public rust-gfa-0.10
   (package
     (name "rust-gfa")
-    (version "0.10.0")
+    (version "0.10.1")
     (source
       (origin
         (method url-fetch)
@@ -23255,7 +23255,7 @@ getters and setters on fields.")
          (string-append name "-" version ".tar.gz"))
         (sha256
          (base32
-          "1hadm6vfjwyqw41bqci18wb4wv80rydmrag7a5c02pdp1gid14fw"))))
+          "1x996rpfnflgi2j4dgaj5sdxdbf24zfm9d2ha0zy8aid0cd60cln"))))
     (build-system cargo-build-system)
     (arguments
      `(#:cargo-inputs
@@ -46691,8 +46691,7 @@ table-based tests.")
      (list bash-minimal m4))
     (home-page "https://gitlab.com/tspiteri/rug")
     (synopsis
-      "Arbitrary-precision integers, rational, floating-point and complex numbers based
-on GMP, MPFR and MPC")
+      "Arbitrary-precision integers, rational, floating-point and complex numbers")
     (description "This is a Rust library of arbitrary-precision integers, rational,
 floating-point, and complex numbers based on GMP, MPFR and MPC.")
     (license license:lgpl3+)))
@@ -52508,7 +52507,7 @@ diff output.")
         ("rust-paris" ,rust-paris-1)
         ("rust-termcolor" ,rust-termcolor-1))))
     (home-page "https://github.com/drakulix/simplelog.rs")
-    (synopsis "simple and easy-to-use logging facility for Rust's log crate")
+    (synopsis "Simple and easy-to-use logging facility for Rust's log crate")
     (description
      "This package provides a simple and easy-to-use logging facility for Rust's
 @code{log} crate.  It aims to be a maintainable, easy to integrate facility for
@@ -58463,7 +58462,7 @@ fixed set of worker threads.")
     (home-page
      "https://github.com/tikv/jemallocator")
     (synopsis
-     "safe wrapper over jemalloc's control and introspection APIs")
+     "Safe wrapper over jemalloc's control and introspection APIs")
     (description
      "This package provides a safe wrapper over jemalloc's control and
 introspection APIs.")
@@ -62763,7 +62762,7 @@ Unicode character database.")
           "13ng291mkc9b132jjf4laj76f5nqm5qd2447rm8bry3wxbdc5kaw"))))
     (build-system cargo-build-system)
     (home-page "https://github.com/BurntSushi/ucd-generate")
-    (synopsis "library for working with the Unicode character database")
+    (synopsis "Library for working with the Unicode character database")
     (description "This package provides a small utility library for working
 with the Unicode character database.")
     (license (list license:asl2.0

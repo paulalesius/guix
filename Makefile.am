@@ -403,10 +403,6 @@ AUX_FILES =						\
   gnu/packages/aux-files/linux-libre/6.0-arm64.conf	\
   gnu/packages/aux-files/linux-libre/6.0-i686.conf	\
   gnu/packages/aux-files/linux-libre/6.0-x86_64.conf	\
-  gnu/packages/aux-files/linux-libre/5.19-arm.conf	\
-  gnu/packages/aux-files/linux-libre/5.19-arm64.conf	\
-  gnu/packages/aux-files/linux-libre/5.19-i686.conf	\
-  gnu/packages/aux-files/linux-libre/5.19-x86_64.conf	\
   gnu/packages/aux-files/linux-libre/5.15-arm.conf	\
   gnu/packages/aux-files/linux-libre/5.15-arm64.conf	\
   gnu/packages/aux-files/linux-libre/5.15-i686.conf	\
@@ -664,49 +660,49 @@ dist_fishcompletion_DATA = etc/completion/fish/guix.fish
 nodist_selinux_policy_DATA = etc/guix-daemon.cil
 
 EXTRA_DIST +=						\
-  HACKING						\
-  ROADMAP						\
-  TODO							\
-  CODE-OF-CONDUCT					\
   .dir-locals.el					\
   .guix-authorizations					\
   .guix-channel						\
-  scripts/guix.in					\
+  CODE-OF-CONDUCT					\
+  HACKING						\
+  ROADMAP						\
+  TODO							\
+  bootstrap						\
+  build-aux/build-self.scm				\
+  build-aux/check-channel-news.scm			\
+  build-aux/check-final-inputs-self-contained.scm	\
+  build-aux/compile-all.scm				\
+  build-aux/compile-as-derivation.scm			\
+  build-aux/config.rpath				\
+  build-aux/convert-xref.scm			\
+  build-aux/cuirass/hurd-manifest.scm			\
+  build-aux/generate-authors.scm			\
+  build-aux/test-driver.scm				\
+  build-aux/update-NEWS.scm				\
+  build-aux/update-guix-package.scm			\
+  doc/build.scm						\
   etc/disarchive-manifest.scm				\
   etc/guix-install.sh					\
+  etc/historical-authorizations				\
   etc/news.scm						\
   etc/release-manifest.scm				\
   etc/source-manifest.scm				\
   etc/system-tests.scm					\
   etc/time-travel-manifest.scm				\
-  etc/historical-authorizations				\
-  build-aux/build-self.scm				\
-  build-aux/compile-all.scm				\
-  build-aux/cuirass/hurd-manifest.scm			\
-  build-aux/check-final-inputs-self-contained.scm	\
-  build-aux/check-channel-news.scm			\
-  build-aux/compile-as-derivation.scm			\
-  build-aux/convert-xref.scm			\
-  build-aux/generate-authors.scm			\
-  build-aux/test-driver.scm				\
-  build-aux/update-guix-package.scm			\
-  build-aux/update-NEWS.scm				\
-  tests/test.drv					\
+  scripts/guix.in					\
   tests/cve-sample.json					\
-  tests/keys/signing-key.pub				\
-  tests/keys/signing-key.sec				\
   tests/keys/civodul.pub				\
-  tests/keys/rsa.pub					\
   tests/keys/dsa.pub					\
-  tests/keys/ed25519.pub				\
-  tests/keys/ed25519.sec				\
   tests/keys/ed25519-2.pub				\
   tests/keys/ed25519-2.sec				\
   tests/keys/ed25519-3.pub				\
   tests/keys/ed25519-3.sec				\
-  build-aux/config.rpath				\
-  bootstrap						\
-  doc/build.scm						\
+  tests/keys/ed25519.pub				\
+  tests/keys/ed25519.sec				\
+  tests/keys/rsa.pub					\
+  tests/keys/signing-key.pub				\
+  tests/keys/signing-key.sec				\
+  tests/test.drv					\
   $(TESTS)
 
 if !BUILD_DAEMON_OFFLOAD

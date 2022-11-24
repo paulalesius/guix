@@ -124,7 +124,7 @@ the WPE-flavored port of WebKit.")
 engine that uses Wayland for graphics output.")
     (license license:bsd-2)))
 
-(define %webkit-version "2.36.7")       ;webkit2gtk4
+(define %webkit-version "2.36.8")       ;webkit2gtk4
 
 (define-public webkitgtk
   (package
@@ -135,7 +135,7 @@ engine that uses Wayland for graphics output.")
               (uri (string-append "https://www.webkitgtk.org/releases/"
                                   name "-" version ".tar.xz"))
               (sha256
-               (base32 "0hqpfgzbb7lzdih9aw86rmkljm8ynv8zw3b72z88211gngr0q9hc"))
+               (base32 "0dq4s0rw3cmsxlv22pc38qdsq4wx2yyq9wgsi4wgw243y9mzpn8a"))
               (patches (search-patches
                         "webkitgtk-adjust-bubblewrap-paths.patch"))))
     (build-system cmake-build-system)
@@ -283,14 +283,14 @@ propagated by default) such as @code{gst-plugins-good} and
   (package
     (inherit webkitgtk)
     (name "webkitgtk")
-    (version "2.38.0")                  ;webkit2gtk5
+    (version "2.38.2")                  ;webkit2gtk5
     (source (origin
               (inherit (package-source webkitgtk))
               (method url-fetch)
               (uri (string-append "https://www.webkitgtk.org/releases/"
                                   name "-" version ".tar.xz"))
               (sha256
-               (base32 "1g8gpi1scbmbcywkfjr2srxdq9r63s94d7v01fdk5qdnldsn7kpr"))))
+               (base32 "0gpy17lwsv5x0xl7p7nf1xqsg8c4yxmd3b4wv6s87xaijs4q5szk"))))
     (build-system cmake-build-system)
     (arguments
      (substitute-keyword-arguments (package-arguments webkitgtk)
@@ -340,7 +340,7 @@ propagated by default) such as @code{gst-plugins-good} and
               (uri (string-append "https://wpewebkit.org/releases/"
                                   name "-" version ".tar.xz"))
               (sha256
-               (base32 "1jcm5fjzn1k9l87qwqgmvd5qriwpv3vgs632zc6asqn5zxr7sx7k"))))
+               (base32 "1svmvj96c0lhdhs7fndgwchkvv4wyb7gwd4d3fbd1chhr54s6hld"))))
     (arguments
      (substitute-keyword-arguments (package-arguments webkitgtk)
        ((#:configure-flags flags)

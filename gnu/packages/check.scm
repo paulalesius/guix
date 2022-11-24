@@ -40,6 +40,7 @@
 ;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2022 David Elsing <david.elsing@posteo.net>
 ;;; Copyright © 2022 Sharlatan Hellseher <sharlatanus@gmail.com>
+;;; Copyright © 2022 jgart <jgart@dismail.de>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -90,6 +91,7 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system go)
   #:use-module (guix build-system meson)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (guix build-system trivial)
   #:use-module (srfi srfi-1))
@@ -248,6 +250,34 @@ source code editors and IDEs.")
              (sha256
               (base32
                "0d22h8xshmbpl9hba9ch3xj8vb9ybm5akpsbbh7yj07fic4h2hj6"))))))
+
+(define-public clara
+  (package
+    (name "clara")
+    (version "1.1.5")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/catchorg/Clara")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "08mlm9ax5d7wkmsihm1xnlgp7rfgff0bfl4ly4850xmrdaxmmkl3"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'install
+            (lambda _
+              (install-file (string-append #$source "/single_include/clara.hpp")
+                            (string-append #$output "/include")))))))
+    (home-page "https://github.com/catchorg/Clara")
+    (synopsis "Simple command line parser for C++")
+    (description "Clara is a simple to use, composable, command line parser
+for C++ 11 and beyond implemented as a single-header library.")
+    (license license:boost1.0)))
 
 (define-public clitest
   (package
@@ -1218,6 +1248,25 @@ supports coverage of subprocesses.")
 contacting the real http server.")
     (license license:expat)))
 
+(define-public python-pytest-param-files
+  (package
+    (name "python-pytest-param-files")
+    (version "0.3.4")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "pytest_param_files" version))
+              (sha256
+               (base32
+                "0gc9nsqizrjapjnbcs1bdxfcl69dpmwbpd9sssjidgcikm7k433c"))))
+    (build-system pyproject-build-system)
+    (native-inputs (list python-flit-core))
+    (propagated-inputs (list python-pytest))
+    (home-page "https://github.com/chrisjsewell/pytest-param-files")
+    (synopsis "Pytest plugin to parameterize tests from external files")
+    (description "This Pytest plugin enables creating Pytest parametrize
+decorators from external files.")
+    (license license:expat)))
+
 (define-public python-pytest-random-order
   (package
     (name "python-pytest-random-order")
@@ -2125,7 +2174,7 @@ instantly.")
 much larger range of examples than you would ever want to write by hand.  It’s
 based on the Haskell library, Quickcheck, and is designed to integrate
 seamlessly into your existing Python unit testing work flow.")
-    (home-page "https://github.com/HypothesisWorks/hypothesis")
+    (home-page "https://hypothesis.works/")
     (license license:mpl2.0)))
 
 ;;; TODO: Make the default python-hypothesis in the next rebuild cycle.

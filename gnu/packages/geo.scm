@@ -8,7 +8,7 @@
 ;;; Copyright © 2018 Joshua Sierles, Nextjournal <joshua@nextjournal.com>
 ;;; Copyright © 2018, 2019, 2020, 2021 Julien Lepiller <julien@lepiller.eu>
 ;;; Copyright © 2019, 2020, 2021, 2022 Guillaume Le Vaillant <glv@posteo.net>
-;;; Copyright © 2019, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2019-2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2019, 2021 Wiktor Żelazny <wzelazny@vurv.cz>
 ;;; Copyright © 2019, 2020 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;; Copyright © 2020, 2022 Marius Bakke <marius@gnu.org>
@@ -20,6 +20,7 @@
 ;;; Copyright © 2021, 2022 Nikolay Korotkiy <sikmir@disroot.org>
 ;;; Copyright © 2022 Roman Scherer <roman.scherer@burningswell.com>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -114,6 +115,8 @@
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages readline)
+  #:use-module (gnu packages sdl)
+  #:use-module (gnu packages speech)
   #:use-module (gnu packages swig)
   #:use-module (gnu packages sqlite)
   #:use-module (gnu packages textutils)
@@ -1220,14 +1223,14 @@ extension.")
     (name "tegola")
     (version "0.7.0")
     (source (origin
-              (method url-fetch)
-              (uri (string-append
-                     "https://github.com/go-spatial/tegola/archive/v"
-                     version ".tar.gz"))
-              (file-name (string-append name "-" version ".tar.gz"))
+              (method git-fetch)
+              (uri (git-reference
+                     (url "https://github.com/go-spatial/tegola")
+                     (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
               (sha256
                (base32
-                "09vnzxfn0r70kmd776kcdfqxhzdj11syxa0b27z4ci1k367v7viw"))))
+                "0agqj1b7l41m0imvxjriw44jcpa99mhq1z1vbsfzjhcr94zhwmfr"))))
     (build-system go-build-system)
     (arguments
      `(#:import-path "github.com/go-spatial/tegola/cmd/tegola"
@@ -1260,13 +1263,14 @@ delivered to any client.")
     (version "0.11.1")
     (source
       (origin
-        (method url-fetch)
-        (uri (string-append "https://github.com/omniscale/imposm3/archive/v"
-                            version ".tar.gz"))
-    (file-name (string-append name "-" version ".tar.gz"))
+        (method git-fetch)
+        (uri (git-reference
+              (url "https://github.com/omniscale/imposm3")
+              (commit (string-append "v" version))))
+        (file-name (git-file-name name version))
         (sha256
          (base32
-          "1w7b221z5k9254zn01imycxkyw62xigqizhwvrgxqmq1m9r5410l"))))
+          "1ifniw57l3s0sl7nb3zwxxm86i46451yrhfqnnkxr46cnpbzmwxr"))))
     (build-system go-build-system)
     (arguments
      `(#:import-path "github.com/omniscale/imposm3/cmd/imposm"
@@ -1384,7 +1388,7 @@ based on the Osmium library.")
      (list boost
            bzip2
            expat
-           fmt
+           fmt-8
            libosmium
            lua
            postgresql
@@ -2769,3 +2773,106 @@ using third-party geocoders and other data sources.")
 reconstructions of geological and paleogeographic features through geological
 time.  Interactively visualize vector, raster and volume data.")
     (license license:gpl2+)))
+
+(define-public navit
+  (package
+    (name "navit")
+    (version "0.5.6")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/navit-gps/navit")
+                    (commit (string-append "v" version))))
+              (sha256
+               (base32
+                "1jhlif0sc5m8wqb5j985g1xba2ki7b7mm14pkvzdghjd0q0gf15s"))
+              (file-name (git-file-name name version))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      ;; There are no tests
+      #:tests? #f
+      ;; With -DSAMPLE_MAP=TRUE (the default), it tries to download a
+      ;; map during the build process.
+      #:configure-flags #~(list "-DSAMPLE_MAP=FALSE")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after
+              'unpack 'patch-navit-config
+            (lambda _
+              ;; For now this package only supports SDL, so if we keep
+              ;; the configuration as-is, Navit doesn't start.
+              (substitute*
+                  "navit/navit_shipped.xml"
+                (("<graphics type=\"gtk_drawing_area\"/>")
+                 "<graphics type=\"sdl\"/>"))
+              ;; Users are expected to be able to add XML files inside
+              ;; $NAVIT_SHAREDIR, however that directory is in the store.
+              (substitute*
+                  "navit/navit_shipped.xml"
+                (("<xi:include href=\"\\$NAVIT_SHAREDIR/maps/\\*\\.xml\"/>")
+                 "<xi:include href=\"$NAVIT_USER_DATADIR/maps/*.xml\"/>"))
+              ;; Navit also works without GPS but in that case there is
+              ;; no automatic zooming, so we need zoom buttons to be able
+              ;; to manually zoom in or out.
+              (substitute*
+                  "navit/navit_shipped.xml"
+                (((string-append
+                   "<osd enabled=\"no\" type=\"button\" x=\"-96\" y=\"-96\" "
+                   "command=\"zoom_in()"))
+                 (string-append
+                  "<osd enabled=\"yes\" type=\"button\" x=\"-96\" y=\"-96\" "
+                  "command=\"zoom_in()"))
+                (((string-append
+                   "<osd enabled=\"no\" type=\"button\" x=\"0\" y=\"-96\" "
+                   "command=\"zoom_out()"))
+                 (string-append
+                  "<osd enabled=\"yes\" type=\"button\" x=\"0\" y=\"-96\" "
+                  "command=\"zoom_out()\" src=\"zoom_out.png\"/>")))))
+          (add-before
+              'build 'set-cache
+            ;; During the build, svg icons are converted in different
+            ;; formats, and this needs XDG_CACHE_HOME to work.
+            (lambda _
+              (setenv "XDG_CACHE_HOME" "/tmp/xdg-cache"))))))
+    (inputs (list dbus-glib
+                  espeak
+                  freeglut
+                  freeimage
+                  freetype
+                  glib
+                  gettext-minimal
+                  gpsd
+                  gdk-pixbuf
+                  imlib2
+                  python
+                  sdl
+                  sdl-image))
+    (native-inputs (list fontconfig
+                         (librsvg-for-system)
+                         pkg-config))
+    (home-page "https://www.navit-project.org")
+    (synopsis "Car navigation system with routing engine that uses vector maps data")
+    (description "Navit is a car navigation system with a routing engine.
+
+It is meant to work with touchscreen devices, but it also works
+without a touchscreen.  It also supports text to speech.
+
+It can be configured extensively through its own configuration file
+format.  For instance we can configure the graphical interface, and
+which map data is to be displayed at which zoom level.
+
+It supports different routing profiles: bike, car, car_avoid_toll,
+car_pedantic, car_shortest, horse, pedestrian, truck.
+
+It can use gpsd or NMEA GPS directly to get position data.  It also
+works without GPS: in this case users can also enter position data
+directly.
+
+It can also be used to log GPS data to files using the GPX or NMEA
+formats, or to replay NMEA data.
+
+For maps, it can uses its own \"binfile\" map format, or Garmin map
+file format, and data from OpenStreetMap, Garmin maps, Marco Polo
+Grosser Reiseplaner, Routeplaner Europa 2007, Map + Route.")
+    (license license:gpl2)))

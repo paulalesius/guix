@@ -733,6 +733,7 @@ integer programming problems and computes Markov bases for statistics.")
       (uri (git-reference
             (url "https://github.com/cddlib/cddlib")
             (commit version)))
+      (file-name (git-file-name name version))
       (sha256
        (base32
         "09s8323h5w9j6mpl1yc6lm770dkskfxd2ayyafkcjllmnncxzfa0"))))
@@ -892,20 +893,6 @@ halfspaces) or by their double description with both representations.")
 large scale eigenvalue problems.")
     (license (license:non-copyleft "file://COPYING"
                                 "See COPYING in the distribution."))))
-
-(define-public arpack-ng-3.3.0
-  (package
-    (inherit arpack-ng)
-    (version "3.3.0")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference (url (package-home-page arpack-ng))
-                           (commit version)))
-       (file-name (git-file-name (package-name arpack-ng) version))
-       (sha256
-        (base32
-         "00h6bjvxjq7bv0b8pwnc0gw33ns6brlqv00xx2rh3w9b5n205918"))))))
 
 (define-public arpack-ng-openmpi
   (package (inherit arpack-ng)
@@ -2760,7 +2747,7 @@ can solve two kinds of problems:
 (define-public octave-cli
   (package
     (name "octave-cli")
-    (version "7.1.0")
+    (version "7.2.0")
     (source
      (origin
       (method url-fetch)
@@ -2768,7 +2755,7 @@ can solve two kinds of problems:
                           version ".tar.xz"))
       (sha256
        (base32
-        "0wv26nsfi6cq80np6p4av4wfrvbaflca6szajf6c60mbpdg63m1z"))))
+        "0w81ncl9d4x1ay3ylsag87k20c0byiyjcmfd9kb7b7ylr71pivsa"))))
     (build-system gnu-build-system)
     (inputs
      `(("alsa-lib" ,alsa-lib)
@@ -2936,7 +2923,7 @@ Open CASCADE library.")
 (define-public opencascade-occt
   (package
     (name "opencascade-occt")
-    (version "7.6.0")
+    (version "7.6.2")
     (source
       (origin
         (method git-fetch)
@@ -2948,7 +2935,7 @@ Open CASCADE library.")
                                           version)))))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "1rcwm9fkx0j4wrsyikb6g7qd611kpry7dand5dzdjvs5vzd13zvd"))
+         (base32 "07z5d83vm9f50an7vhimzl7gbmri1dn6p2g999l5fgyaj5sg5f02"))
         (modules '((guix build utils)))
         (snippet
          '(begin
@@ -3815,7 +3802,7 @@ FC            = mpifort
 FL            = mpifort
 INCPAR        =
 LIBPAR        = $(SCALAP) $(LAPACK)
-LIBSEQNEEDED  = 
+LIBSEQNEEDED  =
 INCS          = $(INCPAR)
 LIBS          = $(LIBPAR)~]
 AR            = ar vr # rules require trailing space, ugh...
@@ -4873,7 +4860,7 @@ Fresnel integrals, and similar related functions as well.")
 (define-public suitesparse
   (package
     (name "suitesparse")
-    (version "5.12.0")
+    (version "5.13.0")
     (source
      (origin
        (method git-fetch)
@@ -4883,7 +4870,7 @@ Fresnel integrals, and similar related functions as well.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0zpl51pfpv7ap7z97jlryba2la1qdmzm11bhzkn55wlb03xzi6k6"))
+         "1zwri246yr39p9ymjp18dzv36ch0dn107sf0jghj7capigasfxq2"))
        (patches (search-patches "suitesparse-mongoose-cmake.patch"))
        (modules '((guix build utils)))
        (snippet
@@ -6824,7 +6811,7 @@ assemble global function spaces on finite-element grids.")
                   "doc/dune-grid/grids/gridfactory/testgrids"))
                #t))
            (add-after 'build 'build-tests
-             (lambda* (#:key make-flags parallel-build? #:allow-other-keys)
+             (lambda* (#:key inputs make-flags parallel-build? #:allow-other-keys)
                (setenv "CPLUS_INCLUDE_PATH"
                        (string-append (assoc-ref inputs "dune-grid") "/share"))
                (apply invoke "make" "build_tests"

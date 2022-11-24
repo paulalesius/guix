@@ -403,7 +403,7 @@ training, HMM clustering, HMM mixtures.")
      (list clang-11
            llvm-11
            pkg-config
-           protobuf-c
+           protobuf-c-for-aiscm
            autoconf
            automake
            gettext-minimal
@@ -3125,7 +3125,7 @@ Note: currently this package does not provide GPU support.")
   (package
     (inherit python-pytorch)
     (name "python-pytorch")
-    (version "1.11.0")
+    (version "1.12.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3135,7 +3135,7 @@ Note: currently this package does not provide GPU support.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1zbk7y74r0ycsfa7x59jnhwhs1gj5rs3n89p15y0212iszgbljq8"))
+                "1wimgnmn8kfazc8vhf65b9psdwj80n3chzkd8ic28541ac2zqzpk"))
               (patches (search-patches "python-pytorch-system-libraries.patch"
                                        "python-pytorch-runpath.patch"))
               (modules '((guix build utils)))
@@ -3224,18 +3224,14 @@ Python.")
 (define-public python-hmmlearn
   (package
     (name "python-hmmlearn")
-    (version "0.2.6")
+    (version "0.2.7")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "hmmlearn" version))
        (sha256
         (base32
-         "1my0j3rzp17438idr32ssh0j969a98yjblx5igx5kgiiigr9qa1a"))
-       (snippet
-        #~(begin
-            (use-modules ((guix build utils)))
-            (delete-file "lib/hmmlearn/_hmmc.c")))))
+         "1qgnf1kdxicygy8nvpv866iqvwq0rc6xkd3s6slmvxvsy8h2fjvb"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -3247,7 +3243,11 @@ Python.")
                (with-directory-excursion (string-append (assoc-ref outputs "out") "/lib")
                  (invoke "python" "-m" "pytest"))))))))
     (propagated-inputs
-     (list python-cython python-numpy python-scikit-learn python-scipy
+     (list pybind11
+           python-cython
+           python-numpy
+           python-scikit-learn
+           python-scipy
            python-setuptools-scm))
     (native-inputs
      (list python-pytest))
@@ -3262,7 +3262,7 @@ of Hidden Markov Models.")
 (define-public liblantern
   (package
     (name "liblantern")
-    (version "0.8.1")
+    (version "0.9.0")
     (source
      (origin
        (method git-fetch)
@@ -3271,7 +3271,7 @@ of Hidden Markov Models.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1q57jsqzv9b70svr6whf04yd08np3x15qq1zm06fbl0sqf0kfn7p"))))
+        (base32 "0bjd0ym547k46ci8xnwsry7x8w5k65cl86snlcrfn4vs3fald2y9"))))
     (build-system cmake-build-system)
     (arguments
      (list

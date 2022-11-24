@@ -58,6 +58,8 @@
 ;;; Copyright © 2022 Elais Player <elais@fastmail.com>
 ;;; Copyright © 2022 Trevor Richards <trev@trevdev.ca>
 ;;; Copyright © 2022 Fredrik Salomonsson <plattfot@posteo.net>
+;;; Copyright © 2022 ( <paren@disroot.org>
+;;; Copyright © 2022 zamfofex <zamfofex@twdb.moe>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -382,6 +384,7 @@ many programming languages.")
               (uri (git-reference
                     (url "https://github.com/Airblader/i3")
                     (commit version)))
+              (file-name (git-file-name name version))
               (sha256
                (base32
                 "0g0qmv2gpv9qbhj9h5f4c4vfs6ndzq2rblgx9md85iharwp5sbb9"))))
@@ -1632,7 +1635,7 @@ modules for building a Wayland compositor.")
 (define-public swayidle
   (package
     (name "swayidle")
-    (version "1.7")
+    (version "1.7.1")
     (source
      (origin
        (method git-fetch)
@@ -1641,7 +1644,7 @@ modules for building a Wayland compositor.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0ziya8d5pvvxg16jhy4i04pvq11bdvj68gz5q654ar4dldil17nn"))))
+        (base32 "06iq12p4438d6bv3jlqsf01wjaxrzlnj1bnicn41kad563aq41xl"))))
     (build-system meson-build-system)
     (arguments
      `(#:configure-flags '("-Dlogind-provider=elogind")))
@@ -1722,7 +1725,7 @@ display a clock or apply image manipulation techniques to the background image."
 (define-public waybar
   (package
     (name "waybar")
-    (version "0.9.13")
+    (version "0.9.15")
     (source
      (origin
        (method git-fetch)
@@ -1731,7 +1734,7 @@ display a clock or apply image manipulation techniques to the background image."
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "15fy21cipih80amv78g7g4k2gylf107phbv0fjacn3w3n0i3cf2k"))))
+        (base32 "0mvwsd3krrlniga0fq13b0qvsf1fj22mk9nzsfgz49r55lqw8sdv"))))
     (build-system meson-build-system)
     (inputs (list date
                   fmt
@@ -1807,17 +1810,32 @@ core/thread.")
   (package
     (name "mako")
     (version "1.7.1")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/emersion/mako")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "0vpar1a7zafkd2plmyaackgba6fyg35s9zzyxmj8j7v2q5zxirgz"))))
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/emersion/mako")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0vpar1a7zafkd2plmyaackgba6fyg35s9zzyxmj8j7v2q5zxirgz"))))
     (build-system meson-build-system)
-    (inputs (list basu cairo gdk-pixbuf pango wayland))
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'patch-makoctl
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   (substitute* "makoctl"
+                     (("^BUSCTL=.*$")
+                      (string-append
+                       "BUSCTL="
+                       (search-input-file inputs "bin/basuctl")
+                       "\n"))
+                     (("jq ")
+                      (string-append
+                       (search-input-file inputs "bin/jq")
+                       " "))))))))
+    (inputs (list basu cairo gdk-pixbuf jq pango wayland))
     (native-inputs (list pkg-config scdoc wayland-protocols))
     (home-page "https://wayland.emersion.fr/mako")
     (synopsis "Lightweight Wayland notification daemon")
@@ -1828,7 +1846,7 @@ compositors that support the layer-shell protocol.")
 (define-public kanshi
   (package
     (name "kanshi")
-    (version "1.2.0")
+    (version "1.3.0")
     (source
      (origin
        (method git-fetch)
@@ -1837,7 +1855,7 @@ compositors that support the layer-shell protocol.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "10lxagwc2pkq86g2sxkwljjd39sahp3w1j5yx853d3c4d95iwls5"))))
+        (base32 "0sa8k74d24ijw6ml1yyy75dk763r2sbm7fgk033g5xnx28kd394j"))))
     (build-system meson-build-system)
     (inputs (list wayland))
     (native-inputs (list pkg-config scdoc))
@@ -2936,3 +2954,36 @@ used for multimedia keys.")
 an interface over @code{grim}, @code{slurp} and @code{jq}, and supports storing
 the screenshot either directly to the clipboard using @code{wl-copy} or to a
 file.")))
+
+(define-public wld
+  (let ((commit "6586736176ef50a88025abae835e29a7ca980126")
+        (revision "1"))
+    (package
+      (name "wld")
+      (version (git-version "0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/michaelforney/wld")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0qkd3q8p1s72x688g83fkcarrz2h20904rpd8z44ql6ksgrj9bp3"))))
+      (build-system gnu-build-system)
+      (arguments
+       `(#:tests? #f                              ; no tests
+         #:make-flags (list (string-append "CC=" ,(cc-for-target))
+                            (string-append "PREFIX=" %output))
+         #:phases (modify-phases %standard-phases
+                    (delete 'configure))))
+      (inputs (list fontconfig
+                    libdrm
+                    pixman
+                    wayland))
+      (propagated-inputs (list fontconfig pixman))
+      (native-inputs (list pkg-config))
+      (home-page "https://github.com/michaelforney/wld")
+      (synopsis "Primitive drawing library for Wayland")
+      (description "wld is a drawing library that targets Wayland.")
+      (license license:expat))))

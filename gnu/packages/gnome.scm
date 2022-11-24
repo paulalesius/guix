@@ -2594,6 +2594,11 @@ GNOME Desktop.")
            python-wrapper))             ;for tests
     (propagated-inputs
      (list gcr))
+
+    ;; XXX: There are concerning test failures on i686-linux and other 32-bit
+    ;; platforms: <https://gitlab.gnome.org/GNOME/gnome-keyring/-/issues/124>.
+    (supported-systems %64bit-supported-systems)
+
     (home-page "https://www.gnome.org")
     (synopsis "Daemon to store passwords and encryption keys")
     (description
@@ -9671,7 +9676,9 @@ shared object databases, search tools and indexing.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "1cncyiyh79w1id6a6s2f0rxmgwl65lp4ml4afa0z35jrnwp2s8cr"))))
+                "1cncyiyh79w1id6a6s2f0rxmgwl65lp4ml4afa0z35jrnwp2s8cr"))
+              (patches
+               (search-patches "nautilus-extension-search-path.patch"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -9685,27 +9692,6 @@ shared object databases, search tools and indexing.")
               (substitute* "test/automated/displayless/meson.build"
                 (("^foreach t: tracker_tests" all)
                  (string-append "tracker_tests = []\n" all)))))
-          (add-after 'unpack 'make-extensible
-            (lambda _
-              (substitute* "src/nautilus-module.c"
-                (("static gboolean initialized = FALSE;" all)
-                 (string-append all "
-const char *extension_path;
-char **extension_dirs, **d;
-")
-                 )
-                (("load_module_dir \\(NAUTILUS_EXTENSIONDIR\\);" all)
-                 (string-append all
-                                "
-extension_path = g_getenv (\"NAUTILUS_EXTENSION_PATH\");
-if (extension_path)
-{
-    extension_dirs = g_strsplit (extension_path, \":\", -1);
-    for (d = extension_dirs; d != NULL && *d != NULL; d++)
-        load_module_dir(*d);
-    g_strfreev(extension_dirs);
-}
-")))))
           (add-after 'unpack 'skip-gtk-update-icon-cache
             ;; Don't create 'icon-theme.cache'.
             (lambda _
@@ -10404,15 +10390,16 @@ desktop.  It supports multiple calendars, month, week and year view.")
 (define-public endeavour
   (package
     (name "endeavour")
-    (version "42.0")
+    (version "43.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
                     (url "https://gitlab.gnome.org/World/Endeavour")
-                    (commit (string-append "v" version))))
+                    (commit version)))
+              (file-name (git-file-name name version))
               (sha256
                (base32
-                "0d6by7aq8db35zavzvckcxxxcdi6qnv0mkjndhb0syc8ih15dpak"))))
+                "0gbqmwl1xv5526vlh1mxx9h5mpfnnwikrpr5fk8hxmy9x71r6q6n"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -10421,8 +10408,9 @@ desktop.  It supports multiple calendars, month, week and year view.")
       #~(modify-phases %standard-phases
           (add-after 'unpack 'skip-gtk-update-icon-cache
             (lambda _
-              (substitute* "build-aux/meson/meson_post_install.py"
-                (("gtk-update-icon-cache") "true"))))
+              (substitute* "meson.build"
+                (("gtk_update_icon_cache: true")
+                 "gtk_update_icon_cache: false"))))
           (delete 'check)
           (add-after 'install 'check
             (assoc-ref %standard-phases
@@ -12403,11 +12391,11 @@ these services on the Guix System.")
                       (setenv "DISPLAY" ":1"))))))
     (inputs
      (list enchant
-           folks
+           folks-with-libsoup2
            gcr
            glib
            gmime
-           gnome-online-accounts
+           gnome-online-accounts-3.44
            gsettings-desktop-schemas
            gspell
            gsound
@@ -13062,7 +13050,7 @@ profiler via Sysprof, debugging support, and more.")
 (define-public komikku
   (package
     (name "komikku")
-    (version "1.2.0")
+    (version "1.4.0")
     (source
      (origin
        (method git-fetch)
@@ -13072,7 +13060,7 @@ profiler via Sysprof, debugging support, and more.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "11pyhr8604dphsvh0pd0q5yi8f43sias37pwj1szq0l2gr5hv0q0"))))
+         "1sawvmni28qnca8lmw6li3ad36lb7sbf22zqbzp5f9wjwx7q609k"))))
     (build-system meson-build-system)
     (arguments
      (list

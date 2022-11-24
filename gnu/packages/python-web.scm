@@ -45,7 +45,7 @@
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2021 Pradana Aumars <paumars@courrier.dev>
 ;;; Copyright © 2021, 2022 Arun Isaac <arunisaac@systemreboot.net>
-;;; Copyright © 2021 jgart <jgart@dismail.de>
+;;; Copyright © 2021, 2022 jgart <jgart@dismail.de>
 ;;; Copyright © 2021 Alice Brenon <alice.brenon@ens-lyon.fr>
 ;;; Copyright © 2022 John Kehayias <john.kehayias@protonmail.com>
 ;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
@@ -84,6 +84,7 @@
   #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (gnu packages)
+  #:use-module (gnu packages admin)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages check)
@@ -221,13 +222,13 @@ reusable library for parsing, manipulating, and generating URIs.")
 (define-public python-praw
   (package
     (name "python-praw")
-    (version "7.5.0")
+    (version "7.6.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "praw" version))
        (sha256
-        (base32 "1nqcwz8r8xp4rfpy2i11x2fjga8fmmf6zw94xjk1h1yxgn1gq6zr"))))
+        (base32 "17pvdlcasr08p5hb1x7shjh8yvn621lzm0bvnwd3b1r1qpzrbz07"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -952,14 +953,14 @@ other HTTP libraries.")
 (define-public httpie
   (package
     (name "httpie")
-    (version "3.1.0")
+    (version "3.2.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "httpie" version))
        (sha256
         (base32
-         "1npyfvrq0l56bil8rnpj78mav378mxx4zcqzq1jjx4aap1020jif"))))
+         "1v736y2h7lcyrnxs9y5sf4xwzgll7pc2s6r3ny929mm8lcn07h69"))))
     (build-system python-build-system)
     (arguments
      ;; The tests attempt to access external web servers, so we cannot run them.
@@ -972,6 +973,7 @@ other HTTP libraries.")
            python-pysocks
            python-charset-normalizer
            python-defusedxml
+           python-rich
            python-multidict))
     (home-page "https://httpie.io")
     (synopsis "cURL-like tool for humans")
@@ -983,6 +985,48 @@ HTTP servers, RESTful APIs, and web services.")
     ;; This was fixed in 1.0.3.
     (properties `((lint-hidden-cve . ("CVE-2019-10751"))))
     (license license:bsd-3)))
+
+(define-public parfive
+  (package
+    (name "parfive")
+    (version "2.0.1")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "parfive" version))
+              (sha256
+               (base32
+                "19dcbb6g56l5s3ih0bhs3p4acgc0gf4zdzpj4w87m69li2nhmgpx"))))
+    (build-system python-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (add-before 'check 'disable-test-requiring-network
+                          (lambda _
+                            (substitute* "parfive/tests/test_downloader.py"
+                              (("def test_ftp")
+                               "def __off_test_ftp"))))
+                        (replace 'check
+                          (lambda* (#:key tests? #:allow-other-keys)
+                            (when tests?
+                              (invoke "python" "-m" "pytest" "-vvv" "parfive")))))))
+    (propagated-inputs (list python-aiofiles python-aioftp python-aiohttp
+                             python-tqdm))
+    (native-inputs (list python-pytest
+                         python-pytest-asyncio
+                         python-pytest-cov
+                         python-pytest-localserver
+                         python-pytest-socket
+                         python-setuptools-scm))
+    (home-page "https://parfive.readthedocs.io/")
+    (synopsis "HTTP and FTP parallel file downloader")
+    (description
+     "This package provides CLI tool and Python library @code{parallel} file
+downloader using asyncio. parfive can handle downloading multiple files in
+parallel as well as downloading each file in a number of chunks.
+
+asciicast demo of parfive parfive works by creating a downloader object,
+appending files to it and then running the download. parfive has a synchronous
+API, but uses asyncio to paralellise downloading the files.")
+    (license license:expat)))
 
 (define-public python-html2text
   (package
@@ -3035,6 +3079,42 @@ with python-requests.")
 adapter for use with the Requests library.")
     (license license:asl2.0)))
 
+(define-public python-aioftp
+  (package
+    (name "python-aioftp")
+    (version "0.21.4")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "aioftp" version))
+              (sha256
+               (base32
+                "1f8vql2j2b3ykqyh5bxzsp8x5f2if2c1ya232ld3hz3cc7a2dfr8"))))
+    (build-system python-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (replace 'check
+                          (lambda* (#:key tests? #:allow-other-keys)
+                            (when tests?
+                              (invoke "pytest" "-vvv")))))))
+    (native-inputs (list python-async-timeout python-pytest
+                         python-pytest-asyncio python-pytest-cov
+                         python-trustme))
+    (propagated-inputs (list python-siosocks))
+    (home-page "https://aioftp.readthedocs.io/")
+    (synopsis "FTP client/server for asyncio in Python")
+    (description
+     "FTP client and server for asyncio (Python 3) Library implementing FTP
+protocol, both client and server for Python asyncio module.
+
+ Supported commands as client: USER, PASS, ACCT, PWD, CWD, CDUP, MKD, RMD,
+ MLSD, MLST, RNFR, RNTO, DELE, STOR, APPE, RETR, TYPE, PASV, ABOR, QUIT,
+ REST, LIST (as fallback).
+
+ Supported commands as server: USER, PASS, QUIT, PWD, CWD, CDUP, MKD, RMD,
+ MLSD, LIST (non-standard), MLST, RNFR, RNTO, DELE, STOR, RETR,
+ TYPE (\"I\" and \"A\"), PASV, ABOR, APPE, REST.")
+    (license license:asl2.0)))
+
 (define-public python-msal
   (package
     (name "python-msal")
@@ -3801,7 +3881,7 @@ pretty printer and a tree visitor.")
              (substitute* "flask_restful/__init__.py"
                (("flask\\.helpers") "flask.scaffold")))))))
     (propagated-inputs
-      (list python-aniso8601 python-flask python-pycrypto python-pytz))
+      (list python-aniso8601 python-flask python-pytz))
     (native-inputs
       (list ;; Optional dependency of Flask. Tests need it.
             python-blinker python-mock ; For tests
@@ -4162,6 +4242,7 @@ server.")
               (method git-fetch)
               (uri (git-reference (url home-page)
                                   (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
               (sha256
                (base32
                 "0zj7qpknvlhrh4fsp5sx4fwyx3sp41ynclka992zympm3xym9zyq"))))
@@ -4371,14 +4452,23 @@ addon modules.")
 (define-public python-bottle
   (package
     (name "python-bottle")
-    (version "0.12.21")
+    (version "0.12.23")
     (source
      (origin
       (method url-fetch)
       (uri (pypi-uri "bottle" version))
       (sha256
-        (base32 "0zl8sy4dhafyxqpavy7pjz0qzpakmhgh2qr6pwlw5f82rjv62z3q"))))
+        (base32 "0rs1w293gp5bhxip2cci8mfkhld6n5qcznvlna3nxclz76mf6gb8"))))
     (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (with-directory-excursion "test"
+                 (invoke "pytest" "-vvv"))))))))
+    (native-inputs (list python-pytest))
     (home-page "https://bottlepy.org/")
     (synopsis "WSGI framework for small web-applications")
     (description "@code{python-bottle} is a WSGI framework for small web-applications.")
@@ -6678,6 +6768,43 @@ through the network, it only deals with the implementation details of the
 SOCKS protocols.  It can be paired with any I/O library.")
     (license license:expat)))
 
+(define-public python-siosocks
+  (package
+    (name "python-siosocks")
+    (version "0.3.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "siosocks" version))
+              (sha256
+               (base32
+                "0qqxy8wl5mrmlkblzjq9nsg0cbm5jwgj409mhnhq6gd1ypvbndms"))))
+    (build-system python-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (replace 'check
+                          (lambda* (#:key tests? #:allow-other-keys)
+                            (when tests?
+                              (invoke "pytest" "-vvv")))))))
+    (native-inputs (list python-pytest python-pytest-asyncio python-pytest-cov
+                         python-pytest-trio))
+    (propagated-inputs (list python-trio))
+    (home-page "https://github.com/pohmelie/siosocks")
+    (synopsis "SOCKSv4 & SOCKSv5 TCP proxy protocol implementation in Python")
+    (description
+     "This package provides a Python module and framework for sans-io socks proxy
+client/server with couple io backends.
+
+Features:
+@itemize
+@item Only TCP connect (no BIND, no UDP)
+@item Both client and server
+@item SOCKS versions: 4, 4a, 5
+@item SOCKSv5 auth: no auth, username/password
+@item Couple io backends: @code{asyncio}, @code{trio}, @code{socketserver}
+@item One-shot socks server (@code{python -m siosocks})
+@end itemize")
+    (license license:expat)))
+
 (define-public python-msrest
   (package
     (name "python-msrest")
@@ -7888,4 +8015,60 @@ list, create, update, or delete resources (e.g. Order, Product, Collection).")
      "python-grid5000 is a python package wrapping the Grid5000 REST API.
 You can use it as a library in your python project or you can explore the
 Grid5000 resources interactively using the embedded shell.")
+    (license license:gpl3+)))
+
+(define-public python-enoslib
+  (package
+    (name "python-enoslib")
+    (version "8.0.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.inria.fr/discovery/enoslib")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               "0vs6b0bnlv95mzv0rjbxqwrhzkgjkn91gqipgwdf7y4ffpz8nybg")))
+    (build-system python-build-system)
+    (native-inputs (list python-wheel python-pytest python-ddt
+                         python-freezegun))
+    (propagated-inputs (list ansible
+                             python-cryptography
+                             python-grid5000
+                             python-jsonschema
+                             python-netaddr
+                             python-packaging
+                             python-requests
+                             python-rich
+                             python-sshtunnel
+                             python-pytz))
+    (arguments
+     '(#:phases (modify-phases %standard-phases
+                  (replace 'check
+                    (lambda* (#:key tests? #:allow-other-keys)
+                      (when tests?
+                        ;; Otherwise Ansible fails to create its config directory.
+                        (setenv "HOME" "/tmp")
+                        ;; Ignoring the tests requiring an extra dependency (iotlabcli)
+                        (invoke "pytest" "enoslib/tests/unit"
+                                "--ignore"
+                                "enoslib/tests/unit/infra/test_utils.py"
+                                "--ignore-glob"
+                                "enoslib/tests/unit/infra/enos_iotlab/*"))))
+                  ;; Disable the sanity check, which fails with the following error:
+                  ;;
+                  ;; ContextualVersionConflict(rich 12.4.1
+                  ;; (/gnu/store/...-python-rich-12.4.1/lib/python3.9/site-packages),
+                  ;; Requirement.parse('rich[jupyter]~=12.0.0'), {'enoslib'})
+                  ;;
+                  ;; The optional jupyter dependency of rich isn't critical for
+                  ;; EnOSlib to work
+                  (delete 'sanity-check))))
+
+    (home-page "https://discovery.gitlabpages.inria.fr/enoslib/index.html")
+    (synopsis "Deploy distributed testbeds on a variety of platforms")
+    (description
+     "EnOSlib is a library to build experimental frameworks on various
+scientific testbeds.  It lets you deploy networks of machines on actual
+hardware on Grid'5000 or via OpenStack, to Vagrant, Chameleon, and more.")
     (license license:gpl3+)))

@@ -461,13 +461,13 @@ with optional @acronym{TLS, Transport-Level Security} to protect credentials.")
 (define-public mosh
   (package
     (name "mosh")
-    (version "1.3.2")
+    (version "1.4.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://mosh.org/mosh-" version ".tar.gz"))
               (sha256
                (base32
-                "05hjhlp6lk8yjcy59zywpf0r6s0h0b9zxq0lw66dh9x8vxrhaq6s"))))
+                "1pax8sqlvcc7ammsxd9r53yx4m2hg1827wfz6f4rrwjx9q9lnbl7"))))
     (build-system gnu-build-system)
     (arguments
      '(#:phases
@@ -508,7 +508,7 @@ responsive, especially over Wi-Fi, cellular, and long-distance links.")
 (define-public dropbear
   (package
     (name "dropbear")
-    (version "2022.82")
+    (version "2022.83")
     (source
      (origin
        (method url-fetch)
@@ -516,7 +516,7 @@ responsive, especially over Wi-Fi, cellular, and long-distance links.")
              "https://matt.ucc.asn.au/dropbear/releases/"
              "dropbear-" version ".tar.bz2"))
        (sha256
-        (base32 "1lbmmmm8f56p24c6jq74rg2kw6kl3w4i5h10vnxjigq2phmqs0rs"))
+        (base32 "0fs495ks354qcfj4k5bwg6m50vbl8az03gjymmqm2jy9zcgi4nmw"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -534,12 +534,6 @@ responsive, especially over Wi-Fi, cellular, and long-distance links.")
       #:phases #~(modify-phases %standard-phases
                    (add-after 'unpack 'enable-x11-forwarding
                      (lambda _
-                       ;; The following patch was retrieved from:
-                       ;; https://github.com/mkj/dropbear/commit/
-                       ;; 0292aacdf0aa57d03f2a3ab7e53cf650e6f29389.
-                       (substitute* "svr-x11fwd.c"
-                         (("DROPBEAR_CHANNEL_PRIO_INTERACTIVE")
-                          "DROPBEAR_PRIO_LOWDELAY"))
                        (substitute* "default_options.h"
                          (("#define DROPBEAR_X11FWD 0")
                           "#define DROPBEAR_X11FWD 1")))))))

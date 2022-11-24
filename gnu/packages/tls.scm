@@ -699,14 +699,14 @@ kilobytes of RAM.")
 (define-public libressl
   (package
     (name "libressl")
-    (version "3.3.6")
+    (version "3.6.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://openbsd/LibreSSL/"
                                   "libressl-" version ".tar.gz"))
               (sha256
                (base32
-                "16jbzqj9wy2z10x8ppx63idw44k0d3wly0grpar0s6g1cn9q8a1z"))))
+                "0x37037rb0zx34zp0kbbqj2xwd57gh1m6bfn52f92fz92q9wdymc"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags
@@ -994,47 +994,6 @@ correct OpenSSL include path.  It is intended for use in your
   (description "Crypt::OpenSSL::Random is a OpenSSL/LibreSSL pseudo-random
 number generator")
   (license license:perl-license)))
-
-(define-public acme-client
-  (package
-    (name "acme-client")
-    (version "0.1.16")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://kristaps.bsd.lv/" name "/"
-                                  "snapshots/" name "-portable-"
-                                  version ".tgz"))
-              (sha256
-               (base32
-                "00q05b3b1dfnfp7sr1nbd212n0mqrycl3cr9lbs51m7ncaihbrz9"))))
-    (build-system gnu-build-system)
-    (arguments
-     '(#:tests? #f ; no test suite
-       #:make-flags
-       (list "CC=gcc"
-             (string-append "PREFIX=" (assoc-ref %outputs "out")))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-paths
-           (lambda* (#:key inputs #:allow-other-keys)
-             (let ((pem (search-input-file inputs "/etc/ssl/cert.pem")))
-               (substitute* "http.c"
-                 (("/etc/ssl/cert.pem") pem))
-               #t)))
-         (delete 'configure)))) ; no './configure' script
-    (native-inputs
-     (list pkg-config))
-    (inputs
-     (list libbsd libressl))
-    (synopsis "Let's Encrypt client by the OpenBSD project")
-    (description "acme-client is a Let's Encrypt client implemented in C.  It
-uses a modular design, and attempts to secure itself by dropping privileges and
-operating in a chroot where possible.  acme-client is developed on OpenBSD and
-then ported to the GNU / Linux environment.")
-    (home-page "https://kristaps.bsd.lv/acme-client/")
-    ;; acme-client is distributed under the ISC license, but the files 'jsmn.h'
-    ;; and 'jsmn.c' are distributed under the Expat license.
-    (license (list license:isc license:expat))))
 
 ;; The "-apache" variant is the upstreamed prefered variant. A "-gpl"
 ;; variant exists in addition to the "-apache" one.

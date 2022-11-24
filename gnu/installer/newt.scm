@@ -117,10 +117,6 @@ report it by email to ~a.") uploaded-name %guix-bug-report-address)
   (define (line-accumulator line)
     (set! command-output
           (string-append/shared command-output line "\n")))
-  (define displayed-command
-    (string-join
-     (map (lambda (s) (string-append "\"" s "\"")) args)
-     " "))
   (define result (run-external-command-with-line-hooks (list line-accumulator)
                                                        args))
   (define exit-val (status:exit-val result))
@@ -176,8 +172,8 @@ report it by email to ~a.") uploaded-name %guix-bug-report-address)
 (define (timezone-page zonetab)
   (run-timezone-page zonetab))
 
-(define (welcome-page logo)
-  (run-welcome-page logo))
+(define* (welcome-page logo #:key pci-database)
+  (run-welcome-page logo #:pci-database pci-database))
 
 (define (menu-page steps)
   (run-menu-page steps))

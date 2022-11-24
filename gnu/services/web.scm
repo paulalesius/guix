@@ -790,13 +790,11 @@ of index files."
                 (nginx file run-directory shepherd-requirement)
    (let* ((nginx-binary (file-append nginx "/sbin/nginx"))
           (pid-file (in-vicinity run-directory "pid"))
+          (config-file (or file (default-nginx-config config)))
           (nginx-action
            (lambda args
              #~(lambda _
-                 (invoke #$nginx-binary "-c"
-                         #$(or file
-                               (default-nginx-config config))
-                         #$@args)
+                 (invoke #$nginx-binary "-c" #$config-file #$@args)
                  (match '#$args
                    (("-s" . _) #f)
                    (_
@@ -817,6 +815,7 @@ of index files."
             (stop (nginx-action "-s" "stop"))
             (actions
               (list
+               (shepherd-configuration-action config-file)
                (shepherd-action
                  (name 'reload)
                  (documentation "Reload nginx configuration file and restart worker processes.
@@ -987,7 +986,7 @@ and the back-end of a Web service.")))
 
 (define php-fpm-accounts
   (match-lambda
-    (($ <php-fpm-configuration> php socket user group socket-user socket-group _ _ _ _ _ _)
+    (($ <php-fpm-configuration> php socket user group socket-user socket-group)
      `(,@(if (equal? group "php-fpm")
              '()
              (list (user-group (name "php-fpm") (system? #t))))
@@ -2143,24 +2142,23 @@ root=/srv/gemini
             (stop #~(make-kill-destructor)))))))
 
 (define agate-accounts
-  (match-lambda
-    (($ <agate-configuration> _ _ _ _ _
-                              _ _ _ _
-                              _ user group _)
-     `(,@(if (equal? group "agate")
-             '()
-             (list (user-group (name "agate") (system? #t))))
-       ,(user-group
-         (name group)
-         (system? #t))
-       ,(user-account
-         (name user)
-         (group group)
-         (supplementary-groups '("agate"))
-         (system? #t)
-         (comment "agate server user")
-         (home-directory "/var/empty")
-         (shell (file-append shadow "/sbin/nologin")))))))
+  (lambda (config)
+    (let ((group (agate-configuration-group config))
+          (user (agate-configuration-user config)))
+      `(,@(if (equal? group "agate")
+              '()
+              (list (user-group (name "agate") (system? #t))))
+        ,(user-group
+          (name group)
+          (system? #t))
+        ,(user-account
+          (name user)
+          (group group)
+          (supplementary-groups '("agate"))
+          (system? #t)
+          (comment "agate server user")
+          (home-directory "/var/empty")
+          (shell (file-append shadow "/sbin/nologin")))))))
 
 (define agate-service-type
   (service-type

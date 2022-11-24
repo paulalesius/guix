@@ -560,7 +560,7 @@ aliasing facilities to work just as they would on normal mail.")
 (define-public mutt
   (package
     (name "mutt")
-    (version "2.2.7")
+    (version "2.2.9")
     (source (origin
              (method url-fetch)
              (uri (list
@@ -570,7 +570,7 @@ aliasing facilities to work just as they would on normal mail.")
                                    version ".tar.gz")))
              (sha256
               (base32
-               "1wbdsgx5x7h4alsfmjqac46xvbbakc7djlpngd3rydmvb27qa4zb"))
+               "1yyg49sgghi7pgw7xr3cnzgypa9yd0kdc3nsrqq1zzjq3liinlzs"))
              (patches (search-patches "mutt-store-references.patch"))))
     (build-system gnu-build-system)
     (inputs
@@ -607,7 +607,7 @@ operating systems.")
 (define-public neomutt
   (package
     (name "neomutt")
-    (version "20211029")
+    (version "20220429")
     (source
      (origin
        (method git-fetch)
@@ -616,7 +616,7 @@ operating systems.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1ad05k98z9r317k2hhxbgdic00iha5r0k0f8224anz60i9kc78w5"))))
+        (base32 "106m6al48m22gl8848z8d0hsg2qiaz74vgy4f37hycl4v5d3n5ic"))))
     (build-system gnu-build-system)
     (inputs
      (list cyrus-sasl
@@ -4557,7 +4557,7 @@ databases, and other tools to process Outlook email archives.")
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f                      ;no tests
-       #:make-flags `((string-append "CC=" ,(cc-for-target)))
+       #:make-flags (list (string-append "CC=" ,(cc-for-target)))
        #:phases
        (modify-phases %standard-phases
          (delete 'configure)            ;no configure script

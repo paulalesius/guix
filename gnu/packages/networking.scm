@@ -54,6 +54,7 @@
 ;;; Copyright © 2022 Petr Hodina <phodina@protonmail.com>
 ;;; Copyright © 2022 Manolis Fragkiskos Ragkousis <manolis837@gmail.com>
 ;;; Copyright © 2022 Reza Alizadeh Majd <r.majd@pantherx.org>
+;;; Copyright © 2022 Nicolas Graves <ngraves@ngraves.fr>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -592,7 +593,7 @@ supported, including rtmp://, rtmpt://, rtmpe://, rtmpte://, and rtmps://.")
 (define-public slurm-monitor
   (package
     (name "slurm-monitor")
-    (version "0.4.3")
+    (version "0.4.4")
     (source
      (origin
        (method git-fetch)
@@ -602,9 +603,10 @@ supported, including rtmp://, rtmpt://, rtmpe://, rtmpte://, and rtmps://.")
          (commit (string-append "upstream/" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1n6pgrcs8gwrcq5fch1q3yk3jipjwrf21s9a13fbjrl903g5zzv9"))))
-    (build-system cmake-build-system)
+        (base32 "07q8895bxsajkwip8dgrrwr1m8a10xnl4p0g6wqcrd2wf4hx5gn3"))))
+    (build-system meson-build-system)
     (arguments `(#:tests? #f)) ;no tests
+    (native-inputs (list pkg-config))
     (inputs (list ncurses))
     (synopsis "Network load monitor")
     (description
@@ -1537,22 +1539,14 @@ Ethernet devices.")
 (define-public ifstatus
   (package
     (name "ifstatus")
-    (version "1.1.0")
+    (version "2.0.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/ifstatus/ifstatus/"
-                                  "ifstatus%20v" version "/ifstatus-v"
-                                  version ".tar.gz"))
+                                  "ifstatus-v" version ".tar.gz"))
               (sha256
                (base32
-                "045cbsq9ps32j24v8y5hpyqxnqn9mpaf3mgvirlhgpqyb9jsia0c"))
-              (modules '((guix build utils)))
-              (snippet
-               '(begin
-                  (substitute* "Main.h"
-                    (("#include <stdio.h>")
-                     "#include <stdio.h>\n#include <stdlib.h>"))
-                  #t))))
+                "0n622f2m3x901hcmad4ns52r2x75csy4nqraagzb8h9fn0j62jkv"))))
     (build-system gnu-build-system)
     (arguments
      '(#:tests? #f                                ; no "check" target
@@ -3629,7 +3623,7 @@ communication over HTTP.")
 (define-public restinio
   (package
     (name "restinio")
-    (version "0.6.15")
+    (version "0.6.17")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3638,26 +3632,38 @@ communication over HTTP.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1f8d5nfm8jqhspzsslwb1b7j4glipz31i9vszrcnkx3clc39nj2n"))))
+                "1jpvfa2sjkihbkcc1q6c9zb1vry9mkkhbz2jrl831bqslpq9la3p"))))
     (build-system cmake-build-system)
-    (inputs                             ; TODO: Need to force-keep references on some inputs, e.g. boost.
-     (list zlib
-           catch2
-           openssl
-           boost
-           pcre
-           pcre2
+    (arguments
+     (list
+      ;; Multiple tests fail to run in the build container due to host name
+      ;; resolution (see: https://github.com/Stiffstream/restinio/issues/172).
+      #:tests? #f
+      #:configure-flags #~(list "-DRESTINIO_FIND_DEPS=ON"
+                                "-DRESTINIO_INSTALL=ON"
+                                "-DRESTINIO_TEST=ON"
+                                "-DRESTINIO_USE_EXTERNAL_HTTP_PARSER=ON"
+                                "-DRESTINIO_USE_EXTERNAL_SOBJECTIZER=ON")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'change-directory
+            (lambda _
+              (chdir "dev"))))))
+    (native-inputs
+     (list catch2
+           clara
+           json-dto))
+    (inputs
+     (list openssl
            sobjectizer))
     (propagated-inputs
-     (list asio fmt http-parser))
-    (arguments
-     `(#:configure-flags '("-DRESTINIO_INSTALL=on")
-       #:tests? #f ; TODO: The tests are called from the root CMakelist, need RESTINIO_TEST=on.
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'change-directory
-           (lambda _
-             (chdir "dev/restinio"))))))
+     ;; These are all #include'd by restinio's .hpp header files.
+     (list asio
+           fmt
+           http-parser
+           pcre
+           pcre2
+           zlib))
     (home-page "https://stiffstream.com/en/products/restinio.html")
     (synopsis "C++14 library that gives you an embedded HTTP/Websocket server")
     (description "RESTinio is a header-only C++14 library that gives you an embedded
@@ -3737,7 +3743,10 @@ and targeted primarily for asynchronous processing of HTTP-requests.")
                 (chmod dhtcluster #o555)
                 (wrap-program dhtcluster
                   `("GUIX_PYTHONPATH" prefix (,site-packages)))))))))
-    (inputs (list bash-minimal fmt readline))
+    (inputs
+     (list bash-minimal
+           fmt
+           readline))
     (propagated-inputs
      (list msgpack                      ;included in several installed headers
            restinio                     ;included in opendht/http.h
@@ -3840,7 +3849,7 @@ powerful route filtering syntax and an easy-to-use configuration interface.")
 (define-public iwd
   (package
     (name "iwd")
-    (version "1.30")
+    (version "2.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3849,7 +3858,7 @@ powerful route filtering syntax and an easy-to-use configuration interface.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1680c5yjl8xddxzb17iz1xnnxxjgirq42dxwrspsaipi35griv7n"))))
+                "0icrmd0361yy24sa7wdd388ykaknv1va4678h9ksysz1dmykdr7m"))))
     (build-system gnu-build-system)
     (inputs
      (list dbus ell (package-source ell) readline))
@@ -4477,3 +4486,36 @@ implementations.")
     (home-page "https://www.chiark.greenend.org.uk/~sgtatham/putty/")
     (license license:expat)))
 
+(define-public vnstat
+  (package
+   (name "vnstat")
+   (version "2.9")
+   (source
+    (origin
+      (method url-fetch)
+      (uri (string-append "https://humdi.net/vnstat/vnstat-"
+                          version ".tar.gz"))
+      (sha256
+       (base32
+        "1iwxmnpabfljvyng7c8k3z83yw1687i66z5s1980c5x9vrsi98hi"))))
+   (build-system gnu-build-system)
+   (inputs (list sqlite))
+   (native-inputs (list pkg-config check))
+   (arguments
+    `(#:phases
+      (modify-phases %standard-phases
+        (add-before 'check 'disable-id-tests
+          (lambda _
+            (substitute*
+                '("Makefile" "tests/vnstat_tests.c")
+              (("tests/id_tests.c \\$") "\\")
+              (("tests/id_tests.h h") "h")
+              (("^.*id_tests.*$") "")))))))
+   (home-page "https://humdi.net/vnstat/")
+   (synopsis "Network traffic monitoring tool")
+   (description "vnStat is a console-based network traffic monitor that keeps
+a log of network traffic for the selected interface(s).  It uses the network
+interface statistics provided by the kernel as information source.  This means
+that vnStat won't actually be sniffing any traffic and also ensures light use
+of system resources regardless of network traffic rate.")
+   (license license:gpl2+)))

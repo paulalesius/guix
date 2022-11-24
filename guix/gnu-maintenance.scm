@@ -252,7 +252,7 @@ network to check in GNU's database."
   (make-regexp "^([^.]+)[-_][vV]?([0-9]|[^-])+(-(src|[sS]ource|gnu[0-9]))?\\.(tar\\.|tgz|zip$)"))
 
 (define %alpha-tarball-rx
-  (make-regexp "^.*-.*[0-9](-|~)?(alpha|beta|rc|RC|cvs|svn|git)-?[0-9\\.]*\\.tar\\."))
+  (make-regexp "^.*-.*[0-9](-|~|\\.)?(alpha|beta|rc|RC|cvs|svn|git)-?[0-9\\.]*\\.tar\\."))
 
 (define (release-file? project file)
   "Return #f if FILE is not a release tarball of PROJECT, otherwise return
@@ -596,6 +596,12 @@ ftp.gnu.org.
 
 This method does not rely on FTP access at all; instead, it browses the file
 list available from %GNU-FILE-LIST-URI over HTTP(S)."
+  (define archive-type
+    (package-archive-type package))
+
+  (define (better-tarball? tarball1 tarball2)
+    (string=? (file-extension tarball1) archive-type))
+
   (let-values (((server directory)
                 (ftp-server/directory package))
                ((name)
@@ -626,7 +632,9 @@ list available from %GNU-FILE-LIST-URI over HTTP(S)."
                          (string-append "mirror://gnu/"
                                         (string-drop file
                                                      (string-length "/gnu/"))))
-                       tarballs))
+                       ;; Sort so that the tarball with the same compression
+                       ;; format as currently used in PACKAGE comes first.
+                       (sort tarballs better-tarball?)))
             (signature-urls (map (cut string-append <> ".sig") urls)))))
         (()
          #f)))))
@@ -679,9 +687,9 @@ GNOME packages; EMMS is included though, because its releases are on gnu.org."
 
 (define %savannah-base
   ;; One of the Savannah mirrors listed at
-  ;; <http://download0.savannah.gnu.org/mirmon/savannah/> that serves valid
+  ;; <https://download.savannah.gnu.org/mirmon/savannah/> that serves valid
   ;; HTML (unlike <https://download.savannah.nongnu.org/releases>.)
-  "https://nongnu.freemirror.org/nongnu")
+  "https://de.freedif.org/savannah/")
 
 (define (latest-savannah-release package)
   "Return the latest release of PACKAGE."

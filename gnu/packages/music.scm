@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2014, 2019 Eric Bavier <bavier@member.fsf.org>
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015 Paul van der Walt <paul@denknerd.org>
 ;;; Copyright © 2016 Al McElrath <hello@yrns.org>
 ;;; Copyright © 2016, 2017, 2019, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
@@ -154,6 +154,7 @@
   #:use-module (gnu packages perl)
   #:use-module (gnu packages perl-check)
   #:use-module (gnu packages perl-web)
+  #:use-module (gnu packages php)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages pulseaudio) ;libsndfile
@@ -1909,7 +1910,7 @@ with a selectable pattern matrix size.")
   (package
     (inherit bsequencer)
     (name "bchoppr")
-    (version "1.10.10")
+    (version "1.12.0")
     (source
      (origin
        (method git-fetch)
@@ -1918,7 +1919,7 @@ with a selectable pattern matrix size.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0gxz0cpxdfj7ajcd9yg05d26i7p24mx5865vy3ph76ni8kycdlrc"))))
+        (base32 "1jfp98qa0frmdybrg71fn8wxn1b3ginkbkcg9cz9y83j1m0jqrif"))))
     (synopsis "Audio stream-chopping LV2 plugin")
     (description "B.Choppr cuts the audio input stream into a repeated
 sequence of up to 16 chops.  Each chop can be leveled up or down (gating).
@@ -2299,10 +2300,10 @@ perform creative live mixes with digital music files.")
            alsa-lib
            new-session-manager
            liblo
-           qtbase-5
-           qtsvg-5))
+           qtbase
+           qtsvg))
     (native-inputs
-     (list pkg-config qttools-5))
+     (list pkg-config qttools))
     (home-page "https://synthv1.sourceforge.io")
     (synopsis "Polyphonic subtractive synthesizer")
     (description
@@ -2332,10 +2333,10 @@ oscillators and stereo effects.")
            alsa-lib
            new-session-manager
            liblo
-           qtbase-5
-           qtsvg-5))
+           qtbase
+           qtsvg))
     (native-inputs
-     (list pkg-config qttools-5))
+     (list pkg-config qttools))
     (home-page "https://drumkv1.sourceforge.io")
     (synopsis "Drum-kit sampler synthesizer with stereo effects")
     (description
@@ -2365,10 +2366,10 @@ effects.")
            alsa-lib
            new-session-manager
            liblo
-           qtbase-5
-           qtsvg-5))
+           qtbase
+           qtsvg))
     (native-inputs
-     (list pkg-config qttools-5))
+     (list pkg-config qttools))
     (home-page "https://samplv1.sourceforge.io")
     (synopsis "Polyphonic sampler synthesizer with stereo effects")
     (description
@@ -2398,10 +2399,10 @@ effects.")
            new-session-manager
            liblo
            fftwf
-           qtbase-5
-           qtsvg-5))
+           qtbase
+           qtsvg))
     (native-inputs
-     (list pkg-config qttools-5))
+     (list pkg-config qttools))
     (home-page "https://padthv1.sourceforge.io")
     (synopsis "Polyphonic additive synthesizer")
     (description
@@ -3032,7 +3033,7 @@ capabilities, custom envelopes, effects, etc.")
 (define-public yoshimi
   (package
     (name "yoshimi")
-    (version "1.7.4")
+    (version "2.2.2.1")
     (source
      (origin
        (method url-fetch)
@@ -3040,7 +3041,7 @@ capabilities, custom envelopes, effects, etc.")
                            (version-major+minor version)
                            "/yoshimi-" version ".tar.bz2"))
        (sha256
-        (base32 "0lxfqj4p4njww3n0wa6yfj38zfls16y3wszd47gvc5asmqyg5vjd"))))
+        (base32 "1axrbk1qwsiq77g5957db744481zb2v158psnk2w530wxhls2442"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f                      ; there are no tests
@@ -3054,6 +3055,13 @@ capabilities, custom envelopes, effects, etc.")
          ;; Move SSE compiler optimization flags from generic target to
          ;; athlon64 and core2 targets, because otherwise the build would fail
          ;; on non-Intel machines.
+         (add-after 'unpack 'fix-paths
+           (lambda* (#:key outputs #:allow-other-keys)
+             (substitute* (list "src/Interface/InterChange.cpp"
+                                "src/Misc/Bank.cpp"
+                                "src/Misc/Config.cpp")
+               (("/usr/share") (string-append (assoc-ref outputs "out")
+                                              "/share")))))
          (add-after 'unpack 'remove-sse-flags-from-generic-target
            (lambda _
              (substitute* "src/CMakeLists.txt"
@@ -3305,14 +3313,13 @@ from the command line.")
            libvorbis
            lilv
            lv2
-           qtbase-5
-           qtsvg-5
-           qtx11extras
+           qtbase
+           qtsvg
            rubberband
            suil
            zlib))
     (native-inputs
-     (list pkg-config qttools-5))
+     (list pkg-config qttools))
     (home-page "https://qtractor.org/")
     (synopsis "Audio/MIDI multi-track sequencer")
     (description
@@ -4849,7 +4856,7 @@ studio.")
 (define-public gsequencer
   (package
     (name "gsequencer")
-    (version "4.3.4")
+    (version "4.4.2")
     (source
      (origin
        (method git-fetch)
@@ -4858,7 +4865,7 @@ studio.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "10rf9li9kr6qdzkqv66wlg7gw2il18n7kd4fhk848hh5dcmg1icv"))))
+        (base32 "01fy9jkbwj8h7p0cjpc9ghjvh2d8w6n7vs6w5jbacgs2i61jx6hh"))))
     (build-system glib-or-gtk-build-system)
     (arguments
      `(#:phases
@@ -5550,13 +5557,12 @@ discard bad quality ones.
                    ,(map (lambda (label)
                            (string-append (assoc-ref inputs label)
                                           "/lib/qt5/plugins"))
-                         '("qtbase" "qtmultimedia-5" "qtsvg-5")))
+                         '("qtbase" "qtmultimedia" "qtsvg")))
                  `("QML2_IMPORT_PATH" ":" prefix
                    ,(map (lambda (label)
                            (string-append (assoc-ref inputs label)
                                           "/lib/qt5/qml"))
-                         '("qtmultimedia-5"))))
-               #t))))))
+                         '("qtmultimedia"))))))))))
     (inputs
      (list alsa-lib
            fftw
@@ -5566,10 +5572,7 @@ discard bad quality ones.
            qtmultimedia-5
            qtsvg-5))
     (native-inputs
-     `(("gettext" ,gettext-minimal)
-       ("hicolor-icon-theme" ,hicolor-icon-theme)
-       ("itstool" ,itstool)
-       ("qttools-5" ,qttools-5)))
+     (list gettext-minimal hicolor-icon-theme itstool qttools-5))
     (synopsis "Musical instrument tuner")
     (description "FMIT is a graphical utility for tuning musical instruments,
 with error and volume history, and advanced features.")
@@ -5694,16 +5697,15 @@ and reverb.")
 (define-public lsp-plugins
   (package
     (name "lsp-plugins")
-    (version "1.1.26")
+    (version "1.2.3")
     (source
       (origin
-        (method git-fetch)
-        (uri (git-reference
-               (url "https://github.com/sadko4u/lsp-plugins")
-               (commit (string-append "lsp-plugins-" version))))
-        (file-name (git-file-name name version))
+        (method url-fetch)
+        (uri (string-append "https://github.com/sadko4u/lsp-plugins"
+                            "/releases/download/" version
+                            "/lsp-plugins-src-" version ".tar.gz"))
         (sha256
-         (base32 "1apw8zh3a3il4smkjji6bih4vbsymj0hjs10fgkrd4nazqkjvgyd"))))
+         (base32 "0asgwrkyncxz5h7kjkbwm78z8l2jndxvsrgd634m5x9n37gjsgvs"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags
@@ -5714,18 +5716,28 @@ and reverb.")
          (string-append "ETC_PATH=" (assoc-ref %outputs "out") "/etc"))
        #:phases
        (modify-phases %standard-phases
-         (delete 'configure))           ; no configure script
-       #:test-target "test"))
+         (replace 'configure
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let ((out (assoc-ref outputs "out")))
+               (invoke "make" "config" "TEST=1"
+                       (string-append "PREFIX=" out)
+                       (string-append "ETCDIR=" out "/etc")))))
+         (replace 'check
+           (lambda _
+             (invoke ".build/host/lsp-plugin-fw/lsp-plugins-test" "utest"))))))
     (inputs
      (list cairo
+           freetype
            hicolor-icon-theme
            jack-1
            ladspa
            libsndfile
+           libx11
+           libxrandr
            lv2
            mesa))
     (native-inputs
-     (list pkg-config))
+     (list pkg-config php))
     (synopsis "Audio plugin collection")
     (description "LSP (Linux Studio Plugins) is a collection of audio
 plugins available as LADSPA/LV2 plugins and as standalone JACK

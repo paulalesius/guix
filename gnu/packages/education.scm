@@ -582,7 +582,7 @@ a pen-tablet display and a beamer.")
 (define-public fet
   (package
     (name "fet")
-    (version "6.7.0")
+    (version "6.7.1")
     (source
      (origin
        (method url-fetch)
@@ -591,7 +591,7 @@ a pen-tablet display and a beamer.")
               (list (string-append directory base)
                     (string-append directory "old/" base))))
        (sha256
-        (base32 "1z6zjydk3d04akv1zc8kcz8kgg5fdy8drcwwv30rj9ldh59kqi37"))))
+        (base32 "0vwddhmr9n21q4yhkcz6iakkff91hvjcfzhg84zvf1ap30xx09hk"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -667,7 +667,6 @@ language and very flexible regarding to new or unknown keyboard layouts.")
            ki18n
            kiconthemes
            kitemviews
-           kqtquickcharts
            ktextwidgets
            kwidgetsaddons
            kwindowsystem
@@ -1049,7 +1048,7 @@ machine, and more.")
 (define-public exercism
   (package
     (name "exercism")
-    (version "3.0.13")
+    (version "3.1.0")
     (source
      (origin
        (method git-fetch)
@@ -1059,7 +1058,7 @@ machine, and more.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "17gvz9a0sn4p36hf4l77bxhhfipf4x998iay31layqwbnzmb4xy7"))
+         "0ah5v4pqq31bvj7s4rg3jyjn7jwxa15w31cn4c317gsqmi0n8rzl"))
        (patches (search-patches "exercism-disable-self-update.patch"))))
     (build-system go-build-system)
     (arguments

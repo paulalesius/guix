@@ -145,7 +145,8 @@
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26))
+  #:use-module (srfi srfi-26)
+  #:use-module (ice-9 match))
 
 (define-public opensles
   (package
@@ -614,6 +615,100 @@ attacks, performing pitch detection, tapping the beat and producing MIDI
 streams from live audio.")
     (license license:gpl3+)))
 
+(define-public dsp
+  (package
+    (name "dsp")
+    (version "1.9")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/bmc0/dsp")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0iksmianwig7w78hqip2a8yy6r63sv8cv9pis8qxny6w1xap6njb"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #false                   ;no tests
+      #:make-flags
+      #~(list (string-append "CC=" #$(cc-for-target)))
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'configure
+            (lambda _
+              (invoke "sh" "configure"
+                      (string-append "--prefix=" #$output)
+                      "--disable-pulse"))))))
+    (inputs
+     (list alsa-lib
+           ao
+           ffmpeg
+           ladspa
+           libmad
+           libsndfile
+           fftw
+           fftwf
+           zita-convolver))
+    (native-inputs
+     (list libtool pkg-config))
+    (home-page "https://github.com/bmc0/dsp")
+    (synopsis "Audio processing program with an interactive mode")
+    (description
+     "dsp is an audio processing program with an interactive mode.")
+    (license license:isc)))
+
+(define-public qm-dsp
+  (package
+    (name "qm-dsp")
+    (version "1.7.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/c4dm/qm-dsp")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1vkb1xr2hjcaw88gig7rknlwsx01lm0w94d2z0rk5vz9ih4fslvv"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:make-flags
+      #~(list #$(string-append "-f" "build/"
+                               (match (or (%current-target-system)
+                                          (%current-system))
+                                 ("x86_64-linux" "linux/Makefile.linux64")
+                                 ("i686-linux"   "linux/Makefile.linux32")
+                                 (target
+                                  (if (string-suffix? "-mingw32" target)
+                                      "mingw32/Makefile.mingw32"
+                                      "general/Makefile.inc"))))
+              (string-append "CC=" #$(cc-for-target)))
+       #:phases
+       #~(modify-phases %standard-phases
+           (delete 'configure)          ;no configure script
+           (replace 'install
+             (lambda* (#:key outputs #:allow-other-keys)
+               (let* ((lib (string-append #$output "/lib"))
+                      (include (string-append #$output "/include")))
+                 (install-file "libqm-dsp.a" lib)
+                 (mkdir-p include)
+                 (for-each (lambda (file)
+                             (unless (or (string-prefix? "./build" file)
+                                         (string-prefix? "./include" file))
+                               (install-file file (string-append include "/"
+                                                                 (dirname file)))))
+                           (find-files "." "\\.h$"))))))
+       #:test-target "tests"))
+    (home-page "https://code.soundsoftware.ac.uk/projects/qm-dsp")
+    (synopsis "C++ library of functions for DSP and Music Informatics purposes")
+    (description
+     "QM-DSP is a C++ library of functions for DSP and Music Informatics
+purposes developed at Queen Mary, University of London.")
+    (license license:gpl2+)))
+
 (define (ardour-rpath-phase major-version)
   `(lambda* (#:key outputs #:allow-other-keys)
      (let ((libdir (string-append (assoc-ref outputs "out")
@@ -627,13 +722,12 @@ streams from live audio.")
                          libdir "/engines" ":"
                          libdir "/panners" ":"
                          libdir "/surfaces" ":"
-                         libdir "/vamp" "\"]"))))
-     #t))
+                         libdir "/vamp" "\"]"))))))
 
 (define-public ardour
   (package
     (name "ardour")
-    (version "6.9")
+    (version "7.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -647,19 +741,19 @@ streams from live audio.")
                     "libs/ardour/revision.cc"
                   (lambda (port)
                     (format port ,(string-append "#include \"ardour/revision.h\"
-namespace ARDOUR { const char* revision = \"" version "\" ; const char* date = \"\"; }"))
-                    #t)))
+namespace ARDOUR { const char* revision = \"" version "\" ; const char* date = \"\"; }")))))
               (sha256
                (base32
-                "0vlcbd70y0an881zv87kc3akmaiz4w7whsy3yaiiqqjww35jg1mm"))
+                "1xzgcd2d8zzgx3s9sr3kcxl3vz3vfr5l1xs9qpjplmk22dfj8b08"))
               (file-name (string-append name "-" version))))
     (build-system waf-build-system)
     (arguments
-     `(#:configure-flags '("--cxx11"          ; required by gtkmm
+     `(#:configure-flags '("--cxx11"              ; required by gtkmm
                            "--optimize"
-                           "--no-phone-home"  ; don't contact ardour.org
-                           "--freedesktop"    ; build .desktop file
-                           "--test")          ; build unit tests
+                           "--no-phone-home"      ; don't contact ardour.org
+                           "--freedesktop"        ; build .desktop file
+                           "--test"               ; build unit tests
+                           "--use-external-libs") ; use system libraries
        #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'set-rpath-in-LDFLAGS
@@ -684,8 +778,11 @@ namespace ARDOUR { const char* revision = \"" version "\" ; const char* date = \
                              (string-append share "/applications/"))
                (install-file (string-append "build/gtk2_ardour/ardour"
                                             ver ".appdata.xml")
-                             (string-append share "/appdata/")))
-             #t)))
+                             (string-append share "/appdata/")))))
+         (add-after 'install 'install-man-page
+           (lambda* (#:key outputs #:allow-other-keys)
+             (install-file "ardour.1" (string-append (assoc-ref outputs "out")
+                                                     "/share/man/man1")))))
        #:test-target "test"))
     (inputs
      (list alsa-lib
@@ -699,13 +796,17 @@ namespace ARDOUR { const char* revision = \"" version "\" ; const char* date = \
            fftw
            fftwf
            flac
+           fluidsynth
            glibmm
            gtkmm-2
+           hicolor-icon-theme
+           hidapi
            jack-1
            libarchive
            libart-lgpl
            libgnomecanvasmm
            liblo
+           libltc
            libogg
            libsamplerate
            libsndfile
@@ -720,6 +821,7 @@ namespace ARDOUR { const char* revision = \"" version "\" ; const char* date = \
            pangomm
            python-rdflib
            pulseaudio
+           qm-dsp
            readline
            redland
            rubberband
@@ -731,11 +833,11 @@ namespace ARDOUR { const char* revision = \"" version "\" ; const char* date = \
            taglib
            vamp))
     (native-inputs
-     `(("cppunit" ,cppunit)
-       ("gettext" ,gettext-minimal)
-       ("itstool" ,itstool)
-       ("perl" ,perl)
-       ("pkg-config" ,pkg-config)))
+     (list cppunit
+           gettext-minimal
+           itstool
+           perl
+           pkg-config))
     (home-page "https://ardour.org")
     (synopsis "Digital audio workstation")
     (description
@@ -3009,6 +3111,8 @@ including air absorption, occlusion, and environmental reverb, are available
 through the EFX extension.  It also facilitates streaming audio, multi-channel
 buffers, and audio capture.")
     (home-page "https://openal-soft.org/")
+    (properties
+     '((upstream-name . "openal-soft")))
     (license license:lgpl2.0+)))
 
 (define-public freealut
@@ -3603,7 +3707,8 @@ analysis plugins or audio feature extraction plugins.")
             (symlink
              (search-input-file inputs
                                 (string-append "/share/automake-"
-                                               ,(package-version automake)
+                                               ,(version-major+minor
+                                                 (package-version automake))
                                                "/ar-lib"))
              "ar-lib")
             #t)))))

@@ -1,5 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2022 Christopher Rodriguez <yewscion@gmail.com>
+;;; Copyright © 2022 Liliana Marie Prikler <liliana.prikler@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -54,7 +55,6 @@
       (arguments
        (list
         #:imported-modules `(,@%gnu-build-system-modules
-                             (guix build syscalls)
                              (guix build ant-build-system))
         #:modules `((guix build gnu-build-system)
                     ((guix build ant-build-system)
@@ -92,9 +92,8 @@
                                 (dest-jar (string-append out "/share/java")))
                            (mkdir-p dest-bin)
                            (mkdir-p dest-jar)
-                           (copy-recursively "BQN"
-                                             (string-append dest-bin
-                                                            "/dbqn"))
+                           (rename-file "BQN" "dbqn")
+                           (install-file "dbqn" dest-bin)
                            (install-file "BQN.jar" dest-jar)
                            (substitute* (string-append dest-bin "/dbqn")
                              (("BQN.jar")
@@ -129,7 +128,7 @@ the same author.")
          (commit "9c1cbdc99863b1da0116df61cd832137b196dc5c"))
     (package
       (name "cbqn-bootstrap")
-      (version (git-version "0" "1" commit))
+      (version (git-version "0" revision commit))
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
@@ -141,22 +140,24 @@ the same author.")
                   "0w38fhwf20drkyijy6nfnhmc5g5gw0zmzgmy1q605x57znlj85a2"))))
       (build-system gnu-build-system)
       (arguments
-       (list #:tests? #f                         ;skipping tests for bootstrap
-             #:phases #~(modify-phases %standard-phases
-                          (delete 'configure)
-                          (add-before 'build 'generate-bytecode
-                            (lambda* (#:key inputs #:allow-other-keys)
-                              (system (string-append #+dbqn
-                                                     "/bin/dbqn ./genRuntime "
-                                                     #+bqn-sources))))
-                          (replace 'install
-                            (lambda* (#:key outputs #:allow-other-keys)
-                              (mkdir-p (string-append #$output "/bin"))
-                              (chmod "BQN" #o755)
-                              (copy-recursively "BQN"
-                                                (string-append #$output
-                                                               "/bin/bqn")))))))
-      (native-inputs (list dbqn clang-toolchain bqn-sources))
+       (list
+        #:tests? #f                     ; skipping tests for bootstrap
+        #:make-flags #~(list (string-append "CC=" #$(cc-for-target)))
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'configure)
+            (add-before 'build 'generate-bytecode
+              (lambda* (#:key inputs #:allow-other-keys)
+                (system (string-append #+dbqn
+                                       "/bin/dbqn ./genRuntime "
+                                       #+bqn-sources))))
+            (replace 'install
+              (lambda* (#:key outputs #:allow-other-keys)
+                (mkdir-p (string-append #$output "/bin"))
+                (chmod "BQN" #o755)
+                (rename-file "BQN" "bqn")
+                (install-file "bqn" (string-append #$output "/bin")))))))
+      (native-inputs (list dbqn bqn-sources))
       (inputs (list icedtea-8 libffi))
       (synopsis "BQN implementation in C")
       (description "This package provides the reference implementation of
@@ -165,60 +166,43 @@ by APL.")
       (home-page "https://mlochbaum.github.io/BQN/")
       (license license:gpl3))))
 
-(define singeli-sources
-  (let ((commit "fd17b144483549dbd2bcf23e3a37a09219171a99"))
-    (origin
-      (method git-fetch)
-      (uri (git-reference
-            (url "https://github.com/mlochbaum/Singeli")
-            (commit commit)))
-      (file-name (git-file-name "singeli-sources" commit))
-      (sha256
-       (base32 "1rr4l7ijzcg25n2igi1mzya6qllh5wsrf3m5i429rlgwv1fwvfji")))))
-
 (define-public cbqn
   (package
     (inherit cbqn-bootstrap)
     (name "cbqn")
     (outputs '("out" "lib"))
     (arguments
-     (list #:make-flags '(list "shared-o3" "o3n-singeli")
-           #:phases #~(modify-phases %standard-phases
-                        (delete 'configure)
-                        (add-before 'build 'link-singeli
-                          (lambda* (#:key inputs #:allow-other-keys)
-                            (symlink #+singeli-sources "Singeli")))
-                        (add-before 'build 'generate-bytecode
-                          (lambda* (#:key inputs #:allow-other-keys)
-                            (system (string-append #+dbqn
-                                                   "/bin/dbqn ./genRuntime "
-                                                   #+bqn-sources))))
-                        (replace 'check
-                          (lambda* (#:key inputs tests? #:allow-other-keys)
-                            (when tests?
-                              (system (string-append "./BQN -M 1000 \""
-                                                     #+bqn-sources
-                                                     "/test/this.bqn\""))
-                              (map (lambda (x)
-                                     (system (string-append "./BQN ./test/" x
-                                                            ".bqn")))
-                                   '("cmp" "equal" "copy" "random"))
-                              (system "make -C test/ffi"))))
-                        (replace 'install
-                          (lambda* (#:key outputs #:allow-other-keys)
-                            (let* ((bin (string-append (assoc-ref outputs
-                                                                  "out")
-                                                       "/bin"))
-                                   (lib (string-append (assoc-ref outputs
-                                                                  "lib")
-                                                       "/lib")))
-                              (mkdir-p bin)
-                              (copy-recursively "BQN"
-                                                (string-append bin "/bqn"))
-                              (install-file "libcbqn.so" lib)))))))
+     (substitute-keyword-arguments (strip-keyword-arguments
+                                    (list #:tests?)
+                                    (package-arguments cbqn-bootstrap))
+       ((#:make-flags flags #~(list))
+        #~(cons* "shared-o3" "o3" #$flags))
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (replace 'check
+              (lambda* (#:key inputs tests? #:allow-other-keys)
+                (when tests?
+                  (system (string-append "./BQN -M 1000 \""
+                                         #+bqn-sources
+                                         "/test/this.bqn\""))
+                  (map (lambda (x)
+                         (system (string-append "./BQN ./test/" x
+                                                ".bqn")))
+                       '("cmp" "equal" "copy" "random"))
+                  (system "make -C test/ffi"))))
+            (replace 'install
+              (lambda* (#:key outputs #:allow-other-keys)
+                (let* ((bin (string-append (assoc-ref outputs "out")
+                                           "/bin"))
+                       (lib (string-append (assoc-ref outputs "lib")
+                                           "/lib")))
+                  (mkdir-p bin)
+                  (rename-file "BQN" "bqn")
+                  (install-file "bqn" bin)
+                  (install-file "libcbqn.so" lib))))))))
     (native-inputs (list dbqn
                          bqn-sources
-                         singeli-sources
                          libffi
-                         clang-toolchain
-                         linux-libre-headers))))
+                         linux-libre-headers))
+    (properties
+     `((tunable? . #t)))))

@@ -54,6 +54,7 @@
 ;;; Copyright © 2022 Andreas Rammhold <andreas@rammhold.de>
 ;;; Copyright © 2022 ( <paren@disroot.org>
 ;;; Copyright © 2022 Matthew James Kraai <kraai@ftbfs.org>
+;;; Copyright © 2022 jgart <jgart@dismail.de>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -330,25 +331,14 @@ interface and is based on GNU Guile.")
 (define-public shepherd-0.9
   (package
     (inherit shepherd)
-    (version "0.9.2")
+    (version "0.9.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/shepherd/shepherd-"
                                   version ".tar.gz"))
               (sha256
                (base32
-                "0mcby3ygh3bpns44rb1vnk8bz2km4nlw092nrcgkm3nkqfmbp4p1"))
-              (modules '((guix build utils)))
-              (snippet
-               ;; Avoid continuation barriers so (@ (fibers) sleep) can be
-               ;; called from a service's 'stop' method
-               '(substitute* "modules/shepherd/service.scm"
-                  (("call-with-blocked-asyncs")   ;in 'stop' method
-                   "(lambda (thunk) (thunk))")
-                  (("\\(for-each-service\n")      ;in 'shutdown-services'
-                   "((lambda (proc)
-                       (for-each proc
-                                 (fold-services cons '())))\n")))))
+                "0qy2yq13xhf05an5ilz7grighdxicx56211yaarqq5qigiiybc32"))))
     (arguments
      (list #:configure-flags #~'("--localstatedir=/var")
            #:make-flags #~'("GUILE_AUTO_COMPILE=0")
@@ -368,9 +358,12 @@ interface and is based on GNU Guile.")
                                       (this-package-input "guile-fibers")
                                       "/lib/guile/3.0/site-ccache"))))))
                         #~%standard-phases)))
-    (native-inputs (list pkg-config guile-3.0
+
+    ;; Note: Use 'guile-3.0-latest' to address the continuation-related memory
+    ;; leak reported at <https://issues.guix.gnu.org/58631>.
+    (native-inputs (list pkg-config guile-3.0-latest
                          guile-fibers-1.1))       ;for cross-compilation
-    (inputs (list guile-3.0 guile-fibers-1.1))))
+    (inputs (list guile-3.0-latest guile-fibers-1.1))))
 
 (define-public guile2.2-shepherd
   (package
@@ -705,15 +698,16 @@ console.")
 (define-public btop
   (package
     (name "btop")
-    (version "1.2.9")
+    (version "1.2.13")
     (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/aristocratos/btop/archive/refs/tags/v"
-                    version ".tar.gz"))
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/aristocratos/btop")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
               (sha256
                (base32
-                "0cb5q7hrb9y378i98km9s6jbi5c50i7wra8m8jik5hf4m4s3930g"))))
+                "0aggzlxyfp213rknpbhkn8wbgzcnz181dyh9m2awz72w705axy8p"))))
     (build-system gnu-build-system)
     (arguments
      (list #:tests? #f ;no test suite
@@ -725,6 +719,51 @@ console.")
     (description "Btop++ provides unified monitoring of CPU, memory, network
 and processes.")
     (license license:asl2.0)))
+
+(define-public smem
+  (package
+    (name "smem")
+    (version "1.5")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://selenic.com/repo/smem/archive/"
+                                  version ".tar.bz2"))
+              (file-name
+               (string-append name "-" version ".tar.bz2"))
+              (sha256
+               (base32
+                "19ibv1byxf2b68186ysrgrhy5shkc5mc69abark1h18yigp3j34m"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f ; There is no test suite.
+           #:make-flags #~(list "smemcap")
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure)
+               (replace 'build
+                 (lambda _
+                   (let* ((system #$(cond ((target-x86?) "X86")
+                                          ((target-arm?) "ARM")
+                                          ((target-powerpc?) "POWER")
+                                          (else "CROSS_FINGERS"))))
+                     (format #t "Building for ~a~%" system)
+                     (invoke #$(cc-for-target) "-o" "smemcap" "smemcap.c"
+                             "-g" "-Wall" "-D" system))))
+               (replace 'install
+                 (lambda _
+                   (let ((bin (string-append #$output "/bin"))
+                         (man1 (string-append #$output "/share/man/man8")))
+                     (install-file "smemcap" bin)
+                     (install-file "smem" bin)
+                     (mkdir-p man1)
+                     (copy-file "smem.8" (string-append man1 "/smem.8"))))))))
+    (native-inputs (list python-minimal-wrapper))
+    (home-page "https://www.selenic.com/smem/")
+    (synopsis "Memory reporting tool")
+    (description
+     "This package provides a command line tool that can give numerous reports
+on memory usage on GNU/Linux systems.")
+    (license license:gpl2+)))
 
 (define-public htop
   (package
@@ -1944,7 +1983,7 @@ system administrator.")
 (define-public sudo
   (package
     (name "sudo")
-    (version "1.9.12")
+    (version "1.9.12p1")
     (source (origin
               (method url-fetch)
               (uri
@@ -1954,7 +1993,7 @@ system administrator.")
                                     version ".tar.gz")))
               (sha256
                (base32
-                "0qk3ilb35gcnqg7jyx1r22r0zc9xk2zk9zda9n1mc30pi0w765fy"))
+                "1n5ppabp9ark1qz7xi63528s07pmpak67c7agj8v5a1xxfl1hnj7"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -2850,7 +2889,7 @@ sys.argv[0] = re.sub(r'\\.([^/]*)-real$', r'\\1', sys.argv[0])
      (list openssh
            openssl
            python-mock
-           python-pycrypto
+           python-pycryptodome
            python-pytest
            python-pytest-forked
            python-pytest-mock
@@ -3424,7 +3463,7 @@ throughput (in the same interval).")
 (define-public thefuck
   (package
     (name "thefuck")
-    (version "3.31")
+    (version "3.32")
     (source
      (origin
        (method git-fetch)
@@ -3433,7 +3472,7 @@ throughput (in the same interval).")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "05h60gxky57nalc2hdkpg8wqyg16432x9gcb9wnwblplk98998kq"))
+        (base32 "18ipa1bm6q1n5drbi8i65726hhqhl1g41390lfqrc11hkbvv443d"))
        (patches (search-patches "thefuck-test-environ.patch"))))
     (build-system python-build-system)
     (arguments

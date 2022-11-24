@@ -53,12 +53,12 @@
 ;;; Copyright © 2021 Simon Streit <simon@netpanic.org>
 ;;; Copyright © 2021 Alexandre Hannud Abdo <abdo@member.fsf.org>
 ;;; Copyright © 2021 Simon Tournier <zimon.toutoune@gmail.com>
-;;; Copyright © 2021 jgart <jgart@dismail.de>
 ;;; Copyright © 2021 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;; Copyright © 2022 Zhu Zihao <all_but_last@163.com>
 ;;; Copyright © 2021 Brice Waegeneire <brice@waegenei.re>
 ;;; Copyright © 2022 muradm <mail@muradm.net>
 ;;; Copyright © 2022 Thomas Albers Raviola <thomas@thomaslabs.org>
+;;; Copyright © 2021, 2022 jgart <jgart@dismail.de>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -992,7 +992,7 @@ Language.")
              `((add-after 'unpack 'apply-libatomics-patch
                  (lambda* (#:key inputs #:allow-other-keys)
                    (let ((patch-file
-                           (assoc-ref inputs 
+                           (assoc-ref inputs
                                                "mariadb-link-libatomic.patch")))
                      (invoke "patch" "-p1" "-i" patch-file)))))
              '())
@@ -1222,17 +1222,17 @@ and high-availability (HA).")
     (license license:gpl2)))                  ;'COPYING' says "version 2" only
 
 ;; Don't forget to update the other postgresql packages when upgrading this one.
-(define-public postgresql-14
+(define-public postgresql-15
   (package
     (name "postgresql")
-    (version "14.4")
+    (version "15.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://ftp.postgresql.org/pub/source/v"
                                   version "/postgresql-" version ".tar.bz2"))
               (sha256
                (base32
-                "0slg7ld5mldmv3pn1wxxwglm4s3xc6c91ixx24apj713qlvn4fy2"))
+                "1bi19sqmri569hyjvbk8grlws7f5dalsqz87wkgx1yjafcyz5zb4"))
               (patches (search-patches "postgresql-disable-resolve_symlinks.patch"))))
     (build-system gnu-build-system)
     (arguments
@@ -1284,30 +1284,43 @@ TIMESTAMP.  It also supports storage of binary large objects, including
 pictures, sounds, or video.")
     (license (license:x11-style "file://COPYRIGHT"))))
 
+(define-public postgresql-14
+  (package
+    (inherit postgresql-15)
+    (name "postgresql")
+    (version "14.4")
+    (source (origin
+              (inherit (package-source postgresql-15))
+              (uri (string-append "https://ftp.postgresql.org/pub/source/v"
+                                  version "/postgresql-" version ".tar.bz2"))
+              (sha256
+               (base32
+                "0slg7ld5mldmv3pn1wxxwglm4s3xc6c91ixx24apj713qlvn4fy2"))))))
+
 (define-public postgresql-13
   (package
     (inherit postgresql-14)
-    (version "13.6")
+    (version "13.9")
     (source (origin
               (inherit (package-source postgresql-14))
               (uri (string-append "https://ftp.postgresql.org/pub/source/v"
                                   version "/postgresql-" version ".tar.bz2"))
               (sha256
                (base32
-                "1z37ix80hb2bqa2smh1hbj9r507ypnl3pil43gkqznnlv6ipzz5s"))))))
+                "05d46dzkya6s0qbaxvksc5j12syb514q5lha6z9vx7z4lp06c6gg"))))))
 
 (define-public postgresql-11
   (package
     (inherit postgresql-13)
     (name "postgresql")
-    (version "11.16")
+    (version "11.18")
     (source (origin
               (inherit (package-source postgresql-13))
               (uri (string-append "https://ftp.postgresql.org/pub/source/v"
                                   version "/postgresql-" version ".tar.bz2"))
               (sha256
                (base32
-                "1983a7y4y6zhbgh0qcdfkf99445j1zm5q1ncrbkrx555y08y3n9d"))))
+                "013m1x53qfxcry7l033ahhxjc3lflb7fj8fapk7qm49fqppj0kyj"))))
     (native-inputs
      (modify-inputs (package-native-inputs postgresql-13)
        (replace "docbook-xml" docbook-xml-4.2)))))
@@ -1315,14 +1328,14 @@ pictures, sounds, or video.")
 (define-public postgresql-10
   (package
     (inherit postgresql-11)
-    (version "10.21")
+    (version "10.23")
     (source (origin
               (inherit (package-source postgresql-11))
               (uri (string-append "https://ftp.postgresql.org/pub/source/v"
                                   version "/postgresql-" version ".tar.bz2"))
               (sha256
                (base32
-                "1la5dx4hhy5yaznwk9gwdsymih3sd23fyhh6spssdaajdn2rh8fk"))))
+                "1sgfssjc9lnzijhn108r6z26fri655k413f1c9b8wibjhd9b594l"))))
     (native-inputs
      (modify-inputs (package-native-inputs postgresql-11)
        (append opensp docbook-sgml-4.2)
@@ -1333,7 +1346,7 @@ pictures, sounds, or video.")
 (define-public timescaledb
   (package
     (name "timescaledb")
-    (version "2.7.0")
+    (version "2.8.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1342,8 +1355,7 @@ pictures, sounds, or video.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "18wszj8ia5rs4y4zkyfb0f5z4y1g7ac3jym748nbkbszhxmq7nc7"))
-              (patches (search-patches "timescaledb-flaky-test.patch"))
+                "1gbadna0ilmqad7sbrixm12wd71h43njhsbp1kh5lispb6drdb6r"))
               (modules '((guix build utils)))
               (snippet
                ;; Remove files carrying the proprietary TIMESCALE license.
@@ -3043,12 +3055,13 @@ with relational data.")
     (version "3.4.2")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append "https://github.com/sqlcipher/" name
-                           "/archive/v" version ".tar.gz"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/sqlcipher/sqlcipher")
+             (commit (string-append "v" version))))
        (sha256
-        (base32 "1nxarwbci8jx99f1d0y1ivxcv25s78l1p7q6qy28lkpkcx8pm2b9"))
-       (file-name (string-append name "-" version ".tar.gz"))))
+        (base32 "168wb6fvyap7y8j86fb3xl5rd4wmhiq0dxvx9wxwi5kwm1j4vn1a"))
+       (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (inputs
      `(("libcrypto" ,openssl)
@@ -4167,7 +4180,7 @@ the SQL language using a syntax that reflects the resulting query.")
 (define-public apache-arrow
   (package
     (name "apache-arrow")
-    (version "9.0.0")
+    (version "10.0.0")
     (source
      (origin
        (method git-fetch)
@@ -4177,7 +4190,7 @@ the SQL language using a syntax that reflects the resulting query.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1l76q7944jyx22vjkk12hxb3nadgiivc3x8ml4mg619v9xxagc2v"))))
+         "1mx2siffbggz26c8j2xma7cwa65khj8nswy04ajczgwvj32rg1ah"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f
@@ -4186,13 +4199,13 @@ the SQL language using a syntax that reflects the resulting query.")
          (add-before 'configure 'enter-source-directory
            (lambda _ (chdir "cpp")))
          (add-after 'unpack 'set-env
-           (lambda _
+           (lambda* (#:key inputs #:allow-other-keys)
              (substitute* "cpp/cmake_modules/ThirdpartyToolchain.cmake"
                (("set\\(xsimd_SOURCE.*") ""))
-             (setenv "BOOST_ROOT" (assoc-ref %build-inputs "boost"))
-             (setenv "BROTLI_HOME" (assoc-ref %build-inputs "brotli"))
-             (setenv "FLATBUFFERS_HOME" (assoc-ref %build-inputs "flatbuffers"))
-             (setenv "RAPIDJSON_HOME" (assoc-ref %build-inputs "rapidjson")))))
+             (setenv "BOOST_ROOT" (assoc-ref inputs "boost"))
+             (setenv "BROTLI_HOME" (assoc-ref inputs "brotli"))
+             (setenv "FLATBUFFERS_HOME" (assoc-ref inputs "flatbuffers"))
+             (setenv "RAPIDJSON_HOME" (assoc-ref inputs "rapidjson")))))
        #:build-type "Release"
        #:configure-flags
        (list "-DARROW_PYTHON=ON"
@@ -4389,7 +4402,7 @@ algorithm implementations.")
              "-DARROW_BUILD_STATIC=OFF")))
     (inputs
      `(("boost" ,boost)
-       ("brotli" ,google-brotli)
+       ("brotli" ,brotli)
        ("double-conversion" ,double-conversion)
        ("snappy" ,snappy)
        ("gflags" ,gflags)
@@ -4432,40 +4445,23 @@ algorithm implementations.")
          (add-after 'unpack 'make-git-checkout-writable
            (lambda _
              (for-each make-file-writable (find-files "."))))
-         (add-before 'install 'patch-cmake-variables
-           (lambda* (#:key inputs #:allow-other-keys)
-             ;; Replace cmake locations with hardcoded guix links for the
-             ;; underlying C++ library and headers.  This is a pretty awful
-             ;; hack.
-             (substitute* "cmake_modules/FindParquet.cmake"
-               (("# Licensed to the Apache Software Foundation" m)
-                (string-append "set(PARQUET_INCLUDE_DIR \""
-                               (assoc-ref inputs "apache-arrow:include")
-                               "/share/include\")\n" m))
-               (("find_package_handle_standard_args" m)
-                (string-append "set(PARQUET_LIB_DIR \""
-                               (assoc-ref inputs "apache-arrow:lib")
-                               "/lib\")\n" m)))))
-         (add-before 'install 'patch-parquet-library
-           (lambda _
-             (substitute* "CMakeLists.txt"
-               (("parquet_shared") "parquet"))))
          (add-before 'install 'set-PYARROW_WITH_PARQUET
            (lambda _
+             (setenv "PYARROW_BUNDLE_ARROW_CPP_HEADERS" "0")
              (setenv "PYARROW_WITH_PARQUET" "1"))))))
     (propagated-inputs
-     `(("apache-arrow:lib" ,apache-arrow "lib")
-       ("apache-arrow:include" ,apache-arrow "include")
-       ("python-numpy" ,python-numpy)
-       ("python-pandas" ,python-pandas)
-       ("python-six" ,python-six)))
+     (list (list apache-arrow "lib")
+           (list apache-arrow "include")
+           python-numpy
+           python-pandas
+           python-six))
     (native-inputs
-     `(("cmake" ,cmake-minimal)
-       ("pkg-config" ,pkg-config)
-       ("python-cython" ,python-cython)
-       ("python-pytest" ,python-pytest)
-       ("python-pytest-runner" ,python-pytest-runner)
-       ("python-setuptools-scm" ,python-setuptools-scm)))
+     (list cmake-minimal
+           pkg-config
+           python-cython
+           python-pytest
+           python-pytest-runner
+           python-setuptools-scm))
     (outputs '("out"))
     (home-page "https://arrow.apache.org/docs/python/")
     (synopsis "Python bindings for Apache Arrow")

@@ -12,7 +12,7 @@
 ;;; Copyright © 2016 Raymond Nicholson <rain1@openmailbox.org>
 ;;; Copyright © 2016 Mathieu Lirzin <mthl@gnu.org>
 ;;; Copyright © 2016, 2018-2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
-;;; Copyright © 2016, 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016 David Craven <david@craven.ch>
 ;;; Copyright © 2016 John Darrington <jmd@gnu.org>
 ;;; Copyright © 2016-2022 Marius Bakke <marius@gnu.org>
@@ -66,7 +66,7 @@
 ;;; Copyright © 2022 muradm <mail@muradm.net>
 ;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
 ;;; Copyright © 2022 Hunter Jozwiak <hunter.t.joz@gmail.com>
-
+;;; Copyright © 2022 Hilton Chain <hako@ultrarare.space>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -355,71 +355,55 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
 ;; The current "stable" kernels. That is, the most recently released major
 ;; versions that are still supported upstream.
 
-(define-public linux-libre-6.0-version "6.0.6")
+(define-public linux-libre-6.0-version "6.0.9")
 (define-public linux-libre-6.0-gnu-revision "gnu")
 (define deblob-scripts-6.0
   (linux-libre-deblob-scripts
    linux-libre-6.0-version
    linux-libre-6.0-gnu-revision
    (base32 "0iwbjrgiwch5v1xpnm9wk9zqw2v6lxja0k8yj2x0amxc9ma68176")
-   (base32 "1x8nqdf338gqsn8d825xgvx44nawdy28zkg3cdmfxn09g749g6pz")))
+   (base32 "06iqxkg5hakzvmz6gcz878k1sr553zbng2j1b2whgfg7zmhxkb34")))
 (define-public linux-libre-6.0-pristine-source
   (let ((version linux-libre-6.0-version)
-        (hash (base32 "1akzfkwjbxki6r41gcnp5fml389i8ng9bid9c4ysg6w65nphajw6")))
+        (hash (base32 "1irip1yk62carcisxlacwcxsiqib4qswx6h5mfhv8f97x04a4531")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-6.0)))
 
-
-(define-public linux-libre-5.19-version "5.19.17")
-(define-public linux-libre-5.19-gnu-revision "gnu")
-(define deblob-scripts-5.19
-  (linux-libre-deblob-scripts
-   linux-libre-5.19-version
-   linux-libre-5.19-gnu-revision
-   (base32 "1lk90psz33ldb8aiaws4iayhycl5bmywr6badvzffjpr87s5phxw")
-   (base32 "092myqjixvy1k3ylcj0hfc4whfxapjvxsxm4gk30a3jv5dnh7mly")))
-(define-public linux-libre-5.19-pristine-source
-  (let ((version linux-libre-5.19-version)
-        (hash (base32 "12cly10lad12idjwlgh2g0pp4hhj57h2qi4fy6jg1lbsm62b6fy9")))
-   (make-linux-libre-source version
-                            (%upstream-linux-source version hash)
-                            deblob-scripts-5.19)))
-
 ;; The "longterm" kernels — the older releases with long-term upstream support.
 ;; Here are the support timelines:
 ;; <https://www.kernel.org/category/releases.html>
-(define-public linux-libre-5.15-version "5.15.76")
+(define-public linux-libre-5.15-version "5.15.79")
 (define-public linux-libre-5.15-gnu-revision "gnu")
 (define deblob-scripts-5.15
   (linux-libre-deblob-scripts
    linux-libre-5.15-version
    linux-libre-5.15-gnu-revision
    (base32 "0vj60bra81fmbx3lz924czbhxs4dmvd4d584g9mcs80b7c4q52kg")
-   (base32 "048r4synfax2ajyzlmp672b68yshxwlfccdah2vz1kh88rqfmgsc")))
+   (base32 "0h8a48dvgxyj3v08lp99kh5pfa93r4rks78cj0j1rwz1516xk8h3")))
 (define-public linux-libre-5.15-pristine-source
   (let ((version linux-libre-5.15-version)
-        (hash (base32 "0zymcp88654qk896djvc2ngdksvhkzh1ndhfk1dn5qqrqhha01wh")))
+        (hash (base32 "0m61k7k6lj24z9a266q08wzghggjik2wizcabdwd1vn0vcqr18yb")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.15)))
 
-(define-public linux-libre-5.10-version "5.10.152")
+(define-public linux-libre-5.10-version "5.10.155")
 (define-public linux-libre-5.10-gnu-revision "gnu1")
 (define deblob-scripts-5.10
   (linux-libre-deblob-scripts
    linux-libre-5.10-version
    linux-libre-5.10-gnu-revision
    (base32 "0mw7qn77y9c6wrnw4rjvf75cpm1w6n1aqqhf8cnghcb97p2yxxrf")
-   (base32 "1981axxswghza3iadp94q54y8w30h9w9vyq4cbjiiv9alvbv0pb8")))
+   (base32 "1m9l554w6a72mq0kf7ggm44z247m2yz6zhafwqxh96qpjpcaabpj")))
 (define-public linux-libre-5.10-pristine-source
   (let ((version linux-libre-5.10-version)
-        (hash (base32 "19nq2pgy4vmn30nywdvcvsx4vhmndrj97iiclpqakzgblj1mq2zs")))
+        (hash (base32 "1wyla96qsdf50n7qjj4hdf36bj56whv7gc9mgw9bvrsqdi92gc7i")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.10)))
 
-(define-public linux-libre-5.4-version "5.4.221")
+(define-public linux-libre-5.4-version "5.4.224")
 (define-public linux-libre-5.4-gnu-revision "gnu1")
 (define deblob-scripts-5.4
   (linux-libre-deblob-scripts
@@ -429,12 +413,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "1vnjbdyssa7dwyjl9kg35alwvf7yh597cl74yr1wy2gk5bc9paw6")))
 (define-public linux-libre-5.4-pristine-source
   (let ((version linux-libre-5.4-version)
-        (hash (base32 "02nz9534998s922fdb0kpb09flgjmc7p78x0ypfxrd6pzv0pzcr7")))
+        (hash (base32 "0dixs4w7nmkjgxv9dxgjdy8v6r4parkpqyvdfyr0wqk0amdz4zcb")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.4)))
 
-(define-public linux-libre-4.19-version "4.19.262")
+(define-public linux-libre-4.19-version "4.19.265")
 (define-public linux-libre-4.19-gnu-revision "gnu1")
 (define deblob-scripts-4.19
   (linux-libre-deblob-scripts
@@ -444,12 +428,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "00i91lx938nqlgy63hiricqd0fnbbf26vgya9c5lb7m1f4x324im")))
 (define-public linux-libre-4.19-pristine-source
   (let ((version linux-libre-4.19-version)
-        (hash (base32 "07xnslqvmspqizng50yyprzrydwp0qdjmpsq2l1gjxr1lf3n8r5v")))
+        (hash (base32 "1l5cdpgng1gci1p1gdr2jzqw486h3w56gpyc7fbq74hlc6nnwh1p")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.19)))
 
-(define-public linux-libre-4.14-version "4.14.296")
+(define-public linux-libre-4.14-version "4.14.299")
 (define-public linux-libre-4.14-gnu-revision "gnu1")
 (define deblob-scripts-4.14
   (linux-libre-deblob-scripts
@@ -459,12 +443,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "00i91lx938nqlgy63hiricqd0fnbbf26vgya9c5lb7m1f4x324im")))
 (define-public linux-libre-4.14-pristine-source
   (let ((version linux-libre-4.14-version)
-        (hash (base32 "1n4vngqbywwkqrq9fwp3lp4w6d3z588hbnzfngcp07z1ffrcvm9d")))
+        (hash (base32 "0p5ic2mrb9vl3qkzvqxhia3kygjv8xa6s1kqkwgd6b4rmq1kc8r6")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.14)))
 
-(define-public linux-libre-4.9-version "4.9.331")
+(define-public linux-libre-4.9-version "4.9.333")
 (define-public linux-libre-4.9-gnu-revision "gnu1")
 (define deblob-scripts-4.9
   (linux-libre-deblob-scripts
@@ -474,7 +458,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "0bib3641dbcqdkx3anna3caxnsg3nw9cnmhcklq0s93g3m57041h")))
 (define-public linux-libre-4.9-pristine-source
   (let ((version linux-libre-4.9-version)
-        (hash (base32 "0v3vv02i9aqgx4g4kw0vpixxsms7w3s5fhry4wlqmsq0gkmqv3j8")))
+        (hash (base32 "0ash877gkrrc063h6ncl9d4gzyhndanpxsdgf1a93abbfv281gs1")))
     (make-linux-libre-source version
                              (%upstream-linux-source version hash)
                              deblob-scripts-4.9)))
@@ -509,11 +493,6 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
 
 (define-public linux-libre-6.0-source
   (source-with-patches linux-libre-6.0-pristine-source
-                       (list %boot-logo-patch
-                             %linux-libre-arm-export-__sync_icache_dcache-patch)))
-
-(define-public linux-libre-5.19-source
-  (source-with-patches linux-libre-5.19-pristine-source
                        (list %boot-logo-patch
                              %linux-libre-arm-export-__sync_icache_dcache-patch)))
 
@@ -630,11 +609,6 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
   (make-linux-libre-headers* linux-libre-6.0-version
                              linux-libre-6.0-gnu-revision
                              linux-libre-6.0-source))
-
-(define-public linux-libre-headers-5.19
-  (make-linux-libre-headers* linux-libre-5.19-version
-                             linux-libre-5.19-gnu-revision
-                             linux-libre-5.19-source))
 
 (define-public linux-libre-headers-5.15
   (make-linux-libre-headers* linux-libre-5.15-version
@@ -968,19 +942,11 @@ It has been modified to remove all non-free binary blobs.")
                        "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
                      #:configuration-file kernel-config))
 
-(define-public linux-libre-5.19
-  (make-linux-libre* linux-libre-5.19-version
-                     linux-libre-5.19-gnu-revision
-                     linux-libre-5.19-source
-                     '("x86_64-linux" "i686-linux" "armhf-linux"
-                       "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
-                     #:configuration-file kernel-config))
-
-(define-public linux-libre-version         linux-libre-5.19-version)
-(define-public linux-libre-gnu-revision    linux-libre-5.19-gnu-revision)
-(define-public linux-libre-pristine-source linux-libre-5.19-pristine-source)
-(define-public linux-libre-source          linux-libre-5.19-source)
-(define-public linux-libre                 linux-libre-5.19)
+(define-public linux-libre-version         linux-libre-6.0-version)
+(define-public linux-libre-gnu-revision    linux-libre-6.0-gnu-revision)
+(define-public linux-libre-pristine-source linux-libre-6.0-pristine-source)
+(define-public linux-libre-source          linux-libre-6.0-source)
+(define-public linux-libre                 linux-libre-6.0)
 
 (define-public linux-libre-5.15
   (make-linux-libre* linux-libre-5.15-version
@@ -1210,9 +1176,9 @@ It has been modified to remove all non-free binary blobs.")
 (define-public linux-libre-with-bpf
   (let ((base-linux-libre
          (make-linux-libre*
-          linux-libre-5.19-version
-          linux-libre-5.19-gnu-revision
-          linux-libre-5.19-source
+          linux-libre-6.0-version
+          linux-libre-6.0-gnu-revision
+          linux-libre-6.0-source
           '("x86_64-linux" "i686-linux" "armhf-linux"
             "aarch64-linux" "powerpc64le-linux" "riscv64-linux")
           #:extra-version "bpf"
@@ -1476,19 +1442,22 @@ emulate optical devices such as DVD and CD-ROM drives.")
 (define-public bbswitch-module
   ;; Use "develop" branch since stable release does not build on Linux >= 5.6.
   ;; See https://github.com/Bumblebee-Project/bbswitch/issues/205.
-  (let ((commit "ddbd243638c7bc2baecf43a78aff46cdc12e9b2e"))
+  (let ((commit "19f60204596a6463b162fc7ca11f4946f5c20cea"))
     (package
       (name "bbswitch-module")
-      (version (git-version "0.8" "1" commit))
+      (version (git-version "0.8" "2" commit))
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
-                      (url "https://github.com/Bumblebee-Project/bbswitch")
+                      ;; Use fork until
+                      ;; https://github.com/Bumblebee-Project/bbswitch/pull/219
+                      ;; is merged.
+                      (url "https://github.com/madchic/bbswitch")
                       (commit commit)))
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "1pgldnza7mzd0flrxg4q69dwbq1fhl58m5c62ary5drb0xyf3lqb"))))
+                  "1pv41y02c9xg9k1bg4i4ll3w7hxxzdr651i08f092b9q5hr57mqn"))))
       (build-system linux-module-build-system)
       (arguments
        (list #:tests? #f))              ; no test suite
@@ -5211,7 +5180,7 @@ arrays when needed.")
 (define-public multipath-tools
   (package
     (name "multipath-tools")
-    (version "0.9.0")
+    (version "0.9.3")
     (home-page "https://github.com/opensvc/multipath-tools")
     (source (origin
               (method git-fetch)
@@ -5219,23 +5188,22 @@ arrays when needed.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "09m3vs798qb3xk0v7s3hy0nhw0dznkxjb56671kqj961h7zhg47b"))
+                "0zcnr1135znizbnfqhqv3by9i2qwn5vg6kgmj6ma3yy1x1krx0d4"))
               (modules '((guix build utils)))
               (snippet
                '(begin
                   ;; Drop bundled valgrind headers.
                   (delete-file-recursively "third-party")
                   (substitute* '("multipathd/main.c"
-                                 "libmultipath/debug.c")
+                                 "libmpathutil/debug.c")
                     (("#include \"../third-party/")
                      "#include \""))))))
     (build-system gnu-build-system)
     (arguments
      (list
       #:test-target "test"
-      #:parallel-build? #f              ;XXX: broken since 0.8.4
       #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
-                           (string-append "DESTDIR=" #$output)
+                           (string-append "prefix=" #$output)
                            ;; Install Udev rules below this directory, relative
                            ;; to the prefix.
                            "SYSTEMDPATH=lib")
@@ -5250,6 +5218,8 @@ arrays when needed.")
                 (substitute* "Makefile.inc"
                   (("/bin/echo") "echo")
                   (("\\$\\(prefix\\)/usr") "$(prefix)")
+                  (("configdir.*:= \\$\\(prefix\\)/etc/multipath/conf.d")
+                   "configdir := /etc/multipath/conf.d")
                   ;; Do not save timestamp to avoid gzip "timestamp
                   ;; out-of-range" warnings.
                   (("gzip -9") "gzip -9n"))
@@ -8896,7 +8866,7 @@ tools for managing PipeWire.")
 (define-public ell
   (package
     (name "ell")
-    (version "0.53")
+    (version "0.54")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -8905,7 +8875,7 @@ tools for managing PipeWire.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1jfwnyjyhakrvr7xljn7ckb3q81gp62zgv5dn30r4zcbd4ymf6xp"))))
+                "1vsv5ibiyli1cvk32l5avms6ngv6i0jxxqd5vw5kbfcp6ph94brs"))))
     (build-system gnu-build-system)
     (arguments
      ;; Tests launch dbus-daemon instances that all try to bind to
@@ -9512,3 +9482,216 @@ version of the HDAPS driver.  The underlying hardware interfaces are
 @acronym{SMAPI, System Management Application Program Interface} and direct
 access to the embedded controller.")
     (license license:gpl2+)))
+
+(define-public modprobed-db
+  (package
+    (name "modprobed-db")
+    (version "2.46")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/graysky2/modprobed-db")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "017w9czm31f5c7wjyrl5fy6cw7ji681jjc7s913nbc0r43j080qr"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f                  ;no tests
+           #:make-flags
+           #~(list (string-append "PREFIX=" #$output)
+                   "INITDIR_SYSTEMD=no-thanks")
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure)
+               (add-after 'install 'fix-path
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   (substitute* (string-append #$output "/bin/modprobed-db")
+                     (("/usr") #$output)
+                     (((string-append "(" (string-join (list "awk"
+                                                             "cp"
+                                                             "cut"
+                                                             "getent"
+                                                             "grep"
+                                                             "logname"
+                                                             "md5sum"
+                                                             "mkdir"
+                                                             "mv"
+                                                             "sed"
+                                                             "sort"
+                                                             "uniq"
+                                                             "wc")
+                                                       "|") ")") m)
+                      (search-input-file inputs (string-append "/bin/" m)))
+                     (("modprobe ")
+                      (string-append
+                       (search-input-file inputs "/bin/modprobe") " "))))))))
+    (inputs (list coreutils kmod gawk glibc grep sed))
+    (home-page "https://wiki.archlinux.org/title/Modprobed-db")
+    (synopsis "Keep track of Linux modules that have been probed")
+    (description
+     "Modprobed-db is a useful utility for users wishing to build a minimal
+kernel via a @code{make localmodconfig}.  In a nutshell, this @command{make}
+target creates a config based on the current config and a list of modules you
+define (that @command{modprobed-db} keeps for you).  It then disables any
+module option that is not needed thus not building extraneous modules.  This
+results in a system-specific, streamlined kernel package and footprint as well
+as reduced compilation times.
+
+Modprobed-db simply logs every module ever probed on the target system to a
+text-based database (@file{$XDG_CONFIG_HOME/modprobed-db}), which can be read
+directly by @code{make localmodconfig} as described above.")
+    (license license:expat)))
+
+(define-public kconfig-hardened-check
+  (package
+    (name "kconfig-hardened-check")
+    (version "0.5.17")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/a13xp0p0v/kconfig-hardened-check")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0p9pywfxwyk4yfgaf7bhqrf72ywc6w6k77dbi7lldynha886ih4a"))))
+    (build-system python-build-system)
+    (home-page "https://github.com/a13xp0p0v/kconfig-hardened-check")
+    (synopsis
+     "Tool for checking the security hardening options of the Linux kernel")
+    (description
+     "@code{kconfig-hardened-check} is a tool for checking the security
+hardening options of the Linux kernel.  Provided preferences are based on
+suggestions from various sources, including:
+
+@itemize
+@item KSPP recommended settings
+@item CLIP OS kernel configuration
+@item Last public grsecurity patch (options which they disable)
+@item SECURITY_LOCKDOWN_LSM patchset
+@item Direct feedback from the Linux kernel maintainers
+@end itemize\n
+This tool supports checking Kconfig options and kernel cmdline parameters.")
+    (license license:gpl3)))
+
+(define-public edac-utils
+  (package
+    (name "edac-utils")
+    (version "0.18")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                     (url "https://github.com/grondo/edac-utils.git")
+                     (commit version)))
+              (file-name (string-append name "-" version "-checkout"))
+              (sha256
+               (base32
+                "04j686m58wsnyy5di7rz0sw9jahlm4ziwxjmgs31pjb87vzw3xgp"))))
+    (build-system gnu-build-system)
+    (native-inputs
+     (list perl))
+    (inputs
+     (list sysfsutils))
+    (synopsis "Memory error detection and correction userspace helpers")
+    (description "This package provides userspace helpers for memory
+error detection and correction (EDAC).")
+    (home-page "https://github.com/grondo/edac-utils")
+    (license license:gpl2+)))
+
+(define-public spectre-meltdown-checker
+  (package
+    (name "spectre-meltdown-checker")
+    (version "0.45")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/speed47/spectre-meltdown-checker")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (patches
+               (search-patches
+                "spectre-meltdown-checker-externalize-fwdb.patch"
+                "spectre-meltdown-checker-find-kernel.patch"))
+              ;; Remove builtin firmware database.
+              (modules '((guix build utils)))
+              (snippet '(substitute* "spectre-meltdown-checker.sh"
+                          (("^# [AI],.*") "")))
+              (sha256
+               (base32
+                "1xx8h5791lhc2xw0dcbzjkklzvlxwxkjzh8di4g8divfy24fqsn8"))))
+    (build-system copy-build-system)
+    (arguments
+     (list
+      #:install-plan
+      #~'(("spectre-meltdown-checker.sh" "bin/spectre-meltdown-checker"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fixpath
+            (lambda* (#:key inputs #:allow-other-keys)
+              (define* (find-command inputs cmd #:optional (bin "bin"))
+                (search-input-file inputs (string-append bin "/" cmd)))
+              (substitute* "spectre-meltdown-checker.sh"
+                ;; ${opt_arch_prefix}CMD
+                (("\\$\\{opt_arch_prefix\\}\\<(nm|objdump|readelf|strings)\\>"
+                  all cmd)
+                 (find-command inputs cmd))
+
+                ;; Commands safe to substitute directly.
+                (("\\<(awk|(base|dir)name|bunzip|g(un)?zip|lz4)\\>" all cmd)
+                 (find-command inputs cmd))
+                (("\\<(modprobe|pgrep|rmmod|umount|unlzma)\\>" all cmd)
+                 (find-command inputs cmd))
+                (("\\<(unxz|unzstd|uuencode)\\>" all cmd)
+                 (find-command inputs cmd))
+
+                ;; Commands which should only be substituted based on their
+                ;; surroundings: First up, dd.
+                (("\\<(dd)\\> if=" all cmd)
+                 (string-append
+                  (find-command inputs cmd)
+                  " if="))
+
+                ;; Another special case: sysctl is in sbin.
+                (("(if |\\$\\( *)\\<(sysctl)\\>" all pre cmd)
+                 (string-append pre (find-command inputs cmd "sbin")))
+
+                ;; Meow
+                (("cat (<<EOF|\"\\$)" all what)
+                 (string-append (find-command inputs "cat") " " what))
+                (("'cat'")
+                 (string-append "'" (find-command inputs "cat") "'"))
+                (("\"cat\"")
+                 (string-append "\"" (find-command inputs "cat") "\""))
+
+                ;; ${COMMAND} -
+                ;; ${COMMAND} ^
+                (("\\<(base64|cut|grep|head|id|mount)\\> ([-^])" all cmd suffix)
+                 (string-append (find-command inputs cmd) " " suffix))
+                (("\\<(od|perl|rm|uname|xargs)\\> ([-^])" all cmd suffix)
+                 (string-append (find-command inputs cmd) " " suffix))
+
+                ;; ${COMMAND} |
+                (("\\<(dmesg)\\> \\|" all cmd)
+                 (string-append (find-command inputs cmd) " |"))
+                ;; | ${COMMAND}
+                (("\\| \\<(grep|sed|sort|stat|tr)\\>" all cmd)
+                 (string-append "| " (find-command inputs cmd)))
+
+                ;; Command in sub-shell, i.e. $($COMMAND ...)
+                (("\\$\\( *(\\<cat|find|grep|mount|nproc|stat|tr\\>)"
+                  all cmd)
+                 (string-append "$(" (find-command inputs cmd)))
+
+                ;; command -v
+                (("command -v \"*\\<(base64|nproc|perl|printf)\\>\"*" all cmd)
+                 (string-append "command -v " (find-command inputs cmd)))))))))
+    (inputs (list kmod lz4 lzop perl procps sharutils util-linux zstd))
+    (home-page "https://github.com/speed47/spectre-meltdown-checker")
+    (synopsis "CPU vulnerability / mitigation checker")
+    (description
+     "This package provides a shell script to assess your system's resilience
+against the several transient execution CVEs that were published since early
+2018, and gives guidance as to how to mitigate them.")
+    (license license:gpl3)))

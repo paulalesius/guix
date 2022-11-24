@@ -949,7 +949,7 @@ Emacs).")
 (define-public kicad
   (package
     (name "kicad")
-    (version "6.0.8")
+    (version "6.0.9")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -957,7 +957,7 @@ Emacs).")
                     (commit version)))
               (sha256
                (base32
-                "0f5iriahskzflgfzahbjihiff7m7nbdmp3ip8dx69xa28b9012w9"))
+                "1fr02jcy09v14d3k8ril0zhwnzhcqcf77wfj5b3bkrh6r8xraqhs"))
               (file-name (git-file-name name version))))
     (build-system cmake-build-system)
     (arguments
@@ -1042,7 +1042,8 @@ Emacs).")
                   python-wrapper
                   gtk+
                   wxwidgets
-                  python-wxpython))
+                  python-wxpython
+                  gdk-pixbuf))
     (home-page "https://www.kicad.org/")
     (synopsis "Electronics Design Automation Suite")
     (description
@@ -1064,7 +1065,7 @@ electrical diagrams), gerbview (viewing Gerber files) and others.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "11irf3cgm6a9aii3cf3fpjkl5sincqran4mpsp0qbs253hvj9rbb"))))
+                "04idpdzz2rfp8v1a37if01l5dfjnjg6jxp90gkgyadjzqkp6kcv3"))))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags (list "-DBUILD_FORMATS=html")
@@ -1098,7 +1099,7 @@ electrical diagrams), gerbview (viewing Gerber files) and others.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1nxz8r3h3j62fs3s77lj27333fsj5c4i01n05lv0gqx36h28hqxk"))))
+                "0y5mjjmmln37hkp9wmydinlfgrn8im8rn20145g9xgdpj8j38d48"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f))                    ; no tests exist
@@ -1127,7 +1128,7 @@ libraries.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "19di37hi80rzlwd468w3b6bq5kzxbslp3daskv8xb4y4f7pk3n00"))))
+                "02j445i0kcf87fhj9y6pwfcwq3arppxbrv77lbizm8kcpkpcfldl"))))
     (synopsis "Official KiCad footprint libraries")
     (description "This package contains the official KiCad footprint libraries.")))
 
@@ -3309,7 +3310,7 @@ visualization, matrix manipulation.")
 (define-public prusa-slicer
   (package
     (name "prusa-slicer")
-    (version "2.4.2")
+    (version "2.5.0")
     (source
      (origin
        (method git-fetch)
@@ -3318,7 +3319,7 @@ visualization, matrix manipulation.")
          (url "https://github.com/prusa3d/PrusaSlicer")
          (commit (string-append "version_" version))))
        (file-name (git-file-name name version))
-       (sha256 (base32 "17p56f0zmiryy8k4da02in1l6yxniz286gf9yz8s1gaz5ksqj4af"))
+       (sha256 (base32 "17ic92ww2ny0frxyv7ajwdwa0fq70ygq562ik8sh94jx67jvxdy0"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -3367,10 +3368,12 @@ visualization, matrix manipulation.")
            hidapi
            ilmbase
            libigl
+           libjpeg-turbo
            libpng
            mesa
            mpfr
            nlopt
+           opencascade-occt
            openvdb
            pango
            tbb
@@ -3430,6 +3433,11 @@ BOM creation and has a lot of extra features.")
        #:configure-flags '("-DBUILD_EXAMPLES=OFF")
        #:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'fix-protobuf-compatibility
+           (lambda _
+             (substitute* "src/Socket_p.h"
+               (("stream\\.SetTotalBytesLimit\\(message_size_maximum,.*\\);")
+                "stream.SetTotalBytesLimit(message_size_maximum);"))))
          (add-before 'configure 'fix-python-sitearch
            (lambda* (#:key outputs #:allow-other-keys)
              (substitute* "cmake/FindSIP.cmake"

@@ -96,6 +96,7 @@
   #:use-module (gnu packages build-tools)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages datastructures)
   #:use-module (gnu packages documentation)
   #:use-module (gnu packages flex)
   #:use-module (gnu packages fontutils)
@@ -111,6 +112,7 @@
   #:use-module (gnu packages haskell-xyz)
   #:use-module (gnu packages icu4c)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages kde-frameworks)
   #:use-module (gnu packages libbsd)
   #:use-module (gnu packages libevent)
   #:use-module (gnu packages linux)
@@ -358,7 +360,7 @@ with X11 or Wayland, or in a text terminal with ncurses.")
 (define-public copyq
 (package
   (name "copyq")
-  (version "3.9.3")
+  (version "6.3.2")
   (source (origin
             (method git-fetch)
             (uri (git-reference
@@ -367,13 +369,23 @@ with X11 or Wayland, or in a text terminal with ncurses.")
             (file-name (git-file-name name version))
             (sha256
              (base32
-              "0wlwq9xg8rzsbj0b29z358k4mbrqy04iraa8x0p26pa95yskgcma"))))
+              "0qdf7lr6bdmsnz1k5nnzmbv4h0xj8jqg92x6089qdaz5s87x7vqr"))))
   (build-system cmake-build-system)
   (arguments
-   `(#:configure-flags '("-DCMAKE_BUILD_TYPE=Release")
-     #:tests? #f)) ; Test suite is a rather manual process.
+   (list
+    #:configure-flags #~(list "-DCMAKE_BUILD_TYPE=Release")
+    #:tests? #f)) ; Test suite is a rather manual process.
   (inputs
-   (list qtbase-5 qtscript qtsvg-5 qtx11extras))
+   (list qtbase-5
+         qtscript
+         qtsvg-5
+         qtx11extras
+         qtdeclarative-5
+         qtwayland-5
+         wayland
+         knotifications))
+  (native-inputs
+   (list extra-cmake-modules qttools-5))
   (synopsis "Clipboard manager with advanced features")
   (description "CopyQ is clipboard manager with editing and scripting
 features.  CopyQ monitors system clipboard and saves its content in customized
@@ -1128,19 +1140,19 @@ transparent text on your screen.")
 (define-public wob
   (package
     (name "wob")
-    (version "0.13")
+    (version "0.14.2")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/francma/wob/releases/download/"
                            version "/wob-" version ".tar.gz"))
        (sha256
-        (base32 "0i8y6kq37qcgdq85ll4rapisjl7zw6aa11yx2f2xw2d3j93kdxh8"))))
+        (base32 "12s9pc0dhqgawq6jiqhamj1zq9753kgpswny1rcsdx1lkpzrgaq1"))))
     (build-system meson-build-system)
     (native-inputs
      (list pkg-config scdoc))
     (inputs
-     (list libseccomp wayland wayland-protocols))
+     (list libinih libseccomp wayland wayland-protocols))
     (home-page "https://github.com/francma/wob")
     (synopsis "Lightweight overlay bar for Wayland")
     (description
@@ -1810,7 +1822,7 @@ connectivity of the X server running on a particular @code{DISPLAY}.")
 (define-public rofi
   (package
     (name "rofi")
-    (version "1.7.3")
+    (version "1.7.5")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/davatorium/rofi/"
@@ -1818,7 +1830,7 @@ connectivity of the X server running on a particular @code{DISPLAY}.")
                                   version "/rofi-" version ".tar.xz"))
               (sha256
                (base32
-                "0yxn9pmn9zp0k5ygnjqbj1pmp73g53wa47r145a8qcwqzxl8p1i5"))))
+                "138c4bl60p7namsb2pk8q5cdlxbdkli7zny192vk5jv5s5kczzya"))))
     (build-system gnu-build-system)
     (native-inputs
      (list bison
@@ -1853,13 +1865,37 @@ connectivity of the X server running on a particular @code{DISPLAY}.")
              (substitute* '("test/helper-expand.c")
                (("~root") "/root")
                (("~") "")
-               (("g_get_home_dir \\(\\)") "\"/\"")))))))
+               (("g_get_home_dir\\(\\)") "\"/\"")))))))
     (home-page "https://github.com/davatorium/rofi")
     (synopsis "Application launcher")
     (description "Rofi is a minimalist application launcher.  It memorizes which
 applications you regularly use and also allows you to search for an application
 by name.")
     (license license:expat)))
+
+(define-public rofi-wayland
+  (let ((base rofi))
+    (package
+      (inherit rofi)
+      (name "rofi-wayland")
+      (version "1.7.5+wayland1")
+      (source (origin
+                (method url-fetch)
+                (uri (string-append "https://github.com/lbonn/rofi"
+                                    "/releases/download/" version
+                                    "/rofi-" version ".tar.xz"))
+                (sha256
+                 (base32
+                  "09n71wv3nxpzpjmvqmxlxk0zfln3x2l8admfq571781p9hw0w6wp"))))
+      (build-system meson-build-system)
+      (inputs
+       (modify-inputs (package-inputs base)
+         (append wayland wayland-protocols)))
+      (description
+       (string-append
+        (package-description base)
+        "  This package, @code{rofi-wayland}, provides additional wayland
+support.")))))
 
 (define-public rofi-calc
   (package
@@ -1915,6 +1951,7 @@ natural language input and provide results.")
               (uri (git-reference
                     (url (string-append "https://gitlab.com/o9000/" name "/"))
                     (commit version)))
+              (file-name (git-file-name name version))
               (sha256
                (base32
                 "123apmgs6x2zfv1q57dyl4mwqf0vsw5ndh5jsg6p3fvhr66l1aja"))))
@@ -2919,10 +2956,46 @@ using @command{dmenu}.")
     (home-page "https://github.com/enkore/j4-dmenu-desktop")
     (license license:gpl3+)))
 
+(define-public fuzzel
+  (package
+    (name "fuzzel")
+    (version "1.8.2")
+    (home-page "https://codeberg.org/dnkl/fuzzel")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference (url home-page) (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1d6xy4q5s8p5ckvd9wy3zzj9gh7nh9v1qhn3938b1wfhfzjdzrg6"))))
+    (build-system meson-build-system)
+    (arguments
+     (list #:build-type "release"
+           #:configure-flags #~(list "-Denable-cairo=enabled"
+                                     "-Dpng-backend=libpng"
+                                     "-Dsvg-backend=librsvg")))
+    (native-inputs (list pkg-config scdoc tllist))
+    (inputs (list cairo
+                  fcft
+                  fontconfig
+                  libpng
+                  libxkbcommon
+                  librsvg ;if librsvg is not used, bundled nanosvg is used
+                  pixman
+                  wayland
+                  wayland-protocols))
+    (synopsis "Wayland-native application launcher")
+    (description
+     "@command{fuzzel} is a Wayland-native application launcher, similar to
+rofi's drun mode.  It has Emacs key bindings and remembers frequently launched
+applications.  The font and colors can be configured.")
+    (license (list license:expat ;fuzzel
+                   license:zlib)))) ;; bundled nanosvg
+
 (define-public wofi
   (package
     (name "wofi")
-    (version "1.2.4")
+    (version "1.3")
     (source (origin
               (method hg-fetch)
               (uri (hg-reference
@@ -2931,15 +3004,14 @@ using @command{dmenu}.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1bnf078fg1kwslzwm1mjxwcqqq3bhk1dzymwfw9gk3brqbxrl75c"))))
+                "1k6b46n0vwdqrr6rfps0n8hghcgivnc42gc7z61phhjgf08j64qv"))))
     (build-system meson-build-system)
     (arguments
-     `(#:glib-or-gtk? #t))
+     (list #:glib-or-gtk? #t))
     (native-inputs
      (list pkg-config))
     (inputs
-     `(("gtk3" ,gtk+)
-       ("wayland" ,wayland)))
+     (list gtk+ wayland))
     (synopsis "Launcher/menu program for wayland")
     (description
      "Wofi is a launcher/menu program for wlroots based wayland compositors

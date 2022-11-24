@@ -2235,6 +2235,88 @@ of Medical Research.  The goal is to provide a standard library for quantitative
 analysis, modelling, and visualization of spike-in controls.")
     (license license:bsd-3)))
 
+(define-public r-aldex2
+  (package
+    (name "r-aldex2")
+    (version "1.28.1")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "ALDEx2" version))
+              (sha256
+               (base32
+                "0xppx52sllbz4pli174422i4kkf37v0yl844088nbj3j9r6pfbj9"))))
+    (properties `((upstream-name . "ALDEx2")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biocparallel
+           r-genomicranges
+           r-iranges
+           r-multtest
+           r-rfast
+           r-s4vectors
+           r-summarizedexperiment
+           r-zcompositions))
+    (native-inputs (list r-knitr))
+    (home-page "https://github.com/ggloor/ALDEx_bioc")
+    (synopsis "Analysis of differential abundance taking sample variation into account")
+    (description
+     "This package provides a differential abundance analysis for the
+comparison of two or more conditions.  Useful for analyzing data from standard
+RNA-seq or meta-RNA-seq assays as well as selected and unselected values from
+in-vitro sequence selections.  Uses a Dirichlet-multinomial model to infer
+abundance from counts, optimized for three or more experimental replicates.
+The method infers biological and sampling variation to calculate the expected
+false discovery rate, given the variation, based on a Wilcoxon Rank Sum test
+and Welch's t-test, a Kruskal-Wallis test, a generalized linear model, or a
+correlation test.  All tests report p-values and Benjamini-Hochberg corrected
+p-values.  ALDEx2 also calculates expected standardized effect sizes for
+paired or unpaired study designs.")
+    ;; The code for the function "rdirichlet" is from the R package
+    ;; "mc2d_0.1-14.tar.gz", which is denoted as GPL>=2, and where the
+    ;; package's LICENSE is specified as GPL-3.
+    (license (list license:agpl3+ license:gpl2+ license:gpl3))))
+
+(define-public r-alpine
+  (package
+    (name "r-alpine")
+    (version "1.22.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "alpine" version))
+              (sha256
+               (base32
+                "1nl1hxwakh5m9rqm3ksn2jzknsj9xnwl51bmc30knknm4q35wdv9"))))
+    (properties `((upstream-name . "alpine")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biostrings
+           r-genomeinfodb
+           r-genomicalignments
+           r-genomicfeatures
+           r-genomicranges
+           r-graph
+           r-iranges
+           r-rbgl
+           r-rsamtools
+           r-s4vectors
+           r-speedglm
+           r-stringr
+           r-summarizedexperiment))
+    (native-inputs (list r-knitr))
+    (home-page "https://bioconductor.org/packages/alpine")
+    (synopsis "Modeling and correcting fragment sequence bias")
+    (description
+     "The package @code{alpine} helps to model bias parameters and then using
+those parameters to estimate RNA-seq transcript abundance.  @code{Alpine} is a
+package for estimating and visualizing many forms of sample-specific biases that
+can arise in RNA-seq, including fragment length distribution, positional bias on
+the transcript, read start bias (random hexamer priming), and fragment GC-content
+(amplification).  It also offers bias-corrected estimates of transcript
+abundance in @dfn{FPKM}(Fragments Per Kilobase of transcript per Million
+mapped reads).  It is currently designed for un-stranded paired-end RNA-seq
+data.")
+    (license license:gpl2+)))
+
 (define-public r-aneufinder
   (package
     (name "r-aneufinder")
@@ -7281,17 +7363,18 @@ of gene-level counts.")
 (define-public r-valr
   (package
     (name "r-valr")
-    (version "0.6.5")
+    (version "0.6.6")
     (source
      (origin
        (method url-fetch)
        (uri (cran-uri "valr" version))
        (sha256
         (base32
-         "1674sqclgi4l5r544pjjsblzl1ix2cy961jpkncb3ym47y6c1msw"))))
+         "0w3j8fkssp9s4ybaw8hvqbmsh5m991xkgr4nji3zar2pgmgk3qph"))))
     (build-system r-build-system)
     (propagated-inputs
      (list r-broom
+           r-cli
            r-dplyr
            r-ggplot2
            r-rcpp
@@ -9693,6 +9776,43 @@ Bayes Analyses of Microarrays} (EBAM).")
 to identify differentially methylated regions in epigenetic epidemiology
 studies.")
     (license license:artistic2.0)))
+
+(define-public r-microbiome
+  (package
+    (name "r-microbiome")
+    (version "1.18.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "microbiome" version))
+              (sha256
+               (base32
+                "1z9arkjp5xszlg07mzb4p163i74jfbd9p4gbwv5syivnpl040k12"))))
+    (properties `((upstream-name . "microbiome")))
+    (build-system r-build-system)
+    (propagated-inputs
+     (list r-biostrings
+           r-compositions
+           r-dplyr
+           r-ggplot2
+           r-phyloseq
+           r-reshape2
+           r-rtsne
+           r-scales
+           r-tibble
+           r-tidyr
+           r-vegan))
+    (native-inputs (list r-knitr))
+    (home-page "https://microbiome.github.io/microbiome/")
+    (synopsis "Tools for microbiome analysis")
+    (description
+     "This package facilitates phyloseq exploration and analysis of taxonomic
+profiling data.  This package provides tools for the manipulation, statistical
+analysis, and visualization of taxonomic profiling data.  In addition to
+targeted case-control studies, microbiome facilitates scalable exploration of
+population cohorts.  This package supports the independent phyloseq data
+format and expands the available toolkit in order to facilitate the
+standardization of the analyses and the development of best practices.")
+    (license license:bsd-2)))
 
 (define-public r-milor
   (package

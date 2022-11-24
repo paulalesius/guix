@@ -424,6 +424,12 @@ info --version")
               (x
                (pk 'failure x #f))))
 
+          (test-assert "nscd configuration action"
+            (marionette-eval '(with-shepherd-action 'nscd ('configuration)
+                                                    results
+                                (file-exists? (car results)))
+                             marionette))
+
           (test-equal "nscd invalidate action"
             '(#t)                                 ;one value, #t
             (marionette-eval '(with-shepherd-action 'nscd ('invalidate "hosts")
@@ -695,7 +701,13 @@ in a loop.  See <http://bugs.gnu.org/26931>.")
 
             ;; Halt the system.
             (marionette-eval '(system* "/run/current-system/profile/sbin/halt")
-                             marionette))
+                             marionette)
+
+            (display "waiting for marionette to complete...")
+            (force-output)
+            (false-if-exception (waitpid (marionette-pid marionette)))
+            (display " done\n")
+            (force-output))
 
           ;; Remove the sockets used by the marionette above to avoid
           ;; EADDRINUSE.

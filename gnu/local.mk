@@ -55,6 +55,7 @@
 # Copyright © 2022 Hilton Chain <hako@ultrarare.space>
 # Copyright © 2022 Alex Griffin <a@ajgrf.com>
 # Copyright © 2022 ( <paren@disroot.org>
+# Copyright © 2022 jgart <jgart@dismail.de>
 #
 # This file is part of GNU Guix.
 #
@@ -787,6 +788,7 @@ INSTALLER_MODULES =                             \
   %D%/installer/connman.scm			\
   %D%/installer/dump.scm			\
   %D%/installer/final.scm			\
+  %D%/installer/hardware.scm			\
   %D%/installer/hostname.scm			\
   %D%/installer/keymap.scm			\
   %D%/installer/locale.scm			\
@@ -976,6 +978,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/clang-12.0-libc-search-path.patch	\
   %D%/packages/patches/clang-13.0-libc-search-path.patch	\
   %D%/packages/patches/clang-14.0-libc-search-path.patch	\
+  %D%/packages/patches/clang-15.0-libc-search-path.patch	\
   %D%/packages/patches/clang-runtime-asan-build-fixes.patch	\
   %D%/packages/patches/clang-runtime-esan-build-fixes.patch	\
   %D%/packages/patches/clang-runtime-9-libsanitizer-mode-field.patch	\
@@ -1041,9 +1044,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/dstat-skip-devices-without-io.patch	\
   %D%/packages/patches/dvd+rw-tools-add-include.patch 		\
   %D%/packages/patches/dynaconf-unvendor-deps.patch		\
-  %D%/packages/patches/ecl-16-format-directive-limit.patch	\
-  %D%/packages/patches/ecl-16-ignore-stderr-write-error.patch	\
-  %D%/packages/patches/ecl-16-libffi.patch			\
   %D%/packages/patches/efibootmgr-remove-extra-decl.patch	\
   %D%/packages/patches/efivar-211.patch			\
   %D%/packages/patches/eigen-fix-strict-aliasing-bug.patch	\
@@ -1194,7 +1194,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/ghostscript-no-header-id.patch		\
   %D%/packages/patches/ghostscript-no-header-uuid.patch		\
   %D%/packages/patches/ghostscript-no-header-creationdate.patch \
-  %D%/packages/patches/giara-fix-login.patch                      \
   %D%/packages/patches/glib-appinfo-watch.patch			\
   %D%/packages/patches/glib-networking-gnutls-binding.patch	\
   %D%/packages/patches/glib-networking-32-bit-time.patch	\
@@ -1274,9 +1273,11 @@ dist_patch_DATA =						\
   %D%/packages/patches/guile-linux-syscalls.patch		\
   %D%/packages/patches/guile-3.0-linux-syscalls.patch		\
   %D%/packages/patches/guile-ac-d-bus-fix-tests.patch		\
+  %D%/packages/patches/guile-continuation-stack-leak.patch	\
   %D%/packages/patches/guile-cross-compilation.patch		\
   %D%/packages/patches/guile-fibers-destroy-peer-schedulers.patch \
   %D%/packages/patches/guile-fibers-epoll-instance-is-dead.patch \
+  %D%/packages/patches/guile-fibers-fd-finalizer-leak.patch	\
   %D%/packages/patches/guile-fibers-wait-for-io-readiness.patch \
   %D%/packages/patches/guile-gdbm-ffi-support-gdbm-1.14.patch	\
   %D%/packages/patches/guile-git-adjust-for-libgit2-1.2.0.patch \
@@ -1339,7 +1340,13 @@ dist_patch_DATA =						\
   %D%/packages/patches/irrlicht-link-against-needed-libs.patch	\
   %D%/packages/patches/isl-0.11.1-aarch64-support.patch	\
   %D%/packages/patches/itk-snap-alt-glibc-compat.patch		\
-  %D%/packages/patches/jami-fix-crash-on-block-contact.patch	\
+  %D%/packages/patches/jami-disable-integration-tests.patch	\
+  %D%/packages/patches/jami-fix-qml-imports.patch		\
+  %D%/packages/patches/jami-fix-unit-tests-build.patch          \
+  %D%/packages/patches/jami-libjami-headers-search.patch	\
+  %D%/packages/patches/jami-no-webengine.patch			\
+  %D%/packages/patches/jami-sip-unregister.patch		\
+  %D%/packages/patches/jami-xcb-link.patch			\
   %D%/packages/patches/jamvm-1.5.1-aarch64-support.patch	\
   %D%/packages/patches/jamvm-1.5.1-armv7-support.patch	\
   %D%/packages/patches/jamvm-2.0.0-aarch64-support.patch	\
@@ -1377,6 +1384,8 @@ dist_patch_DATA =						\
   %D%/packages/patches/lightdm-vncserver-check.patch		\
   %D%/packages/patches/lightdm-vnc-color-depth.patch		\
   %D%/packages/patches/localed-xorg-keyboard.patch		\
+  %D%/packages/patches/kcontacts-incorrect-country-name.patch	\
+  %D%/packages/patches/kde-cli-tools-delay-mime-db.patch	\
   %D%/packages/patches/kdiagram-Fix-missing-link-libraries.patch \
   %D%/packages/patches/kiki-level-selection-crash.patch		\
   %D%/packages/patches/kiki-makefile.patch			\
@@ -1430,6 +1439,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/libofa-ftbfs-2.diff		\
   %D%/packages/patches/libotr-test-auth-fix.patch		\
   %D%/packages/patches/libksieve-Fix-missing-link-libraries.patch \
+  %D%/packages/patches/libksysguard-qdiriterator-follow-symlinks.patch \
   %D%/packages/patches/libmad-armv7-thumb-pt1.patch		\
   %D%/packages/patches/libmad-armv7-thumb-pt2.patch		\
   %D%/packages/patches/libmad-length-check.patch		\
@@ -1498,7 +1508,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/lua-liblua-so.patch                      \
   %D%/packages/patches/lua-5.4-pkgconfig.patch			\
   %D%/packages/patches/lua-5.4-liblua-so.patch			\
-  %D%/packages/patches/luajit-no_ldconfig.patch			\
   %D%/packages/patches/luit-posix.patch				\
   %D%/packages/patches/lvm2-static-link.patch			\
   %D%/packages/patches/mailutils-variable-lookup.patch		\
@@ -1529,6 +1538,8 @@ dist_patch_DATA =						\
   %D%/packages/patches/mhash-keygen-test-segfault.patch		\
   %D%/packages/patches/mia-fix-boost-headers.patch		\
   %D%/packages/patches/mia-vtk9.patch				\
+  %D%/packages/patches/mia-vtk92.patch				\
+  %D%/packages/patches/mia-vtk-version.patch			\
   %D%/packages/patches/mingw-w64-6.0.0-gcc.patch		\
   %D%/packages/patches/mingw-w64-dlltool-temp-prefix.patch	\
   %D%/packages/patches/mingw-w64-reproducible-gendef.patch	\
@@ -1550,6 +1561,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/musl-cross-locale.patch			\
   %D%/packages/patches/mutt-store-references.patch		\
   %D%/packages/patches/m4-gnulib-libio.patch			\
+  %D%/packages/patches/nautilus-extension-search-path.patch	\
   %D%/packages/patches/ncompress-fix-softlinks.patch		\
   %D%/packages/patches/ncftp-reproducible.patch			\
   %D%/packages/patches/netcdf-date-time.patch			\
@@ -1576,6 +1588,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/nvi-dbpagesize-binpower.patch		\
   %D%/packages/patches/nvi-db4.patch				\
   %D%/packages/patches/nyacc-binary-literals.patch		\
+  %D%/packages/patches/oath-toolkit-xmlsec-compat.patch		\
   %D%/packages/patches/obs-modules-location.patch		\
   %D%/packages/patches/ocaml-dose3-add-unix-dependency.patch	\
   %D%/packages/patches/ocaml-dose3-Fix-for-ocaml-4.06.patch	\
@@ -1677,6 +1690,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/procmail-ambiguous-getline-debian.patch  \
   %D%/packages/patches/procmail-CVE-2014-3618.patch		\
   %D%/packages/patches/procmail-CVE-2017-16844.patch		\
+  %D%/packages/patches/protobuf-fix-build-on-32bit.patch	\
   %D%/packages/patches/psm-arch.patch				\
   %D%/packages/patches/psm-disable-memory-stats.patch		\
   %D%/packages/patches/psm-ldflags.patch			\
@@ -1786,7 +1800,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/ripperx-missing-file.patch		\
   %D%/packages/patches/rpcbind-CVE-2017-8779.patch		\
   %D%/packages/patches/rtags-separate-rct.patch			\
-  %D%/packages/patches/racket-backport-8.6-zuo.patch		\
+  %D%/packages/patches/racket-backport-8.7-pkg-strip.patch	\
   %D%/packages/patches/racket-chez-scheme-bin-sh.patch		\
   %D%/packages/patches/racket-rktio-bin-sh.patch		\
   %D%/packages/patches/racket-zuo-bin-sh.patch			\
@@ -1822,6 +1836,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/sbcl-aserve-fix-rfe12668.patch	\
   %D%/packages/patches/sbcl-burgled-batteries3-fix-signals.patch	\
   %D%/packages/patches/sbcl-clml-fix-types.patch		\
+  %D%/packages/patches/sbcl-fix-build-on-arm64-with-clisp-as-host.patch	\
   %D%/packages/patches/sbcl-png-fix-sbcl-compatibility.patch	\
   %D%/packages/patches/scalapack-gcc-10-compilation.patch	\
   %D%/packages/patches/scheme48-tests.patch			\
@@ -1848,6 +1863,8 @@ dist_patch_DATA =						\
   %D%/packages/patches/syslinux-strip-gnu-property.patch	\
   %D%/packages/patches/snappy-add-O2-flag-in-CmakeLists.txt.patch	\
   %D%/packages/patches/snappy-add-inline-for-GCC.patch		\
+  %D%/packages/patches/spectre-meltdown-checker-externalize-fwdb.patch \
+  %D%/packages/patches/spectre-meltdown-checker-find-kernel.patch \
   %D%/packages/patches/sphinxbase-fix-doxygen.patch		\
   %D%/packages/patches/spice-vdagent-glib-2.68.patch		\
   %D%/packages/patches/sssd-optional-systemd.patch		\
@@ -1871,7 +1888,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/tao-fix-parser-types.patch		\
   %D%/packages/patches/tar-remove-wholesparse-check.patch	\
   %D%/packages/patches/tar-skip-unreliable-tests.patch		\
-  %D%/packages/patches/tbb-fix-test-on-aarch64.patch		\
   %D%/packages/patches/tbb-other-arches.patch			\
   %D%/packages/patches/tclxml-3.2-install.patch			\
   %D%/packages/patches/tcsh-fix-autotest.patch			\
@@ -1885,7 +1901,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/texlive-hyph-utf8-no-byebug.patch	\
   %D%/packages/patches/thefuck-test-environ.patch		\
   %D%/packages/patches/tidy-CVE-2015-5522+5523.patch		\
-  %D%/packages/patches/timescaledb-flaky-test.patch		\
   %D%/packages/patches/tinyxml-use-stl.patch			\
   %D%/packages/patches/tipp10-disable-downloader.patch		\
   %D%/packages/patches/tipp10-fix-compiling.patch		\
@@ -1913,6 +1928,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/u-boot-sifive-prevent-reloc-initrd-fdt.patch	\
   %D%/packages/patches/u-boot-rk3399-enable-emmc-phy.patch	\
   %D%/packages/patches/ucx-tcp-iface-ioctl.patch		\
+  %D%/packages/patches/ultrastar-deluxe-no-freesans.patch		\
   %D%/packages/patches/ungoogled-chromium-extension-search-path.patch	\
   %D%/packages/patches/ungoogled-chromium-ffmpeg-compat.patch	\
   %D%/packages/patches/ungoogled-chromium-RUNPATH.patch		\
@@ -1970,10 +1986,11 @@ dist_patch_DATA =						\
   %D%/packages/patches/vsearch-unbundle-cityhash.patch		\
   %D%/packages/patches/vte-CVE-2012-2738-pt1.patch			\
   %D%/packages/patches/vte-CVE-2012-2738-pt2.patch			\
-  %D%/packages/patches/vtk-fix-freetypetools-build-failure.patch	\
   %D%/packages/patches/vtk-7-gcc-10-compat.patch		\
   %D%/packages/patches/vtk-7-hdf5-compat.patch			\
   %D%/packages/patches/vtk-7-python-compat.patch		\
+  %D%/packages/patches/wacomtablet-add-missing-includes.patch	\
+  %D%/packages/patches/wacomtablet-qt5.15.patch			\
   %D%/packages/patches/warsow-qfusion-fix-bool-return-type.patch	\
   %D%/packages/patches/webkitgtk-adjust-bubblewrap-paths.patch	\
   %D%/packages/patches/webrtc-audio-processing-big-endian.patch	\

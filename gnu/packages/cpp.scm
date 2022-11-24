@@ -10,7 +10,7 @@
 ;;; Copyright © 2020 Roel Janssen <roel@gnu.org>
 ;;; Copyright © 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2020 Brice Waegeneire <brice@waegenei.re>
-;;; Copyright © 2020, 2021 Vinicius Monego <monego@posteo.net>
+;;; Copyright © 2020, 2021, 2022 Vinicius Monego <monego@posteo.net>
 ;;; Copyright © 2020, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2020 Alexandros Theodotou <alex@zrythm.org>
@@ -31,6 +31,7 @@
 ;;; Copyright © 2022 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2022 David Elsing <david.elsing@posteo.net>
 ;;; Copyright © 2022 Zheng Junjie <873216071@qq.com>
+;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -438,7 +439,7 @@ operating on batches.")
 (define-public google-highway
   (package
     (name "google-highway")
-    (version "0.17.0")
+    (version "1.0.2")
     (source
      (origin
        (method git-fetch)
@@ -447,7 +448,7 @@ operating on batches.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0iwn7m8f1j7bchwbi5h84nzkzmzqd7byddbr4lh6i6lpd87wny08"))))
+        (base32 "1dxv61ag0pl5nl6ql4k83k4i95937nhl98img8gz9fx76cpw6z08"))))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags (list "-DHWY_SYSTEM_GTEST=on")))
@@ -553,6 +554,37 @@ functions, class methods, and stl containers.
 container which uses the order in which keys were inserted to the container
 as ordering relation.")
     (license license:expat)))
+
+(define-public json-dto
+  (package
+    (name "json-dto")
+    (version "0.3.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/Stiffstream/json_dto")
+                    (commit (string-append "v." version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0wr1srp08fr2mv4fmnqr626pwiw60svn6wkvy2xg7j080mgwb3ml"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:configure-flags #~(list "-DJSON_DTO_INSTALL_SAMPLES=OFF")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'change-directory
+            (lambda _
+              (chdir "dev"))))))
+    (native-inputs (list catch2))
+    (propagated-inputs (list rapidjson))    ;#include'd
+    (home-page "https://github.com/Stiffstream/json_dto")
+    (synopsis "JSON to C++ structures conversion library")
+    (description "@code{json_dto} library is a small header-only helper for
+converting data between JSON representation and C++ structs.  DTO stands for
+data transfer object.")
+    (license license:bsd-3)))
 
 (define-public json-modern-cxx
   (package
@@ -1944,13 +1976,7 @@ std::wstring, etc).")
                                       "-DCRC32C_BUILD_TESTS="
                                       ;; TODO: perhaps infer #:tests?
                                       (if #$(%current-target-system)
-                                          "OFF" "ON")))
-           #:phases
-           #~(modify-phases %standard-phases
-               (add-after 'unpack 'make-reproducible
-                 (lambda _
-                   (substitute* "CMakeLists.txt"
-                     (("if\\(HAVE_SSE42\\)") "if(FALSE)")))))))
+                                          "OFF" "ON")))))
     (native-inputs (list googletest))
     (home-page "https://github.com/google/crc32c")
     (synopsis "Cyclic redundancy check")
@@ -2165,4 +2191,43 @@ parsing with only a single memory allocation.")
     (description "This package provides a header-only C++ library to parse
 command line options.  It supports the short and long option formats of
 getopt(), getopt_long() and getopt_long_only().")
+    (license license:expat)))
+
+(define-public safeint
+  (package
+    (name "safeint")
+    (version "3.0.27")
+    (home-page "https://github.com/dcleblanc/SafeInt")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url home-page)
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "01d2dpdhyw3lghmamknb6g39w2gg0sv53pgxlrs2la8h694z6x7s"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (replace 'install
+                          (lambda _
+                            (let ((include-dir (string-append #$output
+                                                              "/include")))
+                              (with-directory-excursion "../source"
+                                (install-file "SafeInt.hpp" include-dir)
+                                (install-file "safe_math.h" include-dir)
+                                (install-file "safe_math_impl.h" include-dir)))))
+                        (add-after 'install 'install-doc
+                          (lambda _
+                            (let ((doc-dir (string-append #$output
+                                                          "/share/doc/safeint")))
+                              (with-directory-excursion "../source"
+                                (install-file "helpfile.md" doc-dir))))))))
+    (synopsis "C and C++ library for managing integer overflows")
+    (description
+     "SafeInt is a class library for C++ that manages integer overflows.  It
+also includes a C library that checks casting, multiplication, division,
+addition and subtraction for all combinations of signed and unsigned 32-bit and
+64-bit integers.")
     (license license:expat)))
