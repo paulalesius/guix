@@ -1,8 +1,8 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2017, 2019-2020, 2022, 2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014, 2015, 2018 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015, 2017 Leo Famulari <leo@famulari.name>
-;;; Copyright © 2016, 2017, 2018, 2019 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016, 2017, 2018, 2019, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2018, 2019, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2020 Zhu Zihao <all_but_last@163.com>
@@ -74,7 +74,7 @@
         ...))
 
 (define %patch-series-5.1
-  ;; This is the current patches series for 5.0, generated using
+  ;; This is the current patches series for 5.1, generated using
   ;; 'download-patches' below.
   (patch-series
    (1 "1ymm8ppss6gyh9ifznjwiabrb4k91npd09c10y7mk66xp8yppc7b")
@@ -84,7 +84,15 @@
    (5 "19bdyigdr81824nxvqr6a7k0cax60wq7376j6b91afbnwvlvbjyc")
    (6 "051x8wlwrqk0yr0zg378vh824iklfl5g9pkmcdf62qp8gn9pvqbm")
    (7 "0fir80pp1gmlpadmqcgkrv4y119pc7xllchjzg05fd7px73viz5c")
-   (8 "1lfjgshk8i9vch92p5wgc9r90j3phw79aa7gbai89w183b2z6b7j")))
+   (8 "1lfjgshk8i9vch92p5wgc9r90j3phw79aa7gbai89w183b2z6b7j")
+   (9 "1vn36dzd9g4y1h3jiss6418crla0rbcd0d6wwsyv9d5l7aaxlp74")
+   (10 "0amfmvbzsand7bdypylkjdpcp88fa3cplfshn7vyzv2ff2rdgj52")
+   (11 "0yq24abb4fzfxqnwl20b330sxl9lr9ds0nc4yi30f81l94b1y6aq")
+   (12 "165bff97ffih49vfs4mkr5w3z5gn1w6zfyrf773iajkw6v48kw8h")
+   (13 "1bfmgv3lagbk3aq9a831d29xv7jz4sjq7jhn9hq89limyinvdb67")
+   (14 "1l43dw4kpddn7l41i8wmj406z9abxky1wb3rk8krcys33g4f0kka")
+   (15 "1w40vzadzx019v0zhs4q6yqycrk04x1k8xs6qb73vk7ny4p6jdqv")
+   (16 "0krqqljz4bkp9wrdnwfx51bxkb8rkwf8ivc93as1znx5fr7i96c8")))
 
 (define (download-patches store count)
   "Download COUNT Bash patches into store.  Return a list of
@@ -111,7 +119,8 @@ number/base32-hash tuples, directly usable in the 'patch-series' form."
                                   "-DSSH_SOURCE_BASHRC")
                                 " "))
          (configure-flags
-          ``("--with-installed-readline"
+          ``("--without-bash-malloc"
+             "--with-installed-readline"
              ,,(string-append "CPPFLAGS=" cppflags)
              ,(string-append
                "LDFLAGS=-Wl,-rpath -Wl,"
@@ -261,15 +270,15 @@ without modification.")
        (substitute-keyword-arguments
            `(#:allowed-references ("out") ,@(package-arguments bash))
          ((#:phases phases)
-          `(modify-phases ,phases
-             (add-after 'strip 'remove-everything-but-the-binary
-               (lambda* (#:key outputs #:allow-other-keys)
-                 (let* ((out (assoc-ref outputs "out"))
-                        (bin (string-append out "/bin")))
-                   (remove-store-references (string-append bin "/bash"))
-                   (delete-file (string-append bin "/bashbug"))
-                   (delete-file-recursively (string-append out "/share"))
-                   #t))))))))))
+          #~(modify-phases #$phases
+              (add-after 'strip 'remove-everything-but-the-binary
+                (lambda* (#:key outputs #:allow-other-keys)
+                  (let* ((out (assoc-ref outputs "out"))
+                         (bin (string-append out "/bin")))
+                    (remove-store-references (string-append bin "/bash"))
+                    (delete-file (string-append bin "/bashbug"))
+                    (delete-file-recursively (string-append out "/share"))
+                    #t))))))))))
 
 (define-public bash-with-syslog
   (package
@@ -291,7 +300,7 @@ variant logs the history to syslog.")))
 (define-public bash-completion
   (package
     (name "bash-completion")
-    (version "2.8")
+    (version "2.11")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -299,38 +308,12 @@ variant logs the history to syslog.")))
                     version "/" name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0kgmflrr1ga9wfk770vmakna3nj46ylb5ky9ipd0v2k9ymq5a7y0"))
+                "1b0iz7da1sgifx1a5wdyx1kxbzys53v0kyk8nhxfipllmm5qka3k"))
               (patches
                (search-patches "bash-completion-directories.patch"))))
     (build-system gnu-build-system)
-    (native-inputs (list util-linux))
     (arguments
-     `(#:phases (modify-phases %standard-phases
-                  (add-after
-                   'install 'remove-redundant-completions
-                   (lambda* (#:key
-                             inputs native-inputs
-                             outputs #:allow-other-keys)
-                     ;; Util-linux comes with a bunch of completion files for
-                     ;; its own commands which are more sophisticated and
-                     ;; up-to-date than those of bash-completion.  Remove those
-                     ;; from bash-completion.
-                     (let* ((out         (assoc-ref outputs "out"))
-                            (util-linux  (assoc-ref (or native-inputs inputs)
-                                                    "util-linux"))
-                            (completions (string-append out
-                                                        "/share/bash-completion"
-                                                        "/completions"))
-                            (already     (find-files
-                                          (string-append
-                                           util-linux
-                                           "/etc/bash_completion.d"))))
-                       (with-directory-excursion completions
-                         (for-each (lambda (file)
-                                     (when (file-exists? file)
-                                       (delete-file file)))
-                                   (map basename already)))
-                       #t))))))
+     `(#:tests? #f))    ; Unclear how to make tests pass.
     (synopsis "Bash completions for common commands")
     (description
      "This package provides extensions that allow Bash to provide adapted
@@ -462,28 +445,27 @@ you to call routines in shared libraries from within Bash.")
 (define-public blesh
   (package
     (name "blesh")
-    (version "0.4.0-devel2")
+    (version "0.4.0-devel3")
     (source (origin
               (method git-fetch)
               (uri (git-reference
                     (url "https://github.com/akinomyoga/ble.sh")
-                    (commit (string-append "v" version))))
+                    (commit (string-append "v" version))
+                    (recursive? #t)))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "02fdjyh4x6wr5hg3i86nsxhz8ysgjrvvxdmk6pqr0lm8ngw9p3sh"))))
+                "19y9rmj9srl7akx33gl34l5qgz2ww0vlmi4j2r11029p8sn4s418"))))
     (arguments
      (list #:make-flags #~(list (string-append "PREFIX="
                                                #$output))
            #:phases #~(modify-phases %standard-phases
-                        (add-after 'unpack 'pretend-contrib-.git-exists
-                          (lambda _
-                            (mkdir-p "contrib/.git")))
-                        (add-after 'unpack 'make-readlink-work
+                        (add-after 'unpack 'pretend-.git-exists
                           (lambda _
                             (substitute* "ble.pp"
-                              (("PATH=/bin:/usr/bin readlink")
-                               "readlink"))))
+                              (("#%\\[commit_hash =.*")
+                               (string-append "#%[commit_hash = " #$version "]\n")))
+                            (mkdir-p ".git")))
                         (delete 'configure) ;no configure
                         (add-before 'check 'use-LANG-for-tests
                           (lambda _
@@ -491,7 +473,7 @@ you to call routines in shared libraries from within Bash.")
                                     (getenv "LC_ALL"))
                             (unsetenv "LC_ALL"))))))
     (build-system gnu-build-system)
-    (native-inputs (list less))
+    (native-inputs (list git less))
     (home-page "https://github.com/akinomyoga/ble.sh")
     (synopsis "Bash Line Editor")
     (description

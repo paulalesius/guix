@@ -2,10 +2,11 @@
 ;;; Copyright © 2015 David Thompson <davet@gnu.org>
 ;;; Copyright © 2016 Ben Woodcroft <donttrustben@gmail.com>
 ;;; Copyright © 2018 Oleg Pykhalov <go.wigust@gmail.com>
-;;; Copyright © 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2020, 2021, 2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2020 Martin Becze <mjbecze@riseup.net>
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
 ;;; Copyright © 2022 Taiju HIGASHI <higashi@taiju.info>
+;;; Copyright © 2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -26,7 +27,6 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (json)
-  #:use-module ((guix download) #:prefix download:)
   #:use-module (guix import utils)
   #:use-module (guix import json)
   #:use-module (guix packages)
@@ -93,9 +93,11 @@
 (define (ruby-package-name name)
   "Given the NAME of a package on RubyGems, return a Guix-compliant name for
 the package."
-  (if (string-prefix? "ruby-" name)
-      (snake-case name)
-      (string-append "ruby-" (snake-case name))))
+  (if (string=? name "bundler")
+      name                                        ;special case: no prefix
+      (if (string-prefix? "ruby-" name)
+          (snake-case name)
+          (string-append "ruby-" (snake-case name)))))
 
 (define (make-gem-sexp name version hash home-page synopsis description
                        dependencies licenses)
@@ -123,7 +125,8 @@ VERSION, HASH, HOME-PAGE, DESCRIPTION, DEPENDENCIES, and LICENSES."
                  ((license) (license->symbol license))
                  (_ `(list ,@(map license->symbol licenses)))))))
 
-(define* (gem->guix-package package-name #:key (repo 'rubygems) version)
+(define* (gem->guix-package package-name #:key (repo 'rubygems) version
+                            #:allow-other-keys)
   "Fetch the metadata for PACKAGE-NAME from rubygems.org, and return the
 `package' s-expression corresponding to that package, or #f on failure.
 Optionally include a VERSION string to fetch a specific version gem."
@@ -134,11 +137,7 @@ Optionally include a VERSION string to fetch a specific version gem."
         (let* ((dependencies-names (map gem-dependency-name
                                         (gem-dependencies-runtime
                                          (gem-dependencies gem))))
-               (dependencies (map (lambda (dep)
-                                    (if (string=? dep "bundler")
-                                        "bundler" ; special case, no prefix
-                                        (ruby-package-name dep)))
-                                  dependencies-names))
+               (dependencies (map ruby-package-name dependencies-names))
                (licenses     (map string->license (gem-licenses gem))))
           (values (make-gem-sexp (gem-name gem) (gem-version gem)
                                  (gem-sha256 gem) (gem-home-page gem)
@@ -173,23 +172,32 @@ package on RubyGems."
 (define gem-package?
   (url-prefix-predicate "https://rubygems.org/downloads/"))
 
-(define (latest-release package)
+(define* (import-release package #:key (version #f))
   "Return an <upstream-source> for the latest release of PACKAGE."
   (let* ((gem-name (guix-package->gem-name package))
          (gem      (rubygems-fetch gem-name))
-         (version  (gem-version gem))
+         (inputs   (map (lambda (dependency)
+                          (let ((name (gem-dependency-name dependency)))
+                            (upstream-input
+                             (name name)
+                             (downstream-name
+                              (ruby-package-name name))
+                             (type 'propagated))))
+                        (gem-dependencies-runtime (gem-dependencies gem))))
+         (version  (or version (gem-version gem)))
          (url      (rubygems-uri gem-name version)))
     (upstream-source
      (package (package-name package))
      (version version)
-     (urls (list url)))))
+     (urls (list url))
+     (inputs inputs))))
 
 (define %gem-updater
   (upstream-updater
    (name 'gem)
    (description "Updater for RubyGem packages")
    (pred gem-package?)
-   (latest latest-release)))
+   (import import-release)))
 
 (define* (gem-recursive-import package-name #:optional version)
   (recursive-import package-name

@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2013 Nikita Karetnikov <nikita@karetnikov.org>
 ;;; Copyright © 2013, 2015 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2014, 2016 Alex Kost <alezost@gmail.com>
@@ -11,6 +11,7 @@
 ;;; Copyright © 2020 Simon Tournier <zimon.toutoune@gmail.com>
 ;;; Copyright © 2018 Steve Sprang <scs@stevesprang.com>
 ;;; Copyright © 2022 Josselin Poiret <dev@jpoiret.xyz>
+;;; Copyright © 2022 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2022 Antero Mejr <antero@mailbox.org>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -38,9 +39,7 @@
   #:use-module (guix profiles)
   #:use-module (guix search-paths)
   #:autoload   (guix import json) (json->scheme-file)
-  #:use-module (guix monads)
   #:use-module (guix utils)
-  #:use-module (guix config)
   #:use-module (guix scripts)
   #:use-module (guix scripts build)
   #:use-module (guix transformations)
@@ -49,11 +48,10 @@
   #:autoload   (guix channels) (channel-name channel-commit channel->code)
   #:autoload   (guix store roots) (gc-roots user-owned?)
   #:use-module ((guix build utils)
-                #:select (directory-exists? mkdir-p))
+                #:select (directory-exists? mkdir-p switch-symlinks))
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:autoload   (ice-9 pretty-print) (pretty-print)
-  #:use-module (ice-9 regex)
   #:use-module (ice-9 vlist)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-11)
@@ -322,7 +320,7 @@ of manifest entries, in the context of PROFILE."
          (settings (search-path-environment-variables entries (list profile)
                                                       #:kind 'prefix)))
     (unless (null? settings)
-      (display-hint (format #f (G_ "Consider setting the necessary environment
+      (display-hint (G_ "Consider setting the necessary environment
 variables by running:
 
 @example
@@ -331,7 +329,7 @@ GUIX_PROFILE=\"~a\"
 @end example
 
 Alternately, see @command{guix package --search-paths -p ~s}.")
-                            profile profile)))))
+                    profile profile))))
 
 
 ;;;

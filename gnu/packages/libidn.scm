@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2012 Andreas Enge <andreas@enge.fr>
-;;; Copyright © 2016, 2017, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016, 2017, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2017 Marius Bakke <mbakke@fastmail.com>
 ;;; Copyright © 2017 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2017 Eric Bavier <bavier@member.fsf.org>
@@ -34,14 +34,14 @@
 (define-public libidn
   (package
    (name "libidn")
-   (version "1.37")
+   (version "1.41")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnu/libidn/libidn-" version
                                 ".tar.gz"))
             (sha256
              (base32
-              "1hljls9rkilh04dwiwg388wk8djkac8idijrdysqq2nqbh6rg3iw"))))
+              "0ic9zlqqppwaqr3i0r8lb8f47rrazzc8d5pfgg8vs6mqciip0kc8"))))
    (build-system gnu-build-system)
    ;; FIXME: No Java and C# libraries are currently built.
    (arguments
@@ -60,14 +60,14 @@ Java libraries.")
 (define-public libidn2
   (package
     (name "libidn2")
-    (version "2.3.1")
+    (version "2.3.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/libidn/" name "-" version
                                   ".tar.gz"))
               (sha256
                (base32
-                "0b8gsksj2g9f4iywwdma3v4jcg7i9rqvdxfmclwvbf1n72a89xla"))))
+                "0pxlvf37j9ivg2wp56q1xvx7g6y9cfmpd87mskwd2lg0nirbmjlk"))))
     (inputs
      (list libunistring))
     (build-system gnu-build-system)

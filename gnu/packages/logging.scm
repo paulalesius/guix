@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2016 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2016, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016, 2017, 2018 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017 Stefan Reichör <stefan@xsteve.at>
 ;;; Copyright © 2017 Eric Bavier <bavier@member.fsf.org>
@@ -88,7 +88,7 @@
      "Log4cpp is library of C++ classes for flexible logging to files, syslog,
 IDSA and other destinations.  It is modeled after the Log4j Java library,
 staying as close to their API as is reasonable.")
-    (home-page "http://log4cpp.sourceforge.net/")
+    (home-page "https://log4cpp.sourceforge.net/")
     (license license:lgpl2.1+)))
 
 (define-public glog

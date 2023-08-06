@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2017 Arun Isaac <arunisaac@systemreboot.net>
+;;; Copyright © 2017, 2022 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2017 Alex Griffin <a@ajgrf.com>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -41,8 +41,7 @@ archive, or a font file."
       (begin
         (mkdir "source")
         (chdir "source")
-        (copy-file source (strip-store-file-name source))
-        #t)
+        (copy-file source (strip-store-file-name source)))
       (gnu:unpack #:source source)))
 
 (define* (install #:key outputs #:allow-other-keys)
@@ -54,7 +53,8 @@ archive, or a font file."
               (find-files source "\\.(ttf|ttc)$"))
     (for-each (cut install-file <> (string-append fonts "/opentype"))
               (find-files source "\\.(otf|otc)$"))
-    #t))
+    (for-each (cut install-file <> (string-append fonts "/web"))
+              (find-files source "\\.(woff|woff2)$"))))
 
 (define %standard-phases
   (modify-phases gnu:%standard-phases

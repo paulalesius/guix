@@ -5,7 +5,7 @@
 ;;; Copyright © 2015 Sou Bunnbu <iyzsong@gmail.com>
 ;;; Copyright © 2015, 2016, 2017, 2018, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015, 2016, 2017 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2015, 2016, 2017, 2018, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015-2018, 2020-2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2015 Raimon Grau <raimonster@gmail.com>
 ;;; Copyright © 2016 Mathieu Lirzin <mthl@gnu.org>
 ;;; Copyright © 2016, 2017 Leo Famulari <leo@famulari.name>
@@ -13,7 +13,7 @@
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016, 2017 Nikita <nikita@n0.is>
 ;;; Copyright © 2016–2022 Tobias Geerinckx-Rice <me@tobias.gr>
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021 Marius Bakke <marius@gnu.org>
+;;; Copyright © 2016-2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2017 Adriano Peluso <catonano@gmail.com>
 ;;; Copyright © 2017 Gregor Giesen <giesen@zaehlwerk.net>
 ;;; Copyright © 2017 Alex Vong <alexvong1995@gmail.com>
@@ -27,7 +27,7 @@
 ;;; Copyright © 2020 Brett Gilio <brettg@gnu.org>
 ;;; Copyright © 2020 Pierre Langlois <pierre.langlois@gmx.com>
 ;;; Copyright © 2021 Michael Rohleder <mike@rohleder.de>
-;;; Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Julien Lepiller <julien@lepiller.eu>
 ;;; Copyright © 2021 Felix Gruber <felgru@posteo.net>
 ;;; Copyright © 2021 Guillaume Le Vaillant <glv@posteo.net>
@@ -64,7 +64,6 @@
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages gtk)
-  #:use-module (gnu packages java)
   #:use-module (gnu packages nss)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages perl-check)
@@ -76,12 +75,12 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
-  #:use-module (guix build-system ant)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system meson)
   #:use-module (guix build-system perl)
   #:use-module (guix build-system python)
+  #:use-module (guix deprecation)
   #:use-module (guix utils)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages pkg-config))
@@ -89,7 +88,7 @@
 (define-public libxmlb
   (package
     (name "libxmlb")
-    (version "0.3.9")
+    (version "0.3.10")
     (source
      (origin
        (method git-fetch)
@@ -99,7 +98,7 @@
          (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1n6ffza134sj9ck9nbngdhq8kvbsk5mvjqki3ph4xc283b1ywr71"))))
+        (base32 "1q7kizfgbvs02fdnvz09yjyy3v1dpbxl7xf1gx056mbnlib6faxs"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t))
@@ -119,8 +118,7 @@ the entire document.")
 (define-public expat
   (package
     (name "expat")
-    (version "2.4.1")
-    (replacement expat/fixed)
+    (version "2.5.0")
     (source (let ((dot->underscore (lambda (c) (if (char=? #\. c) #\_ c))))
               (origin
                 (method url-fetch)
@@ -132,7 +130,7 @@ the entire document.")
                             "/expat-" version ".tar.xz")))
                 (sha256
                  (base32
-                  "0spvyb9d3hijs4ys3x64cfmilsynl8kv6clfahv8d4lvp86js0yg")))))
+                  "1gnwihpfz4x18rwd6cbrdggmfqjzwsdfh1gpmc0ph21c4gq2097g")))))
     (build-system gnu-build-system)
     (arguments
      '(#:phases (modify-phases %standard-phases
@@ -155,23 +153,6 @@ the entire document.")
 stream-oriented parser in which an application registers handlers for
 things the parser might find in the XML document (like start tags).")
     (license license:expat)))
-
-(define expat/fixed
-  (package
-    (inherit expat)
-    (version "2.4.9")
-    (source (let ((dot->underscore (lambda (c) (if (char=? #\. c) #\_ c))))
-              (origin
-                (method url-fetch)
-                (uri (list (string-append "mirror://sourceforge/expat/expat/"
-                                          version "/expat-" version ".tar.xz")
-                           (string-append
-                            "https://github.com/libexpat/libexpat/releases/download/R_"
-                            (string-map dot->underscore version)
-                            "/expat-" version ".tar.xz")))
-                (sha256
-                 (base32
-                  "0m03zh7al39mx4rf0s2bgdn77r658qqf9k3a7bwx6z2wzql0g33f")))))))
 
 (define-public libebml
   (package
@@ -197,20 +178,19 @@ binary extension of XML for the purpose of storing and manipulating data in a
 hierarchical form with variable field lengths.")
     (license license:lgpl2.1)))
 
+;; Note: Remember to check python-libxml2 when updating this package.
 (define-public libxml2
   (package
     (name "libxml2")
-    (version "2.9.12")
+    (version "2.9.14")
     (source (origin
              (method url-fetch)
-             (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
-                                 version ".tar.gz"))
+             (uri (string-append "mirror://gnome/sources/libxml2/"
+                                 (version-major+minor version)"/libxml2-"
+                                 version ".tar.xz"))
              (sha256
               (base32
-               "14hxwzmf5xqppx77z7i0ni9lpzg1a84dqpf8j8l1fvy570g6imn8"))
-             (patches (search-patches "libxml2-parent-pointers.patch"
-                                      "libxml2-terminating-newline.patch"
-                                      "libxml2-xpath-recursion-limit.patch"))))
+               "1vnzk33wfms348lgz9pvkq9li7jm44pvm73lbr3w1khwgljlmmv0"))))
     (build-system gnu-build-system)
     (outputs '("out" "static" "doc"))
     (arguments
@@ -226,7 +206,7 @@ hierarchical form with variable field lengths.")
                         (for-each (lambda (dir)
                                     (rename-file (string-append src "/share/" dir)
                                                  (string-append doc "/" dir)))
-                                  '("doc" "gtk-doc"))
+                                  '("gtk-doc"))
                         (for-each (lambda (ar)
                                     (rename-file ar (string-append dst "/"
                                                                    (basename ar))))
@@ -268,6 +248,35 @@ project (but it is usable outside of the Gnome platform).")
      "Libxml2-xpath0 is like libxml2 but with a patch applied that
 provides an @code{--xpath0} option to @command{xmllint} that enables it
 to output XPath results with a null delimiter.")))
+
+(define-public python-libxml2
+  (package/inherit libxml2
+    (name "python-libxml2")
+    (source (origin
+              (inherit (package-source libxml2))
+              (patches
+                (append (search-patches "python-libxml2-utf8.patch")
+                        (origin-patches (package-source libxml2))))))
+    (build-system python-build-system)
+    (outputs '("out"))
+    (arguments
+     (list
+      ;; XXX: Tests are specified in 'Makefile.am', but not in 'setup.py'.
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'build 'configure
+            (lambda* (#:key inputs #:allow-other-keys)
+              (chdir "python")
+              (let ((libxml2-headers (search-input-directory
+                                      inputs "include/libxml2")))
+                (substitute* "setup.py"
+                  ;; The build system ignores C_INCLUDE_PATH & co, so
+                  ;; provide the absolute directory name.
+                  (("/opt/include")
+                   (dirname libxml2-headers)))))))))
+    (inputs (list libxml2))
+    (synopsis "Python bindings for the libxml2 library")))
 
 (define-public libxlsxwriter
   (package
@@ -311,68 +320,51 @@ formulas and hyperlinks to multiple worksheets in an Excel 2007+ XLSX file.")
     (license (list license:bsd-2
                    license:public-domain)))) ; third_party/md5
 
-(define-public python-libxml2
-  (package/inherit libxml2
-    (name "python-libxml2")
-    (source (origin
-              (inherit (package-source libxml2))
-              (patches
-                (append (search-patches "python-libxml2-utf8.patch")
-                        (origin-patches (package-source libxml2))))))
-    (build-system python-build-system)
-    (outputs '("out"))
-    (arguments
-     `(;; XXX: Tests are specified in 'Makefile.am', but not in 'setup.py'.
-       #:tests? #f
-       #:phases
-       (modify-phases %standard-phases
-         (add-before
-          'build 'configure
-          (lambda* (#:key inputs #:allow-other-keys)
-            (chdir "python")
-            (let ((glibc   (assoc-ref inputs ,(if (%current-target-system)
-                                                  "cross-libc" "libc")))
-                  (libxml2 (assoc-ref inputs "libxml2")))
-              (substitute* "setup.py"
-                ;; For 'libxml2/libxml/tree.h'.
-                (("ROOT = r'/usr'")
-                 (format #f "ROOT = r'~a'" libxml2))
-                ;; For 'iconv.h'.
-                (("/opt/include")
-                 (string-append glibc "/include")))))))))
-    (inputs `(("libxml2" ,libxml2)))
-    (synopsis "Python bindings for the libxml2 library")))
-
 (define-public libxslt
   (package
     (name "libxslt")
-    (version "1.1.34")
+    (version "1.1.37")
     (source (origin
              (method url-fetch)
-             (uri (string-append "ftp://xmlsoft.org/libxslt/libxslt-"
-                                 version ".tar.gz"))
+             (uri (string-append "mirror://gnome/sources"
+                                 "/libxslt/" (version-major+minor version)
+                                 "/libxslt-" version ".tar.xz"))
              (sha256
               (base32
-               "0zrzz6kjdyavspzik6fbkpvfpbd25r2qg6py5nnjaabrsr3bvccq"))
+               "1d1s2bk0m6d7bzml9w90ycl0jlpcy4v07595cwaddk17h3f2fjrs"))
              (patches (search-patches "libxslt-generated-ids.patch"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:phases (modify-phases %standard-phases
-                  (add-before 'check 'disable-fuzz-tests
-                    (lambda _
-                      ;; Disable libFuzzer tests, because they require
-                      ;; instrumentation builds of libxml2 and libxslt.
-                      (substitute* "tests/Makefile"
-                        (("exslt plugins fuzz")
-                         "exslt plugins"))
-                      #t)))))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'check 'disable-fuzz-tests
+                 (lambda _
+                   ;; Disable libFuzzer tests, because they require
+                   ;; instrumentation builds of libxml2 and libxslt.
+                   (substitute* "tests/Makefile"
+                     (("exslt plugins fuzz")
+                      "exslt plugins"))
+                   ;; Also disable Python tests since they require
+                   ;; python-libxml2 which would introduce a
+                   ;; circular dependency.
+                   (substitute* "python/Makefile"
+                     (("cd tests && \\$\\(MAKE\\) tests")
+                      "$(info Python tests are disabled by Guix.)")))))
+           #:configure-flags
+           (if (%current-target-system)
+               ;; 'configure.ac' uses 'AM_PATH_PYTHON', which looks for
+               ;; 'python' in $PATH and tries to run it.  Skip all that when
+               ;; cross-compiling.
+               #~'("--without-python")
+               #~'())))
     (home-page "http://xmlsoft.org/XSLT/index.html")
     (synopsis "C library for applying XSLT stylesheets to XML documents")
-    (inputs `(("libgcrypt" ,libgcrypt)
-              ("libxml2" ,libxml2)
-              ("python" ,python-minimal-wrapper)
-              ("zlib" ,zlib)
-              ("xz" ,xz)))
+    (inputs
+     (list libgcrypt
+           libxml2
+           python-minimal-wrapper
+           zlib
+           xz))
     (native-inputs
      (list pkg-config))
     (description
@@ -451,7 +443,7 @@ based on libxml for XML parsing, tree manipulation and XPath support.")
      (list opensp))
     (native-inputs
      (list perl))
-    (home-page "http://openjade.sourceforge.net/")
+    (home-page "https://openjade.sourceforge.net/")
     (synopsis "ISO/IEC 10179:1996 standard DSSSL language implementation")
     (description "OpenJade is an implementation of Document Style Semantics
 and Specification Language (DSSSL), a style language to format SGML or XML
@@ -1104,7 +1096,7 @@ parsing/saving.")
                (base32
                 "1d17pyixbfvjyi2lb0cfp0ch8wwdf44mmg3r5pwqhyyqs66z601a"))))
     (build-system python-build-system)
-    (home-page "http://pyxb.sourceforge.net/")
+    (home-page "https://pyxb.sourceforge.net/")
     (synopsis "Python XML Schema Bindings")
     (description
      "PyXB (\"pixbee\") is a pure Python package that generates Python source
@@ -1153,14 +1145,14 @@ XSL-T processor.  It also performs any necessary post-processing.")
 (define-public xmlsec
   (package
     (name "xmlsec")
-    (version "1.2.36")
+    (version "1.2.37")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://www.aleksey.com/xmlsec/download/"
                                   "xmlsec1-" version ".tar.gz"))
               (sha256
                (base32
-                "100wsklff8x30rsg0xp191kg8p3z5va2d0q3iy08a791ic07xngh"))))
+                "0747w8mnnyawvvzlvhjpkwm3998c7l5f1hjy1gfvsmhydp5zp3az"))))
     (build-system gnu-build-system)
     (propagated-inputs                  ; according to xmlsec1.pc
      (list libxml2 libxslt))
@@ -1350,7 +1342,7 @@ C++ programming language.")
              #t))))))
    (inputs
     (list libxslt libxml2))
-   (home-page "http://xmlstar.sourceforge.net/")
+   (home-page "https://xmlstar.sourceforge.net/")
    (synopsis "Command line XML toolkit")
    (description "XMLStarlet is a set of command line utilities which can be
 used to transform, query, validate, and edit XML documents.  XPath is used to
@@ -1361,7 +1353,7 @@ XSLT and EXSLT.")
 (define-public html-xml-utils
  (package
    (name "html-xml-utils")
-   (version "7.9")
+   (version "8.6")
    (source
     (origin
       (method url-fetch)
@@ -1369,7 +1361,7 @@ XSLT and EXSLT.")
             "https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-"
             version ".tar.gz"))
       (sha256
-       (base32 "0gs3xvdbzhk5k12i95p5d4fgkkaldnlv45sch7pnncb0lrpcjsnq"))))
+       (base32 "1cjgvgrg3bjfxfl0nh55vhr37ijld7pd8bl7s8j3kkbcyfg7512y"))))
    (build-system gnu-build-system)
    (home-page "https://www.w3.org/Tools/HTML-XML-utils/")
    (synopsis "Command line utilities to manipulate HTML and XML files")
@@ -1544,42 +1536,6 @@ Excel(TM) since version 2007.")
     (home-page "https://github.com/brechtsanders/xlsxio")
     (license license:expat)))
 
-(define-public java-simple-xml
-  (package
-    (name "java-simple-xml")
-    (version "2.7.1")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/simple/simple-xml-"
-                                  version ".zip"))
-              (sha256
-               (base32
-                "0w19k1awslmihpwsxwjbg89hv0vjhk4k3i0vrfchy3mqknd988y5"))
-              (patches (search-patches "java-simple-xml-fix-tests.patch"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:build-target "build"
-       #:test-target "test"
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'install (install-jars "jar"))
-         (add-before 'check 'disable-failing-test
-           (lambda _
-             ;; This test sometimes fails with an out of memory exception
-             (delete-file
-              "test/src/org/simpleframework/xml/core/NoAnnotationsRequiredTest.java"))))))
-    (native-inputs
-     (list unzip))
-    (home-page "http://simple.sourceforge.net/")
-    (synopsis "XML serialization framework for Java")
-    (description "Simple is a high performance XML serialization and
-configuration framework for Java.  Its goal is to provide an XML framework
-that enables rapid development of XML configuration and communication systems.
-This framework aids the development of XML systems with minimal effort and
-reduced errors.  It offers full object serialization and deserialization,
-maintaining each reference encountered.")
-    (license license:asl2.0)))
-
 (define-public perl-xml-xpathengine
   (package
     (name "perl-xml-xpathengine")
@@ -1735,610 +1691,6 @@ XML), full XPath support (unless you use @code{XML::Twig::XPath}), nor DOM
 support.")
     (license license:perl-license)))
 
-;; TODO: Debian builds several jars out of this: jaxp-1.4.jar,
-;; xml-apis.jar and xml-apis-1.4.01.jar.
-(define-public java-jaxp
-  (package
-    (name "java-jaxp")
-    (version "1.4.01")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "mirror://apache/xerces/xml-commons/source/"
-                           "xml-commons-external-" version "-src.tar.gz"))
-       (sha256
-        (base32 "0rhq32a7dl9yik7zx9h0naz2iz068qgcdiayak91wp4wr26xhjyk"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "jaxp.jar"
-       #:jdk ,icedtea-8
-       #:source-dir ".."
-       #:tests? #f)); no tests
-    (home-page "http://xerces.apache.org/xml-commons/")
-    (synopsis "Java XML parser and transformer APIs (DOM, SAX, JAXP, TrAX)")
-    (description "Jaxp from the Apache XML Commons project is used by
-the Xerces-J XML parser and Xalan-J XSLT processor and specifies these APIs:
-
-@itemize
-@item Document Object Model (DOM)
-@item Simple API for XML (SAX)
-@item Java APIs for XML Processing (JAXP)
-@item Transformation API for XML (TrAX)
-@item Document Object Model (DOM) Load and Save
-@item JSR 206 Java API for XML Processing
-@end itemize")
-    (license (list license:asl2.0
-                   license:w3c ;; Files under org.w3c
-                   license:public-domain)))) ;; org.xml.sax
-
-(define-public java-apache-xml-commons-resolver
-  (package
-    (name "java-apache-xml-commons-resolver")
-    (version "1.2")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "mirror://apache/xerces/xml-commons/"
-                           "xml-commons-resolver-" version ".tar.gz"))
-       (sha256
-        (base32 "1zhy4anc3fg9f8y348bj88vmab15aavrg6nf419ifb25asyygnsm"))
-       (modules '((guix build utils)))
-       (snippet
-        '(begin
-           (for-each delete-file (find-files "." ".*\\.(jar|zip)"))
-           #t))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name (string-append "xml-resolver.jar")
-       #:tests? #f)); no tests
-    (inputs
-     (list java-junit))
-    (home-page "http://xerces.apache.org/xml-commons/")
-    (synopsis "Catalog-based entity and URI resolution")
-    (description "The resolver class implements the full semantics of OASIS Technical
-Resolution 9401:1997 (Amendment 2 to TR 9401) catalogs and the 06 Aug
-2001 Committee Specification of OASIS XML Catalogs.
-
-It also includes a framework of classes designed to read catalog files
-in a number of formats:
-
-@itemize
-@item The plain-text flavor described by TR9401.
-@item The XCatalog XML format defined by John Cowan
-@item The XML Catalog format defined by the OASIS Entity Resolution
-      Technical Committee.
-@end itemize")
-    (license license:asl2.0)))
-
-;; Jaxen requires java-dom4j and java-xom that in turn require jaxen.
-;; This package is a bootstrap version without dependencies on dom4j and xom.
-(define java-jaxen-bootstrap
-  (package
-    (name "java-jaxen-bootstrap")
-    (version "1.1.6")
-    (source (origin
-              (method url-fetch)
-              ;; No release on github
-              (uri (string-append "https://repo1.maven.org/maven2/jaxen/jaxen/"
-                                  version "/jaxen-" version "-sources.jar"))
-              (sha256
-               (base32
-                "18pa8mks3gfhazmkyil8wsp6j1g1x7rggqxfv4k2mnixkrj5x1kx"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "jaxen.jar"
-       #:source-dir "src"
-       #:tests? #f; no tests
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'remove-dom4j
-           (lambda _
-             (delete-file-recursively "src/org/jaxen/dom4j")
-             (delete-file-recursively "src/org/jaxen/xom")
-             #t)))))
-    (inputs
-     `(("java-jdom" ,java-jdom)))
-    (home-page "https://github.com/jaxen-xpath/jaxen")
-    (synopsis "XPath library")
-    (description "Jaxen is an XPath library written in Java.  It is adaptable
-to many different object models, including DOM, XOM, dom4j, and JDOM.  It is
-also possible to write adapters that treat non-XML trees such as compiled
-Java byte code or Java beans as XML, thus enabling you to query these trees
-with XPath too.")
-    (license license:bsd-3)))
-
-(define-public java-jaxen
-  (package
-    (inherit java-jaxen-bootstrap)
-    (name "java-jaxen")
-    (inputs
-     (list java-jdom java-xom java-dom4j))))
-
-(define-public java-xom
-  (package
-    (name "java-xom")
-    (version "127")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/elharo/xom")
-                    (commit (string-append "XOM_" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "1jh6y03g5zzdhsb5jm6ms1xnamr460qmn96y3w6aw0ikfwqlg0bq"))
-              (modules '((guix build utils)))
-              (snippet
-               '(begin
-                  (for-each delete-file
-                            (find-files "." "\\.jar$"))
-                  #t))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "xom.jar"
-       #:jdk ,icedtea-8
-       #:tests? #f                      ; no tests
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'make-git-checkout-writable
-           (lambda _
-             (for-each make-file-writable (find-files "."))
-             #t))
-         (add-before 'configure 'fix-tagsoup-dep
-           (lambda _
-             ;; FIXME: Where is tagsoup source?
-             (delete-file "src/nu/xom/tools/XHTMLJavaDoc.java")
-             #t)))))
-    (inputs
-     (list java-jdom java-junit java-classpathx-servletapi
-           java-jaxen-bootstrap java-xerces))
-    (home-page "https://xom.nu/")
-    (synopsis "XML Object Model")
-    (description "XOM is a new XML Object Model for processing XML with Java 
-that strives for correctness and simplicity.")
-    ;; 2.1 only
-    (license license:lgpl2.1)))
-
-(define-public java-xsdlib
-  (package
-    (name "java-xsdlib")
-    (version "2013.2")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://repo1.maven.org/maven2/com/sun/msv/"
-                                  "datatype/xsd/xsdlib/" version "/xsdlib-"
-                                  version "-sources.jar"))
-              (sha256
-               (base32
-                "185i48p1xp09wbq03i9zgfl701qa262rq46yf4cajzmk3336kqim"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:tests? #f; no tests
-       #:jar-name "xsdlib.jar"
-       #:jdk ,icedtea-8))
-    (inputs
-     (list java-xerces))
-    (home-page (string-append "https://web.archive.org/web/20161127144537/"
-                              "https://msv.java.net//"))
-    (synopsis "Sun Multi-Schema Validator")
-    (description "Xsdlib contains an implementation of sun.com.msv, an XML
-validator.")
-    (license license:bsd-2)))
-
-(define-public java-xpp3
-  (package
-    (name "java-xpp3")
-    (version "1.1.4")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://ci.guix.gnu.org/file/"
-                    "xpp3-1.1.4_src.tgz"
-                    "/sha256/"
-                    "1b99zrhyij5qwyhilyjdl1ykxvhk902vsvflh6gx4fir8hfvdl5p"))
-              (file-name (string-append name "-" version "_src.tgz"))
-              (sha256
-               (base32
-                "1b99zrhyij5qwyhilyjdl1ykxvhk902vsvflh6gx4fir8hfvdl5p"))
-              (modules '((guix build utils)))
-              (snippet
-                '(begin ;; Delete bundled jar archives.
-                   (for-each delete-file (find-files "." ".*\\.jar"))
-                   #t))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:tests? #f; no tests
-       #:build-target "jar"
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'install (install-jars "build")))))
-    (home-page "http://www.extreme.indiana.edu/xgws/xsoap/xpp/")
-    (synopsis "Streaming pull XML parser")
-    (description "Xml Pull Parser (in short XPP) is a streaming pull XML
-parser and should be used when there is a need to process quickly and
-efficiently all input elements (for example in SOAP processors). This
-package is a stable XmlPull parsing engine that is based on ideas from XPP
-and in particular XPP2 but completely revised and rewritten to take the best
-advantage of JIT JVMs.")
-    (license (license:non-copyleft "file://LICENSE.txt"))))
-
-(define-public java-xmlpull2
-  (package
-    (name "java-xmlpull2")
-    (version "2.1.10")
-    (source (origin
-              (method url-fetch)
-              ;; Unfortunately, archive.org does not have a copy of this file.
-              (uri (string-append "https://ftp.fau.de/gentoo/distfiles/"
-                                  "PullParser" version ".tgz"))
-              (sha256
-               (base32
-                "1kw9nhyqb7bzhn2zjbwlpi5vp5rzj89amzi3hadw2acyh2dmd0md"))
-              (modules '((guix build utils)))
-              (snippet
-                '(begin ;; Delete bundled jar archives.
-                   (for-each delete-file (find-files "." ".*\\.jar"))
-                   #t))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:tests? #f; no tests
-       #:build-target "impl"
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'install (install-jars "build/lib")))))
-    (home-page (string-append "https://web.archive.org/web/20210225153105/"
-                              "https://www.extreme.indiana.edu/"))
-    (synopsis "Streaming pull XML parser")
-    (description "Xml Pull Parser (in short XPP) is a streaming pull XML
-parser and should be used when there is a need to process quickly and
-efficiently all input elements (for example in SOAP processors).  This
-package is in maintenance mode.")
-    (license (license:non-copyleft "file:///LICENSE.txt"))))
-
-(define-public java-xmlpull-api-v1
-  (package
-    (name "java-xmlpull-api-v1")
-    (version "1.1.3.4b")
-    (source (origin
-              ;; The package is originally from Extreme! Lab, but the website
-              ;; is now gone.  This repositories contains the sources of the
-              ;; latest version.
-              (method git-fetch)
-              (uri (git-reference
-                     (url "https://github.com/aslom/xmlpull-api-v1")
-                     ;; No releases, this is the latest commit
-                     (commit "abeaa4aa87b2625af70c32f658f44e11355fe568")))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "15bdqxfncnakskna4m9gsh4f9iczxy83qxn2anqiqd15z406a5ih"))
-              (modules '((guix build utils)))
-              (snippet
-               `(begin
-                  (delete-file-recursively "lib")
-                  (mkdir-p "lib")
-                  ;; prevents a failure in "dist_lite"
-                  (substitute* "build.xml"
-                    (("README.html") "README.md"))))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:test-target "junit"
-       #:build-target "dist"
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (doc (string-append out "/share/doc/" ,name "-" ,version))
-                    (java (string-append out "/share/java"))
-                    (project (string-append
-                               "xmlpull_"
-                               ,(string-join (string-split version #\.) "_"))))
-               (mkdir-p doc)
-               (copy-recursively (string-append "build/dist/" project "/doc/")
-                                 doc)
-               (mkdir-p java)
-               (copy-file (string-append "build/dist/" project "/" project ".jar")
-                          (string-append java "/" project ".jar")))
-             )))))
-    (home-page "https://github.com/aslom/xmlpull-api-v1")
-    (synopsis "XML pull parsing API")
-    (description "XmlPull v1 API is a simple to use XML pull parsing API.  XML
-pull parsing allows incremental (sometimes called streaming) parsing of XML
-where application is in control - the parsing can be interrupted at any given
-moment and resumed when application is ready to consume more input.")
-    (license license:public-domain)))
-
-(define-public java-dom4j
-  (package
-    (name "java-dom4j")
-    (version "2.1.1")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/dom4j/dom4j")
-                    (commit (string-append "version-" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "0q907srj9v4hwicpcrn4slyld5npf2jv7hzchsgrg29q2xmbwkdl"))
-              (modules '((guix build utils)))
-              (snippet
-                '(begin ;; Delete bundled jar archives.
-                   (for-each delete-file (find-files "." ".*\\.jar"))
-                   #t))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "dom4j.jar"
-       #:jdk ,icedtea-8
-       #:source-dir "src/main/java"
-       ;; FIXME: Requires xalan, but xalan depends on java-cup which has a
-       ;; dependency on itself through jflex.
-       #:tests? #f
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'copy-jaxen-sources
-           ;; java-jaxen-bootstrap is not enough. These files have a circular
-           ;; dependency and there is no subset of dom4j that would allow
-           ;; breaking the circle.
-           (lambda* (#:key inputs #:allow-other-keys)
-             (mkdir-p "jaxen-sources")
-             (with-directory-excursion "jaxen-sources"
-               (system* "jar" "xf" (assoc-ref inputs "java-jaxen-sources")))
-             (mkdir-p "src/main/java/org/jaxen/dom4j")
-             (copy-file "jaxen-sources/org/jaxen/dom4j/DocumentNavigator.java"
-                        "src/main/java/org/jaxen/dom4j/DocumentNavigator.java")
-             (copy-file "jaxen-sources/org/jaxen/dom4j/Dom4jXPath.java"
-                        "src/main/java/org/jaxen/dom4j/Dom4jXPath.java")
-             #t))
-         (add-before 'build 'fix-old-xpp2
-           (lambda _
-             ;; This package normally depends on xpp2 2.0, but version 2.1.10
-             ;; is the only version whose source code is published.
-             (substitute* "src/main/java/org/dom4j/xpp/ProxyXmlStartTag.java"
-               (("public void resetStartTag")
-                "public boolean removeAttributeByRawName(String name) {\n
-  return false;\n
-}\n
-public boolean removeAttributeByName(String name, String name2) {\n
-  return false;\n
-}\n\npublic void resetStartTag")
-               (("Atttribute") "Attribute"))
-             #t)))))
-    (inputs
-     `(("java-jaxen-bootstrap" ,java-jaxen-bootstrap)
-       ("java-jaxen-sources" ,(package-source java-jaxen-bootstrap))
-       ("java-xmlpull2" ,java-xmlpull2)
-       ("java-xpp3" ,java-xpp3)
-       ("java-xsdlib" ,java-xsdlib)))
-    (native-inputs
-     (list java-testng java-xerces))
-    (home-page "https://dom4j.github.io/")
-    (synopsis "Flexible XML framework for Java")
-    (description "Dom4j is a flexible XML framework for Java.  DOM4J works
-with DOM, SAX, XPath, and XSLT.  It can parse large XML documents with very
-low memory footprint.")
-    ;; some BSD-like 5-clause license
-    (license (license:non-copyleft "file://LICENSE"))))
-
-(define-public java-kxml2
-  (package
-    (name "java-kxml2")
-    (version "2.4.2")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/stefanhaustein/kxml2")
-                    (commit (string-append "v" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "0g6d8c9r9sh3x04sf4wdpgwvhkqvk11k3kq9skx91i60h4vn01hg"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "kxml2.jar"
-       #:source-dir "src/main/java"
-       #:test-include (list "TestWb.java")
-       ;; Test failure: it was expected to get an XML entity but got the
-       ;; equivalent Unicode character instead.
-       #:tests? #f
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'make-git-checkout-writable
-           (lambda _
-             (for-each make-file-writable (find-files "."))
-             #t))
-         (add-before 'build 'copy-resources
-           (lambda _
-             (copy-recursively "src/main/resources" "build/classes")
-             #t)))))
-    (inputs
-     (list java-xpp3))
-    (native-inputs
-     (list java-junit))
-    (home-page "http://kxml.org")
-    (synopsis "XML pull parser")
-    (description "kXML is a small XML pull parser, specially designed for
-constrained environments such as Applets, Personal Java or devices compliant
-with the Mobile Information Device Profile (MIDP).")
-    (license license:expat)))
-
-(define-public java-stax
-  (package
-    (name "java-stax")
-    (version "1.2.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://repo1.maven.org/maven2/stax/stax/"
-                                  version "/stax-" version "-sources.jar"))
-              (sha256
-               (base32
-                "04ba4qvbrps45j8bldbakxq31k7gjlsay9pppa9yn13fr00q586z"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "stax.jar"
-       #:tests? #f; no tests
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'fix-utf8
-           (lambda _
-             ;; This file is ISO-8859-1 but java expects UTF-8.
-             ;; Remove special characters in comments.
-             (with-fluids ((%default-port-encoding "ISO-8859-1"))
-               (substitute* "src/com/wutka/dtd/Scanner.java"
-                 (("//.*") "\n")))
-             #t)))))
-    (home-page "https://repo1.maven.org/maven2/stax/stax/")
-    (synopsis "Streaming API for XML")
-    (description "This package provides the reference implementation of the
-@dfn{Streaming API for XML} (StAX).  It is used for streaming XML data to
-and from a Java application.  It provides a standard pull parser interface.")
-    (license license:asl2.0)))
-
-(define-public java-jettison
-  (package
-    (name "java-jettison")
-    (version "1.3.7")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/codehaus/jettison")
-                    (commit (string-append "jettison-" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "15sydmi5chdh4126qc7v8bsrp7fp4ldaya8a05iby4pq2324q0qw"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "jettison.jar"
-       #:source-dir "src/main/java"
-       #:test-exclude (list "**/Abstract*.java"
-                            ;; Abstract classes
-                            "**/DOMTest.java"
-                            "**/BadgerFishDOMTest.java"
-                            "**/MappedDOMTest.java")))
-    (native-inputs
-     (list java-junit))
-    (home-page "https://github.com/codehaus/jettison")
-    (synopsis "StAX implementation for JSON")
-    (description "Jettison is a Java library for converting XML to JSON and
-vice-versa with the help of the @dfn{Streaming API for XML} (StAX).  It
-implements @code{XMLStreamWriter} and @code{XMLStreamReader} and supports
-@code{Mapped} and @code{BadgerFish} conventions.")
-    (license license:asl2.0)))
-
-(define-public java-jdom2
-  (package
-    (name "java-jdom")
-    (version "2.0.6.1")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/hunterhacker/jdom")
-                    (commit (string-append "JDOM-" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "1r4pwl0z7hm45v9l2wbq3fjmqi13zmwzbrggyqizrwv31kghhx56"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:build-target "package"
-       #:tests? #f                ; tests are run as part of the build process
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'install
-           (install-jars "build")))))
-    (home-page "http://jdom.org/")
-    (synopsis "Access, manipulate, and output XML data")
-    (description "Jdom is a Java-based solution for accessing, manipulating, and
-outputting XML data from Java code.")
-    (license license:bsd-4)))
-
-(define-public java-xstream
-  (package
-    (name "java-xstream")
-    (version "1.4.16")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/x-stream/xstream")
-             (commit (string-append
-                      "XSTREAM_"
-                      (string-map (lambda (x) (if (eq? x #\.) #\_ x))
-                                  version)))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "16k2mc63h2fw7lxv74qmhg4p8q9hfrw114daa6nxwnpv08cnq755"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "xstream.jar"
-       ;; FIXME: Tests are not in a java subdirectory as assumed by ant-build-system.
-       #:tests? #f
-       #:jdk ,icedtea-8
-       #:source-dir "xstream/src/java"))
-    (inputs
-     `(("java-jdom" ,java-jdom)
-       ("java-jdom2" ,java-jdom2)
-       ("java-cglib" ,java-cglib)
-       ("java-joda-time" ,java-joda-time)
-       ("java-jettison" ,java-jettison)
-       ("java-xom" ,java-xom)
-       ("java-mxparser" ,java-mxparser)
-       ("java-xpp3" ,java-xpp3)
-       ("java-dom4j" ,java-dom4j)
-       ("java-stax2-api" ,java-stax2-api)
-       ("java-woodstox-core" ,java-woodstox-core)
-       ("java-kxml2" ,java-kxml2)
-       ("java-stax" ,java-stax)))
-    (home-page "https://x-stream.github.io")
-    (synopsis "XML serialization library")
-    (description "XStream is a simple library to serialize Java objects to XML
-and back again.")
-    (license license:bsd-3)))
-
-(define-public java-mxparser
-  (package
-    (name "java-mxparser")
-    (version "1.2.1")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-              (url "https://github.com/x-stream/mxparser")
-              (commit (string-append "v-" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "0i3jrjbz4hgf62fm1ix7nlcmhi4kcv4flqsfvh7a3l2v7nsp5ryb"))))
-    (build-system ant-build-system)
-    (arguments
-     `(#:jar-name "mxparser.jar"
-       #:source-dir "src/main/java"
-       #:test-dir "src/test"
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'copy-resources
-           (lambda _
-             (copy-recursively "src/main/resources" "build/classes")
-             #t)))))
-    (propagated-inputs
-     (list java-xmlpull-api-v1))
-    (native-inputs
-     (list java-junit))
-    (home-page "https://github.com/x-stream/mxparser")
-    (synopsis "Streaming pull XML parser forked from @code{java-xpp3}")
-    (description "Xml Pull Parser (in short XPP) is a streaming pull XML
-parser and should be used when there is a need to process quickly and
-efficiently all input elements (for example in SOAP processors). This
-package is a stable XmlPull parsing engine that is based on ideas from XPP
-and in particular XPP2 but completely revised and rewritten to take the best
-advantage of JIT JVMs.
-
-MXParser is a fork of xpp3_min 1.1.7 containing only the parser with merged
-changes of the Plexus fork. It is an implementation of the XMLPULL V1 API
-(parser only).")
-    (license (license:non-copyleft "file://LICENSE.txt"))))
-
 (define-public xmlrpc-c
   (package
     (name "xmlrpc-c")
@@ -2366,7 +1718,7 @@ changes of the Plexus fork. It is an implementation of the XMLPULL V1 API
              (substitute* "GNUmakefile"
                (("#! /bin/sh") (which "sh")))
              #t)))))
-    (home-page "http://xmlrpc-c.sourceforge.net/")
+    (home-page "https://xmlrpc-c.sourceforge.net/")
     (synopsis "Lightweight RPC library based on XML and HTTP")
     (description
      "XML-RPC is a quick-and-easy way to make procedure calls over the Internet.
@@ -2389,60 +1741,46 @@ modular implementation of XML-RPC for C and C++.")
     (outputs '("out" "doc"))
     (build-system gnu-build-system)
     (native-inputs
-     `(("docbook-xml" ,docbook-xml-4.1.2)
-       ("docbook-xsl" ,docbook-xsl)
-       ("libxml2" ,libxml2)             ;for XML_CATALOG_DIR
-       ("xmlto" ,xmlto)
-       ;; Dependencies to regenerate the 'configure' script.
-       ("autoconf" ,autoconf)
-       ("automake" ,automake)
-       ("gettext" ,gettext-minimal)
-       ("libtool" ,libtool)))
+     (list docbook-xml-4.1.2
+           docbook-xsl
+           libxml2                      ;for XML_CATALOG_DIR
+           xmlto
+           ;; Dependencies to regenerate the 'configure' script.
+           autoconf
+           automake
+           gettext-minimal
+           libtool))
     (arguments
-     `( ;; Note: we cannot use '--enable-full-doc-build' as this would require
-       ;; Openjade, which in turn requires this package.
+     (list
+      ;; Note: we cannot use '--enable-full-doc-build' as this would require
+      ;; Openjade, which in turn requires this package.
 
-       ;; Skip the tests that are known to fail (see:
-       ;; https://sourceforge.net/p/openjade/mailman/message/6182316/)
-       #:make-flags '("TESTS_THAT_FAIL=")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-docbook-paths
-           (lambda* (#:key inputs #:allow-other-keys)
-             (let ((xmldoc (string-append (assoc-ref inputs "docbook-xml")
-                                          "/xml/dtd/docbook"))
-                   (xsldoc (string-append (assoc-ref inputs "docbook-xsl")
-                                          "/xml/xsl/docbook-xsl-"
-                                          ,(package-version docbook-xsl))))
-               (substitute* (find-files "docsrc" "\\.xml$")
-                 (("/usr/share/sgml/docbook/xml-dtd-4.1.2") xmldoc)
-                 (("http://.*/docbookx\\.dtd")
-                  (string-append xmldoc "/docbookx.dtd")))
-               #t)))
-         (add-after 'patch-docbook-paths 'delete-configure
-           ;; The configure script in the release was made with an older
-           ;; Autoconf and lacks support for the `--docdir' option.
-           (lambda _
-             (delete-file "configure")
-             #t))
-         (add-after 'delete-configure 'honor-docdir
-           ;; docdir is not honored due to being hardcoded in the various
-           ;; Makefile.am (see: https://sourceforge.net/p/openjade/bugs/147/).
-           (lambda _
-             (substitute* '("Makefile.am" "doc/Makefile.am" "docsrc/Makefile.am")
-               (("^docdir = .*") "docdir = @docdir@\n"))
-             #t))
-         (add-after 'delete-configure 'fix-tests-makefile.am
-           ;; Remove the trailing $(SHELL) from the TESTS_ENVIRONMENT variable
-           ;; definition. Otherwise, when targets are built using
-           ;; "$(am__check_pre) $(LOG_DRIVER) [...]", there would be two
-           ;; $(SHELL) expansion which fails the build.
-           (lambda _
-             (substitute* "tests/Makefile.am"
-               (("^\tOSGMLNORM=`echo osgmlnorm\\|sed '\\$\\(transform\\)'`\\\\")
-                "\tOSGMLNORM=`echo osgmlnorm|sed '$(transform)'`")
-               (("^\t\\$\\(SHELL\\)\n") ""))
-             #t)))))
+      ;; Skip the tests that are known to fail (see:
+      ;; https://sourceforge.net/p/openjade/mailman/message/6182316/)
+      #:make-flags #~(list "TESTS_THAT_FAIL=")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'delete-configure
+            ;; The configure script in the release was made with an older
+            ;; Autoconf and lacks support for the `--docdir' option.
+            (lambda _
+              (delete-file "configure")))
+          (add-after 'delete-configure 'honor-docdir
+            ;; docdir is not honored due to being hardcoded in the various
+            ;; Makefile.am (see: https://sourceforge.net/p/openjade/bugs/147/).
+            (lambda _
+              (substitute* '("Makefile.am" "doc/Makefile.am" "docsrc/Makefile.am")
+                (("^docdir = .*") "docdir = @docdir@\n"))))
+          (add-after 'delete-configure 'fix-tests-makefile.am
+            ;; Remove the trailing $(SHELL) from the TESTS_ENVIRONMENT variable
+            ;; definition. Otherwise, when targets are built using
+            ;; "$(am__check_pre) $(LOG_DRIVER) [...]", there would be two
+            ;; $(SHELL) expansion which fails the build.
+            (lambda _
+              (substitute* "tests/Makefile.am"
+                (("^\tOSGMLNORM=`echo osgmlnorm\\|sed '\\$\\(transform\\)'`\\\\")
+                 "\tOSGMLNORM=`echo osgmlnorm|sed '$(transform)'`")
+                (("^\t\\$\\(SHELL\\)\n") "")))))))
     ;; $SGML_CATALOG_FILES lists 'catalog' or 'CATALOG' or '*.cat' files found
     ;; under the 'sgml' sub-directory of any given package.
     (native-search-paths (list (search-path-specification
@@ -2451,7 +1789,7 @@ modular implementation of XML-RPC for C and C++.")
                                 (files '("sgml"))
                                 (file-pattern "^catalog$|^CATALOG$|^.*\\.cat$")
                                 (file-type 'regular))))
-    (home-page "http://openjade.sourceforge.net/")
+    (home-page "https://openjade.sourceforge.net/")
     (synopsis "Suite of SGML/XML processing tools")
     (description "OpenSP is an object-oriented toolkit for SGML parsing and
 entity management.  It is a fork of James Clark's SP suite.  The tools it
@@ -2495,26 +1833,20 @@ because lxml.etree already has its own implementation of XPath 1.0.")
 (define-public python-lxml
   (package
     (name "python-lxml")
-    (version "4.6.3")
+    (version "4.9.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "lxml" version))
        (sha256
-        (base32 "0s14r1w2x9sdlcsw8mxiqgw4rz5zs5lpqpxrfyn4a1mkndqqbdrr"))
-       ;; Adapt a test to libxml2 2.9.12, taken from this commit:
-       ;; https://github.com/lxml/lxml/commit/852ed1092bd80b6b9a51db24371047e
-       (modules '((guix build utils)))
-       (snippet
-        '(substitute* "src/lxml/tests/test_etree.py"
-             (("self\\.assertEqual\\(\\{'hha': None\\}, el\\.nsmap\\)")
-              "self.assertEqual({}, el.nsmap)")))))
+         (base32 "0grczyrrq2rbwhvpri15cyhv330s494vbz3js3jky8xp5c2rnx7y"))))
     (build-system python-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
                   (replace 'check
-                    (lambda _
-                      (invoke "make" "test"))))))
+                    (lambda* (#:key tests? #:allow-other-keys)
+                      (when tests?
+                        (invoke "make" "test")))))))
     (inputs
      (list libxml2 libxslt))
     (home-page "https://lxml.de/")
@@ -2524,17 +1856,8 @@ because lxml.etree already has its own implementation of XPath 1.0.")
 libxml2 and libxslt.")
     (license license:bsd-3))) ; and a few more, see LICENSES.txt
 
-(define-public python-lxml-4.7
-  (package
-    (inherit python-lxml)
-    (version "4.7.1")
-    (source
-     (origin
-       (inherit (package-source python-lxml))
-       (uri (pypi-uri "lxml" version))
-       (sha256
-        (base32
-         "090viyanaki4q7w7i000xl0qh4in52bkl3qal55sz2bbm8w3hqd1"))))))
+(define-deprecated python-lxml-4.7 python-lxml)
+(export python-lxml-4.7)
 
 (define-public python-untangle
   ;; The latest tagged release is from 2014; use the latest commit.

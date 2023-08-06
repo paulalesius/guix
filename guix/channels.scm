@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2018-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2018-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Brice Waegeneire <brice@waegenei.re>
@@ -29,8 +29,6 @@
   #:use-module (guix base16)
   #:use-module (guix records)
   #:use-module (guix gexp)
-  #:use-module (guix modules)
-  #:use-module (guix discovery)
   #:use-module (guix monads)
   #:use-module (guix profiles)
   #:use-module (guix packages)
@@ -55,8 +53,6 @@
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (ice-9 vlist)
-  #:use-module ((ice-9 rdelim) #:select (read-string))
-  #:use-module ((rnrs bytevectors) #:select (bytevector=?))
   #:export (channel
             channel?
             channel-name
@@ -256,7 +252,14 @@ could be found at DIRECTORY or one of its ancestors."
                             ('commit commit) ('signer signer)
                             _ ...)
      (make-channel-introduction commit (openpgp-fingerprint signer)))
-    (x #f)))
+    (x (raise (condition
+               (&message
+                (message (format #f (G_ "channel dependency has an invalid\
+ introduction field"))))
+               (&error-location
+                (location
+                 (source-properties->location
+                  (source-properties x)))))))))
 
 (define (read-channel-metadata port)
   "Read from PORT channel metadata in the format expected for the
@@ -952,6 +955,10 @@ be used as a profile hook."
                       (backtrace))))
               (mkdir #$output))))
 
+    (define channels
+      (map (compose string->symbol manifest-entry-name)
+           (manifest-entries manifest)))
+
     (gexp->derivation-in-inferior "guix-package-cache" build
                                   profile
 
@@ -960,8 +967,9 @@ be used as a profile hook."
                                   ;; instead of failing.
                                   #:silent-failure? #t
 
-                                  #:properties '((type . profile-hook)
-                                                 (hook . package-cache))
+                                  #:properties `((type . profile-hook)
+                                                 (hook . package-cache)
+                                                 (channels . ,channels))
                                   #:local-build? #t)))
 
 (define %channel-profile-hooks
@@ -1057,7 +1065,9 @@ true, include its introduction, if any."
       (name ',(channel-name channel))
       (url ,(channel-url channel))
       (branch ,(channel-branch channel))
-      (commit ,(channel-commit channel))
+      ,@(if (channel-commit channel)
+            `((commit ,(channel-commit channel)))
+            '())
       ,@(if intro
             `((introduction (make-channel-introduction
                              ,(channel-introduction-first-signed-commit intro)

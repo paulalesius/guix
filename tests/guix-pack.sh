@@ -1,6 +1,6 @@
 # GNU Guix --- Functional package management for GNU
 # Copyright © 2018 Chris Marusich <cmmarusich@gmail.com>
-# Copyright © 2018, 2019, 2020, 2022 Ludovic Courtès <ludo@gnu.org>
+# Copyright © 2018, 2019, 2020, 2022, 2023 Ludovic Courtès <ludo@gnu.org>
 #
 # This file is part of GNU Guix.
 #
@@ -37,7 +37,7 @@ test_directory="`mktemp -d`"
 trap 'chmod -Rf +w "$test_directory"; rm -rf "$test_directory"' EXIT
 
 # Reject unsuppoted packages.
-! guix pack intelmetool -s armhf-linux -n
+guix pack intelmetool -s armhf-linux -n && false
 
 # Compute the derivation of a pack.
 drv="`guix pack coreutils -d --no-grafts`"
@@ -48,7 +48,7 @@ guix gc -R "$drv" | grep "`guix build coreutils -d --no-grafts`"
 drv="`guix pack idutils -d --no-grafts --target=arm-linux-gnueabihf`"
 guix gc -R "$drv" | \
     grep "`guix build idutils --target=arm-linux-gnueabihf -d --no-grafts`"
-! guix gc -R "$drv" | grep "`guix build idutils -d --no-grafts`"
+guix gc -R "$drv" | grep "`guix build idutils -d --no-grafts`" && false
 
 # Build a tarball with no compression.
 guix pack --compression=none --bootstrap guile-bootstrap
@@ -114,7 +114,8 @@ guix pack --dry-run --bootstrap --target=arm-linux-gnueabihf coreutils
 guix pack -R --dry-run --bootstrap -S /mybin=bin guile-bootstrap
 
 # Make sure package transformation options are honored.
-mkdir -p "$test_directory"
+chmod -Rf +w "$test_directory"; rm -r "$test_directory"
+mkdir -p "$test_directory" -m 755
 drv1="`guix pack --no-grafts -n guile 2>&1 | grep pack.*\.drv`"
 drv2="`guix pack --no-grafts -n --with-source=guile=$test_directory guile 2>&1 | grep pack.*\.drv`"
 test -n "$drv1"

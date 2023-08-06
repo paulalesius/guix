@@ -1,5 +1,5 @@
 # GNU Guix --- Functional package management for GNU
-# Copyright © 2012-2022 Ludovic Courtès <ludo@gnu.org>
+# Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 # Copyright © 2013 Andreas Enge <andreas@enge.fr>
 # Copyright © 2015, 2017 Alex Kost <alezost@gmail.com>
 # Copyright © 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
@@ -14,6 +14,7 @@
 # Copyright © 2018 Oleg Pykhalov <go.wigust@gmail.com>
 # Copyright © 2018 Alex Vong <alexvong1995@gmail.com>
 # Copyright © 2019 Efraim Flashner <efraim@flashner.co.il>
+# Copyright © 2020, 2021, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 # Copyright © 2021 Chris Marusich <cmmarusich@gmail.com>
 # Copyright © 2021 Andrew Tropin <andrew@trop.in>
 #
@@ -111,6 +112,7 @@ MODULES =					\
   guix/derivations.scm				\
   guix/grafts.scm				\
   guix/repl.scm					\
+  guix/rpm.scm					\
   guix/transformations.scm			\
   guix/inferior.scm				\
   guix/describe.scm				\
@@ -139,6 +141,7 @@ MODULES =					\
   guix/platforms/riscv.scm                      \
   guix/platforms/x86.scm                        \
   guix/build-system.scm				\
+  guix/build-system/agda.scm                    \
   guix/build-system/android-ndk.scm		\
   guix/build-system/ant.scm			\
   guix/build-system/cargo.scm			\
@@ -153,6 +156,7 @@ MODULES =					\
   guix/build-system/font.scm			\
   guix/build-system/go.scm			\
   guix/build-system/meson.scm			\
+  guix/build-system/mozilla.scm			\
   guix/build-system/minify.scm			\
   guix/build-system/minetest.scm		\
   guix/build-system/asdf.scm			\
@@ -178,6 +182,7 @@ MODULES =					\
   guix/build-system/ruby.scm			\
   guix/build-system/scons.scm			\
   guix/build-system/texlive.scm			\
+  guix/build-system/tree-sitter.scm		\
   guix/build-system/trivial.scm			\
   guix/ftp-client.scm				\
   guix/http-client.scm				\
@@ -192,6 +197,7 @@ MODULES =					\
   guix/diagnostics.scm				\
   guix/ui.scm					\
   guix/status.scm				\
+  guix/build/agda-build-system.scm              \
   guix/build/android-ndk-build-system.scm	\
   guix/build/ant-build-system.scm		\
   guix/build/download.scm			\
@@ -234,9 +240,11 @@ MODULES =					\
   guix/build/ruby-build-system.scm		\
   guix/build/scons-build-system.scm		\
   guix/build/texlive-build-system.scm		\
+  guix/build/tree-sitter-build-system.scm	\
   guix/build/waf-build-system.scm		\
   guix/build/haskell-build-system.scm		\
   guix/build/julia-build-system.scm		\
+  guix/build/kconfig.scm			\
   guix/build/linux-module-build-system.scm	\
   guix/build/store-copy.scm			\
   guix/build/json.scm				\
@@ -288,6 +296,7 @@ MODULES =					\
   guix/import/print.scm				\
   guix/import/pypi.scm				\
   guix/import/stackage.scm			\
+  guix/import/test.scm   			\
   guix/import/texlive.scm   			\
   guix/import/utils.scm				\
   guix/scripts.scm				\
@@ -297,6 +306,7 @@ MODULES =					\
   guix/scripts/archive.scm			\
   guix/scripts/import.scm			\
   guix/scripts/package.scm			\
+  guix/scripts/locate.scm			\
   guix/scripts/install.scm			\
   guix/scripts/remove.scm			\
   guix/scripts/upgrade.scm			\
@@ -323,6 +333,7 @@ MODULES =					\
   guix/scripts/lint.scm				\
   guix/scripts/challenge.scm			\
   guix/scripts/import/crate.scm			\
+  guix/scripts/import/cpan.scm			\
   guix/scripts/import/cran.scm			\
   guix/scripts/import/egg.scm   		\
   guix/scripts/import/elm.scm			\
@@ -399,10 +410,16 @@ AUX_FILES =						\
   gnu/packages/aux-files/chromium/master-preferences.json		\
   gnu/packages/aux-files/emacs/guix-emacs.el		\
   gnu/packages/aux-files/guix.vim			\
-  gnu/packages/aux-files/linux-libre/6.0-arm.conf	\
-  gnu/packages/aux-files/linux-libre/6.0-arm64.conf	\
-  gnu/packages/aux-files/linux-libre/6.0-i686.conf	\
-  gnu/packages/aux-files/linux-libre/6.0-x86_64.conf	\
+  gnu/packages/aux-files/linux-libre/6.4-i686.conf	\
+  gnu/packages/aux-files/linux-libre/6.4-x86_64.conf	\
+  gnu/packages/aux-files/linux-libre/6.3-arm.conf	\
+  gnu/packages/aux-files/linux-libre/6.3-arm64.conf	\
+  gnu/packages/aux-files/linux-libre/6.3-i686.conf	\
+  gnu/packages/aux-files/linux-libre/6.3-x86_64.conf	\
+  gnu/packages/aux-files/linux-libre/6.1-arm.conf	\
+  gnu/packages/aux-files/linux-libre/6.1-arm64.conf	\
+  gnu/packages/aux-files/linux-libre/6.1-i686.conf	\
+  gnu/packages/aux-files/linux-libre/6.1-x86_64.conf	\
   gnu/packages/aux-files/linux-libre/5.15-arm.conf	\
   gnu/packages/aux-files/linux-libre/5.15-arm64.conf	\
   gnu/packages/aux-files/linux-libre/5.15-i686.conf	\
@@ -422,13 +439,13 @@ AUX_FILES =						\
   gnu/packages/aux-files/linux-libre/4.14-arm.conf	\
   gnu/packages/aux-files/linux-libre/4.14-i686.conf	\
   gnu/packages/aux-files/linux-libre/4.14-x86_64.conf	\
-  gnu/packages/aux-files/linux-libre/4.9-i686.conf	\
-  gnu/packages/aux-files/linux-libre/4.9-x86_64.conf	\
   gnu/packages/aux-files/pack-audit.c			\
   gnu/packages/aux-files/python/sanity-check.py		\
   gnu/packages/aux-files/python/sitecustomize.py	\
   gnu/packages/aux-files/renpy/renpy.in	\
-  gnu/packages/aux-files/run-in-namespace.c
+  gnu/packages/aux-files/run-in-namespace.c		\
+  gnu/packages/aux-files/xml/patch-catalog-xml.xsl	\
+  gnu/packages/aux-files/xml/docbook-xml/catalog-4.1.2.xml
 
 # Templates, examples.
 EXAMPLES =					\
@@ -439,6 +456,8 @@ EXAMPLES =					\
   gnu/system/examples/desktop.tmpl		\
   gnu/system/examples/lightweight-desktop.tmpl	\
   gnu/system/examples/docker-image.tmpl		\
+  gnu/system/examples/raspberry-pi-64.tmpl	\
+  gnu/system/examples/raspberry-pi-64-nfs-root.tmpl	\
   gnu/system/examples/vm-image.tmpl
 
 GOBJECTS = $(MODULES:%.scm=%.go) guix/config.go $(dist_noinst_DATA:%.scm=%.go)
@@ -530,6 +549,7 @@ SCM_TESTS =					\
   tests/pypi.scm				\
   tests/read-print.scm				\
   tests/records.scm				\
+  tests/rpm.scm					\
   tests/scripts.scm				\
   tests/search-paths.scm			\
   tests/services.scm				\
@@ -538,6 +558,7 @@ SCM_TESTS =					\
   tests/services/lightdm.scm			\
   tests/services/linux.scm			\
   tests/services/telephony.scm			\
+  tests/services/vpn.scm			\
   tests/sets.scm				\
   tests/size.scm				\
   tests/status.scm				\
@@ -578,6 +599,7 @@ SH_TESTS =					\
   tests/guix-gc.sh				\
   tests/guix-git-authenticate.sh		\
   tests/guix-hash.sh				\
+  tests/guix-locate.sh				\
   tests/guix-pack.sh				\
   tests/guix-pack-localstatedir.sh		\
   tests/guix-pack-relocatable.sh		\
@@ -591,6 +613,7 @@ SH_TESTS =					\
   tests/guix-authenticate.sh			\
   tests/guix-environment.sh			\
   tests/guix-environment-container.sh		\
+  tests/guix-refresh.sh				\
   tests/guix-shell.sh				\
   tests/guix-shell-export-manifest.sh		\
   tests/guix-graph.sh				\
@@ -685,6 +708,7 @@ EXTRA_DIST +=						\
   etc/guix-install.sh					\
   etc/historical-authorizations				\
   etc/news.scm						\
+  etc/kernels-manifest.scm				\
   etc/release-manifest.scm				\
   etc/source-manifest.scm				\
   etc/system-tests.scm					\
@@ -751,20 +775,35 @@ endef
 # in <https://issues.guix.gnu.org/48963>.  Each 'eval' call below creates a
 # 'make-*-go' phony target that builds the corresponding subset.
 
-MODULES_CORE     = guix.scm $(filter-out guix/scripts/%,$(filter guix/%,$(MODULES)))
-MODULES_PACKAGES = $(filter gnu/packages/%,$(MODULES))
-MODULES_SYSTEM   = gnu.scm $(filter-out gnu/packages/%,$(filter gnu/%,$(MODULES)))
-MODULES_CLI      = $(filter guix/scripts/%,$(MODULES))
-MODULES_PO       = guix/build/po.scm
+first_half :=								\
+  gnu/packages/a% gnu/packages/b% gnu/packages/c% gnu/packages/d%	\
+  gnu/packages/e% gnu/packages/f% gnu/packages/g% gnu/packages/h%	\
+  gnu/packages/i% gnu/packages/j% gnu/packages/k% gnu/packages/l%
+
+MODULES_CORE      := guix.scm $(filter-out guix/scripts/%,$(filter guix/%,$(MODULES)))
+MODULES_PACKAGES1 := $(filter $(first_half),$(MODULES))
+MODULES_PACKAGES2 := $(filter-out $(first_half),$(filter gnu/packages/%,$(MODULES)))
+MODULES_PACKAGES  := $(MODULES_PACKAGES1) $(MODULES_PACKAGES2)
+MODULES_SYSTEM    := gnu.scm $(filter-out gnu/packages/%,$(filter gnu/%,$(MODULES)))
+MODULES_CLI       := $(filter guix/scripts/%,$(MODULES))
+MODULES_PO        := guix/build/po.scm
 
 $(eval $(call guile-compilation-rule,make-core-go,	\
   $(MODULES_CORE) guix/config.scm $(dist_noinst_DATA),	\
   0))
 .PHONY: make-core-go
 
-$(eval $(call guile-compilation-rule,make-packages-go,	\
-  $(MODULES_PACKAGES) make-core-go,			\
+$(eval $(call guile-compilation-rule,make-packages1-go,	\
+  $(MODULES_PACKAGES1) make-core-go,			\
   $(words $(MODULES_CORE))))
+.PHONY: make-packages1-go
+
+$(eval $(call guile-compilation-rule,make-packages2-go,	\
+  $(MODULES_PACKAGES2) make-core-go make-packages1-go,	\
+  $(words $(MODULES_CORE) $(MODULES_PACKAGES1))))
+.PHONY: make-packages2-go
+
+make-packages-go: make-packages1-go make-packages2-go
 .PHONY: make-packages-go
 
 $(eval $(call guile-compilation-rule,make-system-go,	\
@@ -987,7 +1026,7 @@ release: dist-with-updated-version all
 	      -v1 --no-grafts --fallback
 # Generate the ISO installation images.
 	for system in $(GUIX_SYSTEM_SUPPORTED_SYSTEMS) ; do				\
-	  GUIX_DISPLAYED_VERSION="`git describe --match=v* | sed -'es/^v//v'`" ;	\
+	  GUIX_DISPLAYED_VERSION="`git describe --match=v* | sed -'es/^v//'`" ;		\
 	  image=`$(top_builddir)/pre-inst-env						\
 	    guix system image -t iso9660						\
 	    --label="GUIX_$${system}_$(VERSION)"					\
@@ -1003,7 +1042,7 @@ release: dist-with-updated-version all
 	done
 # Generate the VM images.
 	for system in $(GUIX_SYSTEM_VM_SYSTEMS) ; do					\
-	  GUIX_DISPLAYED_VERSION="`git describe --match=v* | sed -'es/^v//v'`" ;	\
+	  GUIX_DISPLAYED_VERSION="`git describe --match=v* | sed -'es/^v//'`" ;		\
 	  image=`$(top_builddir)/pre-inst-env						\
 	    guix system image -t qcow2 $(GUIX_SYSTEM_VM_IMAGE_FLAGS)			\
 	    --save-provenance								\
@@ -1080,6 +1119,19 @@ cuirass-jobs: $(GOBJECTS)
 .PHONY: assert-final-inputs-self-contained check-channel-news
 .PHONY: clean-go make-go as-derivation authenticate
 .PHONY: update-guix-package update-NEWS cuirass-jobs release
+
+# Git auto-configuration.
+.git/hooks/pre-push: etc/git/pre-push
+	$(AM_V_at)if test -d .git; then \
+	cp etc/git/pre-push .git/hooks/pre-push; \
+	fi
+
+.git/config: etc/git/gitconfig
+	$(AM_V_at)if command -v git >/dev/null && test -d .git; then \
+	git config --add include.path ../etc/git/gitconfig; \
+	fi
+
+nodist_noinst_DATA = .git/hooks/pre-push .git/config
 
 # Downloading up-to-date PO files.
 

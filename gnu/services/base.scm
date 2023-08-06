@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2013-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2013-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2015, 2016 Alex Kost <alezost@gmail.com>
 ;;; Copyright © 2015, 2016, 2020 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015 Sou Bunnbu <iyzsong@gmail.com>
@@ -10,16 +10,17 @@
 ;;; Copyright © 2019 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2019 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019 John Soo <jsoo1@asu.edu>
-;;; Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Florian Pelz <pelzflorian@pelzflorian.de>
 ;;; Copyright © 2020, 2021 Brice Waegeneire <brice@waegenei.re>
 ;;; Copyright © 2021 qblade <qblade@protonmail.com>
 ;;; Copyright © 2021 Hui Lu <luhuins@163.com>
-;;; Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 muradm <mail@muradm.net>
 ;;; Copyright © 2022 Guillaume Le Vaillant <glv@posteo.net>
 ;;; Copyright © 2022 Justin Veilleux <terramorpha@cock.li>
 ;;; Copyright © 2022 ( <paren@disroot.org>
+;;; Copyright © 2023 Bruno Victal <mirai@makinata.eu>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -39,7 +40,7 @@
 (define-module (gnu services base)
   #:use-module (guix store)
   #:use-module (guix deprecation)
-  #:autoload   (guix diagnostics) (warning &fix-hint)
+  #:autoload   (guix diagnostics) (warning formatted-message &fix-hint)
   #:autoload   (guix i18n) (G_)
   #:use-module (guix combinators)
   #:use-module (gnu services)
@@ -61,8 +62,10 @@
                           util-linux xfsprogs))
   #:use-module (gnu packages bash)
   #:use-module ((gnu packages base)
-                #:select (coreutils glibc glibc-utf8-locales tar))
+                #:select (coreutils glibc glibc-utf8-locales tar
+                          canonical-package))
   #:use-module ((gnu packages compression) #:select (gzip))
+  #:use-module (gnu packages fonts)
   #:autoload   (gnu packages guile-xyz) (guile-netlink)
   #:autoload   (gnu packages hurd) (hurd)
   #:use-module (gnu packages package-management)
@@ -71,6 +74,7 @@
                 #:select (dosfstools))
   #:use-module ((gnu packages file-systems)
                 #:select (bcachefs-tools exfat-utils jfsutils zfs))
+  #:use-module (gnu packages fonts)
   #:use-module (gnu packages terminals)
   #:use-module ((gnu packages wm) #:select (sway))
   #:use-module ((gnu build file-systems)
@@ -79,6 +83,7 @@
   #:use-module (guix gexp)
   #:use-module (guix records)
   #:use-module (guix modules)
+  #:use-module (guix pki)
   #:use-module ((guix self) #:select (make-config.scm))
   #:use-module (guix diagnostics)
   #:use-module (guix i18n)
@@ -95,11 +100,19 @@
             file-system-service-type
             file-system-utilities
             swap-service
-            host-name-service
+            host-name-service  ; deprecated
+            host-name-service-type
             %default-console-font
             console-font-service-type
             console-font-service
             virtual-terminal-service-type
+
+            host
+            host?
+            host-address
+            host-canonical-name
+            host-aliases
+            hosts-service-type
 
             static-networking
             static-networking?
@@ -138,7 +151,7 @@
             udev-configuration?
             udev-configuration-rules
             udev-service-type
-            udev-service
+            udev-service  ; deprecated
             udev-rule
             file->udev-rule
             udev-rules-service
@@ -146,11 +159,11 @@
             login-configuration
             login-configuration?
             login-service-type
-            login-service
+            login-service  ; deprecated
 
             agetty-configuration
             agetty-configuration?
-            agetty-service
+            agetty-service  ; deprecated
             agetty-service-type
 
             mingetty-configuration
@@ -161,11 +174,11 @@
             mingetty-configuration-clear-on-logout?
             mingetty-configuration-mingetty
             mingetty-configuration?
-            mingetty-service
+            mingetty-service  ; deprecated
             mingetty-service-type
 
             %nscd-default-caches
-            %nscd-default-configuration
+            %nscd-default-configuration  ; deprecated
 
             nscd-configuration
             nscd-configuration?
@@ -174,11 +187,11 @@
             nscd-cache?
 
             nscd-service-type
-            nscd-service
+            nscd-service  ; deprecated
 
             syslog-configuration
             syslog-configuration?
-            syslog-service
+            syslog-service  ; deprecated
             syslog-service-type
             %default-syslog.conf
 
@@ -196,6 +209,7 @@
             guix-configuration-generate-substitute-key?
             guix-configuration-extra-options
             guix-configuration-log-file
+            guix-configuration-environment
 
             guix-extension
             guix-extension?
@@ -210,7 +224,6 @@
             guix-publish-configuration-port
             guix-publish-configuration-host
             guix-publish-configuration-compression
-            guix-publish-configuration-compression-level ;deprecated
             guix-publish-configuration-nar-path
             guix-publish-configuration-cache
             guix-publish-configuration-ttl
@@ -226,14 +239,14 @@
             rngd-configuration
             rngd-configuration?
             rngd-service-type
-            rngd-service
+            rngd-service  ; deprecated
 
             kmscon-configuration
             kmscon-configuration?
             kmscon-service-type
 
             pam-limits-service-type
-            pam-limits-service
+            pam-limits-service  ; deprecated
 
             greetd-service-type
             greetd-configuration
@@ -311,11 +324,7 @@ system objects.")))
              (sync)
 
              (let ((null (%make-void-port "w")))
-               ;; Close 'shepherd.log'.
-               (display "closing log\n")
-               ((@ (shepherd comm) stop-logging))
-
-               ;; Redirect the default output ports..
+               ;; Redirect the default output ports.
                (set-current-output-port null)
                (set-current-error-port null)
 
@@ -649,8 +658,10 @@ down.")))
 (define-record-type* <rngd-configuration>
   rngd-configuration make-rngd-configuration
   rngd-configuration?
-  (rng-tools rngd-configuration-rng-tools)        ;file-like
-  (device    rngd-configuration-device))          ;string
+  (rng-tools rngd-configuration-rng-tools         ;file-like
+             (default rng-tools))
+  (device    rngd-configuration-device            ;string
+             (default "/dev/hwrng")))
 
 (define rngd-service-type
   (shepherd-service-type
@@ -669,12 +680,13 @@ down.")))
         (provision '(trng))
         (start #~(make-forkexec-constructor '#$rngd-command))
         (stop #~(make-kill-destructor))))
+    (rngd-configuration)
     (description "Run the @command{rngd} random number generation daemon to
 supply entropy to the kernel's pool.")))
 
-(define* (rngd-service #:key
-                       (rng-tools rng-tools)
-                       (device "/dev/hwrng"))
+(define-deprecated (rngd-service #:key (rng-tools rng-tools)
+                                 (device "/dev/hwrng"))
+  rngd-service-type
   "Return a service that runs the @command{rngd} program from @var{rng-tools}
 to add @var{device} to the kernel's entropy pool.  The service will fail if
 @var{device} does not exist."
@@ -682,6 +694,73 @@ to add @var{device} to the kernel's entropy pool.  The service will fail if
            (rngd-configuration
             (rng-tools rng-tools)
             (device device))))
+
+;;;
+;;; /etc/hosts
+;;;
+
+(eval-when (expand load eval)
+  (define (valid-name? name)
+    "Return true if @var{name} is likely to be a valid host name."
+    (false-if-exception (not (string-any char-set:whitespace name)))))
+
+(define-compile-time-procedure (assert-valid-name (name valid-name?))
+  "Ensure @var{name} is likely to be a valid host name."
+  ;; TODO: RFC compliant implementation.
+  (unless (valid-name? name)
+    (raise
+     (make-compound-condition
+      (formatted-message (G_ "host name '~a' contains invalid characters")
+                         name)
+      (condition (&error-location
+                  (location
+                   (source-properties->location procedure-call-location)))))))
+  name)
+
+(define-record-type* <host> %host
+  ;; XXX: Using the record type constructor becomes tiresome when
+  ;; there's multiple records to make.
+  make-host host?
+  (address        host-address)
+  (canonical-name host-canonical-name
+                  (sanitize assert-valid-name))
+  (aliases        host-aliases
+                  (default '())
+                  (sanitize (cut map assert-valid-name <>))))
+
+(define* (host address canonical-name #:optional (aliases '()))
+  "Return a new record for the host at @var{address} with the given
+@var{canonical-name} and possibly @var{aliases}.
+
+@var{address} must be a string denoting a valid IPv4 or IPv6 address, and
+@var{canonical-name} and the strings listed in @var{aliases} must be valid
+host names."
+  (%host
+   (address address)
+   (canonical-name canonical-name)
+   (aliases aliases)))
+
+(define hosts-service-type
+  ;; Extend etc-service-type with a entry for @file{/etc/hosts}.
+  (let* ((serialize-host-record
+          (lambda (record)
+            (match-record record <host> (address canonical-name aliases)
+              (format #f "~a~/~a~{~^~/~a~}~%" address canonical-name aliases))))
+         (host-etc-service
+          (lambda (lst)
+            `(("hosts" ,(plain-file "hosts"
+                                    (format #f "~{~a~}"
+                                            (map serialize-host-record
+                                                 lst))))))))
+    (service-type
+     (name 'etc-hosts)
+     (extensions
+      (list
+       (service-extension etc-service-type
+                          host-etc-service)))
+     (compose concatenate)
+     (extend append)
+     (description "Populate the @file{/etc/hosts} file."))))
 
 
 ;;;
@@ -700,7 +779,8 @@ to add @var{device} to the kernel's entropy pool.  The service will fail if
       (one-shot? #t)))
    (description "Initialize the machine's host name.")))
 
-(define (host-name-service name)
+(define-deprecated (host-name-service name)
+  host-name-service-type
   "Return a service that sets the host name to @var{name}."
   (service host-name-service-type name))
 
@@ -730,26 +810,12 @@ to add @var{device} to the kernel's entropy pool.  The service will fail if
    #t                                             ;default to UTF-8
    (description "Ensure the Linux virtual terminals run in UTF-8 mode.")))
 
-(define console-keymap-service-type
-  (shepherd-service-type
-   'console-keymap
-   (lambda (files)
-     (shepherd-service
-      (documentation (string-append "Load console keymap (loadkeys)."))
-      (provision '(console-keymap))
-      (start #~(lambda _
-                 (zero? (system* #$(file-append kbd "/bin/loadkeys")
-                                 #$@files))))
-      (respawn? #f)))
-   (description "@emph{This service is deprecated in favor of the
-@code{keyboard-layout} field of @code{operating-system}.}  Load the given list
-of console keymaps with @command{loadkeys}.")))
-
 (define %default-console-font
-  ;; Note: 'LatGrkCyr-8x16' has the advantage of providing three common
-  ;; scripts as well as glyphs for em dash, quotation marks, and other Unicode
-  ;; codepoints notably found in the UTF-8 manual.
-  "LatGrkCyr-8x16")
+  ;; Note: the 'font-gnu-unifont' package cannot be cross-compiled (yet), but
+  ;; its "psf" output is the same whether it's built natively or not, hence
+  ;; 'ungexp-native'.
+  #~(string-append #+font-gnu-unifont:psf
+                   "/share/consolefonts/Unifont-APL8x16.psf.gz"))
 
 (define (console-font-shepherd-services tty+font)
   "Return a list of Shepherd services for each pair in TTY+FONT."
@@ -789,7 +855,7 @@ of console keymaps with @command{loadkeys}.")))
                                         "-C" #$device #$font))
                           ((0 71) #t)
                           (else #f))))
-             (stop #~(const #t))
+             (stop #~(const #f))
              (respawn? #f)))))
        tty+font))
 
@@ -815,14 +881,6 @@ package or any valid argument to @command{setfont}, as in this example:
                  font-terminus
                  \"/share/consolefonts/ter-132n\"))) ; for HDPI
 @end example\n")))
-
-(define* (console-font-service tty #:optional (font "LatGrkCyr-8x16"))
-  "This procedure is deprecated in favor of @code{console-font-service-type}.
-
-Return a service that sets up Unicode support in @var{tty} and loads
-@var{font} for that tty (fonts are per virtual console in Linux.)"
-  (simple-service (symbol-append 'console-font- (string->symbol tty))
-                  console-font-service-type `((,tty . ,font))))
 
 (define %default-motd
   (plain-file "motd" "This is the GNU operating system, welcome!\n\n"))
@@ -856,7 +914,8 @@ Return a service that sets up Unicode support in @var{tty} and loads
                  "Provide a console log-in service as specified by its
 configuration value, a @code{login-configuration} object.")))
 
-(define* (login-service #:optional (config (login-configuration)))
+(define-deprecated (login-service #:optional (config (login-configuration)))
+  login-service-type
   "Return a service configure login according to @var{config}, which specifies
 the message of the day, among other things."
   (service login-service-type config))
@@ -977,148 +1036,158 @@ to use as the tty.  This is primarily useful for headless systems."
                ((device-name _ ...)
                 device-name))))))))
 
-(define agetty-shepherd-service
-  (match-lambda
-    (($ <agetty-configuration> agetty tty term baud-rate auto-login
-        login-program login-pause? eight-bits? no-reset? remote? flow-control?
-        host no-issue? init-string no-clear? local-line extract-baud?
-        skip-login? no-newline? login-options chroot hangup? keep-baud? timeout
-        detect-case? wait-cr? no-hints? no-hostname? long-hostname?
-        erase-characters kill-characters chdir delay nice extra-options
-        shepherd-requirement)
-     (list
-       (shepherd-service
-         (documentation "Run agetty on a tty.")
-         (provision (list (symbol-append 'term- (string->symbol (or tty "console")))))
+(define (agetty-shepherd-service config)
+  (match-record config <agetty-configuration>
+    (agetty tty term baud-rate auto-login
+            login-program login-pause? eight-bits? no-reset? remote? flow-control?
+            host no-issue? init-string no-clear? local-line extract-baud?
+            skip-login? no-newline? login-options chroot hangup? keep-baud? timeout
+            detect-case? wait-cr? no-hints? no-hostname? long-hostname?
+            erase-characters kill-characters chdir delay nice extra-options
+            shepherd-requirement)
+    (list
+     (shepherd-service
+      (documentation "Run agetty on a tty.")
+      (provision (list (symbol-append 'term- (string->symbol (or tty "console")))))
 
-         ;; Since the login prompt shows the host name, wait for the 'host-name'
-         ;; service to be done.  Also wait for udev essentially so that the tty
-         ;; text is not lost in the middle of kernel messages (see also
-         ;; mingetty-shepherd-service).
-         (requirement (cons* 'user-processes 'host-name 'udev
-                             shepherd-requirement))
+      ;; Since the login prompt shows the host name, wait for the 'host-name'
+      ;; service to be done.  Also wait for udev essentially so that the tty
+      ;; text is not lost in the middle of kernel messages (see also
+      ;; mingetty-shepherd-service).
+      (requirement (cons* 'user-processes 'host-name 'udev
+                          shepherd-requirement))
 
-         (modules '((ice-9 match) (gnu build linux-boot)))
-         (start
-          (with-imported-modules  (source-module-closure
-                                   '((gnu build linux-boot)))
-            #~(lambda args
-                (let ((defaulted-tty #$(or tty (default-serial-port))))
-                  (apply
-                   (if defaulted-tty
-                       (make-forkexec-constructor
-                        (list #$(file-append util-linux "/sbin/agetty")
-                              #$@extra-options
-                              #$@(if eight-bits?
-                                     #~("--8bits")
-                                     #~())
-                              #$@(if no-reset?
-                                     #~("--noreset")
-                                     #~())
-                              #$@(if remote?
-                                     #~("--remote")
-                                     #~())
-                              #$@(if flow-control?
-                                     #~("--flow-control")
-                                     #~())
-                              #$@(if host
-                                     #~("--host" #$host)
-                                     #~())
-                              #$@(if no-issue?
-                                     #~("--noissue")
-                                     #~())
-                              #$@(if init-string
-                                     #~("--init-string" #$init-string)
-                                     #~())
-                              #$@(if no-clear?
-                                     #~("--noclear")
-                                     #~())
+      (modules '((ice-9 match) (gnu build linux-boot)))
+      (start
+       (with-imported-modules  (source-module-closure
+                                '((gnu build linux-boot)))
+         #~(lambda args
+             (let ((defaulted-tty #$(or tty (default-serial-port))))
+               (apply
+                (if defaulted-tty
+                    (make-forkexec-constructor
+                     (list #$(file-append util-linux "/sbin/agetty")
+                           #$@extra-options
+                           #$@(if eight-bits?
+                                  #~("--8bits")
+                                  #~())
+                           #$@(if no-reset?
+                                  #~("--noreset")
+                                  #~())
+                           #$@(if remote?
+                                  #~("--remote")
+                                  #~())
+                           #$@(if flow-control?
+                                  #~("--flow-control")
+                                  #~())
+                           #$@(if host
+                                  #~("--host" #$host)
+                                  #~())
+                           #$@(if no-issue?
+                                  #~("--noissue")
+                                  #~())
+                           #$@(if init-string
+                                  #~("--init-string" #$init-string)
+                                  #~())
+                           #$@(if no-clear?
+                                  #~("--noclear")
+                                  #~())
 ;;; FIXME This doesn't work as expected. According to agetty(8), if this option
 ;;; is not passed, then the default is 'auto'. However, in my tests, when that
 ;;; option is selected, agetty never presents the login prompt, and the
 ;;; term-ttyS0 service respawns every few seconds.
-                              #$@(if local-line
-                                     #~(#$(match local-line
-                                            ('auto "--local-line=auto")
-                                            ('always "--local-line=always")
-                                            ('never "-local-line=never")))
-                                     #~())
-                              #$@(if tty
-                                     #~()
-                                     #~("--keep-baud"))
-                              #$@(if extract-baud?
-                                     #~("--extract-baud")
-                                     #~())
-                              #$@(if skip-login?
-                                     #~("--skip-login")
-                                     #~())
-                              #$@(if no-newline?
-                                     #~("--nonewline")
-                                     #~())
-                              #$@(if login-options
-                                     #~("--login-options" #$login-options)
-                                     #~())
-                              #$@(if chroot
-                                     #~("--chroot" #$chroot)
-                                     #~())
-                              #$@(if hangup?
-                                     #~("--hangup")
-                                     #~())
-                              #$@(if keep-baud?
-                                     #~("--keep-baud")
-                                     #~())
-                              #$@(if timeout
-                                     #~("--timeout" #$(number->string timeout))
-                                     #~())
-                              #$@(if detect-case?
-                                     #~("--detect-case")
-                                     #~())
-                              #$@(if wait-cr?
-                                     #~("--wait-cr")
-                                     #~())
-                              #$@(if no-hints?
-                                     #~("--nohints?")
-                                     #~())
-                              #$@(if no-hostname?
-                                     #~("--nohostname")
-                                     #~())
-                              #$@(if long-hostname?
-                                     #~("--long-hostname")
-                                     #~())
-                              #$@(if erase-characters
-                                     #~("--erase-chars" #$erase-characters)
-                                     #~())
-                              #$@(if kill-characters
-                                     #~("--kill-chars" #$kill-characters)
-                                     #~())
-                              #$@(if chdir
-                                     #~("--chdir" #$chdir)
-                                     #~())
-                              #$@(if delay
-                                     #~("--delay" #$(number->string delay))
-                                     #~())
-                              #$@(if nice
-                                     #~("--nice" #$(number->string nice))
-                                     #~())
-                              #$@(if auto-login
-                                     (list "--autologin" auto-login)
-                                     '())
-                              #$@(if login-program
-                                     #~("--login-program" #$login-program)
-                                     #~())
-                              #$@(if login-pause?
-                                     #~("--login-pause")
-                                     #~())
-                              defaulted-tty
-                              #$@(if baud-rate
-                                     #~(#$baud-rate)
-                                     #~())
-                              #$@(if term
-                                     #~(#$term)
-                                     #~())))
-                       (const #f))                 ; never start.
-                   args)))))
-         (stop #~(make-kill-destructor)))))))
+                           #$@(if local-line
+                                  #~(#$(match local-line
+                                         ('auto "--local-line=auto")
+                                         ('always "--local-line=always")
+                                         ('never "-local-line=never")))
+                                  #~())
+                           #$@(if tty
+                                  #~()
+                                  #~("--keep-baud"))
+                           #$@(if extract-baud?
+                                  #~("--extract-baud")
+                                  #~())
+                           #$@(if skip-login?
+                                  #~("--skip-login")
+                                  #~())
+                           #$@(if no-newline?
+                                  #~("--nonewline")
+                                  #~())
+                           #$@(if login-options
+                                  #~("--login-options" #$login-options)
+                                  #~())
+                           #$@(if chroot
+                                  #~("--chroot" #$chroot)
+                                  #~())
+                           #$@(if hangup?
+                                  #~("--hangup")
+                                  #~())
+                           #$@(if keep-baud?
+                                  #~("--keep-baud")
+                                  #~())
+                           #$@(if timeout
+                                  #~("--timeout" #$(number->string timeout))
+                                  #~())
+                           #$@(if detect-case?
+                                  #~("--detect-case")
+                                  #~())
+                           #$@(if wait-cr?
+                                  #~("--wait-cr")
+                                  #~())
+                           #$@(if no-hints?
+                                  #~("--nohints?")
+                                  #~())
+                           #$@(if no-hostname?
+                                  #~("--nohostname")
+                                  #~())
+                           #$@(if long-hostname?
+                                  #~("--long-hostname")
+                                  #~())
+                           #$@(if erase-characters
+                                  #~("--erase-chars" #$erase-characters)
+                                  #~())
+                           #$@(if kill-characters
+                                  #~("--kill-chars" #$kill-characters)
+                                  #~())
+                           #$@(if chdir
+                                  #~("--chdir" #$chdir)
+                                  #~())
+                           #$@(if delay
+                                  #~("--delay" #$(number->string delay))
+                                  #~())
+                           #$@(if nice
+                                  #~("--nice" #$(number->string nice))
+                                  #~())
+                           #$@(if auto-login
+                                  (list "--autologin" auto-login)
+                                  '())
+                           #$@(if login-program
+                                  #~("--login-program" #$login-program)
+                                  #~())
+                           #$@(if login-pause?
+                                  #~("--login-pause")
+                                  #~())
+                           defaulted-tty
+                           #$@(if baud-rate
+                                  #~(#$baud-rate)
+                                  #~())
+                           #$@(if term
+                                  #~(#$term)
+                                  #~())))
+                    #$(if tty
+                          #~(const #f)         ;always fail to start
+                          #~(lambda _          ;succeed, but don't do anything
+                              (format #t "~a: \
+no serial port console requested; doing nothing~%"
+                                      '#$(car provision))
+                              'idle)))
+                args)))))
+      (stop #~(let ((stop (make-kill-destructor)))
+                (lambda (running)
+                  (if (eq? 'idle running)
+                      #f
+                      (stop running)))))))))
 
 (define agetty-service-type
   (service-type (name 'agetty)
@@ -1128,7 +1197,8 @@ to use as the tty.  This is primarily useful for headless systems."
                  "Provide console login using the @command{agetty}
 program.")))
 
-(define* (agetty-service config)
+(define-deprecated (agetty-service config)
+  agetty-service-type
   "Return a service to run agetty according to @var{config}, which specifies
 the tty to run, among other things."
   (service agetty-service-type config))
@@ -1148,42 +1218,42 @@ the tty to run, among other things."
   (clear-on-logout? mingetty-clear-on-logout?       ;Boolean
                     (default #t)))
 
-(define mingetty-shepherd-service
-  (match-lambda
-    (($ <mingetty-configuration> mingetty tty auto-login login-program
-                                 login-pause? clear-on-logout?)
-     (list
-      (shepherd-service
-       (documentation "Run mingetty on an tty.")
-       (provision (list (symbol-append 'term- (string->symbol tty))))
+(define (mingetty-shepherd-service config)
+  (match-record config <mingetty-configuration>
+    (mingetty tty auto-login login-program
+              login-pause? clear-on-logout?)
+    (list
+     (shepherd-service
+      (documentation "Run mingetty on an tty.")
+      (provision (list (symbol-append 'term- (string->symbol tty))))
 
-       ;; Since the login prompt shows the host name, wait for the 'host-name'
-       ;; service to be done.  Also wait for udev essentially so that the tty
-       ;; text is not lost in the middle of kernel messages (XXX).
-       (requirement '(user-processes host-name udev virtual-terminal))
+      ;; Since the login prompt shows the host name, wait for the 'host-name'
+      ;; service to be done.  Also wait for udev essentially so that the tty
+      ;; text is not lost in the middle of kernel messages (XXX).
+      (requirement '(user-processes host-name udev virtual-terminal))
 
-       (start  #~(make-forkexec-constructor
-                  (list #$(file-append mingetty "/sbin/mingetty")
+      (start  #~(make-forkexec-constructor
+                 (list #$(file-append mingetty "/sbin/mingetty")
 
-                        ;; Avoiding 'vhangup' allows us to avoid 'setfont'
-                        ;; errors down the path where various ioctls get
-                        ;; EIO--see 'hung_up_tty_ioctl' in driver/tty/tty_io.c
-                        ;; in Linux.
-                        "--nohangup" #$tty
+                       ;; Avoiding 'vhangup' allows us to avoid 'setfont'
+                       ;; errors down the path where various ioctls get
+                       ;; EIO--see 'hung_up_tty_ioctl' in driver/tty/tty_io.c
+                       ;; in Linux.
+                       "--nohangup" #$tty
 
-                        #$@(if clear-on-logout?
-                               #~()
-                               #~("--noclear"))
-                        #$@(if auto-login
-                               #~("--autologin" #$auto-login)
-                               #~())
-                        #$@(if login-program
-                               #~("--loginprog" #$login-program)
-                               #~())
-                        #$@(if login-pause?
-                               #~("--loginpause")
-                               #~()))))
-       (stop   #~(make-kill-destructor)))))))
+                       #$@(if clear-on-logout?
+                              #~()
+                              #~("--noclear"))
+                       #$@(if auto-login
+                              #~("--autologin" #$auto-login)
+                              #~())
+                       #$@(if login-program
+                              #~("--loginprog" #$login-program)
+                              #~())
+                       #$@(if login-pause?
+                              #~("--loginpause")
+                              #~()))))
+      (stop   #~(make-kill-destructor))))))
 
 (define mingetty-service-type
   (service-type (name 'mingetty)
@@ -1193,7 +1263,8 @@ the tty to run, among other things."
                  "Provide console login using the @command{mingetty}
 program.")))
 
-(define* (mingetty-service config)
+(define-deprecated (mingetty-service config)
+  mingetty-service-type
   "Return a service to run mingetty according to @var{config}, which specifies
 the tty to run, among other things."
   (service mingetty-service-type config))
@@ -1211,7 +1282,13 @@ the tty to run, among other things."
   (name-services nscd-configuration-name-services ;list of file-like
                  (default '()))
   (glibc      nscd-configuration-glibc            ;file-like
-              (default glibc)))
+              (default (let-system (system target)
+                         ;; Unless we're cross-compiling, arrange to use nscd
+                         ;; from 'glibc-final' instead of pulling in a second
+                         ;; glibc copy.
+                         (if target
+                             glibc
+                             (canonical-package glibc))))))
 
 (define-record-type* <nscd-cache> nscd-cache make-nscd-cache
   nscd-cache?
@@ -1253,53 +1330,55 @@ the tty to run, among other things."
                     (check-files? #t)             ;check /etc/services changes
                     (persistent? #t))))
 
-(define %nscd-default-configuration
+(define-deprecated %nscd-default-configuration
+  #f
   ;; Default nscd configuration.
   (nscd-configuration))
 
 (define (nscd.conf-file config)
   "Return the @file{nscd.conf} configuration file for @var{config}, an
 @code{<nscd-configuration>} object."
-  (define cache->config
-    (match-lambda
-      (($ <nscd-cache> (= symbol->string database)
-                       positive-ttl negative-ttl size check-files?
-                       persistent? shared? max-size propagate?)
-       (string-append "\nenable-cache\t" database "\tyes\n"
+  (define (cache->config cache)
+    (match-record cache <nscd-cache>
+      (database positive-time-to-live negative-time-to-live
+                suggested-size check-files?
+                persistent? shared? max-database-size auto-propagate?)
+      (let ((database (symbol->string database)))
+        (string-append "\nenable-cache\t" database "\tyes\n"
 
-                      "positive-time-to-live\t" database "\t"
-                      (number->string positive-ttl) "\n"
-                      "negative-time-to-live\t" database "\t"
-                      (number->string negative-ttl) "\n"
-                      "suggested-size\t" database "\t"
-                      (number->string size) "\n"
-                      "check-files\t" database "\t"
-                      (if check-files? "yes\n" "no\n")
-                      "persistent\t" database "\t"
-                      (if persistent? "yes\n" "no\n")
-                      "shared\t" database "\t"
-                      (if shared? "yes\n" "no\n")
-                      "max-db-size\t" database "\t"
-                      (number->string max-size) "\n"
-                      "auto-propagate\t" database "\t"
-                      (if propagate? "yes\n" "no\n")))))
+                       "positive-time-to-live\t" database "\t"
+                       (number->string positive-time-to-live) "\n"
+                       "negative-time-to-live\t" database "\t"
+                       (number->string negative-time-to-live) "\n"
+                       "suggested-size\t" database "\t"
+                       (number->string suggested-size) "\n"
+                       "check-files\t" database "\t"
+                       (if check-files? "yes\n" "no\n")
+                       "persistent\t" database "\t"
+                       (if persistent? "yes\n" "no\n")
+                       "shared\t" database "\t"
+                       (if shared? "yes\n" "no\n")
+                       "max-db-size\t" database "\t"
+                       (number->string max-database-size) "\n"
+                       "auto-propagate\t" database "\t"
+                       (if auto-propagate? "yes\n" "no\n")))))
 
-  (match config
-    (($ <nscd-configuration> log-file debug-level caches)
-     (plain-file "nscd.conf"
-                 (string-append "\
+  (match-record config <nscd-configuration>
+    (log-file debug-level caches)
+    (plain-file "nscd.conf"
+                (string-append "\
 # Configuration of libc's name service cache daemon (nscd).\n\n"
-                                (if log-file
-                                    (string-append "logfile\t" log-file)
-                                    "")
-                                "\n"
-                                (if debug-level
-                                    (string-append "debug-level\t"
-                                                   (number->string debug-level))
-                                    "")
-                                "\n"
-                                (string-concatenate
-                                 (map cache->config caches)))))))
+                               (if log-file
+                                   (string-append "logfile\t" log-file)
+                                   "")
+                               "\n"
+                               (if debug-level
+                                   (string-append "debug-level\t"
+                                                  (number->string debug-level))
+                                   "")
+                               "\n"
+                               (string-concatenate
+                                (map cache->config caches))))))
 
 (define (nscd-action-procedure nscd config option)
   ;; XXX: This is duplicated from mcron; factorize.
@@ -1350,7 +1429,11 @@ the tty to run, among other things."
     (list (shepherd-service
            (documentation "Run libc's name service cache daemon (nscd).")
            (provision '(nscd))
-           (requirement '(user-processes))
+
+           ;; Logs are written with syslog(3), which writes to /dev/console
+           ;; when nobody's listening--ugly.  Thus, wait for syslogd.
+           (requirement '(user-processes syslogd))
+
            (start #~(make-forkexec-constructor
                      (list #$nscd "-f" #$nscd.conf "--foreground")
 
@@ -1406,18 +1489,50 @@ the tty to run, among other things."
                            (name-services (append
                                            (nscd-configuration-name-services config)
                                            name-services)))))
-                (default-value %nscd-default-configuration)
+                (default-value (nscd-configuration))
                 (description
                  "Runs libc's @dfn{name service cache daemon} (nscd) with the
 given configuration---an @code{<nscd-configuration>} object.  @xref{Name
 Service Switch}, for an example.")))
 
-(define* (nscd-service #:optional (config %nscd-default-configuration))
+(define-deprecated (nscd-service #:optional (config (nscd-configuration)))
+  nscd-service-type
   "Return a service that runs libc's name service cache daemon (nscd) with the
 given @var{config}---an @code{<nscd-configuration>} object.  @xref{Name
 Service Switch}, for an example."
   (service nscd-service-type config))
 
+;;; Snippet adapted from the GNU inetutils manual.
+(define %default-syslog.conf
+  (plain-file "syslog.conf" "\
+# See info '(inetutils) syslogd invocation' for the documentation
+# of the syslogd configuration syntax.
+
+# Log all error messages, authentication messages of
+# level notice or higher and anything of level err or
+# higher to the console.
+# Don't log private authentication messages!
+*.alert;auth.notice;authpriv.none      -/dev/console
+
+# Log anything (except mail) of level info or higher.
+# Don't log private authentication messages!
+*.info;mail.none;authpriv.none         -/var/log/messages
+
+# Log \"debug\"-level entries and nothing else.
+*.=debug                               -/var/log/debug
+
+# Same, in a different place.
+*.info;mail.none;authpriv.none         -/dev/tty12
+
+# The authpriv file has restricted access.
+# 'fsync' the file after each line (hence the lack of a leading dash).
+# Also include unprivileged auth logs of info or higher level
+# to conveniently gather the authentication data at the same place.
+authpriv.*;auth.info                    /var/log/secure
+
+# Log all the mail messages in one place.
+mail.*                                 -/var/log/maillog
+"))
 
 (define-record-type* <syslog-configuration>
   syslog-configuration  make-syslog-configuration
@@ -1427,57 +1542,57 @@ Service Switch}, for an example."
   (config-file          syslog-configuration-config-file
                         (default %default-syslog.conf)))
 
+;;; Note: a static file name is used for syslog.conf so that the reload action
+;;; work as intended.
+(define syslog.conf "/etc/syslog.conf")
+
+(define (syslog-etc configuration)
+  (match-record configuration <syslog-configuration>
+    (config-file)
+    (list `(,(basename syslog.conf) ,config-file))))
+
+(define (syslog-shepherd-service config)
+  (define config-file
+    (syslog-configuration-config-file config))
+
+  (shepherd-service
+   (documentation "Run the syslog daemon (syslogd).")
+   (provision '(syslogd))
+   (requirement '(user-processes))
+   (actions
+    (list (shepherd-configuration-action syslog.conf)
+          (shepherd-action
+           (name 'reload)
+           (documentation "Reload the configuration file from disk.")
+           (procedure
+            #~(lambda (pid)
+                (if pid
+                    (begin
+                      (kill pid SIGHUP)
+                      (display #$(G_ "Service syslog has been asked to \
+reload its settings file.")))
+                    (display #$(G_ "Service syslog is not running."))))))))
+   ;; Note: a static file name is used for syslog.conf so that the reload
+   ;; action work as intended.
+   (start #~(make-forkexec-constructor
+             (list #$(syslog-configuration-syslogd config)
+                   #$(string-append "--rcfile=" syslog.conf))
+             #:file-creation-mask #o137
+             #:pid-file "/var/run/syslog.pid"))
+   (stop #~(make-kill-destructor))))
+
 (define syslog-service-type
-  (shepherd-service-type
-   'syslog
-   (lambda (config)
-     (shepherd-service
-      (documentation "Run the syslog daemon (syslogd).")
-      (provision '(syslogd))
-      (requirement '(user-processes))
-      (start #~(let ((spawn (make-forkexec-constructor
-                             (list #$(syslog-configuration-syslogd config)
-                                   "--rcfile"
-                                   #$(syslog-configuration-config-file config))
-                             #:pid-file "/var/run/syslog.pid")))
-                 (lambda ()
-                   ;; Set the umask such that file permissions are #o640.
-                   (let ((mask (umask #o137))
-                         (pid  (spawn)))
-                     (umask mask)
-                     pid))))
-      (stop #~(make-kill-destructor))))
+  (service-type
+   (name 'syslog)
+   (default-value (syslog-configuration))
+   (extensions (list (service-extension shepherd-root-service-type
+                                        (compose list syslog-shepherd-service))
+                     (service-extension etc-service-type syslog-etc)))
    (description "Run the syslog daemon, @command{syslogd}, which is
 responsible for logging system messages.")))
 
-;; Snippet adapted from the GNU inetutils manual.
-(define %default-syslog.conf
-  (plain-file "syslog.conf" "
-     # Log all error messages, authentication messages of
-     # level notice or higher and anything of level err or
-     # higher to the console.
-     # Don't log private authentication messages!
-     *.alert;auth.notice;authpriv.none      -/dev/console
-
-     # Log anything (except mail) of level info or higher.
-     # Don't log private authentication messages!
-     *.info;mail.none;authpriv.none         -/var/log/messages
-
-     # Log \"debug\"-level entries and nothing else.
-     *.=debug                               -/var/log/debug
-
-     # Same, in a different place.
-     *.info;mail.none;authpriv.none         -/dev/tty12
-
-     # The authpriv file has restricted access.
-     # 'fsync' the file after each line (hence the lack of a leading dash).
-     authpriv.*                              /var/log/secure
-
-     # Log all the mail messages in one place.
-     mail.*                                 -/var/log/maillog
-"))
-
-(define* (syslog-service #:optional (config (syslog-configuration)))
+(define-deprecated (syslog-service #:optional (config (syslog-configuration)))
+  syslog-service-type
   "Return a service that runs @command{syslogd} and takes
 @var{<syslog-configuration>} as a parameter.
 
@@ -1487,25 +1602,43 @@ information on the configuration file syntax."
 
 
 (define pam-limits-service-type
-  (let ((security-limits
-         ;; Create /etc/security containing the provided "limits.conf" file.
-         (lambda (limits-file)
-           `(("security/limits.conf"
-              ,limits-file))))
-        (pam-extension
-         (lambda (pam)
-           (let ((pam-limits (pam-entry
-                              (control "required")
-                              (module "pam_limits.so")
-                              (arguments '("conf=/etc/security/limits.conf")))))
-             (if (member (pam-service-name pam)
-                         '("login" "greetd" "su" "slim" "gdm-password" "sddm"
-                           "sudo" "sshd"))
-                 (pam-service
-                  (inherit pam)
-                  (session (cons pam-limits
-                                 (pam-service-session pam))))
-                 pam)))))
+  (let ((pam-extension
+         (pam-extension
+          (transformer
+           (lambda (pam)
+             (let ((pam-limits (pam-entry
+                                (control "required")
+                                (module "pam_limits.so")
+                                (arguments
+                                 '("conf=/etc/security/limits.conf")))))
+               (if (member (pam-service-name pam)
+                           '("login" "greetd" "su" "slim" "gdm-password"
+                             "sddm" "sudo" "sshd" "lightdm"))
+                   (pam-service
+                    (inherit pam)
+                    (session (cons pam-limits
+                                   (pam-service-session pam))))
+                   pam))))))
+
+        ;; XXX: Using file-like objects is deprecated, use lists instead.
+        ;;      This is to be reduced into the list? case when the deprecated
+        ;;      code gets removed.
+        ;; Create /etc/security containing the provided "limits.conf" file.
+        (security-limits
+         (match-lambda
+           ((? file-like? obj)
+            (warning (G_ "Using file-like value for \
+'pam-limits-service-type' is deprecated~%"))
+            `(("security/limits.conf" ,obj)))
+           ((? list? lst)
+            `(("security/limits.conf"
+               ,(plain-file "limits.conf"
+                            (string-join (map pam-limits-entry->string lst)
+                                         "\n" 'suffix)))))
+           (_ (raise
+               (formatted-message
+                (G_ "invalid input for 'pam-limits-service-type'~%")))))))
+
     (service-type
      (name 'limits)
      (extensions
@@ -1515,9 +1648,11 @@ information on the configuration file syntax."
      (description
       "Install the specified resource usage limits by populating
 @file{/etc/security/limits.conf} and using the @code{pam_limits}
-authentication module."))))
+authentication module.")
+     (default-value '()))))
 
-(define* (pam-limits-service #:optional (limits '()))
+(define-deprecated (pam-limits-service #:optional (limits '()))
+  pam-limits-service-type
   "Return a service that makes selected programs respect the list of
 pam-limits-entry specified in LIMITS via pam_limits.so."
   (service pam-limits-service-type
@@ -1590,19 +1725,19 @@ archive' public keys, with GUIX."
   (with-imported-modules '((guix build utils))
     #~(begin
         (use-modules (guix build utils))
-
+        (define acl-file #$%acl-file)
         ;; If the ACL already exists, move it out of the way.  Create a backup
         ;; if it's a regular file: it's likely that the user manually updated
         ;; it with 'guix archive --authorize'.
-        (if (file-exists? "/etc/guix/acl")
-            (if (and (symbolic-link? "/etc/guix/acl")
-                     (store-file-name? (readlink "/etc/guix/acl")))
-                (delete-file "/etc/guix/acl")
-                (rename-file "/etc/guix/acl" "/etc/guix/acl.bak"))
-            (mkdir-p "/etc/guix"))
+        (if (file-exists? acl-file)
+            (if (and (symbolic-link? acl-file)
+                     (store-file-name? (readlink acl-file)))
+                (delete-file acl-file)
+                (rename-file acl-file (string-append acl-file ".bak")))
+            (mkdir-p (dirname acl-file)))
 
         ;; Installed the declared ACL.
-        (symlink #+default-acl "/etc/guix/acl"))))
+        (symlink #+default-acl acl-file))))
 
 (define %default-authorized-guix-keys
   ;; List of authorized substitute keys.
@@ -1645,7 +1780,9 @@ archive' public keys, with GUIX."
   (http-proxy       guix-http-proxy               ;string | #f
                     (default #f))
   (tmpdir           guix-tmpdir                   ;string | #f
-                    (default #f)))
+                    (default #f))
+  (environment      guix-configuration-environment  ;list of strings
+                    (default '())))
 
 (define %default-guix-configuration
   (guix-configuration))
@@ -1701,11 +1838,12 @@ proxy of 'guix-daemon'...~%")
     (guix build-group build-accounts authorize-key? authorized-keys
           use-substitutes? substitute-urls max-silent-time timeout
           log-compression discover? extra-options log-file
-          http-proxy tmpdir chroot-directories)
+          http-proxy tmpdir chroot-directories environment)
     (list (shepherd-service
            (documentation "Run the Guix daemon.")
            (provision '(guix-daemon))
-           (requirement '(user-processes))
+           (requirement `(user-processes
+                          ,@(if discover? '(avahi-daemon) '())))
            (actions (list shepherd-set-http-proxy-action
                           shepherd-discover-action))
            (modules '((srfi srfi-1)
@@ -1790,24 +1928,23 @@ proxy of 'guix-daemon'...~%")
                            (if proxy
                                (list (string-append "http_proxy=" proxy)
                                      (string-append "https_proxy=" proxy))
-                               '()))
+                               '())
+                           '#$environment)
 
                    #:log-file #$log-file))))
            (stop #~(make-kill-destructor))))))
 
 (define (guix-accounts config)
   "Return the user accounts and user groups for CONFIG."
-  (match config
-    (($ <guix-configuration> _ build-group build-accounts)
-     (cons (user-group
-            (name build-group)
-            (system? #t)
+  (cons (user-group
+         (name (guix-configuration-build-group config))
+         (system? #t)
 
-            ;; Use a fixed GID so that we can create the store with the right
-            ;; owner.
-            (id 30000))
-           (guix-build-accounts build-accounts
-                                #:group build-group)))))
+         ;; Use a fixed GID so that we can create the store with the right
+         ;; owner.
+         (id 30000))
+        (guix-build-accounts (guix-configuration-build-accounts config)
+                             #:group (guix-configuration-build-group config))))
 
 (define (guix-activation config)
   "Return the activation gexp for CONFIG."
@@ -1889,10 +2026,7 @@ proxy of 'guix-daemon'...~%")
               (default #f))
   (compression       guix-publish-configuration-compression
                      (thunked)
-                     (default (default-compression this-record
-                                (current-source-location))))
-  (compression-level %guix-publish-configuration-compression-level ;deprecated
-                     (default #f))
+                     (default (default-compression this-record)))
   (nar-path    guix-publish-configuration-nar-path ;string
                (default "nar"))
   (cache       guix-publish-configuration-cache   ;#f | string
@@ -1906,25 +2040,14 @@ proxy of 'guix-daemon'...~%")
   (negative-ttl guix-publish-configuration-negative-ttl ;#f | integer
                 (default #f)))
 
-(define-deprecated (guix-publish-configuration-compression-level config)
-  "Return a compression level, the old way."
-  (match (guix-publish-configuration-compression config)
-    (((_ level) _ ...) level)))
-
-(define (default-compression config properties)
+(define (default-compression config)
   "Return the default 'guix publish' compression according to CONFIG, and
 raise a deprecation warning if the 'compression-level' field was used."
-  (match (%guix-publish-configuration-compression-level config)
-    (#f
-     ;; Default to low compression levels when there's no cache so that users
-     ;; get good bandwidth by default.
-     (if (guix-publish-configuration-cache config)
-         '(("gzip" 5) ("zstd" 19))
-         '(("gzip" 3) ("zstd" 3))))               ;zstd compresses faster
-    (level
-     (warn-about-deprecation 'compression-level properties
-                             #:replacement 'compression)
-     `(("gzip" ,level)))))
+  ;; Default to low compression levels when there's no cache so that users
+  ;; get good bandwidth by default.
+  (if (guix-publish-configuration-cache config)
+      '(("gzip" 5) ("zstd" 19))
+      '(("gzip" 3) ("zstd" 3))))               ;zstd compresses faster
 
 (define (guix-publish-shepherd-service config)
   (define (config->compression-options config)
@@ -2017,7 +2140,9 @@ raise a deprecation warning if the 'compression-level' field was used."
 
 (define %guix-publish-log-rotations
   (list (log-rotation
-         (files (list "/var/log/guix-publish.log")))))
+         (files (list "/var/log/guix-publish.log"))
+         (options `("rotate 4"                    ;don't keep too many of them
+                    ,@%default-log-rotation-options)))))
 
 (define (guix-publish-activation config)
   (let ((cache (guix-publish-configuration-cache config)))
@@ -2130,95 +2255,94 @@ item of @var{packages}."
   (udev-rule "90-kvm.rules"
              "KERNEL==\"kvm\", GROUP=\"kvm\", MODE=\"0660\"\n"))
 
-(define udev-shepherd-service
+(define (udev-shepherd-service config)
   ;; Return a <shepherd-service> for UDEV with RULES.
-  (match-lambda
-    (($ <udev-configuration> udev)
-     (list
-      (shepherd-service
-       (provision '(udev))
+  (let ((udev (udev-configuration-udev config)))
+    (list
+     (shepherd-service
+      (provision '(udev))
 
-       ;; Udev needs /dev to be a 'devtmpfs' mount so that new device nodes can
-       ;; be added: see
-       ;; <http://www.linuxfromscratch.org/lfs/view/development/chapter07/udev.html>.
-       (requirement '(root-file-system))
+      ;; Udev needs /dev to be a 'devtmpfs' mount so that new device nodes can
+      ;; be added: see
+      ;; <http://www.linuxfromscratch.org/lfs/view/development/chapter07/udev.html>.
+      (requirement '(root-file-system))
 
-       (documentation "Populate the /dev directory, dynamically.")
-       (start
-        (with-imported-modules (source-module-closure
-                                '((gnu build linux-boot)))
-          #~(lambda ()
-              (define udevd
-                ;; 'udevd' from eudev.
-                #$(file-append udev "/sbin/udevd"))
+      (documentation "Populate the /dev directory, dynamically.")
+      (start
+       (with-imported-modules (source-module-closure
+                               '((gnu build linux-boot)))
+         #~(lambda ()
+             (define udevd
+               ;; 'udevd' from eudev.
+               #$(file-append udev "/sbin/udevd"))
 
-              (define (wait-for-udevd)
-                ;; Wait until someone's listening on udevd's control
-                ;; socket.
-                (let ((sock (socket AF_UNIX SOCK_SEQPACKET 0)))
-                  (let try ()
-                    (catch 'system-error
-                      (lambda ()
-                        (connect sock PF_UNIX "/run/udev/control")
-                        (close-port sock))
-                      (lambda args
-                        (format #t "waiting for udevd...~%")
-                        (usleep 500000)
-                        (try))))))
+             (define (wait-for-udevd)
+               ;; Wait until someone's listening on udevd's control
+               ;; socket.
+               (let ((sock (socket AF_UNIX SOCK_SEQPACKET 0)))
+                 (let try ()
+                   (catch 'system-error
+                     (lambda ()
+                       (connect sock PF_UNIX "/run/udev/control")
+                       (close-port sock))
+                     (lambda args
+                       (format #t "waiting for udevd...~%")
+                       (usleep 500000)
+                       (try))))))
 
-              ;; Allow udev to find the modules.
-              (setenv "LINUX_MODULE_DIRECTORY"
-                      "/run/booted-system/kernel/lib/modules")
+             ;; Allow udev to find the modules.
+             (setenv "LINUX_MODULE_DIRECTORY"
+                     "/run/booted-system/kernel/lib/modules")
 
-              (let* ((kernel-release
-                      (utsname:release (uname)))
-                     (linux-module-directory
-                      (getenv "LINUX_MODULE_DIRECTORY"))
-                     (directory
-                      (string-append linux-module-directory "/"
-                                     kernel-release))
-                     (old-umask (umask #o022)))
-                ;; If we're in a container, DIRECTORY might not exist,
-                ;; for instance because the host runs a different
-                ;; kernel.  In that case, skip it; we'll just miss a few
-                ;; nodes like /dev/fuse.
-                (when (file-exists? directory)
-                  (make-static-device-nodes directory))
-                (umask old-umask))
+             (let* ((kernel-release
+                     (utsname:release (uname)))
+                    (linux-module-directory
+                     (getenv "LINUX_MODULE_DIRECTORY"))
+                    (directory
+                     (string-append linux-module-directory "/"
+                                    kernel-release))
+                    (old-umask (umask #o022)))
+               ;; If we're in a container, DIRECTORY might not exist,
+               ;; for instance because the host runs a different
+               ;; kernel.  In that case, skip it; we'll just miss a few
+               ;; nodes like /dev/fuse.
+               (when (file-exists? directory)
+                 (make-static-device-nodes directory))
+               (umask old-umask))
 
-              (let ((pid (fork+exec-command
-                          (list udevd)
-                          #:environment-variables
-                          (cons*
-                           ;; The first one is for udev, the second one for
-                           ;; eudev.
-                           "UDEV_CONFIG_FILE=/etc/udev/udev.conf"
-                           "EUDEV_RULES_DIRECTORY=/etc/udev/rules.d"
-                           (string-append "LINUX_MODULE_DIRECTORY="
-                                          (getenv "LINUX_MODULE_DIRECTORY"))
-                           (default-environment-variables)))))
-                ;; Wait until udevd is up and running.  This appears to
-                ;; be needed so that the events triggered below are
-                ;; actually handled.
-                (wait-for-udevd)
+             (let ((pid (fork+exec-command
+                         (list udevd)
+                         #:environment-variables
+                         (cons*
+                          ;; The first one is for udev, the second one for
+                          ;; eudev.
+                          "UDEV_CONFIG_FILE=/etc/udev/udev.conf"
+                          "EUDEV_RULES_DIRECTORY=/etc/udev/rules.d"
+                          (string-append "LINUX_MODULE_DIRECTORY="
+                                         (getenv "LINUX_MODULE_DIRECTORY"))
+                          (default-environment-variables)))))
+               ;; Wait until udevd is up and running.  This appears to
+               ;; be needed so that the events triggered below are
+               ;; actually handled.
+               (wait-for-udevd)
 
-                ;; Trigger device node creation.
-                (system* #$(file-append udev "/bin/udevadm")
-                         "trigger" "--action=add")
+               ;; Trigger device node creation.
+               (system* #$(file-append udev "/bin/udevadm")
+                        "trigger" "--action=add")
 
-                ;; Wait for things to settle down.
-                (system* #$(file-append udev "/bin/udevadm")
-                         "settle")
-                pid))))
-       (stop #~(make-kill-destructor))
+               ;; Wait for things to settle down.
+               (system* #$(file-append udev "/bin/udevadm")
+                        "settle")
+               pid))))
+      (stop #~(make-kill-destructor))
 
-       ;; When halting the system, 'udev' is actually killed by
-       ;; 'user-processes', i.e., before its own 'stop' method was called.
-       ;; Thus, make sure it is not respawned.
-       (respawn? #f)
-       ;; We need additional modules.
-       (modules `((gnu build linux-boot)        ;'make-static-device-nodes'
-                  ,@%default-modules)))))))
+      ;; When halting the system, 'udev' is actually killed by
+      ;; 'user-processes', i.e., before its own 'stop' method was called.
+      ;; Thus, make sure it is not respawned.
+      (respawn? #f)
+      ;; We need additional modules.
+      (modules `((gnu build linux-boot)           ;'make-static-device-nodes'
+                 ,@%default-modules))))))
 
 (define udev.conf
   (computed-file "udev.conf"
@@ -2226,14 +2350,15 @@ item of @var{packages}."
                      (lambda (port)
                        (format port "udev_rules=\"/etc/udev/rules.d\"~%")))))
 
-(define udev-etc
-  (match-lambda
-    (($ <udev-configuration> udev rules)
-     `(("udev"
-        ,(file-union
-          "udev" `(("udev.conf" ,udev.conf)
-                   ("rules.d" ,(udev-rules-union (cons* udev kvm-udev-rule
-                                                        rules))))))))))
+(define (udev-etc config)
+  (match-record config <udev-configuration>
+    (udev rules)
+    `(("udev"
+       ,(file-union "udev"
+                    `(("udev.conf" ,udev.conf)
+                      ("rules.d"
+                       ,(udev-rules-union (cons* udev kvm-udev-rule
+                                                 rules)))))))))
 
 (define udev-service-type
   (service-type (name 'udev)
@@ -2243,18 +2368,19 @@ item of @var{packages}."
                        (service-extension etc-service-type udev-etc)))
                 (compose concatenate)           ;concatenate the list of rules
                 (extend (lambda (config rules)
-                          (match config
-                            (($ <udev-configuration> udev initial-rules)
-                             (udev-configuration
-                              (udev udev)
-                              (rules (append initial-rules rules)))))))
+                          (let ((initial-rules
+                                 (udev-configuration-rules config)))
+                            (udev-configuration
+                             (inherit config)
+                             (rules (append initial-rules rules))))))
                 (default-value (udev-configuration))
                 (description
                  "Run @command{udev}, which populates the @file{/dev}
 directory dynamically.  Get extra rules from the packages listed in the
 @code{rules} field of its value, @code{udev-configuration} object.")))
 
-(define* (udev-service #:key (udev eudev) (rules '()))
+(define-deprecated (udev-service #:key (udev eudev) (rules '()))
+  udev-service-type
   "Run @var{udev}, which populates the @file{/dev} directory dynamically.  Get
 extra rules from the packages listed in @var{rules}."
   (service udev-service-type
@@ -2385,23 +2511,23 @@ instance."
   (options  gpm-configuration-options             ;list of strings
             (default %default-gpm-options)))
 
-(define gpm-shepherd-service
-  (match-lambda
-    (($ <gpm-configuration> gpm options)
-     (list (shepherd-service
-            (requirement '(udev))
-            (provision '(gpm))
-            ;; 'gpm' runs in the background and sets a PID file.
-            ;; Note that it requires running as "root".
-            (start #~(make-forkexec-constructor
-                      (list #$(file-append gpm "/sbin/gpm")
-                            #$@options)
-                      #:pid-file "/var/run/gpm.pid"
-                      #:pid-file-timeout 3))
-            (stop #~(lambda (_)
-                      ;; Return #f if successfully stopped.
-                      (not (zero? (system* #$(file-append gpm "/sbin/gpm")
-                                           "-k"))))))))))
+(define (gpm-shepherd-service config)
+  (match-record config <gpm-configuration>
+    (gpm options)
+    (list (shepherd-service
+           (requirement '(udev))
+           (provision '(gpm))
+           ;; 'gpm' runs in the background and sets a PID file.
+           ;; Note that it requires running as "root".
+           (start #~(make-forkexec-constructor
+                     (list #$(file-append gpm "/sbin/gpm")
+                           #$@options)
+                     #:pid-file "/var/run/gpm.pid"
+                     #:pid-file-timeout 3))
+           (stop #~(lambda (_)
+                     ;; Return #f if successfully stopped.
+                     (not (zero? (system* #$(file-append gpm "/sbin/gpm")
+                                          "-k")))))))))
 
 (define gpm-service-type
   (service-type (name 'gpm)
@@ -2481,7 +2607,15 @@ notably to select, copy, and paste text.  The default options use the
         (documentation "kmscon virtual terminal")
         (requirement '(user-processes udev dbus-system))
         (provision (list (symbol-append 'term- (string->symbol virtual-terminal))))
-        (start #~(make-forkexec-constructor #$kmscon-command))
+        (start #~(make-forkexec-constructor
+                  #$kmscon-command
+
+                  ;; The installer needs to be able to display glyphs from
+                  ;; various scripts, so give it access to unifont.
+                  ;; TODO: Make this configurable.
+                  #:environment-variables
+                  (list (string-append "XDG_DATA_DIRS="
+                                       #+font-gnu-unifont "/share"))))
         (stop #~(make-kill-destructor)))))
    (description "Start the @command{kmscon} virtual terminal emulator for the
 Linux @dfn{kernel mode setting} (KMS).")))
@@ -2555,16 +2689,17 @@ Write, say, @samp{\"~a/24\"} for a 24-bit network mask.")
                             ipv6-address?))))
   (gateway     network-route-gateway (default #f)))
 
-(define* (cidr->netmask str #:optional (family AF_INET))
-  "Given @var{str}, a string in CIDR notation (e.g., \"1.2.3.4/24\"), return
+(eval-when (expand load eval)
+  (define* (cidr->netmask str #:optional (family AF_INET))
+    "Given @var{str}, a string in CIDR notation (e.g., \"1.2.3.4/24\"), return
 the netmask as a string like \"255.255.255.0\"."
-  (match (string-split str #\/)
-    ((ip (= string->number bits))
-     (let ((mask (ash (- (expt 2 bits) 1)
-                      (- (if (= family AF_INET6) 128 32)
-                         bits))))
-       (inet-ntop family mask)))
-    (_ #f)))
+    (match (string-split str #\/)
+      ((ip (= string->number bits))
+       (let ((mask (ash (- (expt 2 bits) 1)
+                        (- (if (= family AF_INET6) 128 32)
+                           bits))))
+         (inet-ntop family mask)))
+      (_ #f))))
 
 (define (cidr->ip str)
   "Strip the netmask bit of @var{str}, a CIDR-notation IP/netmask address."
@@ -2591,7 +2726,7 @@ to CONFIG."
   (match (static-networking-addresses config)
     ((and addresses (first _ ...))
      `("--ipv6" "/servers/socket/26"
-       "--interface" ,(network-address-device first)
+       "--interface" ,(string-append "/dev/" (network-address-device first))
        ,@(append-map (lambda (address)
                        `(,(if (network-address-ipv6? address)
                               "--address6"
@@ -2634,7 +2769,10 @@ to CONFIG."
                            (format #t "starting '~a~{ ~s~}'~%"
                                    #$(file-append hurd "/hurd/pfinet")
                                    options)
-                           (apply invoke #$(file-append hurd "/bin/settrans") "-fac"
+                           (apply invoke #$(file-append hurd "/bin/settrans")
+                                  "--active"
+                                  "--create"
+                                  "--keep-active"
                                   "/servers/socket/2"
                                   #$(file-append hurd "/hurd/pfinet")
                                   options)))))))
@@ -2654,32 +2792,70 @@ to CONFIG."
                              "/servers/socket/2")
                      #f))))
 
-(define network-set-up/linux
-  (match-lambda
-    (($ <static-networking> addresses links routes)
-     (scheme-file "set-up-network"
-                  (with-extensions (list guile-netlink)
-                    #~(begin
-                        (use-modules (ip addr) (ip link) (ip route))
+(define (network-set-up/linux config)
+  (match-record config <static-networking>
+    (addresses links routes)
+    (scheme-file "set-up-network"
+                 (with-extensions (list guile-netlink)
+                   #~(begin
+                       (use-modules (ip addr) (ip link) (ip route))
 
-                        #$@(map (lambda (address)
-                                  #~(begin
-                                      (addr-add #$(network-address-device address)
-                                                #$(network-address-value address)
-                                                #:ipv6?
-                                                #$(network-address-ipv6? address))
-                                      ;; FIXME: loopback?
-                                      (link-set #$(network-address-device address)
-                                                #:multicast-on #t
-                                                #:up #t)))
-                                addresses)
-                        #$@(map (match-lambda
-                                  (($ <network-link> name type arguments)
-                                   #~(link-add #$name #$type
-                                               #:type-args '#$arguments)))
-                                links)
-                        #$@(map (lambda (route)
-                                  #~(route-add #$(network-route-destination route)
+                       #$@(map (lambda (address)
+                                 #~(begin
+                                     ;; Before going any further, wait for the
+                                     ;; device to show up.
+                                     (wait-for-link
+                                      #$(network-address-device address)
+                                      #:blocking? #f)
+
+                                     (addr-add #$(network-address-device address)
+                                               #$(network-address-value address)
+                                               #:ipv6?
+                                               #$(network-address-ipv6? address))
+                                     ;; FIXME: loopback?
+                                     (link-set #$(network-address-device address)
+                                               #:multicast-on #t
+                                               #:up #t)))
+                               addresses)
+                       #$@(map (match-lambda
+                                 (($ <network-link> name type arguments)
+                                  #~(link-add #$name #$type
+                                              #:type-args '#$arguments)))
+                               links)
+                       #$@(map (lambda (route)
+                                 #~(route-add #$(network-route-destination route)
+                                              #:device
+                                              #$(network-route-device route)
+                                              #:ipv6?
+                                              #$(network-route-ipv6? route)
+                                              #:via
+                                              #$(network-route-gateway route)
+                                              #:src
+                                              #$(network-route-source route)))
+                               routes)
+                       #t)))))
+
+(define (network-tear-down/linux config)
+  (match-record config <static-networking>
+    (addresses links routes)
+    (scheme-file "tear-down-network"
+                 (with-extensions (list guile-netlink)
+                   #~(begin
+                       (use-modules (ip addr) (ip link) (ip route)
+                                    (netlink error)
+                                    (srfi srfi-34))
+
+                       (define-syntax-rule (false-if-netlink-error exp)
+                         (guard (c ((netlink-error? c) #f))
+                           exp))
+
+                       ;; Wrap calls in 'false-if-netlink-error' so this
+                       ;; script goes as far as possible undoing the effects
+                       ;; of "set-up-network".
+
+                       #$@(map (lambda (route)
+                                 #~(false-if-netlink-error
+                                    (route-del #$(network-route-destination route)
                                                #:device
                                                #$(network-route-device route)
                                                #:ipv6?
@@ -2687,80 +2863,47 @@ to CONFIG."
                                                #:via
                                                #$(network-route-gateway route)
                                                #:src
-                                               #$(network-route-source route)))
-                                routes)
-                        #t))))))
-
-(define network-tear-down/linux
-  (match-lambda
-    (($ <static-networking> addresses links routes)
-     (scheme-file "tear-down-network"
-                  (with-extensions (list guile-netlink)
-                    #~(begin
-                        (use-modules (ip addr) (ip link) (ip route)
-                                     (netlink error)
-                                     (srfi srfi-34))
-
-                        (define-syntax-rule (false-if-netlink-error exp)
-                          (guard (c ((netlink-error? c) #f))
-                            exp))
-
-                        ;; Wrap calls in 'false-if-netlink-error' so this
-                        ;; script goes as far as possible undoing the effects
-                        ;; of "set-up-network".
-
-                        #$@(map (lambda (route)
+                                               #$(network-route-source route))))
+                               routes)
+                       #$@(map (match-lambda
+                                 (($ <network-link> name type arguments)
                                   #~(false-if-netlink-error
-                                     (route-del #$(network-route-destination route)
-                                                #:device
-                                                #$(network-route-device route)
-                                                #:ipv6?
-                                                #$(network-route-ipv6? route)
-                                                #:via
-                                                #$(network-route-gateway route)
-                                                #:src
-                                                #$(network-route-source route))))
-                                routes)
-                        #$@(map (match-lambda
-                                  (($ <network-link> name type arguments)
-                                   #~(false-if-netlink-error
-                                      (link-del #$name))))
-                                links)
-                        #$@(map (lambda (address)
-                                  #~(false-if-netlink-error
-                                     (addr-del #$(network-address-device
-                                                  address)
-                                               #$(network-address-value address)
-                                               #:ipv6?
-                                               #$(network-address-ipv6? address))))
-                                addresses)
-                        #f))))))
+                                     (link-del #$name))))
+                               links)
+                       #$@(map (lambda (address)
+                                 #~(false-if-netlink-error
+                                    (addr-del #$(network-address-device
+                                                 address)
+                                              #$(network-address-value address)
+                                              #:ipv6?
+                                              #$(network-address-ipv6? address))))
+                               addresses)
+                       #f)))))
 
 (define (static-networking-shepherd-service config)
-  (match config
-    (($ <static-networking> addresses links routes
-                            provision requirement name-servers)
-     (let ((loopback? (and provision (memq 'loopback provision))))
-       (shepherd-service
+  (match-record config <static-networking>
+    (addresses links routes provision requirement name-servers)
+    (let ((loopback? (and provision (memq 'loopback provision))))
+      (shepherd-service
 
-        (documentation
-         "Bring up the networking interface using a static IP address.")
-        (requirement requirement)
-        (provision provision)
+       (documentation
+        "Bring up the networking interface using a static IP address.")
+       (requirement requirement)
+       (provision provision)
 
-        (start #~(lambda _
-                   ;; Return #t if successfully started.
-                   (load #$(let-system (system target)
-                             (if (string-contains (or target system) "-linux")
-                                 (network-set-up/linux config)
-                                 (network-set-up/hurd config))))))
-        (stop #~(lambda _
-                  ;; Return #f is successfully stopped.
+       (start #~(lambda _
+                  ;; Return #t if successfully started.
                   (load #$(let-system (system target)
                             (if (string-contains (or target system) "-linux")
-                                (network-tear-down/linux config)
-                                (network-tear-down/hurd config))))))
-        (respawn? #f))))))
+                                (network-set-up/linux config)
+                                (network-set-up/hurd config))))))
+       (stop #~(lambda _
+                 ;; Return #f is successfully stopped.
+                 (load #$(let-system (system target)
+                           (if (string-contains (or target system) "-linux")
+                               (network-tear-down/linux config)
+                               (network-tear-down/hurd config))))))
+       (respawn? #f)))))
 
 (define (static-networking-shepherd-services networks)
   (map static-networking-shepherd-service networks))
@@ -2873,33 +3016,33 @@ to handle."
   (extra-env greetd-agreety-extra-env (default '()))
   (xdg-env? greetd-agreety-xdg-env? (default #t)))
 
-(define greetd-agreety-tty-session-command
-  (match-lambda
-    (($ <greetd-agreety-session> _ command args extra-env)
-     (program-file
-      "agreety-tty-session-command"
-      #~(begin
-          (use-modules (ice-9 match))
-          (for-each (match-lambda ((var . val) (setenv var val)))
-                    (quote (#$@extra-env)))
-          (apply execl #$command #$command (list #$@args)))))))
+(define (greetd-agreety-tty-session-command config)
+  (match-record config <greetd-agreety-session>
+    (command command-args extra-env)
+    (program-file
+     "agreety-tty-session-command"
+     #~(begin
+         (use-modules (ice-9 match))
+         (for-each (match-lambda ((var . val) (setenv var val)))
+                   (quote (#$@extra-env)))
+         (apply execl #$command #$command (list #$@command-args))))))
 
-(define greetd-agreety-tty-xdg-session-command
-  (match-lambda
-    (($ <greetd-agreety-session> _ command args extra-env)
-     (program-file
-      "agreety-tty-xdg-session-command"
-      #~(begin
-          (use-modules (ice-9 match))
-          (let*
-              ((username (getenv "USER"))
-               (useruid (passwd:uid (getpwuid username)))
-               (useruid (number->string useruid)))
-            (setenv "XDG_SESSION_TYPE" "tty")
-            (setenv "XDG_RUNTIME_DIR" (string-append "/run/user/" useruid)))
-          (for-each (match-lambda ((var . val) (setenv var val)))
-                    (quote (#$@extra-env)))
-          (apply execl #$command #$command (list #$@args)))))))
+(define (greetd-agreety-tty-xdg-session-command config)
+  (match-record config <greetd-agreety-session>
+    (command command-args extra-env)
+    (program-file
+     "agreety-tty-xdg-session-command"
+     #~(begin
+         (use-modules (ice-9 match))
+         (let*
+             ((username (getenv "USER"))
+              (useruid (passwd:uid (getpwuid username)))
+              (useruid (number->string useruid)))
+           (setenv "XDG_SESSION_TYPE" "tty")
+           (setenv "XDG_RUNTIME_DIR" (string-append "/run/user/" useruid)))
+         (for-each (match-lambda ((var . val) (setenv var val)))
+                   (quote (#$@extra-env)))
+         (apply execl #$command #$command (list #$@command-args))))))
 
 (define-gexp-compiler (greetd-agreety-session-compiler
                        (session <greetd-agreety-session>)
@@ -3030,6 +3173,7 @@ to handle."
                  (default (default-log-file-name this-record)))
   (terminal-vt greetd-terminal-vt (default "7"))
   (terminal-switch greetd-terminal-switch (default #f))
+  (source-profile? greetd-source-profile? (default #t))
   (default-session-user greetd-default-session-user (default "greeter"))
   (default-session-command greetd-default-session-command
     (default (greetd-agreety-session))))
@@ -3043,12 +3187,15 @@ to handle."
 (define (make-greetd-terminal-configuration-file config)
   (let*
       ((config-file-name (greetd-config-file-name config))
+       (source-profile? (greetd-source-profile? config))
        (terminal-vt (greetd-terminal-vt config))
        (terminal-switch (greetd-terminal-switch config))
        (default-session-user (greetd-default-session-user config))
        (default-session-command (greetd-default-session-command config)))
     (mixed-text-file
      config-file-name
+     "[general]\n"
+     "source_profile = " (if source-profile? "true" "false") "\n"
      "[terminal]\n"
      "vt = " terminal-vt "\n"
      "switch = " (if terminal-switch "true" "false") "\n"
@@ -3129,16 +3276,18 @@ to handle."
                      (greetd-allow-empty-passwords? config)
                      #:motd
                      (greetd-motd config))
-   (lambda (pam)
-     (if (member (pam-service-name pam)
-                 '("login" "greetd" "su" "slim" "gdm-password"))
-         (pam-service
-          (inherit pam)
-          (auth (append (pam-service-auth pam)
-                        (list optional-pam-mount)))
-          (session (append (pam-service-session pam)
-                           (list optional-pam-mount))))
-         pam))))
+   (pam-extension
+    (transformer
+     (lambda (pam)
+       (if (member (pam-service-name pam)
+                   '("login" "greetd" "su" "slim" "gdm-password"))
+           (pam-service
+            (inherit pam)
+            (auth (append (pam-service-auth pam)
+                          (list optional-pam-mount)))
+            (session (append (pam-service-session pam)
+                             (list optional-pam-mount))))
+           pam))))))
 
 (define (greetd-shepherd-services config)
   (map
@@ -3150,7 +3299,7 @@ to handle."
           (greetd-vt (greetd-terminal-vt tc)))
        (shepherd-service
         (documentation "Minimal and flexible login manager daemon")
-        (requirement '(user-processes host-name udev virtual-terminal))
+        (requirement '(pam user-processes host-name udev virtual-terminal))
         (provision (list (symbol-append
                           'term-tty
                           (string->symbol (greetd-terminal-vt tc)))))
@@ -3187,7 +3336,7 @@ login manager daemon.")
                         (cons tty %default-console-font))
                       '("tty1" "tty2" "tty3" "tty4" "tty5" "tty6")))
 
-        (syslog-service)
+        (service syslog-service-type)
         (service agetty-service-type (agetty-configuration
                                        (extra-options '("-L")) ; no carrier detect
                                        (term "vt100")

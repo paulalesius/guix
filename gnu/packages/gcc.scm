@@ -1,12 +1,12 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014, 2015, 2018 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
-;;; Copyright © 2015 Andreas Enge <andreas@enge.fr>
-;;; Copyright © 2015, 2016, 2017, 2018, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015, 2023 Andreas Enge <andreas@enge.fr>
+;;; Copyright © 2015-2018, 2020-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Carlos Sánchez de La Lama <csanchezdll@gmail.com>
 ;;; Copyright © 2018 Tobias Geerinckx-Rice <me@tobias.gr>
-;;; Copyright © 2018, 2020 Marius Bakke <mbakke@fastmail.com>
+;;; Copyright © 2018, 2020, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Joseph LaFreniere <joseph@lafreniere.xyz>
 ;;; Copyright © 2020 Guy Fleury Iteriteka <gfleury@disroot.org>
 ;;; Copyright © 2020 Simon Tournier <zimon.toutoune@gmail.com>
@@ -87,6 +87,11 @@ where the OS part is overloaded to denote a specific ABI---into GCC
         ((or (string-prefix? "powerpc64le-" target)
              (string-prefix? "powerpc-" target))
          '("--with-long-double-128"))
+
+        ;; GCC 11.3.0's <libgcov.h> includes <sys/mman.h>, which MinGW lacks:
+        ;; <https://bugs.gentoo.org/show_bug.cgi?id=843989>.
+        ((target-mingw? target)
+         '("--disable-gcov"))
 
         (else
          ;; TODO: Add `arm.*-gnueabi', etc.
@@ -173,7 +178,7 @@ where the OS part is overloaded to denote a specific ABI---into GCC
                   "lib"                    ;libgcc_s, libgomp, etc. (15+ MiB)
                   "debug"))                ;debug symbols of run-time libraries
 
-       (inputs (list gmp mpfr mpc libelf zlib))
+       (inputs (list gmp mpfr mpc elfutils zlib))
 
        ;; GCC < 5 is one of the few packages that doesn't ship .info files.
        ;; Newer texinfos fail to build the manual, so we use an older one.
@@ -182,7 +187,16 @@ where the OS part is overloaded to denote a specific ABI---into GCC
 
        (arguments
         `(#:out-of-source? #t
-          #:configure-flags ,(configure-flags)
+          #:configure-flags ,(let ((flags (configure-flags))
+                                   (version (package-version this-package)))
+                               ;; GCC 4.9 and 5.0 requires C++11 but GCC
+                               ;; 11.3.0 defaults to C++17, which is partly
+                               ;; incompatible.  Force C++11.
+                               (if (or (version-prefix? "4.9" version)
+                                       (version-prefix? "5" version))
+                                   `(cons "CXX=g++ -std=c++11" ,flags)
+                                   flags))
+
           #:make-flags
           ;; None of the flags below are needed when doing a Canadian cross.
           ;; TODO: Simplify this.
@@ -295,15 +309,13 @@ where the OS part is overloaded to denote a specific ABI---into GCC
                     (substitute* "gcc/config/aarch64/t-aarch64-linux"
                       (("lib64") "lib")))
 
-                  ;; TODO: Make this unconditional in core-updates.
                   ;; The STARTFILE_PREFIX_SPEC prevents gcc from finding the
                   ;; gcc:lib output, which causes ld to not find -lgcc_s.
-                  ,@(if (target-riscv64?)
-                     `((when (file-exists? "gcc/config/riscv")
-                         (substitute* "gcc/config/riscv/linux.h"
-                           (("define STARTFILE_PREFIX_SPEC")
-                           "define __STARTFILE_PREFIX_SPEC"))))
-                     '())
+                  (when (file-exists? "gcc/config/riscv")
+                    (substitute* '("gcc/config/riscv/linux.h"
+                                   "gcc/config/riscv/riscv.h")  ; GCC < 10
+                      (("define STARTFILE_PREFIX_SPEC")
+                      "define __STARTFILE_PREFIX_SPEC")))
 
                   (when (file-exists? "libbacktrace")
                     ;; GCC 4.8+ comes with libbacktrace.  By default it builds
@@ -441,30 +453,36 @@ Go.  It also includes runtime support libraries for these languages.")
     (native-inputs (list perl ;for manpages
                          texinfo))
     (arguments
-     (if (%current-target-system)
-         (package-arguments gcc-4.8)
-         ;; For native builds of GCC 4.9 and GCC 5, the C++ include path needs
-         ;; to be adjusted so it does not interfere with GCC's own build processes.
-         (substitute-keyword-arguments (package-arguments gcc-4.8)
-           ((#:modules modules %gnu-build-system-modules)
-            `((srfi srfi-1)
-              ,@modules))
-           ((#:phases phases)
-            `(modify-phases ,phases
-               (add-after 'set-paths 'adjust-CPLUS_INCLUDE_PATH
-                 (lambda* (#:key inputs #:allow-other-keys)
-                   (let ((libc (assoc-ref inputs "libc"))
-                         (gcc (assoc-ref inputs  "gcc")))
-                     (setenv "CPLUS_INCLUDE_PATH"
-                             (string-join (fold delete
-                                                (string-split (getenv "CPLUS_INCLUDE_PATH")
-                                                              #\:)
-                                                (list (string-append libc "/include")
-                                                      (string-append gcc "/include/c++")))
-                                          ":"))
-                     (format #t
-                             "environment variable `CPLUS_INCLUDE_PATH' changed to ~a~%"
-                             (getenv "CPLUS_INCLUDE_PATH"))))))))))))
+     ;; Since 'arguments' is a function of the package's version, define
+     ;; 'parent' such that the 'arguments' thunk gets to see the right
+     ;; version.
+     (let ((parent (package
+                     (inherit gcc-4.8)
+                     (version (package-version this-package)))))
+       (if (%current-target-system)
+           (package-arguments parent)
+           ;; For native builds of GCC 4.9 and GCC 5, the C++ include path needs
+           ;; to be adjusted so it does not interfere with GCC's own build processes.
+           (substitute-keyword-arguments (package-arguments parent)
+             ((#:modules modules %gnu-build-system-modules)
+              `((srfi srfi-1)
+                ,@modules))
+             ((#:phases phases)
+              `(modify-phases ,phases
+                 (add-after 'set-paths 'adjust-CPLUS_INCLUDE_PATH
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     (let ((libc (assoc-ref inputs "libc"))
+                           (gcc (assoc-ref inputs  "gcc")))
+                       (setenv "CPLUS_INCLUDE_PATH"
+                               (string-join (fold delete
+                                                  (string-split (getenv "CPLUS_INCLUDE_PATH")
+                                                                #\:)
+                                                  (list (string-append libc "/include")
+                                                        (string-append gcc "/include/c++")))
+                                            ":"))
+                       (format #t
+                               "environment variable `CPLUS_INCLUDE_PATH' changed to ~a~%"
+                               (getenv "CPLUS_INCLUDE_PATH")))))))))))))
 
 (define gcc-canadian-cross-objdump-snippet
   ;; Fix 'libcc1/configure' error when cross-compiling GCC.  Without that,
@@ -538,17 +556,17 @@ Go.  It also includes runtime support libraries for these languages.")
        ,@(package-inputs gcc-4.7)))))
 
 (define %gcc-7.5-aarch64-micro-architectures
-  ;; Suitable '-march' values for GCC 7.5.
+  ;; Suitable '-march' values for GCC 7.5 (info "(gcc) AArch64 Options").
   ;; TODO: Allow dynamically adding feature flags.
   '("armv8-a" "armv8.1-a" "armv8.2-a" "armv8.3-a"))
 
 (define %gcc-7.5-armhf-micro-architectures
-  ;; Suitable '-march' values for GCC 7.5.
+  ;; Suitable '-march' values for GCC 7.5 (info "(gcc) ARM Options").
   ;; TODO: Allow dynamically adding feature flags.
   '("armv7" "armv7-a" "armv7-m" "armv7-r" "armv7e-m" "armv7ve"
     "armv8-a" "armv8-a+crc" "armv8.1-a" "armv8.1-a+crc"
     "armv8-m.base" "armv8-m.main" "armv8-m.main+dsp"
-    "iwmmxt" "iwmmxt2"))
+    "iwmmxt" "iwmmxt2" "armv8.2-a"))
 
 (define %gcc-7.5-x86_64-micro-architectures
   ;; Suitable '-march' values for GCC 7.5 (info "(gcc) x86 Options").
@@ -571,7 +589,7 @@ Go.  It also includes runtime support libraries for these languages.")
   ;; Suitable '-march' values for GCC 10.
   ;; TODO: Allow dynamically adding feature flags.
   (append %gcc-7.5-armhf-micro-architectures
-          '("armv8.2-a" "armv8.3-a" "armv8.4-a" "armv8.5-a" "armv8.6-a"
+          '("armv8.3-a" "armv8.4-a" "armv8.5-a" "armv8.6-a"
             "armv8-r" "armv8.1-m.main")))
 
 (define %gcc-10-x86_64-micro-architectures
@@ -585,7 +603,8 @@ Go.  It also includes runtime support libraries for these languages.")
 
 (define %gcc-11-aarch64-micro-architectures
   ;; Suitable '-march' values for GCC 11.
-  %gcc-10-aarch64-micro-architectures)            ;unchanged
+  (append %gcc-10-aarch64-micro-architectures
+          '("armv8-r")))
 
 (define %gcc-11-armhf-micro-architectures
   %gcc-10-armhf-micro-architectures)
@@ -595,7 +614,35 @@ Go.  It also includes runtime support libraries for these languages.")
   (append %gcc-10-x86_64-micro-architectures
           '("sapphirerapids" "alterlake" "rocketlake" ;Intel
 
-            "btver1" "btver2")))                  ;AMD
+            "btver1" "btver2"                     ;AMD
+
+            ;; psABI micro-architecture levels
+            "x86_64-v1" "x86_64-v2" "x86_64-v3" "x86_64-v4")))
+
+;; Suitable '-march' values for GCC 12.
+(define %gcc-12-aarch64-micro-architectures
+  (append %gcc-11-aarch64-micro-architectures
+          '("armv8.7-a" "armv8.8-a" "armv9-a")))
+
+(define %gcc-12-armhf-micro-architectures
+  (append %gcc-11-armhf-micro-architectures
+          '("armv9-a")))
+
+(define %gcc-12-x86_64-micro-architectures
+  (append %gcc-11-x86_64-micro-architectures
+          '("znver4")))                           ;AMD
+
+;; Suitable '-march' values for GCC 13.
+(define %gcc-13-aarch64-micro-architectures
+  (append %gcc-12-aarch64-micro-architectures
+          '("armv9.1-a" "armv9.2-a" "armv9.3-a")))
+
+(define %gcc-13-armhf-micro-architectures
+  %gcc-12-armhf-micro-architectures)
+
+(define %gcc-13-x86_64-micro-architectures
+  (append %gcc-12-x86_64-micro-architectures
+          '("graniterapids")))                    ;Intel
 
 (define-public gcc-7
   (package
@@ -619,7 +666,8 @@ It also includes runtime support libraries for these languages.")
      `((compiler-cpu-architectures
         ("aarch64" ,@%gcc-7.5-aarch64-micro-architectures)
         ("armhf" ,@%gcc-7.5-armhf-micro-architectures)
-        ("x86_64" ,@%gcc-7.5-x86_64-micro-architectures))))))
+        ("x86_64" ,@%gcc-7.5-x86_64-micro-architectures))
+       ,@(package-properties gcc-6)))))
 
 (define-public gcc-8
   (package
@@ -658,23 +706,25 @@ It also includes runtime support libraries for these languages.")
 (define-public gcc-10
   (package
    (inherit gcc-8)
-   (version "10.3.0")
+   (version "10.4.0")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnu/gcc/gcc-"
                                 version "/gcc-" version ".tar.xz"))
             (sha256
              (base32
-              "0i6378ig6h397zkhd7m4ccwjx5alvzrf2hm27p1pzwjhlv0h9x34"))
+              "1wg4xdizkksmwi66mvv2v4pk3ja8x64m7v9gzhykzd3wrmdpsaf9"))
             (patches (search-patches "gcc-9-strmov-store-file-names.patch"
-                                     "gcc-5.0-libvtv-runpath.patch"))
+                                     "gcc-5.0-libvtv-runpath.patch"
+                                     "gcc-10-tree-sra-union-handling.patch"))
             (modules '((guix build utils)))
             (snippet gcc-canadian-cross-objdump-snippet)))
    (properties
     `((compiler-cpu-architectures
        ("aarch64" ,@%gcc-10-aarch64-micro-architectures)
        ("armhf" ,@%gcc-10-armhf-micro-architectures)
-       ("x86_64" ,@%gcc-10-x86_64-micro-architectures))))))
+       ("x86_64" ,@%gcc-10-x86_64-micro-architectures))
+      ,@(package-properties gcc-8)))))
 
 (define-public gcc-11
   (package
@@ -688,37 +738,55 @@ It also includes runtime support libraries for these languages.")
              (base32
               "0fdclcwf728wbq52vphfcjywzhpsjp3kifzj3pib3xcihs0z4z5l"))
             (patches (search-patches "gcc-9-strmov-store-file-names.patch"
-                                     "gcc-5.0-libvtv-runpath.patch"))
+                                     "gcc-5.0-libvtv-runpath.patch"
+                                     "gcc-10-tree-sra-union-handling.patch"))
             (modules '((guix build utils)))
             (snippet gcc-canadian-cross-objdump-snippet)))
-
+   (arguments
+    (substitute-keyword-arguments (package-arguments gcc-8)
+      ((#:phases phases #~%standard-phases)
+       (if (target-hurd?)
+           #~(modify-phases #$phases
+               (add-after 'unpack 'patch-hurd-libpthread
+                 (lambda _
+                   (define patch
+                     #$(local-file
+                        (search-patch "gcc-11-libstdc++-hurd-libpthread.patch")))
+                   (invoke "patch" "--force" "-p1" "-i" patch))))
+           phases))))
    (properties
     `((compiler-cpu-architectures
        ("aarch64" ,@%gcc-11-aarch64-micro-architectures)
        ("armhf" ,@%gcc-11-armhf-micro-architectures)
-       ("x86_64" ,@%gcc-11-x86_64-micro-architectures))))))
+       ("x86_64" ,@%gcc-11-x86_64-micro-architectures))
+      ,@(package-properties gcc-8)))))
 
 (define-public gcc-12
   (package
     (inherit gcc-11)
-    ;; Note: 'compiler-cpu-architectures' is unchanged compared to GCC 11.
-    (version "12.2.0")
+    (version "12.3.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/gcc/gcc-"
                                   version "/gcc-" version ".tar.xz"))
               (sha256
                (base32
-                "1zrhca90c7hqnjz3jgr1vl675q3h5lrd92b5ggi00jjryffcyjg5"))
+                "0fwcvbgpmjdfj5drfs8k6bkqsmxmz8pv4cmmjcd451p7k57mv6ll"))
               (patches (search-patches "gcc-12-strmov-store-file-names.patch"
                                        "gcc-5.0-libvtv-runpath.patch"))
               (modules '((guix build utils)))
-              (snippet gcc-canadian-cross-objdump-snippet)))))
+              (snippet gcc-canadian-cross-objdump-snippet)))
+   (properties
+    `((compiler-cpu-architectures
+       ("aarch64" ,@%gcc-12-aarch64-micro-architectures)
+       ("armhf" ,@%gcc-12-armhf-micro-architectures)
+       ("x86_64" ,@%gcc-12-x86_64-micro-architectures))
+      ,@(package-properties gcc-11)))))
 
 
 ;; Note: When changing the default gcc version, update
 ;;       the gcc-toolchain-* definitions.
-(define-public gcc gcc-10)
+(define-public gcc gcc-11)
 
 
 ;;;
@@ -827,26 +895,76 @@ using compilers other than GCC."
     (inherit gcc)
     (name "libstdc++")
     (arguments
-     `(#:out-of-source? #t
-       #:phases
-       (modify-phases %standard-phases
-         ;; Force rs6000 (i.e., powerpc) libdir to be /lib and not /lib64.
-         (add-before 'chdir 'fix-rs6000-libdir
-           (lambda _
-             (when (file-exists? "gcc/config/rs6000")
-               (substitute* (find-files "gcc/config/rs6000")
-                 (("/lib64") "/lib")))))
-         (add-before 'configure 'chdir
-           (lambda _
-             (chdir "libstdc++-v3"))))
+     (list
+      #:out-of-source? #t
+      #:modules `((srfi srfi-1)
+                  (srfi srfi-26)
+                  ,@%gnu-build-system-modules)
+      #:phases
+      #~(modify-phases %standard-phases
+          #$@(if (version>=? (package-version gcc) "11")
+                 #~((add-after 'unpack 'hide-gcc-headers
+                      (lambda* (#:key native-inputs inputs #:allow-other-keys)
+                        (let ((gcc (assoc-ref (or native-inputs inputs)
+                                              #$(if (%current-target-system)
+                                                    "cross-gcc"
+                                                    "gcc"))))
+                          ;; Fix a regression in GCC 11 where the GCC headers
+                          ;; shadows glibc headers when building libstdc++.  An
+                          ;; upstream fix was added in GCC 11.3.0, but it only
+                          ;; hides system include directories, not those on
+                          ;; CPLUS_INCLUDE_PATH.  See discussion at
+                          ;; <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100017>
+                          ;; and the similar adjustment in GCC-FINAL.
+                          (substitute* "libstdc++-v3/src/c++17/Makefile.in"
+                            (("AM_CXXFLAGS = ")
+                             (string-append #$(if (%current-target-system)
+                                                  "CROSS_CPLUS_INCLUDE_PATH = "
+                                                  "CPLUS_INCLUDE_PATH = ")
+                                            (string-join
+                                             (remove (cut string-prefix? gcc <>)
+                                                     (string-split
+                                                      (getenv
+                                                       #$(if (%current-target-system)
+                                                             "CROSS_CPLUS_INCLUDE_PATH"
+                                                             "CPLUS_INCLUDE_PATH"))
+                                                      #\:))
+                                             ":")
+                                            "\nAM_CXXFLAGS = ")))))))
+                 '())
+          #$@(let ((version (package-version gcc)))
+               (if (and (target-ppc64le?)
+                       (version>=? version "11")
+                       (not (version>=? version "12")))
+                   #~((add-after 'unpack 'patch-powerpc
+                        (lambda* (#:key inputs #:allow-other-keys)
+                          (invoke "patch" "--force" "-p1" "-i"
+                                  (assoc-ref inputs "powerpc64le-patch")))))
+                   '()))
+          ;; Force rs6000 (i.e., powerpc) libdir to be /lib and not /lib64.
+          (add-before 'chdir 'fix-rs6000-libdir
+            (lambda _
+              (when (file-exists? "gcc/config/rs6000")
+                (substitute* (find-files "gcc/config/rs6000")
+                  (("/lib64") "/lib")))))
+          (add-before 'configure 'chdir
+            (lambda _
+              (chdir "libstdc++-v3"))))
 
-       #:configure-flags `("--disable-libstdcxx-pch"
+      #:configure-flags '`("--disable-libstdcxx-pch"
                            ,(string-append "--with-gxx-include-dir="
                                            (assoc-ref %outputs "out")
                                            "/include"))))
     (outputs '("out" "debug"))
     (inputs '())
-    (native-inputs '())
+    (native-inputs
+     `(,@(if (and (target-ppc64le?)
+                  (let ((version (package-version gcc)))
+                    (and
+                     (version>=? version "11")
+                     (not (version>=? version "12")))))
+             `(("powerpc64le-patch" ,(search-patch "gcc-11-libstdc++-powerpc.patch")))
+             '())))
     (propagated-inputs '())
     (synopsis "GNU C++ standard library")))
 
@@ -928,18 +1046,18 @@ as the 'native-search-paths' field."
           (srfi srfi-26)
           (ice-9 regex)))
        ((#:configure-flags flags)
-        `(cons (string-append "--enable-languages="
-                              ,(string-join languages ","))
-               (remove (cut string-match "--enable-languages.*" <>)
-                       ,flags)))
+        #~(cons (string-append "--enable-languages="
+                               #$(string-join languages ","))
+                (remove (cut string-match "--enable-languages.*" <>)
+                        #$flags)))
        ((#:phases phases)
-        `(modify-phases ,phases
-           (add-after 'install 'remove-broken-or-conflicting-files
-             (lambda* (#:key outputs #:allow-other-keys)
-               (for-each
-                delete-file
-                (find-files (string-append (assoc-ref outputs "out") "/bin")
-                            ".*(c\\+\\+|cpp|g\\+\\+|gcov|gcc|lto)(-.*)?$"))))))))))
+        #~(modify-phases #$phases
+            (add-after 'install 'remove-broken-or-conflicting-files
+              (lambda* (#:key outputs #:allow-other-keys)
+                (for-each
+                 delete-file
+                 (find-files (string-append (assoc-ref outputs "out") "/bin")
+                             ".*(c\\+\\+|cpp|g\\+\\+|gcov|gcc|lto)(-.*)?$"))))))))))
 
 (define %generic-search-paths
   ;; This is the language-neutral search path for GCC.  Entries in $CPATH are
@@ -1041,31 +1159,34 @@ provides the GNU compiler for the Go programming language.")
       (arguments
        (substitute-keyword-arguments (package-arguments gccgo)
          ((#:phases phases)
-          `(modify-phases ,phases
-             (add-after 'install 'wrap-go-with-tool-path
-               (lambda* (#:key outputs #:allow-other-keys)
-                 (let* ((out (assoc-ref outputs "out"))
-                        (exedir (string-append out "/libexec/gcc"))
-                        (tooldir (dirname (car (find-files exedir "^cgo$")))))
-                   (wrap-program (string-append out "/bin/go")
-                     `("GCCGOTOOLDIR" =
-                       (,(string-append "${GCCGOTOOLDIR:-" tooldir "}")))
-                     `("GOROOT" =
-                       (,(string-append "${GOROOT:-" out "}")))))))
-             (add-before 'configure 'fix-gotools-runpath
-               (lambda _
-                 (substitute* "gotools/Makefile.in"
-                   (("AM_LDFLAGS =" all)
-                    (string-append all " -Wl,-rpath=$(libdir) ")))))
-             (add-before 'configure 'remove-tool-reference-from-libgo
-               (lambda _
-                 (substitute* "libgo/Makefile.in"
-                   (("(GccgoToolDir = \\\")[^\\\"]+" _ start)
-                    (string-append start "/nonexistent"))
-                   (("(DefaultGoroot = \\\")[^\\\"]+" _ start)
-                    (string-append start "/nonexistent"))
-                   (("(defaultGOROOTValue.*?return `)[^`]+" _ start)
-                    (string-append start "/nonexistent"))))))))))))
+          #~(modify-phases #$phases
+              (add-after 'install 'wrap-go-with-tool-path
+                (lambda* (#:key outputs #:allow-other-keys)
+                  (let* ((out (assoc-ref outputs "out"))
+                         (exedir (string-append out "/libexec/gcc"))
+                         (tooldir (dirname (car (find-files exedir "^cgo$")))))
+                    (wrap-program (string-append out "/bin/go")
+                      `("GCCGOTOOLDIR" =
+                        (,(string-append "${GCCGOTOOLDIR:-" tooldir "}")))
+                      `("GOROOT" =
+                        (,(string-append "${GOROOT:-" out "}")))))))
+              (add-before 'configure 'fix-gotools-runpath
+                (lambda _
+                  (substitute* "gotools/Makefile.in"
+                    (("AM_LDFLAGS =" all)
+                     (string-append all " -Wl,-rpath=$(libdir) ")))))
+              (add-before 'configure 'remove-tool-reference-from-libgo
+                (lambda _
+                  (substitute* "libgo/Makefile.in"
+                    (("(GccgoToolDir = \\\")[^\\\"]+" _ start)
+                     (string-append start "/nonexistent"))
+                    #$@(if (version>=? (package-version gccgo) "12.0")
+                           '((("(defaultGOROOT = `)[^`]+" _ start)
+                              (string-append start "/nonexistent")))
+                           '((("(DefaultGoroot = \\\")[^\\\"]+" _ start)
+                              (string-append start "/nonexistent"))))
+                    (("(defaultGOROOTValue.*?return `)[^`]+" _ start)
+                     (string-append start "/nonexistent"))))))))))))
 
 (define-public gccgo-4.9
   (custom-gcc (package
@@ -1086,6 +1207,9 @@ provides the GNU compiler for the Go programming language."))
 
 (define-public gccgo-11
   (make-gccgo gcc-11))
+
+(define-public gccgo-12
+  (make-gccgo gcc-12))
 
 (define %objc-search-paths
   (list (search-path-specification
@@ -1135,7 +1259,7 @@ provides the GNU compiler for the Go programming language."))
   (custom-gcc gcc-12 "gcc-objc" '("objc")
               %objc-search-paths))
 
-(define-public gcc-objc gcc-objc-10)
+(define-public gcc-objc gcc-objc-11)
 
 (define %objc++-search-paths
   (list (search-path-specification
@@ -1185,7 +1309,7 @@ provides the GNU compiler for the Go programming language."))
   (custom-gcc gcc-12 "gcc-objc++" '("obj-c++")
               %objc++-search-paths))
 
-(define-public gcc-objc++ gcc-objc++-10)
+(define-public gcc-objc++ gcc-objc++-11)
 
 (define (make-libstdc++-doc gcc)
   "Return a package with the libstdc++ documentation for GCC."
@@ -1246,16 +1370,16 @@ provides the GNU compiler for the Go programming language."))
 (define-public isl
   (package
     (name "isl")
-    (version "0.23")
+    (version "0.24")
     (source (origin
              (method url-fetch)
              (uri (list (string-append "mirror://sourceforge/libisl/isl-"
-                                       version ".tar.bz2")
+                                       version ".tar.xz")
                         (string-append %gcc-infrastructure
-                                       "isl-" version ".tar.bz2")))
+                                       "isl-" version ".tar.xz")))
              (sha256
               (base32
-               "0k91zck10zxs9sk3yrbb92y1j3w981w3fbwkfwd7kl779b0j52f5"))))
+               "1bgbk6n93qqn7w8v21kxf4x6dc3z0ypqrzvgfd46nhagak60ac84"))))
     (build-system gnu-build-system)
     (outputs '("out" "static"))
     (arguments

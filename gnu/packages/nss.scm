@@ -1,11 +1,11 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2013, 2014, 2015, 2016, 2017, 2018, 2019 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2013-2019, 2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2021 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2016-2019, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016-2019, 2021-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2017, 2018 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2020, 2021 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Jonathan Brielmaier <jonathan.brielmaier@web.de>
-;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -29,8 +29,10 @@
   #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system mozilla)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
@@ -40,7 +42,7 @@
 (define-public nspr
   (package
     (name "nspr")
-    (version "4.34")
+    (version "4.35")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -48,7 +50,7 @@
                     version "/src/nspr-" version ".tar.gz"))
               (sha256
                (base32
-                "177rxcf3lglabs7sgwcvf72ww4v56qa71lc495wl13sxs4f03vxy"))))
+                "13xwda56yhp1w7v02qvlxvlqiniw8kr4g3fxlljmv6wnlmz2k8vy"))))
     (build-system gnu-build-system)
     (inputs
      (list perl                         ;for 'compile-et.pl'
@@ -69,16 +71,7 @@
       #~(list "--disable-static"
               "--enable-64bit"
               (string-append "LDFLAGS=-Wl,-rpath="
-                             (assoc-ref %outputs "out") "/lib")
-              ;; Mozilla deviates from Autotools conventions
-              ;; due to historical reasons.  Adjust to Mozilla conventions,
-              ;; otherwise the Makefile will try to use TARGET-gcc
-              ;; as a ‘native’ compiler.
-              #$@(if (%current-target-system)
-                     #~((string-append "--host="
-                                       #$(nix-system->gnu-triplet (%current-system)))
-                        (string-append "--target=" #$(%current-target-system)))
-                     #~()))
+                             (assoc-ref %outputs "out") "/lib"))
       ;; Use fixed timestamps for reproducibility.
       #:make-flags #~'("SH_DATE='1970-01-01 00:00:01'"
                        ;; This is epoch 1 in microseconds.
@@ -110,9 +103,10 @@ in the Mozilla clients.")
 (define-public nss
   (package
     (name "nss")
-    ;; Also update and test the nss-certs package, which duplicates version and
-    ;; source to avoid a top-level variable reference & module cycle.
-    (version "3.81")
+    ;; IMPORTANT: Also update and test the nss-certs package, which duplicates
+    ;; version and source to avoid a top-level variable reference & module
+    ;; cycle.
+    (version "3.88.1")
     (source (origin
               (method url-fetch)
               (uri (let ((version-with-underscores
@@ -123,7 +117,7 @@ in the Mozilla clients.")
                       "nss-" version ".tar.gz")))
               (sha256
                (base32
-                "19ncvhz45dhr0nmymwkxspq9l44gaafkspxiwxbqs1hpnqxmzgx8"))
+                "15il9fsmixa1r4446zq1wl627sg0hz9h67w6kjxz273xz3nl7li7"))
               ;; Create nss.pc and nss-config.
               (patches (search-patches "nss-3.56-pkgconfig.patch"
                                        "nss-getcwd-nonnull.patch"
@@ -161,13 +155,18 @@ in the Mozilla clients.")
                   (ice-9 match)
                   (srfi srfi-26))
       #:tests? (not (or (%current-target-system)
-                        ;; Tests take more than 30 hours on riscv64-linux.
-                        (target-riscv64?)))
+                        ;; Tests take more than 30 hours on some architectures.
+                        (target-riscv64?)
+                        (target-ppc32?)))
       #:phases
       #~(modify-phases %standard-phases
           (replace 'configure
             (lambda _
               (setenv "CC" #$(cc-for-target))
+              ;; No VSX on powerpc-linux.
+              #$@(if (target-ppc32?)
+                     #~((setenv "NSS_DISABLE_CRYPTO_VSX" "1"))
+                     #~())
               ;; Tells NSS to build for the 64-bit ABI if we are 64-bit system.
               #$@(if (target-64bit?)
                      #~((setenv "USE_64" "1"))
@@ -186,7 +185,7 @@ in the Mozilla clients.")
                     ;; leading to test failures:
                     ;; <https://bugzilla.mozilla.org/show_bug.cgi?id=609734>.  To
                     ;; work around that, set the time to roughly the release date.
-                    (invoke "faketime" "2022-06-01" "./nss/tests/all.sh"))
+                    (invoke "faketime" "2022-11-01" "./nss/tests/all.sh"))
                   (format #t "test suite not run~%"))))
           (replace 'install
             (lambda* (#:key outputs #:allow-other-keys)
@@ -209,12 +208,9 @@ in the Mozilla clients.")
                 (copy-recursively "dist/public/nss" inc)
                 (copy-recursively (string-append obj "/bin") bin)
                 (copy-recursively (string-append obj "/lib") lib)))))))
-    (inputs
-     (list sqlite zlib))
-    (propagated-inputs
-     (list nspr))                       ;required by nss.pc.
-    (native-inputs
-     (list perl libfaketime))           ;for tests
+    (inputs (list sqlite zlib))
+    (propagated-inputs (list nspr))               ;required by nss.pc.
+    (native-inputs (list perl libfaketime which)) ;for tests
 
     ;; The NSS test suite takes around 48 hours on Loongson 3A (MIPS) when
     ;; another build is happening concurrently on the same machine.
@@ -229,3 +225,4 @@ applications.  Applications built with NSS can support SSL v2 and v3, TLS,
 PKCS #5, PKCS #7, PKCS #11, PKCS #12, S/MIME, X.509 v3 certificates, and other
 security standards.")
     (license license:mpl2.0)))
+

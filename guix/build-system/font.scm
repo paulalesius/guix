@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2017 Arun Isaac <arunisaac@systemreboot.net>
+;;; Copyright © 2017, 2022 Arun Isaac <arunisaac@systemreboot.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -22,7 +22,6 @@
   #:use-module (guix monads)
   #:use-module (guix utils)
   #:use-module (guix packages)
-  #:use-module (guix derivations)
   #:use-module (guix search-paths)
   #:use-module (guix build-system)
   #:use-module (guix build-system gnu)
@@ -54,20 +53,20 @@
   (bag
     (name name)
     (system system)
-    (host-inputs `(,@(if source
-                         `(("source" ,source))
-                         '())
-                   ,@inputs
-                   ,(list "tar" (module-ref (resolve-interface '(gnu packages base)) 'tar))
-                   ,@(let ((compression (resolve-interface '(gnu packages compression))))
-                       (map (match-lambda
-                              ((name package)
-                               (list name (module-ref compression package))))
-                            `(("gzip" gzip)
-                              ("bzip2" bzip2)
-                              ("unzip" unzip)
-                              ("xz" xz))))))
-    (build-inputs native-inputs)
+    (host-inputs inputs)
+    (build-inputs `(,@(if source
+                          `(("source" ,source))
+                          '())
+                    ,@native-inputs
+                    ,(list "tar" (module-ref (resolve-interface '(gnu packages base)) 'tar))
+                    ,@(let ((compression (resolve-interface '(gnu packages compression))))
+                        (map (match-lambda
+                               ((name package)
+                                (list name (module-ref compression package))))
+                             `(("gzip" gzip)
+                               ("bzip2" bzip2)
+                               ("unzip" unzip)
+                               ("xz" xz))))))
     (outputs outputs)
     (build font-build)
     (arguments (strip-keyword-arguments private-keywords arguments))))
@@ -112,6 +111,7 @@
     (gexp->derivation name builder
                       #:system system
                       #:target #f
+                      #:graft? #f
                       #:guile-for-build guile)))
 
 (define font-build-system

@@ -14,7 +14,7 @@
 ;;; Copyright © 2017, 2020 Leo Famulari <leo@famulari.name>
 ;;; Copyright © 2017 Petter <petter@mykolab.ch>
 ;;; Copyright © 2018–2022 Tobias Geerinckx-Rice <me@tobias.gr>
-;;; Copyright © 2018, 2019 Marius Bakke <mbakke@fastmail.com>
+;;; Copyright © 2018, 2019, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2018 Björn Höfling <bjoern.hoefling@bjoernhoefling.de>
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2020 Fredrik Salomonsson <plattfot@posteo.net>
@@ -22,6 +22,7 @@
 ;;; Copyright © 2021 Nikita Domnitskii <nikita@domnitskii.me>
 ;;; Copyright © 2021 Aleksandr Vityazev <avityazev@posteo.org>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -91,43 +92,45 @@
 (define-public libgpg-error
   (package
     (name "libgpg-error")
-    (version "1.42")
+    (version "1.45")
     (source
      (origin
-      (method url-fetch)
-      (uri (string-append "mirror://gnupg/libgpg-error/libgpg-error-"
-                          version ".tar.bz2"))
-      (sha256
-       (base32
-        "08syj8mlarww8mh8x3s0x6hjqbnxp2lkg3hab57qqpv1dh7yf1zw"))))
+       (method url-fetch)
+       (uri (string-append "mirror://gnupg/libgpg-error/libgpg-error-"
+                           version ".tar.bz2"))
+       (sha256
+        (base32
+         "09haz1kk48b8q0hd58g98whylah0fp121yfgjms7pzsbzgj8w3sp"))))
     (build-system gnu-build-system)
     (arguments
-     (if (%current-target-system)
-         `(#:modules ((guix build gnu-build-system)
-                      (guix build utils))
-           #:phases
-           (modify-phases %standard-phases
-             ;; If this is left out, some generated header
-             ;; files will be sprinkled with ‘\c’, which
-             ;; the compiler won't like.
-             (add-after 'unpack 'fix-gen-lock-obj.sh
-               (lambda _
-                 (substitute* "src/gen-lock-obj.sh"
-                   (("if test -n `echo -n`") "if ! test -n `echo -n`"))))
-             ;; When cross-compiling, some platform specific properties cannot
-             ;; be detected. Create a symlink to the appropriate platform
-             ;; file if required. Note that these platform files depend on
-             ;; both the operating system and architecture!
-             ;;
-             ;; See Cross-Compiling section at:
-             ;; https://github.com/gpg/libgpg-error/blob/master/README
-             (add-after 'unpack 'cross-symlinks
-               (lambda _
-                 (define (link triplet source)
-                   (symlink (string-append "lock-obj-pub." triplet ".h")
-                            (string-append "src/syscfg/lock-obj-pub."
-                                           source ".h")))
-                 ,(let* ((target (%current-target-system))
+     (cond
+      ((%current-target-system)
+       (list
+        #:modules '((guix build gnu-build-system)
+                    (guix build utils))
+        #:phases
+        #~(modify-phases %standard-phases
+            ;; If this is left out, some generated header
+            ;; files will be sprinkled with ‘\c’, which
+            ;; the compiler won't like.
+            (add-after 'unpack 'fix-gen-lock-obj.sh
+              (lambda _
+                (substitute* "src/gen-lock-obj.sh"
+                  (("if test -n `echo -n`") "if ! test -n `echo -n`"))))
+            ;; When cross-compiling, some platform specific properties cannot
+            ;; be detected. Create a symlink to the appropriate platform
+            ;; file if required. Note that these platform files depend on
+            ;; both the operating system and architecture!
+            ;;
+            ;; See Cross-Compiling section at:
+            ;; https://github.com/gpg/libgpg-error/blob/master/README
+            (add-after 'unpack 'cross-symlinks
+              (lambda _
+                (define (link triplet source)
+                  (symlink (string-append "lock-obj-pub." triplet ".h")
+                           (string-append "src/syscfg/lock-obj-pub."
+                                          source ".h")))
+                #$(let* ((target (%current-target-system))
                          (architecture
                           (string-take target (string-index target #\-))))
                     (cond ((target-linux? target)
@@ -140,9 +143,20 @@
                              ;; configuration, as this is not correct for
                              ;; all architectures.
                              (_ #t)))
-                          (#t #t)))))))
-         '()))
-    (native-inputs `(("gettext" ,gettext-minimal)))
+                          (#t #t))))))))
+      ((system-hurd?)
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'unpack 'skip-tests
+              (lambda _
+                (substitute*
+                    "tests/t-syserror.c"
+                  (("(^| )main *\\(.*" all)
+                   (string-append all "{\n  exit (77);//"))))))))
+      (else
+       '())))
+    (native-inputs (list gettext-minimal))
     (home-page "https://gnupg.org")
     (synopsis "Library of error values for GnuPG components")
     (description
@@ -157,14 +171,14 @@ Daemon and possibly more in the future.")
 (define-public libgcrypt
   (package
     (name "libgcrypt")
-    (version "1.8.8")
+    (version "1.10.1")
     (source (origin
              (method url-fetch)
              (uri (string-append "mirror://gnupg/libgcrypt/libgcrypt-"
                                  version ".tar.bz2"))
              (sha256
               (base32
-               "1xasrh9zxhgj2n5n8dvpzbwn1mzpmlzy270xhbq2gl8xk2xy4pc9"))))
+               "1pp9zyx02bzgzjzldxf0mx9kp3530xgaaqcz4n2cv100ddaaw57g"))))
     (build-system gnu-build-system)
     (propagated-inputs
      `(("libgpg-error-host" ,libgpg-error)))
@@ -176,11 +190,29 @@ Daemon and possibly more in the future.")
      ;; 'configure' uses 'gpg-error-config' to determine the '-L' flag, and
      ;; the 'gpg-error-config' it runs is the native one---i.e., the wrong one.
      `(#:configure-flags
-       (list (string-append "--with-gpg-error-prefix="
+       (list (string-append "--with-libgpg-error-prefix="
                             (assoc-ref %build-inputs "libgpg-error-host"))
-             ;; When cross-compiling, _gcry_mpih_lshift etc are undefined
-             ,@(if (%current-target-system) '("--disable-asm")
-                   '()))))
+             ;; libgcrypt is transitioning from gpg-error-config to
+             ;; gpgrt-config, and in the process the
+             ;; --with-libgpg-error-config prefix defined above is
+             ;; not respected.  See <https://dev.gnupg.org/T5365>.
+             ;; TODO: transition to pkg-config instead of these scripts.
+             (string-append "ac_cv_path_GPGRT_CONFIG="
+                            (assoc-ref %build-inputs
+                                       "libgpg-error-host")
+                            "/bin/gpgrt-config")
+             ,@(if (%current-target-system)
+                   ;; When cross-compiling, _gcry_mpih_lshift etc are undefined.
+                   `("--disable-asm")
+                   '()))
+       ,@(if (system-hurd?)
+             (list
+              #:phases
+              #~(modify-phases %standard-phases
+                  (add-before 'configure 'setenv
+                    (lambda _
+                      (setenv "GCRYPT_NO_BENCHMARKS" "t")))))
+             '())))
     (outputs '("out" "debug"))
     (home-page "https://gnupg.org/")
     (synopsis "Cryptographic function library")
@@ -223,8 +255,7 @@ provided.")
 (define-public libksba
   (package
     (name "libksba")
-    (version "1.6.0")
-    (replacement libksba/fixed)
+    (version "1.6.3")
     (source
      (origin
       (method url-fetch)
@@ -233,7 +264,7 @@ provided.")
             version ".tar.bz2"))
       (sha256
        (base32
-        "12x40y9ihs8nw2xs2y2vjfw90mhikbm5rvabma0dh5frybk87mns"))))
+        "0p6y82j9y6n0l7scjgqhz3as9w13jiqjfx9n2jzynw89nf6wcwiz"))))
     (build-system gnu-build-system)
     (propagated-inputs
      (list libgpg-error))
@@ -253,18 +284,6 @@ specifications are building blocks of S/MIME and TLS.")
     (license license:gpl3+)
     (properties '((ftp-server . "ftp.gnupg.org")
                   (ftp-directory . "/gcrypt/libksba")))))
-
-(define libksba/fixed
-  (package
-    (inherit libksba)
-    (version "1.6.2")
-        (source
-     (origin
-      (method url-fetch)
-      (uri (string-append
-            "mirror://gnupg/libksba/libksba-" version ".tar.bz2"))
-      (sha256
-       (base32 "0wf9j9hlzvgn0vz6zg3fvcmpdr62v8bz1kzsvzdbs4lqqp51rq7w"))))))
 
 (define-public npth
   (package
@@ -295,10 +314,7 @@ compatible to GNU Pth.")
     (name "gnupg")
     ;; Note: The 2.2.X releases are Long Term Support (LTS), so stick to it
     ;; for our stable 'gnupg'.
-    ;; Note2: 2.2.33 currently suffers from regressions, so do not update to it
-    ;; (see: https://dev.gnupg.org/T5742).
-    (version "2.2.32")
-    (replacement gnupg/fixed)
+    (version "2.2.39")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnupg/gnupg/gnupg-" version
@@ -306,7 +322,7 @@ compatible to GNU Pth.")
               (patches (search-patches "gnupg-default-pinentry.patch"))
               (sha256
                (base32
-                "0506gv54z10c96z5821z9p0ksibk1pfilsmag39ffqrcz0sinmxj"))))
+                "0bscgv9gg9yhlpyia7b9l438cq6dvv6pwlhbl70df9phhmkdnx5b"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
@@ -322,37 +338,39 @@ compatible to GNU Pth.")
            readline
            sqlite
            zlib))
-   (arguments
-    `(#:configure-flags '(;; Otherwise, the test suite looks for the `gpg`
-                          ;; executable in its installation directory in
-                          ;; /gnu/store before it has been installed.
-                          "--enable-gnupg-builddir-envvar"
-                          "--enable-all-tests")
+    (arguments
+     (list
+      #:configure-flags #~'(;; Otherwise, the test suite looks for the `gpg`
+                            ;; executable in its installation directory in
+                            ;; /gnu/store before it has been installed.
+                            "--enable-gnupg-builddir-envvar"
+                            "--enable-all-tests")
       #:phases
-      (modify-phases %standard-phases
-        (add-before 'configure 'patch-paths
-          (lambda* (#:key inputs #:allow-other-keys)
-            (substitute* "scd/scdaemon.c"
-              (("\"(libpcsclite\\.so[^\"]*)\"" _ name)
-               (string-append "\"" (assoc-ref inputs "pcsc-lite")
-                              "/lib/" name "\"")))))
-        (add-after 'build 'patch-scheme-tests
-          (lambda _
-            (substitute* (find-files "tests" ".\\.scm$")
-              (("/usr/bin/env gpgscm")
-               (string-append (getcwd) "/tests/gpgscm/gpgscm")))))
-        (add-before 'build 'patch-test-paths
-          (lambda _
-            (substitute* '("tests/inittests"
-                           "tests/pkits/inittests"
-                           "tests/Makefile"
-                           "tests/pkits/common.sh"
-                           "tests/pkits/Makefile")
-             (("/bin/pwd") (which "pwd")))
-            (substitute* "common/t-exectool.c"
-              (("/bin/cat") (which "cat"))
-              (("/bin/true") (which "true"))
-              (("/bin/false") (which "false"))))))))
+      #~(modify-phases %standard-phases
+          (add-before 'configure 'patch-paths
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((libpcsclite.so (search-input-file inputs
+                                                       "lib/libpcsclite.so")))
+                (substitute* "scd/scdaemon.c"
+                  (("libpcsclite\\.so")
+                   libpcsclite.so)))))
+          (add-after 'build 'patch-scheme-tests
+            (lambda _
+              (substitute* (find-files "tests" ".\\.scm$")
+                (("/usr/bin/env gpgscm")
+                 (string-append (getcwd) "/tests/gpgscm/gpgscm")))))
+          (add-before 'build 'patch-test-paths
+            (lambda _
+              (substitute* '("tests/inittests"
+                             "tests/pkits/inittests"
+                             "tests/Makefile"
+                             "tests/pkits/common.sh"
+                             "tests/pkits/Makefile")
+                (("/bin/pwd") (which "pwd")))
+              (substitute* "common/t-exectool.c"
+                (("/bin/cat") (which "cat"))
+                (("/bin/true") (which "true"))
+                (("/bin/false") (which "false"))))))))
     (home-page "https://gnupg.org/")
     (synopsis "GNU Privacy Guard")
     (description
@@ -365,15 +383,6 @@ libskba (working with X.509 certificates and CMS data).")
     (license license:gpl3+)
     (properties '((ftp-server . "ftp.gnupg.org")
                   (ftp-directory . "/gcrypt/gnupg")))))
-
-(define gnupg/fixed
-  (package
-    (inherit gnupg)
-    (source (origin
-              (inherit (package-source gnupg))
-              (patches
-                (append (origin-patches (package-source gnupg))
-                        (search-patches "gnupg-CVE-2022-34903.patch")))))))
 
 (define-public gnupg-1
   (package (inherit gnupg)
@@ -400,21 +409,19 @@ libskba (working with X.509 certificates and CMS data).")
 (define-public gpgme
   (package
     (name "gpgme")
-    (version "1.15.1")
+    (version "1.18.0")
     (source
      (origin
       (method url-fetch)
       (uri (string-append "mirror://gnupg/gpgme/gpgme-" version ".tar.bz2"))
       (sha256
-       (base32 "1bg13l5s8x9p1v0jyv29n84bay27pflindpzjsc9gj7i4wdkrg7f"))))
+       (base32 "17hfigfnq6xz45b5xrp299f68b5mwx0aysd51sx5v4nf8yp4w79n"))))
     (build-system gnu-build-system)
     (native-inputs
      (list gnupg))
     (propagated-inputs
-     ;; Needs to be propagated because gpgme.h includes gpg-error.h.
-     (list libgpg-error))
-    (inputs
-     (list libassuan))
+     ;; As required by the pkg-config's Requires.private.
+     (list libgpg-error libassuan))
     (home-page "https://www.gnupg.org/related_software/gpgme/")
     (synopsis "Library providing simplified access to GnuPG functionality")
     (description
@@ -430,19 +437,6 @@ and every application benefits from this.")
     (license license:lgpl2.1+)
     (properties '((ftp-server . "ftp.gnupg.org")
                   (ftp-directory . "/gcrypt/gpgme")))))
-
-;; TODO: Merge with gpgme in the next rebuild cycle.
-(define-public gpgme-1.18
-  (package
-    (inherit gpgme)
-    (version "1.18.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnupg/gpgme/gpgme-"
-                                  version ".tar.bz2"))
-              (sha256
-               (base32
-                "17hfigfnq6xz45b5xrp299f68b5mwx0aysd51sx5v4nf8yp4w79n"))))))
 
 (define-public qgpgme
   (package
@@ -472,20 +466,10 @@ QGpgME was originally developed as part of libkleo and incorporated into
 gpgpme starting with version 1.7.")
     (license license:gpl2+))) ;; Note: this differs from gpgme
 
-;; TODO: Merge with qgpgme in the next rebuild cycle.
-(define-public qgpgme-1.18
-  (package
-    (inherit qgpgme)
-    (version (package-version gpgme-1.18))
-    (source (package-source gpgme-1.18))
-    (inputs
-     (modify-inputs (package-inputs qgpgme)
-       (replace "gpgme" gpgme-1.18)))))
-
 (define-public guile-gcrypt
   (package
     (name "guile-gcrypt")
-    (version "0.3.0")
+    (version "0.4.0")
     (home-page "https://notabug.org/cwebber/guile-gcrypt")
     (source (origin
               (method git-fetch)
@@ -494,7 +478,7 @@ gpgpme starting with version 1.7.")
                     (commit (string-append "v" version))))
               (sha256
                (base32
-                "0m29fg4pdfifnqqsa437zc5c1bhbfh62mc69ba25ak4x2cla41ll"))
+                "0m75h9q10yb27kzjsvhhq0yk3jaxiy9bpbfd9qg269hf9gabgfdx"))
               (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (arguments

@@ -5,6 +5,7 @@
 ;;; Copyright © 2019 Andrew Miloradovsky <andrew@interpretmath.pw>
 ;;; Copyright © 2020 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2022 Hunter Jozwiak <hunter.t.joz@gmail.com>
+;;; Copyright © 2023 Ivan Gankevich <igankevich@capybaramail.xyz>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -23,6 +24,7 @@
 
 (define-module (gnu packages accessibility)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (guix packages)
   #:use-module (guix download)
@@ -91,66 +93,56 @@ terminals.")
 (define-public brltty
   (package
     (name "brltty")
-    (version "6.5")
+    (version "6.6")
     (source
      (origin
        (method url-fetch)
        (uri
         (string-append "https://brltty.app/archive/brltty-" version ".tar.gz"))
        (sha256
-        (base32 "1h62xzd5k0aaq2k4v3w93rizxnb8psvkxrlx62wr08ybwpspgp7z"))))
+        (base32 "1z54rin4zhg3294pq47gamzjy2c56zfkl07rx2qy2khlpyczds0k"))))
     (build-system glib-or-gtk-build-system)
     (arguments
-     `(#:tests? #f                      ; No target
-
-       ;; High parallelism may cause errors such as:
-       ;;  ranlib: ./libbrlapi_stubs.a: error reading brlapi_stubs.o: file truncated
-       #:parallel-build? #f
-
-       #:configure-flags
-       (list
-        (string-append "--with-libbraille="
-                       (assoc-ref %build-inputs "libbraille"))
-        (string-append "--with-espeak_ng="
-                       (assoc-ref %build-inputs "espeak-ng"))
-        (string-append "--with-espeak="
-                       (assoc-ref %build-inputs "espeak"))
-        (string-append "--with-flite="
-                       (assoc-ref %build-inputs "flite"))
-        ;; Required for RUNPATH validation.
-        (string-append "LDFLAGS=-Wl,-rpath="
-                       (assoc-ref %outputs "out")
-                       "/lib"))
-       #:make-flags
-       (list
-        (string-append "JAVA_JAR_DIR="
-                       (assoc-ref %outputs "out"))
-        (string-append "JAVA_JNI_DIR="
-                       (assoc-ref %outputs "out"))
-        (string-append "OCAML_DESTDIR="
-                       (assoc-ref %outputs "out")
-                       "/lib")
-        (string-append "PYTHON_PREFIX="
-                       (assoc-ref %outputs "out"))
-        "PYTHON_ROOT=/"
-        (string-append "TCL_DIR="
-                       (assoc-ref %outputs "out")
-                       "/lib")
-        "INSTALL_WRITABLE_DIRECTORY=no-thanks")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'fix-errors
-           (lambda* (#:key outputs #:allow-other-keys)
-             (substitute* "configure"
-               (("/sbin/ldconfig")
-                (which "true")))
-             ;; Make Python bindings use rpath.
-             (substitute* "Bindings/Python/setup.py.in"
-               (("extra_compile_args =")
-                (string-append "extra_link_args = ['-Wl,-rpath="
-                               (assoc-ref outputs "out")
-                               "/lib'], "
-                               "extra_compile_args = "))))))))
+     (list
+      #:tests? #f                ; no target
+      ;; High parallelism may cause errors such as:
+      ;;  ranlib: ./libbrlapi_stubs.a: error reading brlapi_stubs.o: file truncated
+      #:parallel-build? #f
+      #:configure-flags
+      #~(list
+         (string-append "--with-libbraille="
+                        #$(this-package-input "libbraille"))
+         (string-append "--with-espeak_ng="
+                        #$(this-package-input "espeak-ng"))
+         (string-append "--with-espeak="
+                        #$(this-package-input "espeak"))
+         (string-append "--with-flite="
+                        #$(this-package-input "flite"))
+         ;; Required for RUNPATH validation.
+         (string-append "LDFLAGS=-Wl,-rpath=" #$output "/lib"))
+      #:make-flags
+      #~(list
+         (string-append "JAVA_JAR_DIR=" #$output)
+         (string-append "JAVA_JNI_DIR=" #$output)
+         (string-append "OCAML_DESTDIR=" #$output "/lib")
+         (string-append "PYTHON_PREFIX=" #$output)
+         "PYTHON_ROOT=/"
+         (string-append "TCL_DIR=" #$output "/lib")
+         "INSTALL_WRITABLE_DIRECTORY=no-thanks")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-errors
+            (lambda _
+              (substitute* "configure"
+                (("/sbin/ldconfig")
+                 (which "true")))
+              ;; Make Python bindings use rpath.
+              (substitute* "Bindings/Python/setup.py.in"
+                (("extra_compile_args =")
+                 (string-append "extra_link_args = ['-Wl,-rpath="
+                                #$output
+                                "/lib'], "
+                                "extra_compile_args = "))))))))
     (native-inputs
      (list clisp
            python-cython
@@ -229,7 +221,7 @@ incorporated.")
            libnotify))
     (native-inputs
      (list gettext-minimal intltool pkg-config))
-    (home-page "http://florence.sourceforge.net/")
+    (home-page "https://florence.sourceforge.net/")
     (synopsis "Extensible, scalable virtual keyboard for X11")
     (description
      "Florence is an extensible scalable virtual keyboard for X11.
@@ -245,11 +237,11 @@ available to help to click.")
     (license license:gpl2+)))
 
 (define-public footswitch
-  (let ((commit "ca43d53fc2002520cc825d119702afc124303e73")
-        (revision "2"))
+  (let ((commit "e455d6752221b9e9c3818cc304c873b9c2792490")
+        (revision "0"))
     (package
       (name "footswitch")
-      (version (git-version "0.1" revision commit))
+      (version (git-version "1.0" revision commit))
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
@@ -258,32 +250,32 @@ available to help to click.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "14pyzc4ws1mj859xs9n4x83wzxxvd3bh5bdxzr6nv267xwx1mq68"))))
+                  "0xkk60sg3szpgbl3z8djlpagglsldv9viqibsih6wcnbhikzlc6j"))))
       (build-system gnu-build-system)
+      (arguments
+       (list
+        #:tests? #f                     ; no tests
+        #:make-flags #~(list (string-append "CC=" #$(cc-for-target)))
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'configure)
+            ;; Install target in the Makefile does not work for Guix.
+            (replace 'install
+              (lambda _
+                (let ((bin (string-append #$output "/bin")))
+                  (install-file "footswitch" bin)
+                  (install-file "scythe" bin)))))))
       (native-inputs
        (list pkg-config))
       (inputs
        (list hidapi))
-      (arguments
-       `(#:tests? #f ; no tests
-         #:make-flags (list (string-append "CC=" ,(cc-for-target)))
-         #:phases (modify-phases %standard-phases
-                    (delete 'configure)
-                    ;; Install target in the Makefile does not work for Guix
-                    (replace 'install
-                      (lambda* (#:key outputs #:allow-other-keys)
-                        (let ((bin (string-append (assoc-ref outputs "out")
-                                                  "/bin")))
-                          (install-file "footswitch" bin)
-                          (install-file "scythe" bin)
-                          #t))))))
       (home-page "https://github.com/rgerganov/footswitch")
-      (synopsis "Command line utility for PCsensor foot switch")
+      (synopsis "Command line utilities for PCsensor and Scythe foot switches")
       (description
-       "Command line utility for programming foot switches sold by PCsensor.
-It works for both single pedal devices and three pedal devices.  All supported
-devices have vendorId:productId = 0c45:7403 or 0c45:7404.")
-    (license license:expat))))
+       "This package provides command line utilities for programming PCsensor
+and Scythe foot switches.  It works for both single pedal and three pedal
+devices.")
+      (license license:expat))))
 
 (define-public xmagnify
   (package
@@ -348,4 +340,39 @@ CONFIG_SPEAKUP=m
 @item
 CONFIG_SPEAKUP_SOFT=m
 @end itemize")
-    (home-page "ttps://github.com/linux-speakup/espeakup")))
+    (home-page "https://github.com/linux-speakup/espeakup")))
+
+(define-public mouseloupe
+  (package
+    (name "mouseloupe")
+    (version "0.6")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (string-append "mirror://sourceforge/" name "/" name "/v" version
+                            "/" name "-v" version ".tar.gz"))
+        (sha256 (base32 "0cvdkfakw7cix07j0c4iy10fkbqn6n8l1gr5dd3iy4f2d9bkza43"))))
+    (build-system gnu-build-system)
+    (arguments
+      `(#:tests? #f ; there are no tests
+        #:phases
+        (modify-phases %standard-phases
+          (delete 'configure)
+          (add-before 'build 'strtof
+            (lambda _
+              (substitute* "mouseloupe.c"
+                (("\\bstrtof\\b") "mouseloupe_strtof"))))
+          (replace 'install
+            (lambda _
+              (define out (assoc-ref %outputs "out"))
+              (install-file "mouseloupe" (string-append out "/bin"))
+              (install-file "mouseloupe.1.gz" (string-append out "/share/man/man1")))))))
+    (native-inputs
+      (list pkg-config))
+    (inputs
+      (list libx11 libxext libxcomposite libxdamage libxrender))
+    (synopsis "Screen magnifier tool for people with low vision")
+    (description "MouseLoupe is a kind of magnifying glass combined with the mouse pointer
+which allows an easy and pleasant web navigation.")
+    (home-page "https://sourceforge.net/projects/mouseloupe/")
+    (license license:gpl2+)))

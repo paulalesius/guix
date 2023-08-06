@@ -46,15 +46,16 @@
 (define-public wget
   (package
     (name "wget")
-    (version "1.21.3")
+    (version "1.21.3.24")
     (source
      (origin
       (method url-fetch)
-      (uri (string-append "mirror://gnu/wget/wget-"
-                          version ".tar.lz"))
+      ;;(uri (string-append "mirror://gnu/wget/wget-"
+      ;;                    version ".tar.lz"))
+      (uri "https://www.multiprecision.org/wget-1.21.3.24-2b723.tar.lz")
       (sha256
        (base32
-        "19afmyr1i3zwdwr8wkyz8q6z5764ik3dm87as194g78l8xggplnv"))))
+        "17ip94mvax83h0gh4905jqc64g5qf3vgxr3bj9gn02pijjm5lzbp"))))
     (build-system gnu-build-system)
     (inputs
      (list gnutls libidn2 libpsl))
@@ -77,7 +78,7 @@ in downloaded documents to relative links.")
 (define-public wgetpaste
   (package
     (name "wgetpaste")
-    (version "2.32")
+    (version "2.33")
     (source
       (origin
         (method git-fetch)
@@ -86,7 +87,7 @@ in downloaded documents to relative links.")
               (commit version)))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "13zdqfnbpymwz2f04icw92flj50227n5r0dcms84qxswfxrarnas"))))
+         (base32 "0gx5y3f0qf3hrah1z0q243hyldshaq6mvbg1lnjzciviv1vc8zx0"))))
     (build-system gnu-build-system)
     (arguments
      `(#:modules ((guix build gnu-build-system)

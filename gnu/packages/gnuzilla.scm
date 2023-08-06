@@ -1,7 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2013, 2015 Andreas Enge <andreas@enge.fr>
-;;; Copyright © 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Mark H Weaver <mhw@netris.org>
+;;; Copyright © 2013-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015 Sou Bunnbu <iyzsong@gmail.com>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2021 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Alex Griffin <a@ajgrf.com>
@@ -13,13 +13,13 @@
 ;;; Copyright © 2020 Oleg Pykhalov <go.wigust@gmail.com>
 ;;; Copyright © 2020 Jakub Kądziołka <kuba@kadziolka.net>
 ;;; Copyright © 2019, 2020 Adrian Malacoda <malacoda@monarch-pass.net>
-;;; Copyright © 2020, 2021, 2022 Jonathan Brielmaier <jonathan.brielmaier@web.de>
+;;; Copyright © 2020-2023 Jonathan Brielmaier <jonathan.brielmaier@web.de>
 ;;; Copyright © 2020, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2021 Brice Waegeneire <brice@waegenei.re>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
-;;; Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Baptiste Strazzul <bstrazzull@hotmail.fr>
-;;; Copyright © 2022 John Kehayias <john.kehayias@protonmail.com>
+;;; Copyright © 2022 SeerLite <seerlite@disroot.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -38,6 +38,7 @@
 
 (define-module (gnu packages gnuzilla)
   #:use-module ((srfi srfi-1) #:hide (zip))
+  #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (gnu packages)
   #:use-module ((guix licenses) #:prefix license:)
@@ -47,11 +48,14 @@
   #:use-module (guix hg-download)
   #:use-module (guix gexp)
   #:use-module (guix store)
+  #:use-module (guix modules)
   #:use-module (guix monads)
   #:use-module (guix utils)
-  #:use-module (guix build-system gnu)
   #:use-module (guix build-system cargo)
+  #:use-module (guix build-system copy)
+  #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
+  #:use-module (guix build-system mozilla)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages autotools)
@@ -71,8 +75,8 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages fonts)
+  #:use-module (gnu packages hunspell)
   #:use-module (gnu packages libevent)
-  #:use-module (gnu packages libreoffice)  ;for hunspell
   #:use-module (gnu packages image)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages pulseaudio)
@@ -85,7 +89,6 @@
   #:use-module (gnu packages assembly)
   #:use-module (gnu packages rust)
   #:use-module (gnu packages rust-apps)
-  #:use-module (gnu packages crates-io)
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages nss)
   #:use-module (gnu packages icu4c)
@@ -93,7 +96,8 @@
   #:use-module (gnu packages xiph)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages readline)
-  #:use-module (gnu packages sqlite))
+  #:use-module (gnu packages sqlite)
+  #:autoload (json parser) (json->scm))
 
 (define-public mozjs
   (package
@@ -207,7 +211,7 @@ fractional-second-digits-append-item.js")
            rust
            `(,rust "cargo")))
     (inputs
-     (list icu4c-71 readline zlib))
+     (list icu4c readline zlib))
     (propagated-inputs
      (list nspr))                ; in the Requires.private field of mozjs-*.pc
     (home-page
@@ -246,7 +250,7 @@ in C/C++.")
                   (delete-file
                    "non262/Intl/DateTimeFormat/tz-environment-variable.js"))))))))
     (inputs (modify-inputs (package-inputs mozjs)
-              (replace "icu4c" icu4c)))))
+              (replace "icu4c" icu4c-69)))))
 
 (define-public mozjs-78
   (package
@@ -266,6 +270,25 @@ in C/C++.")
      (substitute-keyword-arguments (package-arguments mozjs)
        ((#:phases phases)
         #~(modify-phases #$phases
+            (add-after 'unpack 'patch-for-python-3.10
+              (lambda _
+                ;; Some classes were moved from collections to collections.abc
+                ;; in Python 3.10.
+                (substitute* "python/mozbuild/mozbuild/util.py"
+                  (("collections\\.Sequence")
+                   "collections.abc.Sequence"))
+                (substitute* "python/mozbuild/mozbuild/makeutil.py"
+                  (("from collections import Iterable")
+                   "from collections.abc import Iterable"))
+                (substitute* "python/mozbuild/mozbuild/backend/configenvironment.py"
+                  (("from collections import Iterable, OrderedDict")
+                   "from collections import OrderedDict\n\
+from collections.abc import Iterable"))
+                (substitute*
+                    "testing/mozbase/manifestparser/manifestparser/filters.py"
+                  (("from collections import defaultdict, MutableSequence")
+                   "from collections import defaultdict\n\
+from collections.abc import MutableSequence"))))
             (replace 'configure
               (lambda* (#:key configure-flags #:allow-other-keys)
                 ;; The configure script does not accept environment variables as
@@ -348,150 +371,12 @@ in C/C++.")
            rust
            `(,rust "cargo")))
     (inputs
-     (list icu4c readline zlib))))
+     (list icu4c-69 readline zlib))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Temporary packaging of rust-cbindgen-0.23 and its dependencies
-;; follow, pending their inclusion into (gnu packages rust-apps)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define rust-textwrap-0.15-promise
-  (delay
-    (package
-     (inherit rust-textwrap-0.12)
-     (name "rust-textwrap")
-     (version "0.15.0")
-     (source (origin
-              (method url-fetch)
-              (uri (crate-uri "textwrap" version))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "1yw513k61lfiwgqrfvsjw1a5wpvm0azhpjr2kr0jhnq9c56is55i"))))
-     (arguments
-      `(#:skip-build? #t
-        #:cargo-inputs (("rust-hyphenation" ,rust-hyphenation-0.8)
-                        ("rust-smawk" ,rust-smawk-0.3)
-                        ("rust-terminal-size" ,rust-terminal-size-0.1)
-                        ("rust-unicode-linebreak" ,rust-unicode-linebreak-0.1)
-                        ("rust-unicode-width" ,rust-unicode-width-0.1)))))))
-
-(define rust-clap-lex-0.2
-  (package
-    (name "rust-clap-lex")
-    (version "0.2.4")
-    (source (origin
-              (method url-fetch)
-              (uri (crate-uri "clap_lex" version))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "1ib1a9v55ybnaws11l63az0jgz5xiy24jkdgsmyl7grcm3sz4l18"))))
-    (build-system cargo-build-system)
-    (arguments
-     `(#:skip-build? #t
-       #:cargo-inputs (("rust-os-str-bytes" ,rust-os-str-bytes-6))))
-    (home-page "https://github.com/clap-rs/clap/tree/master/clap_lex")
-    (synopsis "Minimal, flexible command line parser")
-    (description "Minimal, flexible command line parser")
-    (license (list license:expat license:asl2.0))))
-
-(define rust-clap-derive-3.2.15-promise
-  (delay
-    (package
-     (inherit rust-clap-derive-3)
-     (name "rust-clap-derive")
-     (version "3.2.15")
-     (source (origin
-              (method url-fetch)
-              (uri (crate-uri "clap_derive" version))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "1d2c4vs345fwihkd8cc7m6acbiydcwramkd5mnp36p0a7g6jm9cv"))))
-     (arguments
-      `(#:skip-build? #t
-        #:cargo-inputs (("rust-heck" ,rust-heck-0.4)
-                        ("rust-proc-macro-error" ,rust-proc-macro-error-1)
-                        ("rust-proc-macro2" ,rust-proc-macro2-1)
-                        ("rust-quote" ,rust-quote-1)
-                        ("rust-syn" ,rust-syn-1)))))))
-
-(define rust-clap-3.2.16-promise
-  (delay
-    (package
-     (inherit rust-clap-3)
-     (name "rust-clap")
-     (version "3.2.16")
-     (source (origin
-              (method url-fetch)
-              (uri (crate-uri "clap" version))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "1af06z8z7m3327yz1xvzxfjanclgpvvy3lssb745rig7adkbpnx3"))))
-     (arguments
-      `(#:skip-build? #t
-        #:cargo-inputs (("rust-atty" ,rust-atty-0.2)
-                        ("rust-backtrace" ,rust-backtrace-0.3)
-                        ("rust-bitflags" ,rust-bitflags-1)
-                        ("rust-clap-derive" ,(force rust-clap-derive-3.2.15-promise))
-                        ("rust-clap-lex" ,rust-clap-lex-0.2)
-                        ("rust-indexmap" ,rust-indexmap-1)
-                        ("rust-once-cell" ,rust-once-cell-1)
-                        ("rust-regex" ,rust-regex-1)
-                        ("rust-strsim" ,rust-strsim-0.10)
-                        ("rust-termcolor" ,rust-termcolor-1)
-                        ("rust-terminal-size" ,rust-terminal-size-0.1)
-                        ("rust-textwrap" ,(force rust-textwrap-0.15-promise))
-                        ("rust-unicase" ,rust-unicase-2)
-                        ("rust-yaml-rust" ,rust-yaml-rust-0.4)))))))
-
-(define rust-cbindgen-0.24-promise
-  (delay
-    (package
-     (inherit rust-cbindgen-0.19)
-     (name "rust-cbindgen")
-     (version "0.24.3")
-     (source (origin
-              (method url-fetch)
-              (uri (crate-uri "cbindgen" version))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "1yqxqsz2d0cppd8zwihk2139g5gy38wqgl9snj6rnk8gyvnqsdd6"))))
-     (arguments
-      `(#:cargo-inputs (("rust-clap" ,(force rust-clap-3.2.16-promise))
-                        ("rust-heck" ,rust-heck-0.4)
-                        ("rust-indexmap" ,rust-indexmap-1)
-                        ("rust-log" ,rust-log-0.4)
-                        ("rust-proc-macro2" ,rust-proc-macro2-1)
-                        ("rust-quote" ,rust-quote-1)
-                        ("rust-serde" ,rust-serde-1)
-                        ("rust-serde-json" ,rust-serde-json-1)
-                        ("rust-syn" ,rust-syn-1)
-                        ("rust-tempfile" ,rust-tempfile-3)
-                        ("rust-toml" ,rust-toml-0.5))
-        #:cargo-development-inputs (("rust-serial-test" ,rust-serial-test-0.5)))))))
-
-;; Bug with IceCat 102 with cbindgen-0.24, see
-;; https://bugzilla.mozilla.org/show_bug.cgi?id=1773259#c5 for
-;; possible patch (untested)
-(define rust-cbindgen-0.23-promise
-  (delay
-    (package
-     (inherit (force rust-cbindgen-0.24-promise))
-     (name "rust-cbindgen")
-     (version "0.23.0")
-     (source (origin
-              (method url-fetch)
-              (uri (crate-uri "cbindgen" version))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "006rn3fn4njayjxr2vd24g1awssr9i3894nbmfzkybx07j728vav")))))))
-
-
+
+;;;
+;;; Localization helper procedures.
+;;;
 (define mozilla-compare-locales
   (origin
     (method hg-fetch)
@@ -515,11 +400,23 @@ in C/C++.")
   (list (mozilla-locale locale changeset hash-string)
         ...))
 
+(define (update-mozilla-locales changesets.json)
+  "Output a new list of Mozilla locales, to update the ALL-MOZILLA-LOCALES
+variable defined below.  It requires guile-json to be installed."
+  (match (call-with-input-file changesets.json json->scm)
+    (((lang ("revision" . revision) platforms pin) ...)
+     (let ((data (reverse (map (lambda (rev lang)
+                                 `(,(list->string (make-list 40 #\0))
+                                   ,(string-take rev 12) ,lang))
+                               revision lang))))
+       (format #t "~{~s~%~}" data)
+       data))))
+
 (define all-mozilla-locales
   (mozilla-locales
    ;;                      sha256                            changeset    locale
    ;;---------------------------------------------------------------------------
-   ("1y562h0dg33vhhhwfk6jl7xbr67gng21vcf3rpm96zzcgbnf8rjj" "503a7baec899" "ach")
+   ("1s59ihmj8x6z0ssq4xav689jb5azrpdnay8csgjm1b9pw7wmvcli" "a6940ae1a02f" "ach")
    ("1cqixlk9f8p63jz20wzsvnfb7xa82ba725gzdydlwz2axgp09c26" "4e2c7d1ddbed" "af")
    ("19r1yhmfxqasyslc8gr9as5w1scscz1xr8iqy9zi4b90fdjzs0ac" "06897e40a7ea" "an")
    ("0nfknb1p03j9fgmkwlm1mzdyh10g0l33x34ab39kc072apziyv0n" "9272819b09e2" "ar")
@@ -621,20 +518,19 @@ in C/C++.")
 ;; XXXX: Workaround 'snippet' limitations.
 (define computed-origin-method (@@ (guix packages) computed-origin-method))
 
-(define %icecat-version "102.5.0-guix0-preview1")
-(define %icecat-build-id "20221115000000") ;must be of the form YYYYMMDDhhmmss
+(define %icecat-base-version "102.14.0")
+(define %icecat-version (string-append %icecat-base-version "-guix0-preview1"))
+(define %icecat-build-id "20230801000000") ;must be of the form YYYYMMDDhhmmss
 
 ;; 'icecat-source' is a "computed" origin that generates an IceCat tarball
 ;; from the corresponding upstream Firefox ESR tarball, using the 'makeicecat'
 ;; script from the upstream IceCat project.
 (define icecat-source
-  (let* ((base-version (first (string-split %icecat-version #\-)))
+  (let* ((major-version (first  (string-split %icecat-base-version #\.)))
+         (minor-version (second (string-split %icecat-base-version #\.)))
+         (sub-version   (third  (string-split %icecat-base-version #\.)))
 
-         (major-version (first  (string-split base-version #\.)))
-         (minor-version (second (string-split base-version #\.)))
-         (sub-version   (third  (string-split base-version #\.)))
-
-         (upstream-firefox-version (string-append base-version "esr"))
+         (upstream-firefox-version (string-append %icecat-base-version "esr"))
          (upstream-firefox-source
           (origin
             (method url-fetch)
@@ -644,11 +540,12 @@ in C/C++.")
                   "firefox-" upstream-firefox-version ".source.tar.xz"))
             (sha256
              (base32
-              "1n2pq165fxmvgcr5mv3hhaid2vn7lh3jg03lf13kz4c5295x8z81"))))
+              "1vpglmqm97ac3rs273qv7kldkrkawyhdnwwqhvyjqiwaq20m1f0s"))))
 
-         (upstream-icecat-base-version "102.5.0") ; maybe older than base-version
-         ;;(gnuzilla-commit (string-append "v" upstream-icecat-base-version))
-         (gnuzilla-commit "a8848cb35e4e47a344d40596f72d82d57bf5a6f1")
+         ;; The upstream-icecat-base-version may be older than the
+         ;; %icecat-base-version.
+         (upstream-icecat-base-version "102.14.0")
+         (gnuzilla-commit "ac19d793c76732f9e5623e25fbf31287255a4ae7")
          (gnuzilla-source
           (origin
             (method git-fetch)
@@ -660,7 +557,7 @@ in C/C++.")
                                       (string-take gnuzilla-commit 8)))
             (sha256
              (base32
-              "0d0brzi7wmg70kvi9p3g24cyya17bvg2djgjn64g14hpnalg8icw"))))
+              "0fghxy6d4102i4fsyj5x74v6q94kdfbszmirjbd63wlw1d8sy3cs"))))
 
          ;; 'search-patch' returns either a valid file name or #f, so wrap it
          ;; in 'assume-valid-file-name' to avoid 'local-file' warnings.
@@ -678,14 +575,13 @@ in C/C++.")
           #~(begin
               (use-modules (guix build utils))
               (let ((firefox-dir
-                     (string-append "firefox-" #$base-version))
+                     (string-append "firefox-" #$%icecat-base-version))
                     (icecat-dir
                      (string-append "icecat-" #$%icecat-version)))
 
                 (set-path-environment-variable
                  "PATH" '("bin")
-                 (list #+rename
-                       #+python
+                 (list #+python
                        #+(canonical-package bash)
                        #+(canonical-package coreutils)
                        #+(canonical-package findutils)
@@ -706,9 +602,6 @@ in C/C++.")
                           (map second
                                (package-transitive-propagated-inputs
                                 python-jsonschema))))
-
-                ;; Needed by the 'makeicecat' script.
-                (setenv "RENAME_CMD" "rename")
 
                 ;; We copy the gnuzilla source directory because it is
                 ;; read-only in 'gnuzilla-source', and the makeicecat script
@@ -797,12 +690,12 @@ in C/C++.")
                         "--sort=name"
                         icecat-dir)))))))))
 
-(define-public icecat
+(define-public icecat-minimal
   (package
-    (name "icecat")
+    (name "icecat-minimal")
     (version %icecat-version)
     (source icecat-source)
-    (build-system gnu-build-system)
+    (build-system mozilla-build-system)
     (inputs
      (list alsa-lib
            bzip2
@@ -811,7 +704,6 @@ in C/C++.")
            gdk-pixbuf
            glib
            gtk+
-           gtk+-2
            ;; UNBUNDLE-ME! graphite2
            cairo
            pango
@@ -832,9 +724,11 @@ in C/C++.")
            libxcomposite
            libxt
            libffi
-           ffmpeg
+           ;; Support for FFmpeg 6 was only added in version 112 (see:
+           ;; https://bugzilla.mozilla.org/show_bug.cgi?id=1819374).
+           ffmpeg-5
            libvpx
-           icu4c-71  ; TODO: Change to 'icu4c' when its version is >= 71.
+           icu4c
            pixman
            pulseaudio
            mesa
@@ -842,10 +736,8 @@ in C/C++.")
            mit-krb5
            hunspell
            libnotify
-           ;; See <https://bugs.gnu.org/32833>
-           ;;   and related comments in the 'remove-bundled-libraries' phase.
-           ;; UNBUNDLE-ME! nspr
-           ;; UNBUNDLE-ME! nss
+           nspr
+           nss
            shared-mime-info
            sqlite
            eudev
@@ -865,10 +757,9 @@ in C/C++.")
       ;;  ,(search-patch "icecat-use-system-graphite2+harfbuzz.patch"))
       ;; ("icecat-use-system-media-libs.patch"
       ;;  ,(search-patch "icecat-use-system-media-libs.patch"))
-      ;; TODO: Change the following lines to use 'rust' when it's >= 1.59.
       rust
       `(,rust "cargo")
-      (force rust-cbindgen-0.23-promise)
+      rust-cbindgen-0.23
       llvm
       clang
       perl
@@ -901,7 +792,8 @@ in C/C++.")
          "--disable-tests"
          "--disable-updater"
          "--disable-crashreporter"
-         "--disable-eme"
+         ;; The --disable-eme option is not available on aarch64.
+         #$(if (target-aarch64?) "" "--disable-eme")
 
          ;; Building with debugging symbols takes ~5GiB, so disable it.
          "--disable-debug"
@@ -941,12 +833,8 @@ in C/C++.")
          ;; UNBUNDLE-ME! "--with-system-theora" ; wants theora-1.2, not yet released
          ;; UNBUNDLE-ME! "--with-system-libvpx"
          "--with-system-icu"
-
-         ;; See <https://bugs.gnu.org/32833>
-         ;;   and related comments in the
-         ;;   'remove-bundled-libraries' phase below.
-         ;; UNBUNDLE-ME! "--with-system-nspr"
-         ;; UNBUNDLE-ME! "--with-system-nss"
+         "--with-system-nspr"
+         "--with-system-nss"
 
          ;; UNBUNDLE-ME! "--with-system-harfbuzz"
          ;; UNBUNDLE-ME! "--with-system-graphite2"
@@ -995,12 +883,9 @@ in C/C++.")
                           ;; FIXME: A script from the bundled nspr is used.
                           ;;"nsprpub"
                           ;;
-                          ;; FIXME: With the update to IceCat 60, using system NSS
-                          ;;        broke certificate validation.  See
-                          ;;        <https://bugs.gnu.org/32833>.  For now, we use
-                          ;;        the bundled NSPR and NSS.  TODO: Investigate,
-                          ;;        and try to unbundle these libraries again.
-                          ;; UNBUNDLE-ME! "security/nss"
+                          ;; FIXME: Some of the bundled NSS sources are used
+                          ;; to build third_party/prio.
+                          ;;"security/nss"
                           ;;
                           ;; TODO: Use more system media libraries.  See:
                           ;; <https://bugzilla.mozilla.org/show_bug.cgi?id=517422>
@@ -1099,7 +984,7 @@ in C/C++.")
               ;; complain that it's not able to change Cargo.lock.
               ;; https://bugzilla.mozilla.org/show_bug.cgi?id=1726373
               (substitute* "build/RunCbindgen.py"
-                           (("\"--frozen\",") ""))))
+                (("\"--frozen\",") ""))))
           (delete 'bootstrap)
           (replace 'configure
             ;; configure does not work followed by both "SHELL=..." and
@@ -1189,6 +1074,7 @@ in C/C++.")
                                         "eudev"
                                         "pulseaudio"
                                         ;; For the integration of native notifications
+                                        ;; (same reason as icedove)
                                         "libnotify"))))
                 (wrap-program (car (find-files lib "^icecat$"))
                   `("XDG_DATA_DIRS" prefix (,gtk-share))
@@ -1242,27 +1128,196 @@ standards of the IceCat project.")
        (cpe-name . "firefox_esr")
        (cpe-version . ,(first (string-split version #\-)))))))
 
-(define %icedove-build-id "20221115000000") ;must be of the form YYYYMMDDhhmmss
-(define %icedove-version "102.5.0")
+(define %icecat-locales
+  '("ach" "af" "an" "ar" "ast" "az" "be" "bg" "bn" "br" "bs" "ca" "cak"
+    "ca-valencia" "cs" "cy" "da" "de" "dsb" "el" "en-CA" "en-GB" "eo" "es-AR"
+    "es-CL" "es-ES" "es-MX" "et" "eu" "fa" "ff" "fi" "fr" "fy-NL" "ga-IE" "gd"
+    "gl" "gn" "gu-IN" "he" "hi-IN" "hr" "hsb" "hu" "hy-AM" "ia" "id" "is" "it"
+    "ja" "ja-JP-mac" "ka" "kab" "kk" "km" "kn" "ko" "lij" "lt" "lv" "mk" "mr" "ms"
+    "my" "nb-NO" "ne-NP" "nl" "nn-NO" "oc" "pa-IN" "pl" "pt-BR" "pt-PT" "rm" "ro"
+    "ru" "sco" "si" "sk" "sl" "son" "sq" "sr" "sv-SE" "szl" "ta" "te" "th" "tl"
+    "tr" "trs" "uk" "ur" "uz" "vi" "xh" "zh-CN" "zh-TW"))
+
+(define %icedove-build-id "20230705000000") ;must be of the form YYYYMMDDhhmmss
+(define %icedove-version "102.13.0")
 
 ;; Provides the "comm" folder which is inserted into the icecat source.
 ;; Avoids the duplication of Icecat's source tarball.
-(define thunderbird-source
+(define thunderbird-comm-source
   (origin
     (method hg-fetch)
     (uri (hg-reference
           (url "https://hg.mozilla.org/releases/comm-esr102")
-          (changeset "b6e9b5a1d1b53d26cfb7032ef2ff02203ab0486b")))
+          (changeset "2bf94c4d195694485df5d632f2453888cf4f6657")))
     (file-name (string-append "thunderbird-" %icedove-version "-checkout"))
     (sha256
      (base32
-      "0i2w1ibaip8rlghrk5iaih14xnz5n19ag64qcdgjxic78mhnmm04"))))
+      "1nzbvw1n6wdjbsq0cvyq8av2xf775cp4gkvsjc7i5qzvhl84wg4l"))))
 
-(define-public icedove
+(define (comm-source->locales+changeset source)
+  "Given SOURCE, a checkout of the Thunderbird 'comm' component, return the
+list of languages supported as well as the currently used changeset."
+  (match (update-mozilla-locales
+          (string-append source "/mail/locales/l10n-changesets.json"))
+    (((_ changeset locale) ...)
+     (values locale (first changeset)))))
+
+;;; Generated with comm-source->locales+changeset.
+(define %icedove-locales
+  '("af" "ar" "ast" "be" "bg" "br" "ca" "cak" "cs" "cy" "da" "de" "dsb" "el"
+    "en-CA" "en-GB" "es-AR" "es-ES" "es-MX" "et" "eu" "fi" "fr" "fy-NL" "ga-IE"
+    "gd" "gl" "he" "hr" "hsb" "hu" "hy-AM" "id" "is" "it" "ja" "ja-JP-mac" "ka"
+    "kab" "kk" "ko" "lt" "lv" "ms" "nb-NO" "nl" "nn-NO" "pa-IN" "pl" "pt-BR"
+    "pt-PT" "rm" "ro" "ru" "sk" "sl" "sq" "sr" "sv-SE" "th" "tr" "uk" "uz" "vi"
+    "zh-CN" "zh-TW"))
+
+;;; To find out which changeset to use for the comm-l10n repo, use the
+;;; 'comm-source->locales+changeset' procedure on the thunderbird-comm-source
+;;; checkout directory.  The complete localization data should be released as
+;;; a tarball in the next release (see:
+;;; https://bugzilla.mozilla.org/show_bug.cgi?id=1817086).  When this tarball
+;;; is available, it should replace the complete 'l10n' directory at the root
+;;; of the IceCat source, instead of only the 'calendar', chat and mail
+;;; directories that it provides.
+(define thunderbird-comm-l10n
+  (let* ((changeset "95b46b8428d5")
+         (version (git-version %icedove-version "0" changeset)))
+    (origin
+      (method hg-fetch)
+      (uri (hg-reference
+            (url "https://hg.mozilla.org/projects/comm-l10n")
+            (changeset changeset)))
+      (file-name (git-file-name "comm-l10n" version))
+      (sha256
+       (base32
+        "0hfsiv9p7s2ik6648gm1774d187vlm1i1c9xwyd8g8ihk2dzyn5i")))))
+
+(define icedove-source
+  (let ((name (string-append "icedove-" %icedove-version)))
+    (origin
+      (method computed-origin-method)
+      (file-name (string-append name ".tar.xz"))
+      (sha256 #f)
+      (uri
+       (delay
+         (with-imported-modules (source-module-closure '((guix build utils)))
+           #~(begin
+               (use-modules (guix build utils)
+                            (sxml simple))
+
+               (set-path-environment-variable
+                "PATH" '("bin")
+                (list #+(canonical-package tar)
+                      #+(canonical-package xz)))
+
+               ;; Extract the base Icecat tarball, renaming its top-level
+               ;; directory.
+               (invoke "tar" "--transform" (string-append "s,[^/]*," #$name ",")
+                       "-xf" #$icecat-source)
+               (chdir #$name)
+
+               ;; Merge the Thunderdbird localization data.
+               (copy-recursively #$thunderbird-comm-l10n "l10n")
+
+               ;; Add the Thunderbird-specific "comm" directory..
+               (mkdir "comm")
+               (copy-recursively #$thunderbird-comm-source "comm")
+               (delete-file "sourcestamp.txt")
+
+               ;; Adjust the application name.
+               (substitute* "comm/mail/confvars.sh"
+                 (("MOZ_APP_NAME=thunderbird")
+                  "MOZ_APP_NAME=icedove")
+                 (("MOZ_UPDATER=1")
+                  "MOZ_UPDATER=0"))
+
+               ;; Remove branding to comply with Mozilla's trademark policy
+               (with-directory-excursion "comm/mail/branding/nightly"
+                 (delete-file "content/about-wordmark.svg")
+                 (call-with-output-file "content/about-wordmark.svg"
+                   (lambda (port)
+                     (sxml->xml '(svg (@ (xmlns "http://www.w3.org/2000/svg")
+                                         (viewBox "0 0 789.1 90.78")
+                                         (width "333")
+                                         (height "48")
+                                         (fill "#fff"))
+                                      (text (@ (x "400") (y "70")
+                                               (text-anchor "middle")
+                                               (font-size "90"))
+                                            "Icedove Daily"))
+                                port)))
+                 (substitute* '("locales/en-US/brand.properties"
+                                "locales/en-US/brand.ftl"
+                                "locales/en-US/brand.dtd"
+                                "configure.sh")
+                   (("Thunderbird") "Icedove")
+                   (("mozilla.org") "guix.gnu.org")))
+               ;; Remove other mentions of Thunderbird in user-visible text.
+               (with-directory-excursion "comm/mail/base/content"
+                 (substitute* '("overrides/app-license-name.html")
+                   (("Thunderbird") "Icedove")))
+               (with-directory-excursion "comm/mail/components/"
+                 (substitute* '("MailGlue.jsm"
+                                "extensions/schemas/addressBook.json"
+                                "extensions/schemas/tabs.json"
+                                "extensions/schemas/cloudFile.json"
+                                "extensions/schemas/chrome_settings_overrides.json"
+                                "extensions/schemas/windows.json"
+                                "extensions/parent/ext-mail.js"
+                                "im/messages/mail/Info.plist"
+                                "enterprisepolicies/moz.build"
+                                "enterprisepolicies/helpers/moz.build"
+                                "enterprisepolicies/schemas/moz.build")
+                   (("Thunderbird") "Icedove")))
+               (substitute* '("comm/mailnews/base/prefs/content/accountUtils.js"
+                              "comm/mail/base/content/customizeToolbar.js"
+                              "comm/suite/components/customizeToolbar.js")
+                 (("AppConstants.MOZ_APP_NAME (.)= \"thunderbird" _ e)
+                  (format #f "AppConstants.MOZ_APP_NAME ~a= \"icedove" e)))
+
+               ;; Override addon URLs and settings
+               (substitute* "comm/mail/app/profile/all-thunderbird.js"
+                 (("(pref\\(\"extensions.webservice.discoverURL\").*" _ m)
+                  (string-append m ", \"https://directory.fsf.org/wiki/Icedove\");"))
+                 (("(pref\\(\"extensions.getAddons.search.url\").*" _ m)
+                  (string-append m ", \"https://guix.gnu.org/packages\");"))
+                 (("(pref\\(\"extensions.update.enabled\").*" _ m)
+                  (string-append m ", false);"))
+                 (("(pref\\(\"extensions.systemAddon.update.enabled\").*" _ m)
+                  (string-append m ", false);"))
+                 (("(pref\\(\"lightweightThemes.update.enabled\").*" _ m)
+                  (string-append m ", false);"))
+
+                 ;; XXX: The autoDisableScopes is tweaked by the makeicecat
+                 ;; script, but it doesn't know about Thunderbird.  This is
+                 ;; necessary to allow picking up the extensions found in the
+                 ;; system global application directory, such as the language
+                 ;; packs.
+                 (("\"extensions.autoDisableScopes\", 15")
+                  "\"extensions.autoDisableScopes\", 3")
+
+                 ;; Set the default locale to that of the operating system.
+                 ((".*extensions.autoDisableScopes.*" anchor)
+                  (string-append anchor
+                                 "pref(\"intl.locale.requested\", \"\");\n")))
+
+               ;; Step out of the directory and create the tarball.
+               (chdir "..")
+               (format #t "Packing Icedove source tarball...~%")
+               (force-output)
+               (setenv "XZ_DEFAULTS" (string-join (%xz-parallel-args)))
+               (invoke "tar" "cfa" #$output
+                       "--mtime=@315619200" ;1980-01-02 UTC
+                       "--owner=root:0"
+                       "--group=root:0"
+                       "--sort=name"
+                       #$name))))))))
+
+(define-public icedove-minimal
   (package
-    (name "icedove")
+    (name "icedove-minimal")
     (version %icedove-version)
-    (source icecat-source)
+    (source icedove-source)
     (properties
      `((cpe-name . "thunderbird_esr")))
     (build-system gnu-build-system)
@@ -1276,11 +1331,6 @@ standards of the IceCat project.")
                   ,@%gnu-build-system-modules)
       #:phases
       #~(modify-phases %standard-phases
-          (add-after 'unpack 'prepare-thunderbird-sources
-            (lambda _
-              (mkdir "comm")
-              (copy-recursively #$thunderbird-source "comm")
-              (delete-file "sourcestamp.txt")))
           (add-after 'patch-source-shebangs 'patch-cargo-checksums
             (lambda _
               (use-modules (guix build cargo-utils))
@@ -1308,71 +1358,8 @@ ca495991b7852b855"))
           (add-after 'patch-source-shebangs 'fix-profile-setting
             (lambda _
               (substitute* "comm/mail/moz.configure"
-                (("MOZ_DEDICATED_PROFILES, True")
-                 "MOZ_DEDICATED_PROFILES, False"))))
-          (add-after 'prepare-thunderbird-sources 'rename-to-icedove
-            (lambda _
-              (substitute* "comm/mail/confvars.sh"
-                (("MOZ_APP_NAME=thunderbird")
-                 "MOZ_APP_NAME=icedove")
-                (("MOZ_UPDATER=1")
-                 "MOZ_UPDATER=0"))
-              ;; Remove branding to comply with Mozilla's trademark policy
-              (with-directory-excursion "comm/mail/branding/nightly"
-                (delete-file "content/about-wordmark.svg")
-                (call-with-output-file "content/about-wordmark.svg"
-                  (lambda (port)
-                    (sxml->xml '(svg (@ (xmlns "http://www.w3.org/2000/svg")
-                                        (viewBox "0 0 789.1 90.78")
-                                        (width "333")
-                                        (height "48")
-                                        (fill "#fff"))
-                                     (text (@ (x "400") (y "70")
-                                              (text-anchor "middle")
-                                              (font-size "90"))
-                                           "Icedove Daily"))
-                               port)))
-                (substitute* '("locales/en-US/brand.properties"
-                               "locales/en-US/brand.ftl"
-                               "locales/en-US/brand.dtd"
-                               "configure.sh")
-                  (("Thunderbird") "Icedove")
-                  (("mozilla.org") "guix.gnu.org")))
-              ;; Remove other mentions of Thunderbird in user-visible text.
-              (with-directory-excursion "comm/mail/base/content"
-                (substitute* '("overrides/app-license-name.html")
-                  (("Thunderbird") "Icedove")))
-              (with-directory-excursion "comm/mail/components/"
-                (substitute* '("MailGlue.jsm"
-                               "extensions/schemas/addressBook.json"
-                               "extensions/schemas/tabs.json"
-                               "extensions/schemas/cloudFile.json"
-                               "extensions/schemas/chrome_settings_overrides.json"
-                               "extensions/schemas/windows.json"
-                               "extensions/parent/ext-mail.js"
-                               "im/messages/mail/Info.plist"
-                               "enterprisepolicies/moz.build"
-                               "enterprisepolicies/helpers/moz.build"
-                               "enterprisepolicies/schemas/moz.build")
-                  (("Thunderbird") "Icedove")))
-              (substitute* '("comm/mailnews/base/prefs/content/accountUtils.js"
-                             "comm/mail/base/content/customizeToolbar.js"
-                             "comm/suite/components/customizeToolbar.js")
-                (("AppConstants.MOZ_APP_NAME (.)= \"thunderbird" _ e)
-                 (format #f "AppConstants.MOZ_APP_NAME ~a= \"icedove" e)))
-
-              ;; Override addon URLs and settings
-              (substitute* "comm/mail/app/profile/all-thunderbird.js"
-                (("(pref\\(\"extensions.webservice.discoverURL\").*" _ m)
-                 (string-append m ", \"https://directory.fsf.org/wiki/Icedove\");"))
-                (("(pref\\(\"extensions.getAddons.search.url\").*" _ m)
-                 (string-append m ", \"https://guix.gnu.org/packages\");"))
-                (("(pref\\(\"extensions.update.enabled\").*" _ m)
-                 (string-append m ", false);"))
-                (("(pref\\(\"extensions.systemAddon.update.enabled\").*" _ m)
-                 (string-append m ", false);"))
-                (("(pref\\(\"lightweightThemes.update.enabled\").*" _ m)
-                 (string-append m ", false);")))))
+                (("\"MOZ_DEDICATED_PROFILES\", True")
+                 "\"MOZ_DEDICATED_PROFILES\", False"))))
           (add-after 'build 'neutralize-store-references
             (lambda _
               ;; Mangle the store references to compilers & other build tools in
@@ -1391,7 +1378,8 @@ ca495991b7852b855"))
                                 (string-drop hash 8))))))
           (delete 'bootstrap)
           (replace 'configure
-            (lambda* (#:key inputs configure-flags #:allow-other-keys)
+            (lambda* (#:key native-inputs inputs configure-flags
+                      #:allow-other-keys)
               (let* ((bash (which "bash"))
                      (abs-srcdir (getcwd))
                      (srcdir (string-append "../" (basename abs-srcdir)))
@@ -1424,6 +1412,8 @@ ca495991b7852b855"))
                   (lambda ()
                     (display
                      (string-append
+                      "ac_add_options --allow-addon-sideload\n"
+                      "ac_add_options --with-unsigned-addon-scopes=app,system\n"
                       "ac_add_options --disable-crashreporter\n"
                       "ac_add_options --disable-debug\n"
                       "ac_add_options --disable-debug-symbols\n"
@@ -1443,15 +1433,18 @@ ca495991b7852b855"))
                       "ac_add_options --enable-system-ffi\n"
                       "ac_add_options --enable-system-pixman\n"
                       "ac_add_options --prefix=" #$output "\n"
-                      "ac_add_options --with-clang-path=" (assoc-ref %build-inputs "clang") "/bin/clang\n"
+                      "ac_add_options --with-clang-path="
+                      (search-input-file (or native-inputs inputs)
+                                         "bin/clang") "\n"
                       "ac_add_options --with-distribution-id=org.gnu\n"
-                      "ac_add_options --with-libclang-path=" (assoc-ref %build-inputs "clang") "/lib\n"
+                      "ac_add_options --with-libclang-path="
+                      #$(this-package-native-input "clang") "/lib\n"
                       "ac_add_options --with-system-bz2\n"
                       "ac_add_options --with-system-icu\n"
                       "ac_add_options --with-system-jpeg\n"
                       "ac_add_options --with-system-libevent\n"
                       "ac_add_options --with-system-nspr\n"
-                                        ;"ac_add_options --with-system-nss\n"
+                      "ac_add_options --with-system-nss\n"
                       "ac_add_options --with-system-zlib\n"
                       "ac_add_options --without-wasm-sandboxed-libraries\n"
                       "mk_add_options MOZ_MAKE_FLAGS=-j"
@@ -1488,6 +1481,20 @@ ca495991b7852b855"))
                             Name=Write new message~@
                             Exec=~@*~a/bin/icedove -compose~%"
                             #$output))))))
+          (add-after 'install-desktop-file 'install-icons
+            ;; TODO: Use actual Icedove branding icons (currently the stock
+            ;; Thunderbird icon is used).
+            (lambda _
+              (with-directory-excursion "comm/mail/branding/thunderbird"
+                (for-each
+                 (lambda (file)
+                   (let* ((size (string-filter char-numeric? file))
+                          (icons (string-append #$output "/share/icons/hicolor/"
+                                                size "x" size "/apps")))
+                     (mkdir-p icons)
+                     (copy-file file (string-append icons "/icedove.png"))))
+                 '("default16.png" "default22.png" "default24.png"
+                   "default32.png" "default48.png" "default256.png")))))
           (add-after 'install 'wrap-program
             (lambda* (#:key inputs #:allow-other-keys)
               (let* ((lib (string-append #$output "/lib"))
@@ -1496,29 +1503,34 @@ ca495991b7852b855"))
                      (pulseaudio #$(this-package-input "pulseaudio"))
                      (pulseaudio-lib (string-append pulseaudio "/lib"))
                      (eudev #$(this-package-input "eudev"))
-                     (eudev-lib (string-append eudev "/lib")))
+                     (eudev-lib (string-append eudev "/lib"))
+                     ;; For the integration of native notifications (same reason as icecat)
+                     (libnotify #$(this-package-input "libnotify"))
+                     (libnotify-lib (string-append libnotify "/lib")))
                 (wrap-program (car (find-files lib "^icedove$"))
                   `("XDG_DATA_DIRS" prefix (,gtk-share))
-                  `("LD_LIBRARY_PATH" prefix (,pulseaudio-lib ,eudev-lib)))))))))
+                  `("LD_LIBRARY_PATH" prefix (,pulseaudio-lib ,eudev-lib ,libnotify-lib)))))))))
     (inputs
      (list alsa-lib
            bzip2
            cairo
            cups
            dbus-glib
-           ffmpeg
+           ;; Support for FFmpeg 6 was only added in version 112 (see:
+           ;; https://bugzilla.mozilla.org/show_bug.cgi?id=1819374).
            freetype
            gdk-pixbuf
            glib
            gtk+
            gtk+-2
            hunspell
-           icu4c-71
+           icu4c
            libcanberra
            libevent
            libffi
            libgnome
            libjpeg-turbo
+           libnotify
            libpng-apng
            libvpx
            libxcomposite
@@ -1528,9 +1540,7 @@ ca495991b7852b855"))
            libxt
            mesa
            mit-krb5
-           nspr-4.32
-           ;; FIXME: create nss >= 3.68 after core-updates merge
-           ;;nss
+           nss
            pango
            pixman
            pulseaudio
@@ -1551,7 +1561,7 @@ ca495991b7852b855"))
            pkg-config
            python-wrapper
            rust
-           (force rust-cbindgen-0.23-promise)
+           rust-cbindgen-0.23
            which
            yasm))
     (home-page "https://www.thunderbird.net")
@@ -1561,41 +1571,227 @@ ca495991b7852b855"))
 Thunderbird.  It supports email, news feeds, chat, calendar and contacts.")
     (license license:mpl2.0)))
 
+(define (make-l10n-package project version source locales)
+  "Return a package for PROJECT, a symbol (either icecat or icedove), with
+their corresponding VERSION, SOURCE and LOCALES variables."
+  (unless (member project '(icecat icedove))
+    (error "only icecat or icedove components are currently supported"))
+
+  (let ((name (if (eq? 'icecat project)
+                  "IceCat"
+                  "Icedove")))
+    (package
+      (name (format #f "~a-l10n" project))
+      (version version)
+      (source source)
+      (outputs (cons "out" locales))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:modules '((guix build gnu-build-system)
+                    (guix build utils)
+                    (ice-9 format)
+                    (ice-9 ftw)
+                    (srfi srfi-1)
+                    (srfi srfi-26))
+        #:tests? #f                     ;no tests, this is data
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'bootstrap)
+            (delete 'install)
+            (replace 'configure
+              (lambda _
+                ;; The following configuration is inspired by guidance at
+                ;; https://firefox-source-docs.mozilla.org/build/buildsystem/locales.html.
+                (call-with-output-file ".mozconfig"
+                  (lambda (p)
+                    (format p "~{~a~%~}"
+                            (list (if (eq? 'icecat '#$project)
+                                      "ac_add_options --enable-project=browser"
+                                      "ac_add_options --enable-project=comm/mail")
+                                  "ac_add_options --disable-compile-environment"
+                                  (string-append
+                                   "ac_add_options --with-l10n-base="
+                                   (getcwd) "/l10n")
+                                  ;; Hack, otherwise the build system throws:
+                                  ;; 'RuntimeError: File "brand.dtd" not found'.
+                                  "ac_add_options --enable-official-branding"
+                                  "mk_add_options MOZ_OBJDIR=obj"))))
+                (setenv "CONFIG_SHELL" (which "bash"))
+                (setenv "MOZBUILD_STATE_PATH"
+                        (string-append (getcwd) "/mach_state"))
+                (setenv "MOZCONFIG" (string-append (getcwd) "/.mozconfig"))
+                (setenv "MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE" "system")
+                (setenv "BUILD_BACKENDS" "FasterMake,RecursiveMake")))
+            (replace 'build             ;build and install data files
+              (lambda* (#:key outputs #:allow-other-keys)
+                (define (find-file dir name)
+                  (let ((files (find-files dir name)))
+                    (when (null? files)
+                      (error "could not find file in dir" name dir))
+                    (car files)))
+
+                (for-each
+                 (lambda (l)
+                   (let* ((out (assoc-ref outputs l))
+                          ;; The older lib/$project/distribution/extensions
+                          ;; directory is deprecated.  Use the newer app-global
+                          ;; directory, which is lib/$project/extensions.
+                          (ext-dir-prefix
+                           (format
+                            #f "lib/~a/~:[~;browser/~]extensions"
+                            '#$project (eq? 'icecat '#$project)))
+                          (all-ext (string-append #$output "/" ext-dir-prefix))
+                          (ext-dir (string-append out "/" ext-dir-prefix))
+                          ;; XXX: Because Icedove doesn't have a makeicedove
+                          ;; script that substitutes all the Thunderbird
+                          ;; references to Icedove, the MOZ_LANGPACK_EID
+                          ;; defined in comm/mail/locales/Makefile.in uses
+                          ;; 'thunderbird' in its ID extension rather than
+                          ;; 'icedove'.
+                          (name (format #f "langpack-~a@~a.mozilla.org.xpi"
+                                        l (if (eq? 'icedove '#$project)
+                                              'thunderbird
+                                              '#$project))))
+                     (format #t "processing locale `~a'...~%" l)
+                     (if (eq? 'icecat '#$project)
+                         ;; XXX: For some reasons, for IceCat, there are some
+                         ;; parsing errors that cause the build system to
+                         ;; return an unclean exit code; use system* to ignore
+                         ;; errors.
+                         (system* "./mach" "build" (string-append "langpack-" l))
+                         (invoke "./mach" "build" (string-append "langpack-" l)))
+                     (mkdir-p ext-dir)
+                     (let ((xpi (find-file "obj" (string-append
+                                                  "\\." l "\\.langpack\\.xpi$"))))
+                       (copy-file xpi (string-append ext-dir "/" name))
+                       ;; Symlink to the main output so that a user can
+                       ;; install all of the language packs at once.
+                       (mkdir-p all-ext)
+                       (symlink (string-append ext-dir "/" name)
+                                (string-append all-ext "/" name)))))
+                 (if (eq? 'icedove '#$project)
+                     '#$%icedove-locales
+                     '#$%icecat-locales)))))))
+      (native-inputs
+       (list m4
+             perl
+             python-wrapper
+             node
+             unzip))
+      (home-page "https://www.mozilla.org/")
+      (synopsis (string-append "Language localization data for " name))
+      (description (string-append "This package contains the various language
+localization data files (language pack extensions) for " name ".  The
+individual localization packages can be installed by using the output
+associated with their name."))
+      (license license:mpl2.0))))
+
+(define-public icecat-l10n
+  (make-l10n-package 'icecat %icecat-version icecat-source %icecat-locales))
+
+(define-public icedove-l10n
+  (make-l10n-package 'icedove %icedove-version icedove-source %icedove-locales))
+
+;;; This hack exists because there's no way to configure extra extension
+;;; search paths for IceCat or Icedove.  The global extensions directory is
+;;; constructed relatively to the executable file name.
+(define (make-mozilla-with-l10n project base l10n-package)
+  "Return a package definition for PROJECT (a symbol such as 'icecat or
+'icedove) that combines the BASE package with L10N-PACKAGE."
+
+  (unless (member project '(icecat icedove))
+    (error "only icecat or icedove components are currently supported"))
+
+  (let ((name (symbol->string project))
+        (icecat? (eq? 'icecat project)))
+    (package
+      (inherit base)
+      (name (symbol->string project))
+      ;; Use the copy-build-system, as it provides the necessary UTF-8 locales
+      ;; support.
+      (build-system copy-build-system)
+      (arguments
+       (list
+        #:imported-modules `(,@%copy-build-system-modules
+                             (guix build union))
+        #:modules '((guix build copy-build-system)
+                    (guix build union)
+                    (guix build utils))
+        #:phases
+        #~(modify-phases %standard-phases
+            (replace 'install
+              (lambda _
+                (union-build #$output (list #$base #$l10n-package)
+                             #:create-all-directories? #t)
+
+                (define* (expose name #:optional (proc copy-file)
+                                 #:key (source #$base))
+                  (let ((dest (string-append #$output "/" name)))
+                    (mkdir-p (dirname dest))
+                    (proc (string-append source "/" name) dest)))
+
+                (let ((wrapper (string-append "lib/" #$name "/" #$name))
+                      (real-binary (string-append "lib/" #$name "/." #$name
+                                                  "-real"))
+                      (desktop-file (string-append "share/applications/"
+                                                   #$name ".desktop")))
+                  ;; Copy wrapper file.
+                  (delete-file (string-append #$output "/" wrapper))
+                  (expose wrapper)
+
+                  ;; Recreate bin symlink.
+                  (delete-file (string-append #$output "/bin/" #$name))
+                  (symlink (string-append #$output "/" wrapper)
+                           (string-append #$output "/bin/" #$name))
+
+                  ;; Copy actual binary.
+                  (delete-file (string-append #$output "/" real-binary))
+                  (expose real-binary)
+
+                  ;; Copy desktop file.
+                  (delete-file (string-append #$output "/" desktop-file))
+                  (expose desktop-file)
+
+                  ;; Adjust the references in the desktop file and wrapper.
+                  (substitute* (list (string-append #$output "/" desktop-file)
+                                     (string-append #$output "/" wrapper))
+                    ((#$base) #$output)))))))))))
+
+(define-public icecat
+  (make-mozilla-with-l10n 'icecat icecat-minimal icecat-l10n))
+
+(define-public icedove
+  (make-mozilla-with-l10n 'icedove icedove-minimal icedove-l10n))
+
 (define-public icedove/wayland
   (package
     (inherit icedove)
     (name "icedove-wayland")
-    (native-inputs '())
-    (inputs
-     `(("bash" ,bash-minimal)
-       ("icedove" ,icedove)))
     (build-system trivial-build-system)
     (arguments
-      '(#:modules ((guix build utils))
-        #:builder
-        (begin
+     (list
+      #:modules '((guix build utils))
+      #:builder
+      #~(begin
           (use-modules (guix build utils))
-          (let* ((bash    (assoc-ref %build-inputs "bash"))
-                 (icedove (assoc-ref %build-inputs "icedove"))
-                 (out     (assoc-ref %outputs "out"))
-                 (exe     (string-append out "/bin/icedove")))
+          (let* ((exe (string-append #$output "/bin/icedove")))
             (mkdir-p (dirname exe))
-
             (call-with-output-file exe
               (lambda (port)
                 (format port "#!~a
  MOZ_ENABLE_WAYLAND=1 exec ~a $@"
-                        (string-append bash "/bin/bash")
-                        (string-append icedove "/bin/icedove"))))
+                        #$(file-append bash-minimal "/bin/bash")
+                        #$(file-append icedove "/bin/icedove"))))
             (chmod exe #o555)
-
             ;; Provide the manual and .desktop file.
-            (copy-recursively (string-append icedove "/share")
-                              (string-append out "/share"))
-            (substitute* (string-append
-                          out "/share/applications/icedove.desktop")
-              ((icedove) out))
-            #t))))))
+            (copy-recursively (string-append #$icedove "/share")
+                              (string-append #$output "/share"))
+            (substitute* (string-append #$output
+                                        "/share/applications/icedove.desktop")
+              ((#$icedove) #$output))))))
+    (native-inputs '())
+    (inputs '())))
 
 (define-public firefox-decrypt
   (package

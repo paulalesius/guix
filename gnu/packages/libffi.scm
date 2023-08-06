@@ -28,8 +28,10 @@
   #:use-module (gnu packages)
   #:use-module (guix licenses)
   #:use-module (guix packages)
+  #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix git-download)
+  #:use-module (guix utils)
   #:use-module (gnu packages check)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
@@ -43,17 +45,16 @@
 (define-public libffi
   (package
     (name "libffi")
-    (version "3.3")
+    (version "3.4.4")
     (source (origin
               (method url-fetch)
               (uri
-               (string-append "ftp://sourceware.org/pub/libffi/"
+               (string-append "https://github.com/libffi/libffi/releases"
+                              "/download/v" version "/"
                               name "-" version ".tar.gz"))
               (sha256
                (base32
-                "0mi0cpf8aa40ljjmzxb7im6dbj45bb0kllcd09xgmp834y9agyvj"))
-              (patches (search-patches "libffi-3.3-powerpc-fixes.patch"
-                                       "libffi-float128-powerpc64le.patch"))))
+                "0xpn5mqlbdmqgxgp910ba1qj79axpwr8nh7wklmcz0ls4nnmcv6n"))))
     (build-system gnu-build-system)
     (arguments
      `(;; Prevent the build system from passing -march and -mtune to the
@@ -73,11 +74,22 @@ to call code written in another language.  The libffi library really only
 provides the lowest, machine dependent layer of a fully featured foreign
 function interface.  A layer must exist above libffi that handles type
 conversions for values passed between the two languages.")
-    (home-page "http://www.sourceware.org/libffi/")
+    (home-page "https://www.sourceware.org/libffi/")
     (properties `((release-monitoring-url . ,home-page)))
 
     ;; See <https://github.com/atgreen/libffi/blob/master/LICENSE>.
     (license expat)))
+
+;; Provide a variant without static trampolines as some packages
+;; (particularly GHC < 9) cannot handle them.  See
+;; <https://github.com/libffi/libffi/pull/647> for a discussion.
+(define-public libffi-sans-static-trampolines
+  (hidden-package
+   (package/inherit libffi
+     (arguments
+      (substitute-keyword-arguments (package-arguments libffi)
+        ((#:configure-flags flags #~'())
+         #~(append #$flags '("--disable-exec-static-tramp"))))))))
 
 (define-public python-cffi
   (package
@@ -111,7 +123,12 @@ conversions for values passed between the two languages.")
                                "linker_so='gcc -shared')")))
              (substitute* "testing/cffi0/test_ownlib.py"
                (("\"cc testownlib") "\"gcc testownlib"))
-             (invoke "py.test" "-v" "c/" "testing/")))
+             (invoke "pytest" "-v" "c/" "testing/"
+                     ;; Disable tests that fail (harmlessly) with glibc
+                     ;; 2.34 and later:
+                     ;; https://foss.heptapod.net/pypy/cffi/-/issues/528
+                     "-k" (string-append "not TestFFI.test_dlopen_handle "
+                                         "and not test_dlopen_handle"))))
          (add-before 'check 'patch-paths-of-dynamically-loaded-libraries
            (lambda* (#:key inputs #:allow-other-keys)
              ;; Shared libraries should be referred by their absolute path as

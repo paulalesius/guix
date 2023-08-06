@@ -6,12 +6,13 @@
 ;;; Copyright © 2015, 2017, 2018 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2016 David Thompson <davet@gnu.org>
 ;;; Copyright © 2017 Nikita <nikita@n0.is>
-;;; Copyright © 2017, 2019, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2017, 2019, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2018 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2019 Pierre-Moana Levesque <pierre.moana.levesque@gmail.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022 Marius Bakke <marius@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -40,6 +41,7 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
+  #:use-module (guix gexp)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
   #:use-module (ice-9 match)
@@ -51,55 +53,55 @@
     (version "2.69")
     (source
      (origin
-      (method url-fetch)
-      (uri (string-append "mirror://gnu/autoconf/autoconf-"
-                          version ".tar.xz"))
-      (sha256
-       (base32
-        "113nlmidxy9kjr45kg9x3ngar4951mvag1js2a3j8nxcz34wxsv4"))))
+       (method url-fetch)
+       (uri (string-append "mirror://gnu/autoconf/autoconf-"
+                           version ".tar.xz"))
+       (sha256
+        (base32
+         "113nlmidxy9kjr45kg9x3ngar4951mvag1js2a3j8nxcz34wxsv4"))))
     (build-system gnu-build-system)
     (inputs
-     `(("bash" ,bash-minimal)
-       ("perl" ,perl)
-       ("m4" ,m4)))
+     (list bash-minimal m4 perl))
     (native-inputs
      (list perl m4))
     (arguments
-     `(;; XXX: testsuite: 209 and 279 failed.  The latter is an impurity.  It
-       ;; should use our own "cpp" instead of "/lib/cpp".
-       #:tests? #f
-       #:phases
-       (modify-phases %standard-phases
-         ,@(if (%current-target-system)
-               '((add-after 'install 'patch-non-shebang-references
-                    (lambda* (#:key build inputs outputs #:allow-other-keys)
-                      ;; `patch-shebangs' patches shebangs only, and the Perl
-                      ;; scripts use a re-exec feature that references the
-                      ;; build hosts' perl.  Also, BASH and M4 store references
-                      ;; hide in the scripts.
-                      (let ((bash (assoc-ref inputs "bash"))
-                            (m4 (assoc-ref inputs "m4"))
-                            (perl (assoc-ref inputs "perl"))
-                            (out  (assoc-ref outputs "out"))
-                            (store-directory (%store-directory)))
-                        (substitute* (find-files (string-append out "/bin"))
-                          (((string-append store-directory "/[^/]*-bash-[^/]*"))
-                           bash)
-                          (((string-append store-directory "/[^/]*-m4-[^/]*"))
-                           m4)
-                          (((string-append store-directory "/[^/]*-perl-[^/]*"))
-                           perl))))))
-               '())
-         (add-after 'install 'unpatch-shebangs
-           (lambda* (#:key outputs #:allow-other-keys)
-             ;; Scripts that "autoconf -i" installs (config.guess,
-             ;; config.sub, and install-sh) must use a regular shebang
-             ;; rather than a reference to the store.  Restore it.
-             (let* ((out (assoc-ref outputs "out"))
-                    (build-aux (string-append
-                                out "/share/autoconf/build-aux")))
-               (substitute* (find-files build-aux)
-                 (("^#!.*/bin/sh") "#!/bin/sh"))))))))
+     (list
+      ;; XXX: testsuite: 209 and 279 failed.  The latter is an impurity.  It
+      ;; should use our own "cpp" instead of "/lib/cpp".
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          #$@(if (%current-target-system)
+                 #~((add-after 'install 'patch-non-shebang-references
+                      (lambda* (#:key build inputs #:allow-other-keys)
+                        ;; `patch-shebangs' patches shebangs only, and the Perl
+                        ;; scripts use a re-exec feature that references the
+                        ;; build hosts' perl.  Also, BASH and M4 store references
+                        ;; hide in the scripts.
+                        (let ((bash (dirname (dirname
+                                              (search-input-file inputs "bin/bash"))))
+                              (m4 (dirname (dirname
+                                            (search-input-file inputs "bin/m4"))))
+                              (perl (dirname (dirname
+                                              (search-input-file inputs "bin/perl"))))
+                              (store-directory (%store-directory)))
+                          (substitute* (find-files (string-append #$output "/bin"))
+                            (((string-append store-directory "/[^/]*-bash-[^/]*"))
+                             bash)
+                            (((string-append store-directory "/[^/]*-m4-[^/]*"))
+                             m4)
+                            (((string-append store-directory "/[^/]*-perl-[^/]*"))
+                             perl))))))
+                 '())
+          (add-after 'install 'unpatch-shebangs
+            (lambda _
+              ;; Scripts that "autoconf -i" installs (config.guess,
+              ;; config.sub, and install-sh) must use a regular shebang
+              ;; rather than a reference to the store.  Restore it.
+              (let ((build-aux (string-append #$output
+                                              "/share/autoconf/build-aux")))
+                (substitute* (find-files build-aux)
+                  (("^#!.*/bin/sh") "#!/bin/sh"))))))))
     (home-page "https://www.gnu.org/software/autoconf/")
     (synopsis "Create source code configuration scripts")
     (description
@@ -129,17 +131,17 @@ know anything about Autoconf or M4.")
         ;; FIXME: To run the test suite, fix all the instances where scripts
         ;; generates "#! /bin/sh" shebangs.
         #f)
-       ((#:phases phases '%standard-phases)
-        `(modify-phases ,phases
-           (add-before 'check 'prepare-tests
-             (lambda _
-               (for-each patch-shebang
-                         (append (find-files "tests"
-                                             (lambda (file stat)
-                                               (executable-file? file)))
-                                 (find-files "bin"
-                                             (lambda (file stat)
-                                               (executable-file? file)))))))))))))
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-before 'check 'prepare-tests
+              (lambda _
+                (for-each patch-shebang
+                          (append (find-files "tests"
+                                              (lambda (file stat)
+                                                (executable-file? file)))
+                                  (find-files "bin"
+                                              (lambda (file stat)
+                                                (executable-file? file)))))))))))))
 
 (define-public autoconf autoconf-2.69)
 
@@ -156,7 +158,6 @@ know anything about Autoconf or M4.")
         "1fjm21k2na07f3vasf288a0zx66lbv0hd3l9bvv3q8p62s3pg569"))))))
 
 (define-public autoconf-2.64
-  ;; As of GDB 7.8, GDB is still developed using this version of Autoconf.
   (package (inherit autoconf)
     (version "2.64")
     (source
@@ -203,70 +204,65 @@ know anything about Autoconf or M4.")
 use our own Bash instead of /bin/sh in shebangs.  For that reason, it should
 only be used internally---users should not end up distributing `configure'
 files with a system-specific shebang."
-  (package (inherit autoconf)
+  (package
+    (inherit autoconf)
     (name (string-append (package-name autoconf) "-wrapper"))
     (build-system trivial-build-system)
-    (inputs `(("guile"
-               ;; XXX: Kludge to hide the circular dependency.
-               ,(module-ref (resolve-interface '(gnu packages guile))
-                            'guile-3.0/fixed))
-              ("autoconf" ,autoconf)
-              ("bash" ,bash-minimal)))
+    (inputs
+     (list
+      ;; XXX: Kludge to hide the circular dependency.
+      (module-ref (resolve-interface '(gnu packages guile))
+                  'guile-3.0/pinned)
+      autoconf
+      bash-minimal))
     (arguments
-     '(#:modules ((guix build utils))
-       #:builder
-       (begin
-         (use-modules (guix build utils))
-         (let* ((out      (assoc-ref %outputs "out"))
-                (bin      (string-append out "/bin"))
-                (autoconf (string-append
-                           (assoc-ref %build-inputs "autoconf")
-                           "/bin/autoconf"))
-                (guile    (string-append
-                           (assoc-ref %build-inputs "guile")
-                           "/bin/guile"))
-                (sh       (string-append
-                           (assoc-ref %build-inputs "bash")
-                           "/bin/sh"))
+     (list
+      #:modules '((guix build utils))
+      #:builder
+      #~(begin
+          (use-modules (guix build utils))
+          (let ((bin      (string-append #$output "/bin"))
+                (autoconf (search-input-file %build-inputs "/bin/autoconf"))
+                (guile    (search-input-file %build-inputs "/bin/guile"))
+                (sh       (search-input-file %build-inputs "/bin/sh"))
                 (modules  ((compose dirname dirname dirname)
                            (search-path %load-path
                                         "guix/build/utils.scm"))))
-           (mkdir-p bin)
+            (mkdir-p bin)
 
-           ;; Symlink all the binaries but `autoconf'.
-           (with-directory-excursion bin
-             (for-each (lambda (file)
-                         (unless (string=? (basename file) "autoconf")
-                           (symlink file (basename file))))
-                       (find-files (dirname autoconf) ".*")))
+            ;; Symlink all the binaries but `autoconf'.
+            (with-directory-excursion bin
+              (for-each (lambda (file)
+                          (unless (string=? (basename file) "autoconf")
+                            (symlink file (basename file))))
+                        (find-files (dirname autoconf) ".*")))
 
-           ;; Add an `autoconf' binary that wraps the real one.
-           (call-with-output-file (string-append bin "/autoconf")
-             (lambda (port)
-               ;; Shamefully, Guile can be used in shebangs only if a
-               ;; single argument is passed (-ds); otherwise it gets
-               ;; them all as a single argument and fails to parse them.
-               (format port "#!~a
+            ;; Add an `autoconf' binary that wraps the real one.
+            (call-with-output-file (string-append bin "/autoconf")
+              (lambda (port)
+                ;; Shamefully, Guile can be used in shebangs only if a
+                ;; single argument is passed (-ds); otherwise it gets
+                ;; them all as a single argument and fails to parse them.
+                (format port "#!~a
 export GUILE_LOAD_PATH=\"~a\"
 export GUILE_LOAD_COMPILED_PATH=\"~a\"
 exec ~a --no-auto-compile \"$0\" \"$@\"
 !#~%"
-                       sh modules modules guile)
-               (write
-                `(begin
-                   (use-modules (guix build utils))
-                   (let ((result (apply system* ,autoconf
-                                        (cdr (command-line)))))
-                     (when (and (file-exists? "configure")
-                                (not (file-exists? "/bin/sh")))
-                       ;; Patch regardless of RESULT, because `autoconf
-                       ;; -Werror' can both create a `configure' file and
-                       ;; return a non-zero exit code.
-                       (patch-shebang "configure"))
-                     (exit (status:exit-val result))))
-                port)))
-           (chmod (string-append bin "/autoconf") #o555)
-           #t))))
+                        sh modules modules guile)
+                (write
+                 `(begin
+                    (use-modules (guix build utils))
+                    (let ((result (apply system* ,autoconf
+                                         (cdr (command-line)))))
+                      (when (and (file-exists? "configure")
+                                 (not (file-exists? "/bin/sh")))
+                        ;; Patch regardless of RESULT, because `autoconf
+                        ;; -Werror' can both create a `configure' file and
+                        ;; return a non-zero exit code.
+                        (patch-shebang "configure"))
+                      (exit (status:exit-val result))))
+                 port)))
+            (chmod (string-append bin "/autoconf") #o555)))))
 
     ;; Do not show it in the UI since it's meant for internal use.
     (properties '((hidden? . #t)))))
@@ -279,7 +275,7 @@ exec ~a --no-auto-compile \"$0\" \"$@\"
 (define-public autoconf-archive
   (package
     (name "autoconf-archive")
-    (version "2021.02.19")
+    (version "2022.09.03")
     (source
      (origin
       (method url-fetch)
@@ -287,7 +283,7 @@ exec ~a --no-auto-compile \"$0\" \"$@\"
                           version ".tar.xz"))
       (sha256
        (base32
-        "1gcwqspcxiygnyk02smsk8ivzs9r69ji38izxzzsijyx52fyp9p8"))))
+        "08zl68xdd907fb1r8kb88ycq09w9g53hfbflpq3pkblc1pq58x70"))))
     (build-system gnu-build-system)
     (home-page "https://www.gnu.org/software/autoconf-archive/")
     (synopsis "Collection of freely reusable Autoconf macros")
@@ -324,107 +320,104 @@ output is indexed in many ways to simplify browsing.")
 (define-public automake
   (package
     (name "automake")
-    (version "1.16.3")
+    (version "1.16.5")
     (source (origin
-             (method url-fetch)
-             (uri (string-append "mirror://gnu/automake/automake-"
-                                 version ".tar.xz"))
-             (sha256
-              (base32
-                "0fmz2fhmzcpacnprl5msphvaflwiy0hvpgmqlgfny72ddijzfazz"))
-             (patches
-              (search-patches "automake-skip-amhello-tests.patch"))))
+              (method url-fetch)
+              (uri (string-append "mirror://gnu/automake/automake-"
+                                  version ".tar.xz"))
+              (sha256
+               (base32
+                "0sdl32qxdy7m06iggmkkvf7j520rmmgbsjzbm7fgnxwxdp6mh7gh"))
+              (patches
+               (search-patches "automake-skip-amhello-tests.patch"))))
     (build-system gnu-build-system)
     (inputs
-     `(("autoconf" ,autoconf-wrapper)
-       ("bash" ,bash-minimal)
-       ("perl" ,perl)))
+     (list autoconf-wrapper bash-minimal perl))
     (native-inputs
-     `(("autoconf" ,autoconf-wrapper)
-       ("perl" ,perl)))
+     (list autoconf-wrapper perl))
     (native-search-paths
      (list (search-path-specification
             (variable "ACLOCAL_PATH")
             (files '("share/aclocal")))))
     (arguments
-     `(#:modules ((guix build gnu-build-system)
+     (list
+      #:modules '((guix build gnu-build-system)
                   (guix build utils)
                   (srfi srfi-1)
                   (srfi srfi-26)
                   (rnrs io ports))
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'patch-source-shebangs 'patch-tests-shebangs
-           (lambda _
-             (let ((sh (which "sh")))
-               (substitute* (find-files "t" "\\.(sh|tap)$")
-                 (("#![[:blank:]]?/bin/sh")
-                  (string-append "#!" sh)))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'patch-source-shebangs 'patch-tests-shebangs
+            (lambda* (#:key native-inputs inputs #:allow-other-keys)
+              (let ((sh (search-input-file (or native-inputs inputs) "bin/sh")))
+                (substitute* (find-files "t" "\\.(sh|tap)$")
+                  (("#![[:blank:]]?/bin/sh")
+                   (string-append "#!" sh)))
 
-               ;; Set these variables for all the `configure' runs
-               ;; that occur during the test suite.
-               (setenv "SHELL" sh)
-               (setenv "CONFIG_SHELL" sh)
-               #t)))
+                ;; Set these variables for all the `configure' runs
+                ;; that occur during the test suite.
+                (setenv "SHELL" sh)
+                (setenv "CONFIG_SHELL" sh))))
+          (add-before 'check 'skip-test
+            (lambda _
+              ;; This test requires 'etags' and fails if it's missing.
+              ;; Skip it.
+              (substitute* "t/tags-lisp-space.sh"
+                (("^required.*" all)
+                 (string-append "exit 77\n" all "\n")))))
 
-           (add-before 'check 'skip-test
-             (lambda _
-               ;; This test requires 'etags' and fails if it's missing.
-               ;; Skip it.
-               (substitute* "t/tags-lisp-space.sh"
-                 (("^required.*" all)
-                  (string-append "exit 77\n" all "\n")))
-               #t))
-
-           ,@(if (%current-target-system)
-                 `((add-after 'install 'patch-non-shebang-references
-                     (lambda* (#:key build inputs outputs #:allow-other-keys)
-                     ;; `patch-shebangs' patches shebangs only, and the Perl
-                     ;; scripts use a re-exec feature that references the
-                     ;; build hosts' perl.  Also, AUTOCONF and BASH store
-                     ;; references hide in the scripts.
-                       (let ((autoconf (assoc-ref inputs "autoconf"))
-                             (bash (assoc-ref inputs "bash"))
-                             (perl (assoc-ref inputs "perl"))
-                             (out  (assoc-ref outputs "out"))
-                             (store-directory (%store-directory)))
-                         (substitute* (find-files (string-append out "/bin"))
-                           (((string-append store-directory "/[^/]*-autoconf-[^/]*"))
-                            autoconf)
-                           (((string-append store-directory "/[^/]*-bash-[^/]*"))
-                            bash)
-                           (((string-append store-directory "/[^/]*-perl-[^/]*"))
-                            perl))
-                         #t))))
+          #$@(if (%current-target-system)
+                 #~((add-after 'install 'patch-non-shebang-references
+                      (lambda* (#:key inputs #:allow-other-keys)
+                        ;; `patch-shebangs' patches shebangs only, and the Perl
+                        ;; scripts use a re-exec feature that references the
+                        ;; build hosts' perl.  Also, AUTOCONF and BASH store
+                        ;; references hide in the scripts.
+                        (let ((autoconf
+                               (dirname (dirname
+                                         (search-input-file inputs "bin/autoconf"))))
+                              (bash
+                               (dirname (dirname
+                                         (search-input-file inputs "bin/bash"))))
+                              (perl
+                               (dirname (dirname
+                                         (search-input-file inputs "bin/perl"))))
+                              (store-directory (%store-directory)))
+                          (substitute* (find-files (string-append #$output "/bin"))
+                            (((string-append store-directory "/[^/]*-autoconf-[^/]*"))
+                             autoconf)
+                            (((string-append store-directory "/[^/]*-bash-[^/]*"))
+                             bash)
+                            (((string-append store-directory "/[^/]*-perl-[^/]*"))
+                             perl))))))
                  '())
 
-         ;; Files like `install-sh', `mdate.sh', etc. must use
-         ;; #!/bin/sh, otherwise users could leak erroneous shebangs
-         ;; in the wild.  See <http://bugs.gnu.org/14201> for an
-         ;; example.
-         (add-after 'install 'unpatch-shebangs
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (dir (string-append out "/share")))
-               (define (starts-with-shebang? file)
-                 (equal? (call-with-input-file file
-                           (lambda (p)
-                             (list (get-u8 p) (get-u8 p))))
-                         (map char->integer '(#\# #\!))))
+          ;; Files like `install-sh', `mdate.sh', etc. must use
+          ;; #!/bin/sh, otherwise users could leak erroneous shebangs
+          ;; in the wild.  See <http://bugs.gnu.org/14201> for an
+          ;; example.
+          (add-after 'install 'unpatch-shebangs
+            (lambda _
+              (let ((dir (string-append #$output "/share")))
+                (define (starts-with-shebang? file)
+                  (equal? (call-with-input-file file
+                            (lambda (p)
+                              (list (get-u8 p) (get-u8 p))))
+                          (map char->integer '(#\# #\!))))
 
-               (for-each (lambda (file)
-                           (when (and (starts-with-shebang? file)
-                                      (executable-file? file))
-                             (format #t "restoring shebang on `~a'~%"
-                                     file)
-                             (substitute* file
-                               (("^#!.*/bin/sh")
-                                "#!/bin/sh")
-                               (("^#!.*/bin/env(.*)$" _ args)
-                                (string-append "#!/usr/bin/env"
-                                               args)))))
-                         (find-files dir ".*"))
-               #t))))))
+                (for-each (lambda (file)
+                            (when (and (starts-with-shebang? file)
+                                       (executable-file? file))
+                              (format #t "restoring shebang on `~a'~%"
+                                      file)
+                              (substitute* file
+                                (("^#!.*/bin/sh")
+                                 "#!/bin/sh")
+                                (("^#!.*/bin/env(.*)$" _ args)
+                                 (string-append "#!/usr/bin/env"
+                                                args)))))
+                          (find-files dir ".*"))))))))
     (home-page "https://www.gnu.org/software/automake/")
     (synopsis "Making GNU standards-compliant Makefiles")
     (description
@@ -434,42 +427,30 @@ intuitive format and then Automake works with Autoconf to produce a robust
 Makefile, simplifying the entire process for the developer.")
     (license gpl2+)))                      ; some files are under GPLv3+
 
-(define-public automake-1.16.5
-  (package
-    (inherit automake)
-    (version "1.16.5")
-    (source (origin
-             (method url-fetch)
-             (uri (string-append "mirror://gnu/automake/automake-"
-                                 version ".tar.xz"))
-             (sha256
-              (base32
-                "0sdl32qxdy7m06iggmkkvf7j520rmmgbsjzbm7fgnxwxdp6mh7gh"))
-             (patches
-              (search-patches "automake-skip-amhello-tests.patch"))))))
-
 (define-public libtool
   (package
     (name "libtool")
-    (version "2.4.6")
+    (version "2.4.7")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/libtool/libtool-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "0vxj52zm709125gwv9qqlw02silj8bnjnh4y07arrz60r31ai1vw"))
-              (patches (search-patches "libtool-skip-tests2.patch"))))
+                "0pb3l4x37k6fj1lwnpzws55gi3pxl0hx56jm4bzmbrkw0mzj2zsg"))
+              (patches (search-patches "libtool-skip-tests2.patch"
+                                       "libtool-grep-compat.patch"))))
     (build-system gnu-build-system)
     (propagated-inputs (list m4))
-    (native-inputs `(("m4" ,m4)
-                     ("perl" ,perl)
-                     ;; XXX: this shouldn't be necessary, but without it test
-                     ;; 102 fails because it cannot find ltdl/libltdl.la.
-                     ("libltdl" ,libltdl)
-                     ("help2man" ,help2man) ;because we modify ltmain.sh
-                     ("automake" ,automake)      ;some tests rely on 'aclocal'
-                     ("autoconf" ,autoconf-wrapper))) ;others on 'autom4te'
+    (native-inputs
+     (list m4
+           perl
+           ;; XXX: this shouldn't be necessary, but without it test
+           ;; 102 fails because it cannot find ltdl/libltdl.la.
+           libltdl
+           help2man             ; because we modify ltmain.sh
+           automake             ; some tests rely on 'aclocal'
+           autoconf-wrapper))   ; others on 'autom4te'
 
     (arguments
      `(;; Libltdl is provided as a separate package, so don't install it here.
@@ -485,18 +466,18 @@ Makefile, simplifying the entire process for the developer.")
        #:phases
        (modify-phases %standard-phases
          (add-before 'check 'pre-check
-           (lambda* (#:key inputs native-inputs #:allow-other-keys)
+           (lambda* (#:key inputs native-inputs parallel-tests? #:allow-other-keys)
              ;; Run the test suite in parallel, if possible.
              (setenv "TESTSUITEFLAGS"
                      (string-append
                       "-j"
-                      (number->string (parallel-job-count))))
+                      (if parallel-tests?
+                        (number->string (parallel-job-count))
+                        "1")))
            ;; Patch references to /bin/sh.
-           (let ((bash (assoc-ref (or native-inputs inputs) "bash")))
+           (let ((/bin/sh (search-input-file (or native-inputs inputs) "bin/sh")))
              (substitute* "tests/testsuite"
-               (("/bin/sh")
-                (string-append bash "/bin/sh")))
-             #t)))
+               (("/bin/sh") /bin/sh)))))
          ;; These files may be copied into source trees by libtoolize,
          ;; therefore they must not point to store file names that would be
          ;; leaked with tarballs generated by make dist.
@@ -508,8 +489,7 @@ Makefile, simplifying the entire process for the developer.")
                            (format #t "restoring shebang on `~a'~%" file)
                            (substitute* file
                              (("^#!.*/bin/sh") "#!/bin/sh")))
-                         (find-files dir ".*"))
-               #t))))))
+                         (find-files dir))))))))
 
     (synopsis "Generic shared library support tools")
     (description
@@ -518,18 +498,6 @@ presenting a single consistent, portable interface that hides the usual
 complexity of working with shared libraries across platforms.")
     (license gpl3+)
     (home-page "https://www.gnu.org/software/libtool/")))
-
-(define-public libtool-2.4.7
-  (package
-    (inherit libtool)
-    (version "2.4.7")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/libtool/libtool-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "0pb3l4x37k6fj1lwnpzws55gi3pxl0hx56jm4bzmbrkw0mzj2zsg"))))))
 
 (define-public config
   (let ((revision "1")
@@ -585,20 +553,20 @@ configuration in nearly all GNU packages (and many others).")
   ;; Libtool's extensive test suite isn't run.
   (package
     (name "libltdl")
-    (version "2.4.6")
+    (version "2.4.7")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/libtool/libtool-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "0vxj52zm709125gwv9qqlw02silj8bnjnh4y07arrz60r31ai1vw"))))
+                "0pb3l4x37k6fj1lwnpzws55gi3pxl0hx56jm4bzmbrkw0mzj2zsg"))))
     (build-system gnu-build-system)
     (arguments
      '(#:configure-flags '("--enable-ltdl-install") ;really install it
        #:phases (modify-phases %standard-phases
                   (add-before 'configure 'change-directory
-                    (lambda _ (chdir "libltdl") #t)))))
+                    (lambda _ (chdir "libltdl"))))))
 
     (synopsis "System-independent dlopen wrapper of GNU libtool")
     (description (package-description libtool))

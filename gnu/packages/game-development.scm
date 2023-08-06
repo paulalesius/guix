@@ -4,7 +4,7 @@
 ;;; Copyright © 2015, 2018, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2015, 2018 Alex Kost <alezost@gmail.com>
 ;;; Copyright © 2015, 2016, 2017 David Thompson <davet@gnu.org>
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016-2021, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2017, 2020 Kei Kebreau <kkebreau@posteo.net>
 ;;; Copyright © 2016, 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016, 2017, 2018 Julian Graham <joolean@gmail.com>
@@ -17,7 +17,7 @@
 ;;; Copyright © 2019 Pierre Neidhardt <mail@ambrevar.xyz>
 ;;; Copyright © 2019, 2020, 2021 Liliana Marie Prikler <liliana.prikler@gmail.com>
 ;;; Copyright © 2019 Jethro Cao <jethrocao@gmail.com>
-;;; Copyright © 2020-2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
+;;; Copyright © 2020-2023 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2020 Timotej Lazar <timotej.lazar@araneo.si>
 ;;; Copyright © 2020 Giacomo Leidi <goodoldpaul@autistici.org>
 ;;; Copyright © 2021 Alexandru-Sergiu Marton <brown121407@posteo.ro>
@@ -27,6 +27,8 @@
 ;;; Copyright © 2021 Andy Tai <atai@atai.org>
 ;;; Copyright © 2022 Felix Gruber <felgru@posteo.net>
 ;;; Copyright © 2022 Jai Vetrivelan <jaivetrivelan@gmail.com>
+;;; Copyright © 2022 dan <i@dan.games>
+;;; Copyright © 2023 John Kehayias <john.kehayias@protonmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -58,6 +60,7 @@
   #:use-module (guix build-system python)
   #:use-module (guix build-system scons)
   #:use-module (gnu packages)
+  #:use-module (gnu packages assembly)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
@@ -84,6 +87,7 @@
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages icu4c)
   #:use-module (gnu packages image)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages llvm)
@@ -93,21 +97,25 @@
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages music)
   #:use-module (gnu packages ncurses)
+  #:use-module (gnu packages networking)
   #:use-module (gnu packages pcre)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages readline)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages sdl)
+  #:use-module (gnu packages speech)
   #:use-module (gnu packages sphinx)
   #:use-module (gnu packages stb)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages textutils)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages video)
+  #:use-module (gnu packages vulkan)
   #:use-module (gnu packages web)
   #:use-module (gnu packages wxwidgets)
   #:use-module (gnu packages xdisorg)
@@ -241,7 +249,7 @@ is used in some video games and movies.")
      (list gawk procps))
     (inputs
      (list boost))
-    (home-page "http://privat.bahnhof.se/wb758135/")
+    (home-page "https://privat.bahnhof.se/wb758135/")
     (synopsis "Double dummy solver for the bridge card game")
     (description "DDS is a double-dummy solver of bridge hands.  It supports
 single-threading and multi-threading for improved performance.  DDS
@@ -279,47 +287,60 @@ DeuTex has functions such as merging wads, etc.")
    (license license:gpl2+)))
 
 (define-public grfcodec
-  (package
-    (name "grfcodec")
-    (version "6.0.6")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "https://binaries.openttd.org/extra/"
-                           name "/" version "/" name "-" version
-                           "-source.tar.xz"))
-       (patches (search-patches "grfcodec-gcc-compat.patch"))
-       (sha256
-        (base32 "08admgnpqcsifpicbm56apgv360fxapqpbbsp10qyk8i22w1ivsk"))))
-    (build-system gnu-build-system)
-    (arguments
-     '(#:tests? #f                      ;no check target
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)            ;no configure script
-         (replace 'install              ;no install target
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin"))
-                    (doc (string-append out "/share/doc"))
-                    (man (string-append out "/share/man/man1")))
-               (for-each (lambda (file)
-                           (install-file file bin))
-                         '("grfcodec" "grfid" "grfstrip" "nforenum"))
-               (install-file "COPYING" doc)
-               (with-directory-excursion "docs"
+  ;; Latest release 6.0.6 requires an older boost and does not build with our
+  ;; newer GCC.
+  (let ((commit "7ded8ebd1447bd2e7c0f4b587be0c0510397bdd0")
+        (revision "0"))
+    (package
+      (name "grfcodec")
+      (version (git-version "6.0.6" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+                (url "https://github.com/OpenTTD/grfcodec")
+                (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "12bf5y7d83plrlssdlcj83w4yxmg5jp1w2p8570l92hy9mkcfmb9"))
+         (modules '((guix build utils)))
+         (snippet
+           `(begin
+              ;; The sources are not a git repository
+              (substitute* "generate_version.cmake"
+                (("\\$\\{GIT.*describe.*") (string-append "echo \"" ,version "\"\n"))
+                (("\\$\\{GIT.*show.*") "echo \"Not shown for reproducibility.\"\n"))
+              (substitute* "CMakeLists.txt"
+                (("find_package\\(Git REQUIRED\\)") ""))))))
+      (build-system cmake-build-system)
+      (arguments
+       '(#:tests? #f                      ;no check target
+         #:phases
+         (modify-phases %standard-phases
+           (replace 'install              ;no install target
+             (lambda* (#:key outputs #:allow-other-keys)
+               (let* ((out (assoc-ref outputs "out"))
+                      (bin (string-append out "/bin"))
+                      (doc (string-append out "/share/doc"))
+                      (man (string-append out "/share/man/man1")))
                  (for-each (lambda (file)
-                             (install-file (string-append file ".txt") doc))
-                           '("auto_correct" "commands" "grf" "grfcodec" "grftut"
-                             "readme" "readme.rpn"))
-                 (for-each (lambda (file)
-                             (install-file file man))
-                           (find-files "." "\\.1")))))))))
-    (inputs
-     (list boost libpng zlib))
-    (synopsis "GRF development tools")
-    (description
-     "The @dfn{Graphics Resource File} (GRF) development tools are a set of
+                             (install-file file bin))
+                           '("grfcodec" "grfid" "grfstrip" "nforenum"))
+                 (with-directory-excursion "../source"
+                   (install-file "COPYING" doc)
+                   (with-directory-excursion "docs"
+                     (for-each (lambda (file)
+                                 (install-file (string-append file ".txt") doc))
+                               '("auto_correct" "commands" "grf" "grfcodec" "grftut"
+                                 "readme" "readme.rpn"))
+                     (for-each (lambda (file)
+                                 (install-file file man))
+                               (find-files "." "\\.1"))))))))))
+      (inputs
+       (list boost libpng zlib))
+      (synopsis "GRF development tools")
+      (description
+       "The @dfn{Graphics Resource File} (GRF) development tools are a set of
 tools for developing (New)GRFs. It includes a number of smaller programs, each
 with a specific task:
 @enumerate
@@ -329,11 +350,11 @@ with a specific task:
 @item @code{nforenum} checks NFO code for errors, making corrections when
 necessary.
 @end enumerate")
-    (home-page "https://dev.openttdcoop.org/projects/grfcodec")
-    ;; GRFCodec, GRFID, and GRFStrip are exclusively under the GPL2.
-    ;; NFORenum is under the GPL2+.
-    ;; The MD5 implementation contained in GRFID is under the zlib license.
-    (license (list license:gpl2 license:gpl2+ license:zlib))))
+      (home-page "https://dev.openttdcoop.org/projects/grfcodec")
+      ;; GRFCodec, GRFID, and GRFStrip are exclusively under the GPL2.
+      ;; NFORenum is under the GPL2+.
+      ;; The MD5 implementation contained in GRFID is under the zlib license.
+      (license (list license:gpl2 license:gpl2+ license:zlib)))))
 
 (define-public catcodec
   (package
@@ -403,13 +424,13 @@ provide connectivity for client applications written in any language.")
 (define-public nml
   (package
     (name "nml")
-    (version "0.5.3")
+    (version "0.7.2")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "nml" version))
        (sha256
-        (base32 "0l5pfs8q7jrl3xscqq7pnwh5h5d17fsyjy7xspkc73sa0ayjm9jx"))))
+        (base32 "1kgzkv8pc0blck8c6iqq1idx1nrxyjw2vbnrdisnxizi6zds5l73"))))
     (build-system python-build-system)
     ;; TODO: Fix test that fails with
     ;; "AttributeError: partially initialized module 'nml.nmlop' has no
@@ -465,7 +486,7 @@ possible, and it also makes the SGE easy to learn.")
     (build-system python-build-system)
     (propagated-inputs
      (list python-six))
-    (home-page "http://python-tmx.nongnu.org")
+    (home-page "https://python-tmx.nongnu.org")
     (synopsis "Python library for the @code{Tiled} TMX format")
     (description
      "Python TMX reads and writes the @code{Tiled} TMX format in a simple way.
@@ -736,6 +757,34 @@ to ease the development of games and multimedia applications.  It is composed
 of five modules: system, window, graphics, audio and network.")
     (license license:zlib)))
 
+(define-public csfml
+  (package
+    (name "csfml")
+    (version "2.5.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/SFML/CSFML")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1wj1p798myyavld2xdhvvflb5h4nf1vgxxzs6nh5qad44vj9b3kb"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list #:configure-flags #~(list "-DCSFML_BUILD_DOC=TRUE")
+           #:tests? #f)) ;no tests
+    (native-inputs (list doxygen))
+    (inputs (list sfml))
+    (synopsis "C bindings for the SFML multimedia library")
+    (description
+     "CSFML is the official C binding to the SFML libraries.  SFML provides a
+simple interface to the various computer components, to ease the development of
+games and multimedia applications.  It is composed of five modules: system,
+window, graphics, audio and network.")
+    (home-page "https://www.sfml-dev.org/download/csfml/")
+    (license license:zlib)))
+
 (define-public sfxr
   (package
     (name "sfxr")
@@ -768,7 +817,7 @@ of five modules: system, window, graphics, audio and network.")
     (description "Sfxr is a tool for quickly generating simple sound effects.
 Originally created for use in video game prototypes, it can generate random
 sounds from presets such as \"explosion\" or \"powerup\".")
-    (home-page "http://www.drpetter.se/project_sfxr.html")
+    (home-page "https://www.drpetter.se/project_sfxr.html")
     (license license:expat)))
 
 (define-public surgescript
@@ -1155,7 +1204,7 @@ It offers the following features:
     (build-system gnu-build-system)
     (native-inputs (list pkg-config))
     (inputs (list fontconfig freeglut fribidi glew))
-    (home-page "http://quesoglc.sourceforge.net")
+    (home-page "https://quesoglc.sourceforge.net")
     (synopsis "Implementation of the OpenGL Character Renderer (GLC)")
     (description
      "The OpenGL Character Renderer (GLC) is a state machine that provides
@@ -1166,93 +1215,61 @@ interface (API).")
 (define-public python-pygame
   (package
     (name "python-pygame")
-    (version "1.9.4")
+    (version "2.1.2")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "pygame" version))
               (sha256
                (base32
-                "1dn0nb86jl7yr8709cncxdr0yrmviqakw7zx3g8jbbwrr60if3bh"))))
+                "0g6j79naab7583kymf1bgxc5l5c9h5laq887rmvh8vw8iyifrl6n"))))
     (build-system python-build-system)
     (arguments
-     `(#:tests? #f                ; tests require pygame to be installed first
-       #:phases
-       (modify-phases %standard-phases
-         ;; Set the paths to the dependencies manually because
-         ;; the configure script does not allow passing them as
-         ;; parameters.  This also means we can skip the configure
-         ;; phase.
-         (add-before 'build 'set-library-paths
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((sdl-ref   (assoc-ref inputs "sdl"))
-                   (font-ref  (assoc-ref inputs "sdl-ttf"))
-                   (image-ref (assoc-ref inputs "sdl-image"))
-                   (mixer-ref (assoc-ref inputs "sdl-mixer"))
-                   (smpeg-ref (assoc-ref inputs "libsmpeg"))
-                   (png-ref   (assoc-ref inputs "libpng"))
-                   (jpeg-ref  (assoc-ref inputs "libjpeg"))
-                   (freetype-ref (assoc-ref inputs "freetype"))
-                   (v4l-ref   (assoc-ref inputs "v4l-utils"))
-                   (out-ref   (assoc-ref outputs "out")))
-               (substitute* "Setup.in"
-                 (("SDL = -I/usr/include/SDL")
-                  (string-append "SDL = -I" sdl-ref "/include/SDL -I.")))
-               (substitute* "Setup.in"
-                 (("FONT = -lSDL_ttf")
-                  (string-append "FONT = -I" font-ref "/include/SDL -L"
-                                 font-ref "/lib -lSDL_ttf")))
-               (substitute* "Setup.in"
-                 (("IMAGE = -lSDL_image")
-                  (string-append "IMAGE = -I" image-ref "/include/SDL -L"
-                                 image-ref "/lib -lSDL_image")))
-               (substitute* "Setup.in"
-                 (("MIXER = -lSDL_mixer")
-                  (string-append "MIXER = -I" mixer-ref "/include/SDL -L"
-                                 mixer-ref "/lib -lSDL_mixer")))
-               (substitute* "Setup.in"
-                 (("SMPEG = -lsmpeg")
-                  (string-append "SMPEG = -I" smpeg-ref "/include/smpeg -L"
-                                 smpeg-ref "/lib -lsmpeg")))
-               (substitute* "Setup.in"
-                 (("PNG = -lpng")
-                  (string-append "PNG = -I" png-ref "/include -L"
-                                 png-ref "/lib -lpng")))
-               (substitute* "Setup.in"
-                 (("JPEG = -ljpeg")
-                  (string-append "JPEG = -I" jpeg-ref "/include -L"
-                                 jpeg-ref "/lib -ljpeg")))
-
-               (substitute* "Setup.in"
-                 (("FREETYPE = -lfreetype")
-                  (string-append "FREETYPE = -I" freetype-ref "/include/freetype2 -L"
-                                 freetype-ref "/lib -lfreetype")))
-
-               (substitute* "Setup.in"
-                 (("^pypm") "#pypm"))
-               ;; Create a path to a header file provided by v4l-utils.
-               (system* "mkdir" "linux")
-               (system* "ln" "--symbolic"
-                        (string-append v4l-ref "/include/libv4l1-videodev.h")
-                        "linux/videodev.h")
-               (system* "ln" "--symbolic" "Setup.in" "Setup")))))))
+     (list
+      #:tests? #f                 ; tests require pygame to be installed first
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-build-config
+            (lambda _
+              (substitute* "buildconfig/config_unix.py"
+                (("origincdirs = \\[.*\\]")
+                 "origincdirs = os.environ['C_INCLUDE_PATH'].split(\":\")")
+                (("ORIGLIBDIRS") "LIBRARY_PATH")
+                (("incdirs = \\[\\]") "incdirs = origincdirs")
+                (("libdirs = \\[\\]") "libdirs = origlibdirs"))))
+          (add-after 'unpack 'fix-sdl2-headers
+            (lambda _
+              (substitute* "buildconfig/config_unix.py"
+                (("SDL_ttf.h") "SDL2/SDL_ttf.h")
+                (("SDL_image.h") "SDL2/SDL_image.h")
+                (("SDL_mixer.h") "SDL2/SDL_mixer.h"))
+              (substitute* "src_c/imageext.c"
+                (("SDL_image.h") "SDL2/SDL_image.h"))
+              (substitute* "src_c/font.h"
+                (("SDL_ttf.h") "SDL2/SDL_ttf.h"))
+              (substitute* "src_c/mixer.h"
+                (("SDL_mixer.h") "SDL2/SDL_mixer.h"))
+              (substitute* "src_c/_sdl2/mixer.c"
+                (("SDL_mixer.h") "SDL2/SDL_mixer.h")))))))
+    (native-inputs
+     (list pkg-config))
     (inputs
-     `(("freetype" ,freetype)
-       ("sdl" ,sdl)
-       ("sdl-image" ,sdl-image)
-       ("sdl-mixer" ,sdl-mixer)
-       ("sdl-ttf" ,sdl-ttf)
-       ("sdl-gfx" ,sdl-gfx)
-       ("libjpeg" ,libjpeg-turbo)
-       ("libpng" ,libpng)
-       ("libX11" ,libx11)
-       ("libsmpeg" ,libsmpeg)
-       ("portmidi" ,portmidi)
-       ("v4l-utils" ,v4l-utils)))
+     (list freetype
+           sdl2
+           sdl2-image
+           sdl2-mixer
+           sdl2-ttf
+           sdl2-gfx
+           libjpeg-turbo
+           libpng
+           libx11
+           libsmpeg
+           portmidi
+           v4l-utils))
     (home-page "https://www.pygame.org")
     (synopsis "SDL wrapper for Python")
     (description "Pygame is a set of Python modules designed for writing games.
-Pygame adds functionality on top of the excellent SDL library. This allows you
-to create fully featured games and multimedia programs in the python language.")
+It adds functionality on top of the SDL library, allowing you to create games
+and multimedia programs in the Python language.")
     (license (list license:bsd-2
                    ;; python numeric license as listed by Debian looks like
                    ;; an Expat-style license with a warranty disclaimer for
@@ -1267,7 +1284,7 @@ to create fully featured games and multimedia programs in the python language.")
 
 (define-public python-pygame-sdl2
   (let ((real-version "2.1.0")
-        (renpy-version "8.0.3"))
+        (renpy-version "8.1.0"))
     (package
       (inherit python-pygame)
       (name "python-pygame-sdl2")
@@ -1277,7 +1294,7 @@ to create fully featured games and multimedia programs in the python language.")
          (method url-fetch)
          (uri (string-append "https://www.renpy.org/dl/" renpy-version
                              "/pygame_sdl2-" version ".tar.gz"))
-         (sha256 (base32 "1nq78mybkvshshdjy5bly6nfq6dnwll648ng62fwmksxpni17486"))
+         (sha256 (base32 "1qj39jqnv334p4wnxc2v5qxyahp7nkqf9hpdd2sgqcmgaqwnqqmj"))
          (modules '((guix build utils)))
          (snippet
           '(begin
@@ -1287,22 +1304,22 @@ to create fully featured games and multimedia programs in the python language.")
              (delete-file-recursively "gen-static")))))
       (build-system python-build-system)
       (arguments
-       `(#:tests? #f                ; tests require pygame to be installed first
-         #:phases
-         (modify-phases %standard-phases
-           (add-after 'set-paths 'set-sdl-vars
-             (lambda* (#:key inputs #:allow-other-keys)
-               (setenv "PYGAME_SDL2_CFLAGS"
-                       (string-append "-I"
-                                      (assoc-ref inputs "sdl-union")
-                                      "/include/SDL2 -D_REENTRANT"))
-               (setenv "PYGAME_SDL2_LDFLAGS"
-                       (string-append "-L"
-                                      (assoc-ref inputs "sdl-union")
-                                      "/lib -Wl,-rpath,"
-                                      (assoc-ref inputs "sdl-union")
-                                      "/lib -Wl,--enable-new-dtags -lSDL2"))
-               #t)))))
+       (list
+        #:tests? #f               ; tests require pygame to be installed first
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'set-paths 'set-sdl-vars
+              (lambda* (#:key inputs #:allow-other-keys)
+                (setenv "PYGAME_SDL2_CFLAGS"
+                        (string-append "-I"
+                                       (assoc-ref inputs "sdl-union")
+                                       "/include/SDL2 -D_REENTRANT"))
+                (setenv "PYGAME_SDL2_LDFLAGS"
+                        (string-append "-L"
+                                       (assoc-ref inputs "sdl-union")
+                                       "/lib -Wl,-rpath,"
+                                       (assoc-ref inputs "sdl-union")
+                                       "/lib -Wl,--enable-new-dtags -lSDL2")))))))
       (inputs
        (list (sdl-union (list sdl2 sdl2-image sdl2-mixer sdl2-ttf))))
       (native-inputs
@@ -1318,73 +1335,77 @@ developed mainly for Ren'py.")
 (define-public python-renpy
   (package
     (name "python-renpy")
-    (version "8.0.3")
+    (version "8.1.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://www.renpy.org/dl/" version
                            "/renpy-" version "-source.tar.bz2"))
-       (sha256 (base32 "1b49y60pi6304fg06lw5gajzrgg9w80swpfkn6pw0lxbr6djgjgn"))
+       (sha256
+        (base32
+         "08l7z2vwqxkskj3rs2a0w9ahah28ixq8hy48h30k2dm9g19h450h"))
        (modules '((guix build utils)))
-       (patches
-        (search-patches
-         "renpy-use-system-fribidi.patch"))
        (snippet
-        '(with-directory-excursion "module"
-           ;; drop fribidi sources
-           (delete-file-recursively "fribidi-src")
-           ;; drop _renpytfd, as there are missing sources
-           (substitute* "setup.py"
-             (("cython\\(\"_renpytfd\"" all)
-              (string-append "pass # " all)))))))
+        #~(begin
+            ;; Build without sync service.
+            ;; Encryption is only used for enabling this service and requires
+            ;; libhydrogen, which doesn't have a public release, so drop it
+            ;; as well
+            (for-each delete-file
+                      '("renpy/encryption.pyx"
+                        "renpy/common/00sync.rpy"))
+            (substitute* "module/setup.py"
+              (("cython\\(\"renpy\\.encryption\"\\)") ""))
+            (substitute* "renpy/__init__.py"
+              (("import renpy\\.encryption") ""))
+            ;; Trust vc_version.py when it comes to detecting whether a
+            ;; version is official.
+            (substitute* "renpy/__init__.py"
+              (("official = official and .*") ""))))))
     (build-system python-build-system)
     (arguments
-     `(#:tests? #f                      ; Ren'py doesn't seem to package tests
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'fix-commands
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* "renpy/editor.py"
-               (("xdg-open")
-                (string-append (assoc-ref inputs "xdg-utils")
-                               "/bin/xdg-open")))))
-         (add-after 'unpack 'fix-include-paths
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* "module/setup.py"
-               (("/usr/include/fribidi")
-                (search-input-directory inputs "include/fribidi")))))
-         (add-after 'set-paths 'set-build-vars
-           (lambda* (#:key inputs native-inputs #:allow-other-keys)
-             (setenv "RENPY_CYTHON"
-                     (search-input-file (or native-inputs inputs)
-                                        "/bin/cython"))
-             (setenv "RENPY_DEPS_INSTALL" (string-join (map cdr inputs) ":"))))
-         (replace 'build
-           (lambda* (#:key inputs outputs #:allow-other-keys #:rest args)
-             ;; The "module" subdirectory contains a python (really cython)
-             ;; project, which is built using a script, that is thankfully
-             ;; named "setup.py".
-             (with-directory-excursion "module"
-               (apply (assoc-ref %standard-phases 'build) args))
-             ;; The above only builds the cython modules, but nothing else,
-             ;; so we do that here.
-             (invoke "python" "-m" "compileall" "renpy")))
-         (replace 'install
-           (lambda* (#:key inputs outputs #:allow-other-keys #:rest args)
-             ;; Again, we have to wrap the module installation.
-             ;; Additionally, we want to install the python code
-             ;; (both source and compiled) in the same directory.
-             (let* ((out (assoc-ref outputs "out"))
-                    (site (string-append "/lib/python"
-                                         (python-version
-                                          (assoc-ref inputs "python"))
-                                         "/site-packages")))
-               (with-directory-excursion "module"
-                 (apply (assoc-ref %standard-phases 'install) args))
-               (copy-recursively "renpy"
-                                 (string-append out site "/renpy"))
-               (delete-file-recursively (string-append out site
-                                                       "/renpy/common"))))))))
+     (list
+      #:tests? #f                       ; Ren'py doesn't seem to package tests
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-commands
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "renpy/editor.py"
+                (("xdg-open")
+                 (string-append (assoc-ref inputs "xdg-utils")
+                                "/bin/xdg-open")))))
+          (add-after 'set-paths 'set-build-vars
+            (lambda* (#:key inputs native-inputs #:allow-other-keys)
+              (setenv "RENPY_CYTHON"
+                      (search-input-file (or native-inputs inputs)
+                                         "/bin/cython"))
+              (setenv "RENPY_DEPS_INSTALL" (string-join (map cdr inputs) ":"))))
+          (replace 'build
+            (lambda* (#:key inputs outputs #:allow-other-keys #:rest args)
+              ;; The "module" subdirectory contains a python (really cython)
+              ;; project, which is built using a script, that is thankfully
+              ;; named "setup.py".
+              (with-directory-excursion "module"
+                (apply (assoc-ref %standard-phases 'build) args))
+              ;; The above only builds the cython modules, but nothing else,
+              ;; so we do that here.
+              (invoke "python" "-m" "compileall" "renpy")))
+          (replace 'install
+            (lambda* (#:key inputs outputs #:allow-other-keys #:rest args)
+              ;; Again, we have to wrap the module installation.
+              ;; Additionally, we want to install the python code
+              ;; (both source and compiled) in the same directory.
+              (let* ((out (assoc-ref outputs "out"))
+                     (site (string-append "/lib/python"
+                                          (python-version
+                                           (assoc-ref inputs "python"))
+                                          "/site-packages")))
+                (with-directory-excursion "module"
+                  (apply (assoc-ref %standard-phases 'install) args))
+                (copy-recursively "renpy"
+                                  (string-append out site "/renpy"))
+                (delete-file-recursively (string-append out site
+                                                        "/renpy/common"))))))))
     (native-inputs (list python-cython))
     (inputs
      (list ffmpeg
@@ -1394,7 +1415,7 @@ developed mainly for Ren'py.")
            libpng
            (sdl-union (list sdl2 sdl2-image sdl2-mixer sdl2-ttf))
            xdg-utils))
-    (propagated-inputs (list python-future python-pygame-sdl2))
+    (propagated-inputs (list python-ecdsa python-future python-pygame-sdl2))
     (home-page "https://www.renpy.org/")
     (synopsis "Ren'py python module")
     (description "This package contains the shared libraries and Python modules
@@ -1437,7 +1458,7 @@ are only used to bootstrap it.")
             (lambda _
               (substitute* (list "launcher/game/gui7.rpy"
                                  "launcher/game/gui7/images.py")
-                ((", \"game\",") ","))
+                ((", \"game\", \"gui7\",") ", \"gui7\","))
               #t))
           (add-before 'build 'start-xserver
             (lambda* (#:key inputs native-inputs #:allow-other-keys)
@@ -1692,7 +1713,7 @@ robust and compatible with many systems and operating systems.")
 (define-public mygui
   (package
     (name "mygui")
-    (version "3.2.2")
+    (version "3.4.2")
     (source
      (origin
        (method git-fetch)
@@ -1701,8 +1722,7 @@ robust and compatible with many systems and operating systems.")
              (commit (string-append "MyGUI" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32
-         "1wk7jmwm55rhlqqcyvqsxdmwvl70bysl9azh4kd9n57qlmgk3zmw"))))
+        (base32 "0gkfahz118gpqa2906cjb3d4w8g13rv8v3ma7s0ml9l5cci785f8"))))
     (build-system cmake-build-system)
     (arguments
      '(#:tests? #f                      ; No test target
@@ -1734,10 +1754,8 @@ of use.")
 
 (define-public mygui-gl
   ;; Closure size is reduced by some 800 MiB.
-  (package
-    (inherit mygui)
+  (package/inherit mygui
     (name "mygui-gl")
-    (version "3.2.2")
     (arguments
      (substitute-keyword-arguments (package-arguments mygui)
        ((#:configure-flags _)
@@ -1751,7 +1769,10 @@ of use.")
     (inputs
      (modify-inputs (package-inputs mygui)
        (delete "ogre")
-       (prepend mesa glu)))
+       (prepend glu
+                libglvnd                ; for find_package(… GLX)
+                mesa                    ; for find_package(… OpenGL …)
+                (sdl-union (list sdl2 sdl2-image)))))
     (synopsis "Fast, flexible and simple GUI (OpenGL backend)")))
 
 (define-public openmw
@@ -1767,7 +1788,8 @@ of use.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "19mcbnjl4279qalb97msf965bjax48mx1r1qczyvwhn28h6n3bsy"))))
+         "19mcbnjl4279qalb97msf965bjax48mx1r1qczyvwhn28h6n3bsy"))
+       (patches (search-patches "openmw-assume-nonconst-SIGSTKSZ.patch"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f                      ; No test target
@@ -1778,7 +1800,7 @@ of use.")
      (list boost doxygen pkg-config))
     (inputs
      (list bullet
-           ffmpeg
+           ffmpeg-4                     ; https://gitlab.com/OpenMW/openmw/-/issues/6631
            libxt
            lz4
            mygui-gl              ; OpenMW does not need Ogre.
@@ -1797,7 +1819,7 @@ games.")
     (home-page "https://openmw.org")
     (license license:gpl3)))
 
-(define-public godot
+(define-public godot-lts
   (package
     (name "godot")
     (version "3.4.2")
@@ -1967,6 +1989,251 @@ provide high-quality 3D rendering, it contains an animation editor, and can be
 scripted in a Python-like language.")
     (license license:expat)))
 
+(define-public godot
+  (package
+    (name "godot")
+    (version "4.1.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/godotengine/godot")
+                    (commit (string-append version "-stable"))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1byy4zdsj8nq54rhmij7kl0mdh4zv3c056y6c7rjy17bqjq2n8fh"))
+              (modules '((guix build utils)
+                         (ice-9 ftw)
+                         (srfi srfi-1)))
+              (snippet
+               '(begin
+                  ;; Keep only those bundled files we have not (yet) replaced
+                  ;; with Guix versions. Note that some of these may be
+                  ;; modified; see "thirdparty/README.md".
+                  (with-directory-excursion "thirdparty"
+                    (let* ((preserved-files
+                            '("README.md"
+                              "amd-fsr"
+                              "assimp"
+                              "astcenc"
+                              "basis_universal"
+                              ;; Godot needs ca-certificates.crt, but that is
+                              ;; not available in build environment
+                              "certs"
+                              "cvtt"
+                              "linuxbsd_headers"
+                              "etc2comp"
+                              "etcpak"
+                              "fonts"
+                              "glad"
+                              "jpeg-compressor"
+                              "libsimplewebm"
+                              "meshoptimizer"
+                              "minimp3"
+                              "miniupnpc"
+                              "minizip"
+                              "misc"
+                              "msdfgen"
+                              "nanosvg"
+                              "noise"
+                              "oidn"
+                              "openxr"
+                              "pvrtccompressor"
+                              "recastnavigation"
+                              "rvo2"
+                              "spirv-reflect"
+                              "squish"
+                              "stb_rect_pack"
+                              "thorvg"
+                              "tinyexr"
+                              "vhacd"
+                              "volk"
+                              "vulkan"
+                              "xatlas")))
+                      (for-each delete-file-recursively
+                                (lset-difference string=?
+                                                 (scandir ".")
+                                                 (cons* "." ".." preserved-files)))))))))
+    (build-system scons-build-system)
+    (arguments
+     (list
+      #:scons-flags #~`("platform=linuxbsd" "target=editor" "production=yes"
+                        ;; XXX: There may be advantages to enabling volk,
+                        ;; requiring unbundling and patching to use our input.
+                        "use_volk=no"
+                        ;; Avoid using many of the bundled libs.
+                        ;; Note: These options can be found in the SConstruct file.
+                        "builtin_brotli=no"
+                        "builtin_embree=no"
+                        "builtin_enet=no"
+                        "builtin_freetype=no"
+                        "builtin_glslang=no"
+                        "builtin_graphite=no"
+                        "builtin_harfbuzz=no"
+                        "builtin_icu4c=no"
+                        "builtin_libogg=no"
+                        "builtin_libpng=no"
+                        "builtin_libtheora=no"
+                        "builtin_libvorbis=no"
+                        "builtin_libwebp=no"
+                        "builtin_mbedtls=no"
+                        "builtin_pcre2=no"
+                        "builtin_pcre2_with_jit=no"
+                        "builtin_wslay=no"
+                        "builtin_zlib=no"
+                        "builtin_zstd=no")
+      #:tests? #f                      ; There are no tests
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'scons-use-env
+            (lambda _
+              ;; Scons does not use the environment variables by default,
+              ;; but this substitution makes it do so.
+              (substitute* "SConstruct"
+                (("env_base = Environment\\(tools=custom_tools\\)")
+                 (string-append
+                  "env_base = Environment(tools=custom_tools)\n"
+                  "env_base = Environment(ENV=os.environ)")))))
+          (add-after 'scons-use-env 'fix-dlopen-paths
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((files '("drivers/alsa/asound-so_wrap.c"
+                             "drivers/pulseaudio/pulse-so_wrap.c"
+                             "platform/linuxbsd/dbus-so_wrap.c"
+                             "platform/linuxbsd/fontconfig-so_wrap.c"
+                             "platform/linuxbsd/libudev-so_wrap.c"
+                             "platform/linuxbsd/speechd-so_wrap.c"
+                             "platform/linuxbsd/x11/display_server_x11.cpp"
+                             "platform/linuxbsd/x11/dynwrappers/xcursor-so_wrap.c"
+                             "platform/linuxbsd/x11/dynwrappers/xext-so_wrap.c"
+                             "platform/linuxbsd/x11/dynwrappers/xinerama-so_wrap.c"
+                             "platform/linuxbsd/x11/dynwrappers/xinput2-so_wrap.c"
+                             "platform/linuxbsd/x11/dynwrappers/xlib-so_wrap.c"
+                             "platform/linuxbsd/x11/dynwrappers/xrandr-so_wrap.c"
+                             "platform/linuxbsd/x11/dynwrappers/xrender-so_wrap.c"
+                             "platform/linuxbsd/xkbcommon-so_wrap.c"
+                             "thirdparty/volk/volk.c"
+                             "thirdparty/volk/volk.c"))
+                    (libs '("libasound.so.2"
+                            "libpulse.so.0"
+                            "libdbus-1.so.3"
+                            "libfontconfig.so.1"
+                            "libudev.so.1"
+                            "libspeechd.so.2"
+                            "libXrandr.so.2"
+                            "libXcursor.so.1"
+                            "libXext.so.6"
+                            "libXinerama.so.1"
+                            "libXi.so.6"
+                            "libX11.so.6"
+                            "libXrandr.so.2"
+                            "libXrender.so.1"
+                            "libxkbcommon.so.0"
+                            "libvulkan.so.1"
+                            "libvulkan.so")))
+                (for-each (lambda (file lib)
+                            (substitute* file
+                              (((string-append "dlopen\\(\"" lib "\""))
+                               (string-append "dlopen(\""
+                                              (search-input-file
+                                               inputs (string-append "lib/" lib))
+                                              "\""))))
+                          files libs))
+              (substitute* "thirdparty/glad/gl.c"
+                (("libGL.so") ; for both .so and .so.1
+                 (string-append (search-input-file inputs "lib/libGL.so"))))
+              (substitute* "thirdparty/glad/glx.c"
+                (("libGL.so") ; for both .so and .so.1
+                 (string-append (search-input-file inputs "lib/libGL.so"))))))
+          (add-after 'fix-dlopen-paths 'unbundle-xkbcommon
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "platform/linuxbsd/xkbcommon-so_wrap.c"
+                (("./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon.h")
+                 (string-append
+                  (search-input-file inputs "include/xkbcommon/xkbcommon.h")))
+                (("./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon-compose.h")
+                 (string-append
+                  (search-input-file inputs "include/xkbcommon/xkbcommon-compose.h")))
+                (("./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon-keysyms.h")
+                 (string-append
+                  (search-input-file inputs "include/xkbcommon/xkbcommon-keysyms.h"))))))
+          (replace 'install
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((zenity (search-input-file inputs "bin/zenity")))
+                ;; Strip build info from filenames.
+                (with-directory-excursion "bin"
+                  (for-each
+                   (lambda (file)
+                     (let ((dest (car (string-split (basename file) #\.))))
+                       (rename-file file dest)))
+                   (find-files "." "godot.*\\.linuxbsd\\.editor.*"))
+                  (install-file "godot" (string-append #$output "/bin")))
+                ;; Tell the editor where to find zenity for OS.alert().
+                ;; TODO: This could be changed in
+                ;; platform/linuxbsd/os_linuxbsd.cpp directly, along with the
+                ;; other alert programs.
+                (wrap-program (string-append #$output "/bin/godot")
+                  `("PATH" ":" prefix (,(string-append zenity "/bin")))))))
+          (add-after 'install 'install-godot-desktop
+            (lambda _
+              (let ((applications (string-append #$output "/share/applications"))
+                     (icons (string-append #$output "/share/icons/hicolor")))
+                (mkdir-p applications)
+                (copy-file "misc/dist/linux/org.godotengine.Godot.desktop"
+                           (string-append applications "/godot.desktop"))
+                (for-each (lambda (icon dest)
+                            (mkdir-p (dirname dest))
+                            (copy-file icon dest))
+                          '("icon.png" "icon.svg")
+                           `(,(string-append icons "/256x256/apps/godot.png")
+                             ,(string-append icons "/scalable/apps/godot.svg")))))))))
+    (native-inputs
+     (list pkg-config))
+    (inputs
+     (list alsa-lib
+           brotli
+           dbus
+           embree
+           enet
+           eudev
+           fontconfig
+           freetype-with-brotli
+           glew
+           glslang
+           glu
+           libpng
+           harfbuzz
+           icu4c
+           libtheora
+           libvorbis
+           libvpx
+           libwebp
+           libx11
+           libxcursor
+           libxi
+           libxinerama
+           libxkbcommon
+           libxrandr
+           mbedtls-apache
+           mesa
+           openxr
+           opusfile
+           pcre2
+           pulseaudio
+           speech-dispatcher
+           vulkan-loader
+           wslay
+           zenity
+           zlib
+           `(,zstd "lib")))
+    (home-page "https://godotengine.org/")
+    (synopsis "Advanced 2D and 3D game engine")
+    (description
+     "Godot is an advanced multi-platform game engine written in C++.  If
+features design tools such as a visual editor, can import 3D models and
+provide high-quality 3D rendering, it contains an animation editor, and can be
+scripted in a Python-like language.")
+    (license license:expat)))
+
 (define-public entt
   (package
     (name "entt")
@@ -2052,20 +2319,20 @@ scripted in a Python-like language.")
     (description "Eureka is a map editor for the classic DOOM games, and a few
 related games such as Heretic and Hexen.  It comes with a 3d preview mode and
 a 2D editor view.")
-    (home-page "http://eureka-editor.sourceforge.net/")
+    (home-page "https://eureka-editor.sourceforge.net/")
     (license license:gpl2+)))
 
 (define-public guile-chickadee
   (package
     (name "guile-chickadee")
-    (version "0.9.0")
+    (version "0.10.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://files.dthompson.us/chickadee/"
                                   "chickadee-" version ".tar.gz"))
               (sha256
                (base32
-                "0b92lld7kj629mvq44vgd8vmf9h7s5gkdawb35vkzlx5q03wjfvk"))))
+                "0x8g0bsvir2z3876ynslfgnmfr5p92ic4666v73526lswnv56bqk"))))
     (build-system gnu-build-system)
     (arguments
      '(#:make-flags '("GUILE_AUTO_COMPILE=0")))
@@ -2096,7 +2363,7 @@ that parenthetically inclined game developers need to make 2D (and eventually
 @item keyboard, mouse, controller input
 @item REPL-driven development model
 @end enumerate\n")
-    (license license:gpl3+)))
+    (license license:asl2.0)))
 
 (define-public bennu-game-development
   (package
@@ -2181,7 +2448,7 @@ joystick support.")))
      (list mesa libxi libxmu))
     (native-inputs
      (list pkg-config))
-    (home-page "http://plib.sourceforge.net/")
+    (home-page "https://plib.sourceforge.net/")
     (synopsis "Suite of portable game libraries")
     (description "PLIB is a set of libraries that will permit programmers to
 write games and other realtime interactive applications that are 100% portable
@@ -2396,29 +2663,31 @@ a.k.a. XenoCollide) as described in Game Programming Gems 7.")
 (define-public ode
   (package
     (name "ode")
-    (version "0.16.2")
+    (version "0.16.4")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://bitbucket.org/odedevs/ode/downloads/"
                            "ode-" version ".tar.gz"))
        (sha256
-        (base32 "08hgh4gqdk77jcw8b7gq2mwsfg4a5v5y0j7g42bxiqhmn3ffnsmj"))
+        (base32 "0rrl4pn4h3g0ay0i3n61pr6bwyk9vgar17vjal56pj66h617n0vi"))
        (modules '((guix build utils)))
        (snippet
         '(begin
-           (delete-file-recursively "libccd")
-           #t))))
+           (delete-file-recursively "libccd")))))
     (build-system cmake-build-system)
     (arguments
-     `(#:configure-flags '("-DODE_WITH_LIBCCD_SYSTEM=ON")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'unbundle-libccd
-           (lambda _
-             (substitute* "CMakeLists.txt"
-               (("configure_file\\(libccd/.*") ""))
-             #t)))))
+     (list
+      ;; XXX: The sole test is failing on i686 due to a rounding error.
+      #:tests? (not (or (target-x86-32?)
+                        (%current-target-system)))
+      #:configure-flags #~(list "-DODE_WITH_LIBCCD_SYSTEM=ON")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'unbundle-libccd
+            (lambda _
+              (substitute* "CMakeLists.txt"
+                (("configure_file\\(libccd/.*") "")))))))
     (inputs
      (list glu libccd mesa))
     (home-page "https://www.ode.org/")
@@ -2639,7 +2908,7 @@ utilities frequently used in roguelikes.")
        `(("alsa-lib" ,alsa-lib)
          ("curl" ,curl)
          ("freetype" ,freetype)
-         ("ffmpeg" ,ffmpeg)
+         ("ffmpeg" ,ffmpeg-4)
          ("libjpeg" ,libjpeg-turbo)
          ("libogg" ,libogg)
          ("libpng" ,libpng)
@@ -2793,29 +3062,26 @@ much more.")
       (license license:zlib))))
 
 (define-public recastnavigation
-  ;; We follow master since there hasn't been a release since 1.5.1 in 2016.
-  (let ((commit "c5cbd53024c8a9d8d097a4371215e3342d2fdc87")
-        (revision "1"))
-    (package
-      (name "recastnavigation")
-      (version (git-version "1.5.1" revision commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://github.com/recastnavigation/recastnavigation")
-                      (commit commit)))
-                (file-name (git-file-name name version))
-                (sha256
-                 (base32
-                  "034bm47gc3r285w1pnvkhmm74zz99d204b1r865gisaiq4qfbza0"))))
-      (build-system cmake-build-system)
-      (arguments
-       `(#:configure-flags (list "-DBUILD_SHARED_LIBS=ON"
-                                 "-DRECASTNAVIGATION_DEMO=OFF"
-                                 "-DRECASTNAVIGATION_TESTS=ON"
-                                 "-DRECASTNAVIGATION_EXAMPLES=OFF")))
-      (synopsis "Navigation system for games")
-      (description "Recast is state of the art navigation mesh
+  (package
+    (name "recastnavigation")
+    (version "1.6.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/recastnavigation/recastnavigation")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0rdz3qmp4b961zjah2ax82h471j14w2rcf576gcyx7vldrg8dmj8"))))
+    (build-system cmake-build-system)
+    (arguments
+     `(#:configure-flags (list "-DBUILD_SHARED_LIBS=ON"
+                               "-DRECASTNAVIGATION_DEMO=OFF"
+                               "-DRECASTNAVIGATION_TESTS=ON"
+                               "-DRECASTNAVIGATION_EXAMPLES=OFF")))
+    (synopsis "Navigation system for games")
+    (description "Recast is state of the art navigation mesh
 construction toolset for games.
 
 @itemize
@@ -2838,5 +3104,119 @@ simple cases, as well as tiled navigation mesh which allows you to plug
 in and out pieces of the mesh.  The tiled mesh allows you to create
 systems where you stream new navigation data in and out as the player
 progresses the level, or you may regenerate tiles as the world changes.")
-      (home-page "https://github.com/recastnavigation/recastnavigation")
-      (license license:zlib))))
+    (home-page "https://github.com/recastnavigation/recastnavigation")
+    (license license:zlib)))
+
+(define-public raylib
+  (package
+    (name "raylib")
+    (version "4.5.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/raysan5/raylib/")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              ;; TODO: Unbundle src/external
+              (sha256
+               (base32
+                "00y8fsa4g9fk93s3wihbxl929m84hw3fflr0h409s3i1kfmv7ajj"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list #:tests? #f  ;no test
+           #:configure-flags
+           #~(list "-DBUILD_SHARED_LIBS=ON"
+                   "-DUSE_EXTERNAL_GLFW=ON"
+                   "-DCMAKE_C_FLAGS=-lpulse")
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'configure 'configure-miniaudio
+                 ;; Use PulseAudio as raudio backend.
+                 (lambda _
+                   (substitute* "src/raudio.c"
+                     (("^#include \"external/miniaudio\\.h\"") "
+#define MA_NO_RUNTIME_LINKING
+#define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
+#define MA_ENABLE_PULSEAUDIO
+#include \"external/miniaudio.h\"
+")))))))
+    (inputs (list glfw pulseaudio))
+    (native-inputs (list pkg-config))
+    (synopsis "C library for videogame programming")
+    (description
+     "raylib is a high-level library for video game programming.  It aims to
+  abstract away platform and graphics details, allowing you to focus on
+  writing your game.")
+    (home-page "https://www.raylib.com/")
+    (license license:zlib)))
+
+(define-public bbcsdl
+  (package
+    (name "bbcsdl")
+    (version "1.35a")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/rtrussell/BBCSDL/")
+                    (commit "b9b2a3eb438cb799edb2766055b3c38e9518e3e3")))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1d03xmhrl6ba6w0vwfk46mpyc9d0w3bixxj2d4irx7wl7bh3bfic"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #f                       ; XXX: tests not automated
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)           ; no configure script
+          (replace 'build
+            (lambda* (#:key outputs #:allow-other-keys)
+              ;; 'makefile' expects the source directory to be named 'BBCSDL'.
+              (symlink "source" "../BBCSDL")
+              ;; 'bbcsdl' finds 'libstb.so' in its RPATH.
+              (substitute* "bin/linux/makefile"
+                (("-Wl,-R,'\\$\\$ORIGIN'")
+                 (string-append "-Wl,-rpath="
+                                (assoc-ref outputs "out") "/opt/bbcsdl")))
+              ;; Build 'bbcbasic' and 'bbcsdl'.
+              (invoke "make" "-C" "console/linux")
+              (invoke "make" "-C" "bin/linux")))
+          (replace 'install
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (opt (string-append out "/opt/bbcsdl"))
+                     (bin (string-append out "/bin")))
+                (for-each
+                 (lambda (f)
+                   (copy-recursively f (string-append opt "/" f)))
+                 ;; Those files need to be installed into the same difertory.
+                 '("lib" "examples" "bbcsdl.bbc"
+                   "libstb.so" "bbcsdl" "bbcbasic"))
+                ;; Replace bundled fonts.
+                (for-each
+                 (lambda (font)
+                   (delete-file (string-append opt "/lib/" font))
+                   (symlink
+                    (search-input-file
+                     inputs (string-append "share/fonts/truetype/" font))
+                    (string-append opt "/lib/" font)))
+                 '("DejaVuSans.ttf" "DejaVuSansMono.ttf"
+                   "FreeSans.ttf" "FreeMono.ttf" "FreeSerif.ttf"))
+                (mkdir bin)
+                (symlink (string-append opt "/bbcsdl")
+                         (string-append bin "/bbcsdl"))
+                (symlink (string-append opt "/bbcbasic")
+                         (string-append bin "/bbcbasic"))))))))
+    (native-inputs (list nasm))
+    (inputs (list sdl2 sdl2-ttf sdl2-net font-dejavu font-gnu-freefont))
+    (synopsis "BBC BASIC for SDL 2.0")
+    (home-page "https://www.bbcbasic.co.uk/bbcsdl/")
+    (description
+     "BBC BASIC is the programming language originally specified and adopted
+by the British Broadcasting Corporation for its groundbreaking Computer
+Literacy Project of the early 1980s.  BBC BASIC for SDL 2.0 combines the
+simplicity of BASIC with the sophistication of a modern structured language,
+allowing you to write utilities and games, use sound and graphics, perform
+calculations and create complete applications.")
+    (license license:zlib)))

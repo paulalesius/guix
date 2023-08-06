@@ -1,15 +1,15 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014, 2015, 2018 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015, 2017, 2022 Christine Lemmer-Webber <cwebber@dustycloud.org>
 ;;; Copyright © 2016 Alex Sassmannshausen <alex@pompo.co>
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2016-2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2016, 2019, 2020, 2021 Eraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016, 2019-2021, 2023 Eraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2017, 2021 Alex Kost <alezost@gmail.com>
 ;;; Copyright © 2016, 2017 Adonay "adfeno" Felipe Nogueira <https://libreplanet.org/wiki/User:Adfeno> <adfeno@openmailbox.org>
 ;;; Copyright © 2016, 2021 Amirouche <amirouche@hypermove.net>
-;;; Copyright © 2016, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2019, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Andy Wingo <wingo@igalia.com>
 ;;; Copyright © 2017 David Thompson <davet@gnu.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Mathieu Othacehe <m.othacehe@gmail.com>
@@ -17,7 +17,7 @@
 ;;; Copyright © 2017 Nikita <nikita@n0.is>
 ;;; Copyright © 2017, 2018, 2021 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Arun Isaac <arunisaac@systemreboot.net>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2018 Pierre-Antoine Rouby <pierre-antoine.rouby@inria.fr>
 ;;; Copyright © 2018 Eric Bavier <bavier@member.fsf.org>
 ;;; Copyright © 2019 swedebugia <swedebugia@riseup.net>
@@ -43,8 +43,9 @@
 ;;; Copyright © 2022 Zhu Zihao <all_but_last@163.com>
 ;;; Copyright © 2022 Antero Mejr <antero@mailbox.org>
 ;;; Copyright © 2022 Taiju HIGASHI <higashi@taiju.info>
-;;; Copyright © 2022 Zheng Junjie <873216071@qq.com>
+;;; Copyright © 2022, 2023 Zheng Junjie <873216071@qq.com>
 ;;; Copyright © 2022 Evgeny Pisemsky <evgeny@pisemsky.com>
+;;; Copyright © 2022 jgart <jgart@dismail.de>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -88,9 +89,9 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages haskell-xyz)         ;pandoc
-  #:use-module (gnu packages hurd)
   #:use-module (gnu packages image)
   #:use-module (gnu packages imagemagick)
+  #:use-module (gnu packages libevent)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages libunistring)
   #:use-module (gnu packages linux)
@@ -309,6 +310,38 @@ more.")
 currently does not do much, but it might in the future.")
     (license license:gpl3+)))
 
+(define-public guile-openai
+  (let ((commit "751cd5db5f8bb7c00e60042a7ec86100930b0f02")
+        (revision "1"))
+    (package
+      (name "guile-openai")
+      (version (git-version "0.2" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://gitlab.com/flatwhatson/guile-openai")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1rl15wkm682xwzj2fjn4czp1haxnxlcjsk3g69j2a9qlwc4w0g4a"))))
+      (build-system gnu-build-system)
+      (arguments (list #:strip-binaries? #f))
+      (inputs (list guile-3.0-latest imagemagick))
+      (propagated-inputs
+       (list guile-colorized
+             guile-gnutls
+             guile-json-4
+             guile-picture-language))
+      (native-inputs (list autoconf automake pkg-config))
+      (home-page "https://gitlab.com/flatwhatson/guile-openai")
+      (synopsis "Guile implementation of the OpenAI API")
+      (description
+       "Guile OpenAI is an implementation of the OpenAI API in Guile Scheme,
+providing a convenient interface for interactive programming with their AI
+models.")
+      (license license:agpl3+))))
+
 ;; There are no releases yet of this package.
 (define-public guile-pipe
   (let ((commit "0746ec38d19d844dff0c6f62f209b2b6c8d8872e")
@@ -334,6 +367,72 @@ currently does not do much, but it might in the future.")
        "This package provides macros for functional chaining in Guile, similar
 to UNIX pipes (@code{|}), Clojure's threading macros (@code{->} and
 @code{->>}).")
+      (license license:gpl3+))))
+
+(define-public guile-pubstrate
+  (let ((commit "b11b7df5e7ffefa45c5859b868d8125c4d939418")
+        (revision "1"))
+    (package
+      (name "guile-pubstrate")
+      (version (git-version "0.1.dev" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://gitlab.com/dustyweb/pubstrate")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1qk45b3hjhzzq3dim699jrbmlc7ryr4s1fiz99ljz16rag2rr5p4"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:make-flags
+        '(list "GUILE_AUTO_COMPILE=0")
+        #:phases
+        '(modify-phases %standard-phases
+           (add-after 'unpack 'fix-build-system
+             (lambda _
+               (substitute* "configure.ac"
+                 (("GUILE_PROGS" m)
+                  (string-append m "
+guilemoduledir=\"${datarootdir}/guile/site/${GUILE_EFFECTIVE_VERSION}\"
+AC_SUBST([guilemoduledir])
+AC_SUBST([GUILE_EFFECTIVE_VERSION])
+")))
+               ;; The user.scm line is doubled
+               (substitute* "Makefile.am"
+                 ((".*pubstrate/webapp/user.scm.*") "")
+                 ((".*pubstrate/webapp/app.scm.*" m)
+                  (string-append m "pubstrate/webapp/user.scm \\\n"))
+                 (("/ccache") "/site-ccache"))))
+           (add-after 'unpack 'fix-srfi64-tests
+             (lambda _
+               (substitute* (find-files "tests/" "test-.*\\.scm$")
+                 (("\\(test-exit\\)") "")
+                 (("\\(test-end.*" m)
+                  (string-append "(test-exit)" m))))))))
+      (native-inputs
+       (list autoconf
+             automake
+             pkg-config
+             texinfo))
+      (inputs
+       (list guile-3.0
+             libgcrypt))
+      (propagated-inputs
+       (list gnutls
+             guile-8sync-for-pubstrate
+             guile-gcrypt
+             guile-gdbm-ffi
+             guile-irregex
+             guile-lib
+             guile-sjson
+             guile-webutils))
+      (home-page "https://gitlab.com/dustyweb/pubstrate/")
+      (synopsis "ActivityStreams and ActivityPub implementation in Guile")
+      (description "This package provides an implementation of ActivityStreams
+and ActivityPub in Guile.  It includes a full (currently demo) web server.")
       (license license:gpl3+))))
 
 (define-public guile-f-scm
@@ -563,6 +662,44 @@ library for GNU Guile based on the actor model.")
       (properties '((upstream-name . "8sync")))
       (license license:lgpl3+))))
 
+(define guile-8sync-for-pubstrate
+  (let ((commit "7972787723d08a491379b63e6e5dc1cc6a3fac87")
+        (revision "0"))
+    (package
+      (inherit guile-8sync)
+      (name "guile-8sync-for-pubstrate")
+      (version (git-version "0.4.2" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (commit commit)
+                      (url "https://git.savannah.gnu.org/git/8sync.git")))
+                (sha256
+                 (base32
+                  "0m3k3cizi89frnw58dws3g4jcssck6jf1ahpadxxg3ncclqzad8r"))
+                (file-name (git-file-name name version))
+                (modules '((guix build utils)))
+                (snippet
+                 '(substitute* "Makefile.am"
+                    (("2.2") "3.0")))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:make-flags
+        '(list "GUILE_AUTO_COMPILE=0")
+        #:phases
+        '(modify-phases %standard-phases
+           ;; See commit ee371103855e5bfe8aae3debe442a24c6353e172
+           (add-after 'unpack 'fix-srfi64-tests
+             (lambda _
+               (substitute* '("tests/test-actors.scm"
+                              "tests/test-rmeta-slot.scm")
+                 (("\\(test-exit\\)") "")
+                 (("\\(test-end.*" m)
+                  (string-append "(test-exit)" m))))))))
+      (native-inputs (list autoconf automake guile-3.0 pkg-config texinfo))
+      (propagated-inputs (list guile-fibers)))))
+
 (define-public guile-daemon
   (package
     (name "guile-daemon")
@@ -591,7 +728,7 @@ you send to a FIFO file.")
 (define-public guile-dsv
   (package
     (name "guile-dsv")
-    (version "0.5.1")
+    (version "0.6.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -600,10 +737,10 @@ you send to a FIFO file.")
               (file-name (string-append name "-" version "-checkout"))
               (sha256
                (base32
-                "10wssilin4qphdmmqmms20bp3cy007kh22l1g45wfka0minmhkgs"))))
+                "0llivcgb7idglsapcmvb2qscds7768f2xfgr4lns8mzl2xf5hwvv"))))
     (build-system gnu-build-system)
     (native-inputs
-     (list autoconf automake pkg-config texinfo))
+     (list autoconf automake pkg-config texinfo help2man))
     (inputs (list guile-3.0))
     (propagated-inputs (list guile-lib))
     (arguments
@@ -646,10 +783,10 @@ Unix-style DSV format and RFC 4180 format.")
     (inputs (list guile-2.2))
     (propagated-inputs `(("guile-lib" ,guile2.2-lib)))))
 
-(define-public guile-fibers-1.1
+(define-public guile-fibers-1.3
   (package
     (name "guile-fibers")
-    (version "1.1.1")
+    (version "1.3.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -658,11 +795,9 @@ Unix-style DSV format and RFC 4180 format.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0ll63d7202clapg1k4bilbnlmfa4qvpjnsd7chbkka4kxf5klilc"))
+                "0wvdi4l58f9a5c9wi3cdc9l1bniscsixb6w2zj86mch7j7j814lc"))
               (patches
-               (search-patches "guile-fibers-wait-for-io-readiness.patch"
-                               "guile-fibers-epoll-instance-is-dead.patch"
-                               "guile-fibers-fd-finalizer-leak.patch"))))
+               (search-patches "guile-fibers-libevent-32-bit.patch"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags
@@ -680,17 +815,15 @@ Unix-style DSV format and RFC 4180 format.")
                      (substitute* "Makefile"
                        (("tests/speedup.scm") ""))))))))
     (native-inputs
-     (list texinfo pkg-config autoconf automake libtool
+     (list texinfo pkg-config autoconf-2.71 automake libtool
            guile-3.0            ;for 'guild compile
            ;; Gettext brings 'AC_LIB_LINKFLAGS_FROM_LIBS'
            gettext-minimal))
     (inputs
-     (list guile-3.0))                            ;for libguile-3.0.so
-    (supported-systems
-     ;; This version requires 'epoll' and is thus limited to Linux-based
-     ;; systems, but this may change soon:
-     ;; <https://github.com/wingo/fibers/pull/53>.
-     (filter (cut string-suffix? "-linux" <>) %supported-systems))
+     (append (list guile-3.0)                     ;for libguile-3.0.so
+             (if (target-hurd?)
+                 (list libevent)
+                 '())))
     (synopsis "Lightweight concurrency facility for Guile")
     (description
      "Fibers is a Guile library that implements a a lightweight concurrency
@@ -706,6 +839,36 @@ is not available for Guile 2.0.")
     (home-page "https://github.com/wingo/fibers")
     (properties '((upstream-name . "fibers")))
     (license license:lgpl3+)))
+
+(define-public guile-fibers-1.1
+  (package
+    (inherit guile-fibers-1.3)
+    (version "1.1.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/wingo/fibers")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name "guile-fibers" version))
+              (sha256
+               (base32
+                "0ll63d7202clapg1k4bilbnlmfa4qvpjnsd7chbkka4kxf5klilc"))
+              (patches
+               (search-patches "guile-fibers-wait-for-io-readiness.patch"
+                               "guile-fibers-epoll-instance-is-dead.patch"
+                               "guile-fibers-fd-finalizer-leak.patch"))))
+    (native-inputs
+     (list texinfo pkg-config autoconf automake libtool
+           guile-3.0            ;for 'guild compile
+           ;; Gettext brings 'AC_LIB_LINKFLAGS_FROM_LIBS'
+           gettext-minimal))
+    (inputs
+     (list guile-3.0))                            ;for libguile-3.0.so
+    (supported-systems
+     ;; This version requires 'epoll' and is thus limited to Linux-based
+     ;; systems, which is fixed in 1.2.0:
+     ;; <https://github.com/wingo/fibers/pull/53>.
+     (filter (cut string-suffix? "-linux" <>) %supported-systems))))
 
 (define-public guile-fibers
   (package
@@ -774,32 +937,26 @@ is not available for Guile 2.0.")
 (define-public guile-filesystem
   (package
     (name "guile-filesystem")
-    (version "0.1.0")
+    (version "0.2.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
-                    (url "https://gitlab.com/leoprikler/guile-filesystem.git")
+                    (url "https://gitlab.com/lilyp/guile-filesystem")
                     (commit version)))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1shmkc0y9r2sj3kw7hrsnamnp7y8xifkhf3m3rnfxczqg63k67vy"))))
+                "0waiaxcha584d0dc15nvs6gxh4clrfm2bwjidjsbqajgb03l4ngm"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf automake pkg-config texinfo))
     (inputs
      (list guile-3.0))
-    (home-page "https://gitlab.com/leoprikler/guile-filesystem")
+    (home-page "https://gitlab.com/lilyp/guile-filesystem")
     (synopsis "Complementary library to Guile's built-in file system procedures")
     (description "@code{guile-filesystem} provides a set of utility functions,
 that augment Guile's support for handling files and their names.")
     (license license:lgpl3+)))
-
-(define-public guile2.0-filesystem
-  (package
-    (inherit guile-filesystem)
-    (name "guile2.0-filesystem")
-    (inputs (list guile-2.0))))
 
 (define-public guile2.2-filesystem
   (package
@@ -810,7 +967,7 @@ that augment Guile's support for handling files and their names.")
 (define-public guile-syntax-highlight
   (package
     (name "guile-syntax-highlight")
-    (version "0.1")
+    (version "0.2.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://files.dthompson.us/"
@@ -819,15 +976,7 @@ that augment Guile's support for handling files and their names.")
                                   version ".tar.gz"))
               (sha256
                (base32
-                "1p771kq15x83483m23bhah1sz6vkalg3drm7x279f4j1cxligkzi"))
-              (modules '((guix build utils)))
-              (snippet
-               '(begin
-                  ;; Allow builds with Guile 3.0.
-                  (substitute* "configure"
-                    (("2\\.2 2\\.0")
-                     "3.0 2.2 2.0"))
-                  #t))))
+                "0q4nz10l66hx1lyf83qyhkkz1bi6i860662a7kslc4d61w08qnk9"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
@@ -904,9 +1053,41 @@ It has a nice, simple s-expression based syntax.")
     (name "guile2.2-sjson")
     (inputs (list guile-2.2))))
 
+(define-public guile-scheme-json-rpc
+  (let ((commit "45ae6890f6619286f5679f88c094c88127b54c4a")
+        (revision "0")
+        (version "0.2.11"))
+    (package
+      (name "guile-scheme-json-rpc")
+      (version (git-version version revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://codeberg.org/rgherdt/scheme-json-rpc.git")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0w4m8xx8yyj0rv0q57mjr8ja87l7yikscj33i3ck26wg7230ppa5"))))
+      (build-system gnu-build-system)
+      (arguments
+       `(#:phases (modify-phases %standard-phases
+                    (add-after 'unpack 'change-to-guile-dir
+                      (lambda _
+                        (chdir "guile"))))))
+      (inputs (list guile-3.0 guile-json-3))
+      (native-inputs (list pkg-config))
+      (synopsis "Library providing JSON-RPC capability in Scheme")
+      (description
+       "This library implements parts of the
+@uref{https://www.jsonrpc.org/specification,JSON-RPC specification}, allowing
+for calling methods on remote servers by exchanging JSON objects.")
+      (home-page "https://codeberg.org/rgherdt/scheme-json-rpc/")
+      (license license:expat))))
+
 (define-public guile-squee
-  (let ((commit "a151fd006fa819945ca1d4749b173854269b9f70")
-        (revision "3"))
+  (let ((commit "9f2609563fc53466e46d37c8d8d2fbcfce67b2ba")
+        (revision "5"))
     (package
       (name "guile-squee")
       (version (string-append "0-" revision "." (string-take commit 7)))
@@ -918,19 +1099,20 @@ It has a nice, simple s-expression based syntax.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "1jps14z8653ah2kr367iayzyi3ql2s55l77xrafz7gk3mzcvgrrg"))))
+                  "0r322mfxx08siw656h7bm31rgzkchmp3yrgjpkc2d3qw286ilqi7"))))
       (build-system guile-build-system)
       (arguments
-       '(#:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'patch
-             (lambda* (#:key inputs #:allow-other-keys)
-               (substitute* "squee.scm"
-                 (("dynamic-link \"libpq\"")
-                  (string-append
-                   "dynamic-link \""
-                   (search-input-file inputs "/lib/libpq.so")
-                   "\""))))))))
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'unpack 'patch
+              (lambda* (#:key inputs #:allow-other-keys)
+                (substitute* "squee.scm"
+                  (("dynamic-link \"libpq\"")
+                   (string-append
+                    "dynamic-link \""
+                    (search-input-file inputs "/lib/libpq.so")
+                    "\""))))))))
       (inputs
        (list postgresql))
       (native-inputs
@@ -1145,7 +1327,23 @@ types are supported.")
                (base32
                 "0044c105r3q9vpl17pv3phl1b79kjm1llhkakqgiasixyav01blh"))))
     (build-system guile-build-system)
-    (native-inputs (list guile-2.2))
+    (inputs (list guile-3.0))
+    (arguments
+     (list
+      #:scheme-file-regexp "^aa-tree\\.scm"
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'install-documentation 'check
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let* ((guile      #$(this-package-input "guile"))
+                     (effective  (target-guile-effective-version guile))
+                     (go-dir     (string-append #$output "/lib/guile/"
+                                                effective "/site-ccache/")))
+                (invoke (search-input-file inputs "/bin/guile")
+                        "--no-auto-compile"
+                        "-C" go-dir
+                        "-c" (string-append
+                              "(load \"" (getcwd) "/test-aa-tree.scm\")"))))))))
     ;; https://savannah.nongnu.org/projects/guile-aa-tree
     (home-page "https://qlfiles.net/guile-aa-tree/")
     (synopsis "AA tree data structure for Guile")
@@ -1156,6 +1354,36 @@ n)} worst case performance for core operations.  The module provides
 non-mutating insert, delete, and search operations, with support for
 convenient nested tree operations.")
     (license license:gpl3+)))
+
+(define-public guile-aws
+  (let ((commit "f32bea12333e1054b97ab50e58a72636edabb5b7")
+        (revision "1"))
+    (package
+      (name "guile-aws")
+      (version (git-version "0.1.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://git.elephly.net/software/guile-aws.git")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0z2mrjw1dry14vjqsh9xi199bavlmy6cajshnv015n7p5my0cx9z"))))
+      (build-system gnu-build-system)
+      (native-inputs
+       (list autoconf automake pkg-config))
+      (inputs
+       (list guile-3.0))
+      (propagated-inputs
+       (list guile-json-4 guile-gcrypt))
+      (home-page "https://git.elephly.net/software/guile-aws.git")
+      (synopsis "Scheme DSL for the AWS APIs")
+      (description
+       "This package provides a DSL for a number of @dfn{Amazon Web
+Services} (AWS) APIs, including EFS, EC2, Route53, and more.  Guile AWS uses
+the Guile compiler tower to generate the DSL from AWS JSON specifications.")
+      (license license:gpl3+))))
 
 (define-public guile-simple-zmq
   (let ((commit "ff0b39aec9312517fb48681564e261bd000aaf63")
@@ -1329,25 +1557,26 @@ tracker's SOAP service, such as @url{https://bugs.gnu.org}.")
 (define-public guile-email
   (package
     (name "guile-email")
-    (version "0.2.2")
+    (version "0.3.0")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://guile-email.systemreboot.net/releases/guile-email-"
-             version ".tar.lz"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.systemreboot.net/guile-email")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
        (sha256
         (base32
-         "1rc8r0fgvflnyq5ckl7ii8sghpsgpkzxa8vskjr1ak2kyar6m35k"))
-       (patches
-        (search-patches "guile-email-fix-tests.patch"))))
+         "0q98r460yr75gyxg06zrrixwazncd9nxl2pgr68mff2wf41f291h"))))
     (build-system gnu-build-system)
     (native-inputs
-     (list pkg-config lzip))
+     (list texinfo))
     (inputs
      (list guile-3.0))
     (arguments
-     '(#:make-flags '("GUILE_AUTO_COMPILE=0"))) ; to prevent guild warnings
+     (list #:make-flags #~(list (string-append "prefix=" #$output))
+           #:phases #~(modify-phases %standard-phases
+                        (delete 'configure))))
     (home-page "https://guile-email.systemreboot.net")
     (synopsis "Guile email parser")
     (description "guile-email is a collection of email utilities implemented
@@ -1356,32 +1585,48 @@ Extensions) compliant email messages and reading emails from the mbox
 format.")
     (license license:agpl3+)))
 
-(define-public guile-email-latest
-  (let ((commit "ea60bb902d3677d5c653851c7aa6afbbf710140e")
-        (revision "2"))
-    (package
-      (inherit guile-email)
-      (name "guile-email-latest")
-      (version (git-version "0.2.2" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://git.systemreboot.net/guile-email")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32
-           "1g4rn7ai3nfxmpppc8qbpv8b18wnsld29y5xa58cv9b8pf3pbwnj"))))
-      (native-inputs
-       (list pkg-config autoconf automake texinfo)))))
-
 (define-public guile2.2-email
   (package
     (inherit guile-email)
     (name "guile2.2-email")
     (inputs (modify-inputs (package-inputs guile-email)
-              (replace "guile" guile-2.2)))))
+              (replace "guile" guile-2.2)))
+    (arguments
+     (substitute-keyword-arguments (package-arguments guile-email)
+       ((#:make-flags make-flags '())
+        #~(cons "guile_effective_version=2.2"
+                #$make-flags))))))
+
+(define-public guile-newra
+  ;; There has been no release let.
+  (let ((commit "266e72ef433cab44f60f8595e2435247b225d457")
+        (revision "0"))
+    (package
+      (name "guile-newra")
+      (version (git-version "0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://notabug.org/lloda/guile-newra")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0g1fk6fp7ym54183bc9f6g5wqfazlkwwvb67swfi94j4sns0l9dk"))))
+      (build-system guile-build-system)
+      (arguments
+       (list
+        #:source-directory "mod"
+        #:compile-flags '(list "--r6rs")))
+      ;; guile-3.0 fails to compile with --r6rs
+      (inputs (list guile-3.0-latest))
+      (home-page "https://notabug.org/lloda/guile-newra")
+      (synopsis "Scheme replacement for Guile's array system")
+      (description
+       "guile-newra (newra) wants to replace the current (3.0) Guile array
+system, which is almost entirely implemented in C.  The new implementation
+should be at least as fast.")
+      (license license:gpl3+))))
 
 (define-public guile-newt
   (package
@@ -1794,7 +2039,7 @@ provides tight coupling to Guix.")
 (define-public guile-ics
   (package
     (name "guile-ics")
-    (version "0.4.0")
+    (version "0.5.0")
     (source
      (origin
        (method git-fetch)
@@ -1804,7 +2049,7 @@ provides tight coupling to Guix.")
        (file-name (string-append name "-" version "-checkout"))
        (sha256
         (base32
-         "1wjkba135iipwqrp14c3q6wpbjhglp9d12is16lj8l81xyv8gjn3"))))
+         "1ipryn69ad4viqai9pnwhkqqpf9wgw0m2qxrwkfrpm1bfdyilw9w"))))
     (build-system gnu-build-system)
     (arguments
      (list #:phases #~(modify-phases %standard-phases
@@ -1950,7 +2195,7 @@ users and in some situations.")
 (define-public guile-udev
   (package
     (name "guile-udev")
-    (version "0.2.3")
+    (version "0.2.4")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1959,22 +2204,19 @@ users and in some situations.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0xvh4wscxmiqm8lnmfyh5cjzn89kv2wslkfvqvcjhinzpnpbg91x"))))
+                "1q1snj8gz2bvqw2v2jvwlzn5xfh7f7wlp922isnzismrp4adc918"))))
     (build-system gnu-build-system)
-    (native-inputs
-     (list autoconf
-           automake
-           gettext-minimal
-           libtool
-           texinfo
-           pkg-config
-           which))
-    (inputs
-     (list guile-3.0 eudev))
+    (native-inputs (list autoconf
+                         automake
+                         gettext-minimal
+                         libtool
+                         texinfo
+                         pkg-config
+                         which))
+    (inputs (list guile-3.0 eudev))
     (home-page "https://github.com/artyom-poptsov/guile-udev")
     (synopsis "Guile bindings to libudev")
-    (description
-     "Guile-Udev provides GNU Guile bindings to libudev.")
+    (description "Guile-Udev provides GNU Guile bindings to libudev.")
     (license license:gpl3+)))
 
 (define-public guile-sly
@@ -2027,91 +2269,90 @@ capabilities.")
     (license license:gpl3+)))
 
 (define-public guile-g-golf
-  (let ((commit   "1824633d37da3794f349d6829e9dac2cf89adaa8")
-        (revision "1010"))
-    (package
-      (name "guile-g-golf")
-      (version (git-version "0.1.0" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://git.savannah.gnu.org/git/g-golf.git")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "0ncpqv6pbsx9fjmdzvzbjljnhqgw9pynqy9vr9aq35nb7rzrhfdf"))))
-      (build-system gnu-build-system)
-      (arguments
-       (list
-        #:configure-flags
-        #~(list "--with-guile-site=no")
-        #:phases
-        #~(modify-phases %standard-phases
-            (add-after 'unpack 'fix-guile-site-directory
-              (lambda _
-                (substitute* "configure.ac"
-                  (("SITEDIR=.*$")
-                   "SITEDIR=\"$datadir/guile/site/$GUILE_EFFECTIVE_VERSION\";\n")
-                  (("SITECCACHEDIR=\"\\$libdir/g-golf/")
-                   "SITECCACHEDIR=\"$libdir/"))))
-            (add-before 'configure 'tests-work-arounds
-              (lambda* (#:key inputs #:allow-other-keys)
-                ;; In build environment, There is no /dev/tty
-                (substitute* "test-suite/tests/gobject.scm"
-                  (("/dev/tty") "/dev/null"))))
-            (add-before 'configure 'substitute-libs
-              (lambda* (#:key inputs outputs #:allow-other-keys)
-                (define (get lib)
-                  (search-input-file inputs (string-append "lib/" lib ".so")))
+  (package
+    (name "guile-g-golf")
+    (version "0.8.0-a.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.savannah.gnu.org/git/g-golf.git")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1lszlssa6k8dhhya5px271gfzas7fyy1iwjqmlxibz5vdirzi565"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:configure-flags
+      #~(list "--with-guile-site=no")
+      #:parallel-build? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-guile-site-directory
+            (lambda _
+              (substitute* "configure.ac"
+                (("SITEDIR=.*$")
+                 "SITEDIR=\"$datadir/guile/site/$GUILE_EFFECTIVE_VERSION\";\n")
+                (("SITECCACHEDIR=\"\\$libdir/g-golf/")
+                 "SITECCACHEDIR=\"$libdir/"))))
+          (add-before 'configure 'tests-work-arounds
+            (lambda* (#:key inputs #:allow-other-keys)
+              ;; In build environment, There is no /dev/tty
+              (substitute* "test-suite/tests/gobject.scm"
+                (("/dev/tty") "/dev/null"))))
+          (add-before 'configure 'substitute-libs
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (define (get lib)
+                (search-input-file inputs (string-append "lib/" lib ".so")))
 
-                (let* ((libgi      (get "libgirepository-1.0"))
-                       (libglib    (get "libglib-2.0"))
-                       (libgobject (get "libgobject-2.0"))
-                       (libg-golf (string-append #$output "/lib/libg-golf")))
-                  (substitute* "g-golf/init.scm"
-                    (("libgirepository-1.0") libgi)
-                    (("libglib-2.0") libglib)
-                    (("libgobject-2.0") libgobject)
-                    (("\\(dynamic-link \"libg-golf\"\\)")
-                     (format #f "~s"
-                             `(catch #t
-                                (lambda ()
-                                  (dynamic-link "libg-golf"))
-                                (lambda _
-                                  (dynamic-link ,libg-golf))))))
-                  (setenv "GUILE_AUTO_COMPILE" "0")
-                  #t)))
-            (add-before 'check 'start-xorg-server
-              (lambda* (#:key inputs #:allow-other-keys)
-                ;; The test suite requires a running X server.
-                (system "Xvfb :1 &")
-                (setenv "DISPLAY" ":1")
-                #t)))))
-      (inputs
-       (list guile-3.0 guile-lib glib))
-      (native-inputs
-       (list autoconf
-             automake
-             texinfo
-             gettext-minimal
-             libtool
-             pkg-config
-             ;; required for tests
-             gtk+
-             clutter
-             xorg-server-for-tests))
-      (propagated-inputs
-       (list gobject-introspection))
-      (home-page "https://www.gnu.org/software/g-golf/")
-      (synopsis "Guile bindings for GObject Introspection")
-      (description
-       "G-Golf (Gnome: (Guile Object Library for)) is a library for developing
+              (let* ((libgi      (get "libgirepository-1.0"))
+                     (libglib    (get "libglib-2.0"))
+                     (libgobject (get "libgobject-2.0"))
+                     (libg-golf (string-append #$output "/lib/libg-golf")))
+                (substitute* "g-golf/init.scm"
+                  (("libgirepository-1.0") libgi)
+                  (("libglib-2.0") libglib)
+                  (("libgobject-2.0") libgobject)
+                  (("\\(dynamic-link \"libg-golf\"\\)")
+                   (format #f "~s"
+                           `(catch #t
+                              (lambda ()
+                                (dynamic-link "libg-golf"))
+                              (lambda _
+                                (dynamic-link ,libg-golf))))))
+                (setenv "GUILE_AUTO_COMPILE" "0")
+                #t)))
+          (add-before 'check 'start-xorg-server
+            (lambda* (#:key inputs #:allow-other-keys)
+              ;; The test suite requires a running X server.
+              (system "Xvfb :1 &")
+              (setenv "DISPLAY" ":1")
+              #t)))))
+    (inputs
+     (list guile-3.0 guile-lib glib-next))
+    (native-inputs
+     (list autoconf
+           automake
+           texinfo
+           gettext-minimal
+           libtool
+           pkg-config
+           ;; required for tests
+           gtk+
+           clutter
+           xorg-server-for-tests))
+    (propagated-inputs
+     (list gobject-introspection-next))
+    (home-page "https://www.gnu.org/software/g-golf/")
+    (synopsis "Guile bindings for GObject Introspection")
+    (description
+     "G-Golf (Gnome: (Guile Object Library for)) is a library for developing
 modern applications in Guile Scheme.  It comprises a direct binding to the
 GObject Introspection API and higher-level functionality for importing Gnome
 libraries and making GObject classes (and methods) available in Guile's
 object-oriented programming system, GOOPS.")
-      (license license:lgpl3+))))
+    (license license:lgpl3+)))
 
 (define-public g-golf
   (deprecated-package "g-golf" guile-g-golf))
@@ -2264,14 +2505,14 @@ many readers as needed).")
 (define-public guile-ncurses
   (package
     (name "guile-ncurses")
-    (version "3.0")
+    (version "3.1")
     (source (origin
              (method url-fetch)
              (uri (string-append "mirror://gnu/guile-ncurses/guile-ncurses-"
                                  version ".tar.gz"))
              (sha256
               (base32
-               "038xbffalhymg26lvmzgf7ljilxz2f2zmqg5r5nfzbipfbprwjhf"))))
+               "0cypz1ikw66n8bc2klsnnaj1plpl22dwq6pwyc7dvffamz7fi2gf"))))
     (build-system gnu-build-system)
     (inputs (list ncurses guile-3.0))
     (native-inputs (list pkg-config))
@@ -2298,8 +2539,7 @@ many readers as needed).")
                (substitute* files
                  (("\"libguile-ncurses\"")
                   (format #f "\"~a/lib/guile/~a/libguile-ncurses\""
-                          out (target-guile-effective-version))))
-               #t))))))
+                          out (target-guile-effective-version))))))))))
     (home-page "https://www.gnu.org/software/guile-ncurses/")
     (synopsis "Guile bindings to ncurses")
     (description
@@ -2359,39 +2599,74 @@ $(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache\n")))))))
 modules, allowing for people to cooperate integrating their generic Guile
 modules into a coherent library.  Think \"a down-scaled, limited-scope CPAN
 for Guile\".  It provides the following modules:
-+@itemize
-+@item (apicheck) Describe and verify library programming interfaces.
-+@item (config load) Loading configuration files.
-+@item (container async-queue) A thread-safe message queue.
-+@item (container nodal-tree) A tree consisting of nodes with attributes.
-+@item (container delay-tree) A nodal tree with lazily evaluated fields.
-+@item (debugging assert) Helpful assert macro.
-+@item (debugging time) A simple macro to time the execution of an expression.
-+@item (graph topological-sort) Routines to perform topological sorts.
-+@item (htmlprag) Neil Van Dyke's permissive (\"pragmatic\") HTML parser.
-+@item (io string) SLIB's IO routines dealing with strings.
-+@item (logging logger) A flexible logging system.
-+@item (logging port-log) A logger that outputs to a port.
-+@item (logging rotating-log) A logger that rotates its output files.
-+@item (match-bind) Nifty and concise regular expression routines.
-+@item (math minima) A golden-section minimum finder.
-+@item (math primes) Functions related to prime numbers and factorization.
-+@item (os process) Spawning processes and capturing their output.
-+@item (scheme documentation) Macros to define different kinds of variables
-+with documentation.
-+@item (scheme kwargs) Defining functions with flexible keyword arguments.
-+@item (search basic) Classic search functions.
-+@item (string completion) Building blocks for tab completion.
-+@item (string soundex) The SOUNDEX string categorization algorithm.
-+@item (string transform) Beyond SRFI-13.
-+@item (string wrap) A versatile string formatter.
-+@item (term ansi-color) Generate ANSI color escape sequences.
-+@item (unit-test) A JUnit-style unit testing framework.
-+@end itemize")
+@itemize
+@item (apicheck) Describe and verify library programming interfaces.
+@item (config load) Loading configuration files.
+@item (container async-queue) A thread-safe message queue.
+@item (container nodal-tree) A tree consisting of nodes with attributes.
+@item (container delay-tree) A nodal tree with lazily evaluated fields.
+@item (debugging assert) Helpful assert macro.
+@item (debugging time) A simple macro to time the execution of an expression.
+@item (graph topological-sort) Routines to perform topological sorts.
+@item (htmlprag) Neil Van Dyke's permissive (\"pragmatic\") HTML parser.
+@item (io string) SLIB's IO routines dealing with strings.
+@item (logging logger) A flexible logging system.
+@item (logging port-log) A logger that outputs to a port.
+@item (logging rotating-log) A logger that rotates its output files.
+@item (match-bind) Nifty and concise regular expression routines.
+@item (math minima) A golden-section minimum finder.
+@item (math primes) Functions related to prime numbers and factorization.
+@item (os process) Spawning processes and capturing their output.
+@item (scheme documentation) Macros to define different kinds of variables
+with documentation.
+@item (scheme kwargs) Defining functions with flexible keyword arguments.
+@item (search basic) Classic search functions.
+@item (string completion) Building blocks for tab completion.
+@item (string soundex) The SOUNDEX string categorization algorithm.
+@item (string transform) Beyond SRFI-13.
+@item (string wrap) A versatile string formatter.
+@item (term ansi-color) Generate ANSI color escape sequences.
+@item (unit-test) A JUnit-style unit testing framework.
+@end itemize")
     ;; The whole is under GPLv3+, but some modules are under laxer
     ;; distribution terms such as LGPL and public domain.  See `COPYING' for
     ;; details.
     (license license:gpl3+)))
+
+(define-public guile-simple-iterators
+  (let ((commit "50f16a2b2aa57e657e52e19fb3c35bdc182cfa36")
+        (revision "0"))
+    (package
+      (name "guile-simple-iterators")
+      (version (git-version "0.0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://gitlab.com/dustyweb/guile-simple-iterators")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1m1wirlnfwmp5a4rpszd5qsbwabz4ji033w6p2714p1r524ylah8"))))
+      (build-system guile-build-system)
+      (native-inputs (list guile-3.0))
+      (home-page "https://gitlab.com/dustyweb/guile-simple-iterators")
+      (synopsis "Simple iterators for Guile")
+      (description
+       "This is a collection of iteration macros for Guile. They are inspired by
+@code{racket}'s family of iterators. Specifically, the following iterators are
+available:
+@itemize
+@item @code{for}
+@item @code{for/map}
+@item @code{for/c}
+@item @code{for/fold}
+@item @code{for/fold-right}
+@item @code{for/folder}
+@item @code{folder}
+@end itemize")
+      (license license:asl2.0))))
 
 (define-public guile2.0-lib
   (package
@@ -2489,7 +2764,7 @@ See http://minikanren.org/ for more on miniKanren generally.")
        #:source-directory "src"))
     (native-inputs
      (list guile-3.0))
-    (home-page "http://synthcode.com/scheme/irregex")
+    (home-page "https://synthcode.com/scheme/irregex")
     (synopsis "S-expression based regular expressions")
     (description
      "Irregex is an s-expression based alternative to your classic
@@ -3546,10 +3821,33 @@ in C using Gtk+-3 and WebKitGtk.")
 perform geometrical transforms on JPEG images.")
       (license license:gpl3+))))
 
+(define-public guile-jtd
+  (package
+    (name "guile-jtd")
+    (version "220323a")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/mwette/guile-jtd")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1l8fyqhvksarvpbr903i3ss3432jzvyvhgcqa15j922ngqh4ds6f"))))
+    (build-system guile-build-system)
+    (native-inputs (list guile-3.0))
+    (home-page "https://github.com/mwette/guile-jtd")
+    (synopsis "Python's @code{pdb.set_trace()} but for Guile")
+    (description
+     "The @code{(jtd)} module for Guile provides a procedure
+@code{jump-to-debugger} for escaping to the Guile REPL for the purpose of
+debugging code.")
+    (license license:lgpl2.1+)))
+
 (define-public guile-png
   (package
     (name "guile-png")
-    (version "0.2.0")
+    (version "0.6.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -3558,11 +3856,19 @@ perform geometrical transforms on JPEG images.")
               (file-name (string-append name "-" version "-checkout"))
               (sha256
                (base32
-                "1nk81z2cf9fsyppq5ly0yjw7yvdk5qraf71in7ayzdkngphhfgfx"))))
+                "0i0q2h4kfp1mj5m3wnz2hk6z895001j38s5vkbhkdxf05cjvwkky"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags '("GUILE_AUTO_COMPILE=0"))) ;to prevent guild warnings
-    (native-inputs (list autoconf automake pkg-config texinfo))
+    (native-inputs (list autoconf
+                         automake
+                         pkg-config
+                         texinfo
+                         ;; needed when cross-compiling.
+                         guile-3.0
+                         guile-lib
+                         guile-zlib
+                         guile-smc))
     (inputs (list bash-minimal guile-3.0 guile-lib guile-zlib))
     (propagated-inputs (list guile-smc))
     (home-page "https://github.com/artyom-poptsov/guile-png")
@@ -3737,12 +4043,13 @@ feature-set, fully programmable in Guile Scheme.")
     (inputs
      (list vigra vigra-c guile-2.2))
     (native-inputs
-     `(("texlive" ,(texlive-updmap.cfg (list texlive-booktabs
-                                        texlive-lm
-                                        texlive-siunitx
-                                        texlive-standalone
-                                        texlive-xcolor
-                                        texlive-fonts-iwona)))
+     `(("texlive" ,(texlive-updmap.cfg
+                    (list texlive-booktabs
+                          texlive-iwona
+                          texlive-lm
+                          texlive-siunitx
+                          texlive-standalone
+                          texlive-xcolor)))
        ("pkg-config" ,pkg-config)))
     (propagated-inputs
      `(("guile-lib" ,guile2.2-lib)))
@@ -3755,6 +4062,50 @@ bindings to Vigra C (a C wrapper to most of the Vigra functionality) and is
 enriched with pure Guile Scheme algorithms, all accessible through a nice,
 clean and easy to use high level API.")
     (license license:gpl3+)))
+
+(define-public guile-ffi-cblas
+  (let ((commit "4458d50f84786d7ace0181c6588345eed7474996")
+        (revision "0"))
+    (package
+      (name "guile-ffi-cblas")
+      (version (git-version "0.0.0" revision commit))
+      (home-page "https://github.com/lloda/guile-ffi-cblas")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference (url home-page)
+                                    (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "050s0lq64v286hkxqczkfkx3fp1vr3jm5w236hxx67br9najb1cp"))))
+      (build-system guile-build-system)
+      (arguments
+       (list #:source-directory "mod"
+             #:phases
+             #~(modify-phases %standard-phases
+                 (add-after 'unpack 'set-blas-file-name
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     (substitute* "mod/ffi/cblas.scm"
+                       (("\"libcblas\"")
+                        (string-append "\""
+                                       (search-input-file
+                                        inputs "/lib/libopenblas.so")
+                                       "\"")))))
+                 (add-after 'build 'check
+                   (lambda _
+                     (invoke "guile" "-C" "mod" "-L" "mod"
+                             "test/test-ffi-cblas.scm"))))))
+      (native-inputs (list guile-3.0))
+      (inputs (list openblas))
+      (synopsis "Guile bindings for CBLAS, the linear algebra library")
+      (description
+       "This package provides Guile FFI bindings for CBLAS, the library of
+linear algebra subprograms.
+
+To use the bindings, import @code{(ffi cblas)}.  CBLAS will be loaded from the
+default dynamic library path.  There are up to three bindings for each
+function: raw, typed, and functional.")
+      (license license:lgpl3+))))
 
 (define-public guile-ffi-fftw
   (let ((commit "294ad9e7491dcb40026d2fec9be2af05263be1c0")
@@ -3838,7 +4189,7 @@ tests being run, resulting clearer and more specific output.")
                 "109p4n39ln44cxvwdccf9kgb96qx54makvd2ir521ssz6wchjyag"))))
     (build-system gnu-build-system)
     (native-inputs
-     (list pkg-config))
+     (list guile-3.0 pkg-config))
     (inputs
      (list guile-3.0))
     (home-page "https://ngyro.com/software/guile-semver.html")
@@ -3852,6 +4203,8 @@ the style of the Node Package Manager (NPM).")
   (package
     (inherit guile-semver)
     (name "guile2.2-semver")
+    (native-inputs
+     (list guile-2.2 pkg-config))
     (inputs
      (list guile-2.2))))
 
@@ -3899,7 +4252,7 @@ the style of the Node Package Manager (NPM).")
                       #t)))))
     (native-inputs
      (list guile-3.0))
-    (synopsis "Cryprographic hash functions implemented in Scheme")
+    (synopsis "Cryptographic hash functions implemented in Scheme")
     (description
      "The @code{(hashing @dots{})} modules implement cryptographic hash
 functions in pure R6RS Scheme: CRC, HMAC, MD5, SHA-1, and SHA-2 (SHA-256,
@@ -4033,8 +4386,8 @@ gnome-keyring, and many more.")
     (license license:expat)))
 
 (define-public guile-webutils
-  (let ((commit "8541904f761066dc9c27b1153e9a838be9a55299")
-        (revision "0"))
+  (let ((commit "d309d65a85247e4f3cea63a17defd1e6d35d821f")
+        (revision "1"))
     (package
       (name "guile-webutils")
       (version (git-version "0.1" revision commit))
@@ -4046,15 +4399,7 @@ gnome-keyring, and many more.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "1s9n3hbxd7lfpdi0x8wr0cfvlsf6g62ird9gbspxdrp5p05rbi64"))
-                (modules '((guix build utils)))
-                (snippet
-                 '(begin
-                    ;; Allow builds with Guile 3.0.
-                    (substitute* "configure.ac"
-                      (("2\\.2 2\\.0")
-                       "3.0 2.2 2.0"))
-                    #t))))
+                  "1a3bblk5zaldkkxn0a94s544drqm0w2i5fsjpghagd64m149blf0"))))
       (build-system gnu-build-system)
       (native-inputs
        (list autoconf automake pkg-config texinfo))
@@ -4128,7 +4473,7 @@ over, or update a value in arbitrary data structures.")
 (define-public guile-xapian
   (package
     (name "guile-xapian")
-    (version "0.2.0")
+    (version "0.3.1")
     (home-page "https://git.systemreboot.net/guile-xapian")
     (source
      (origin
@@ -4138,7 +4483,7 @@ over, or update a value in arbitrary data structures.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "140cwzpzk4y16ajxrg5zd2d7q60f5ivx5jk8w1h0qfjq2mp14sh7"))))
+         "0axbahbi52ji0fxhykn642265v58rdp2yqliqv456nqs038wb5ja"))))
     (build-system gnu-build-system)
     (arguments
      '(#:make-flags '("GUILE_AUTO_COMPILE=0"))) ; to prevent guild warnings
@@ -4151,6 +4496,8 @@ over, or update a value in arbitrary data structures.")
            libtool
            pkg-config
            swig))
+    (propagated-inputs
+     (list guile-lib))
     (synopsis "Guile bindings for Xapian")
     (description "@code{guile-xapian} provides Guile bindings for Xapian, a
 search engine library.  Xapian is a highly adaptable toolkit which allows
@@ -4165,7 +4512,10 @@ models and also supports a rich set of boolean query operators.")
     (name "guile2.2-xapian")
     (inputs
      (modify-inputs (package-inputs guile-xapian)
-       (replace "guile" guile-2.2)))))
+       (replace "guile" guile-2.2)))
+    (propagated-inputs
+     (modify-inputs (package-propagated-inputs guile-xapian)
+       (replace "guile-lib" guile2.2-lib)))))
 
 (define-public guile-torrent
   (package
@@ -4214,11 +4564,17 @@ according to Bitorrent BEP003.")
                   "1jx8704200l29ndg9bfyamgxrzknya0f0vwb2sxhd0k3b8r94avw"))))
       (build-system gnu-build-system)
       (arguments
-       `(#:configure-flags '("--enable-gnutls=yes")))
+       `(#:configure-flags '("--enable-gnutls=yes")
+         #:phases
+         (modify-phases %standard-phases
+           (add-before 'bootstrap 'fix-autogen.sh
+             (lambda _
+               (substitute* "autogen.sh"
+                 ((" #!") "#!")))))))
       (native-inputs
        (list autoconf automake texinfo pkg-config))
       (inputs
-       (list gnutls guile-3.0))
+       (list gnutls guile-gnutls guile-3.0))
       (home-page "https://github.com/rekado/guile-irc")
       (synopsis "IRC library for Guile")
       (description "This package provides a Guile library for @dfn{Internet
@@ -4249,6 +4605,32 @@ Relay Chat} (IRC).")
     (description "Guile-websocket provides an implementation of the
 WebSocket protocol as defined by RFC 6455.")
     (home-page "https://dthompson.us/projects/guile-websocket.html")
+    (license license:lgpl3+)))
+
+(define-public guile-gemini
+  (package
+    (name "guile-gemini")
+    (version "0.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/flatwhatson/guile-gemini")
+                    (commit "6d70c5dc6b35c26103f560f7e63c770a424dbca2")))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0rvqqirwsqn3nspr6z1smfp3rj7gc7hfq7cmadx7zxbr3yg5y04x"))))
+    (build-system guile-build-system)
+    (arguments
+     '(#:source-directory "src"))
+    (inputs (list guile-3.0-latest))
+    (propagated-inputs (list guile-fibers-1.1 guile-gnutls))
+    (home-page "https://github.com/flatwhatson/guile-gemini")
+    (synopsis "Guile implementation of the Gemini protocol")
+    (description
+     "Guile Gemini is an implementation of the Gemini protocol in Guile Scheme,
+providing both client and server functionality.  It uses GnuTLS to meet
+Gemini's TLS requirements, and Guile Fibers for concurrency.")
     (license license:lgpl3+)))
 
 (define-public guile-rdf
@@ -4289,33 +4671,31 @@ manipulating graphs and datasets.")
   (package
     (name "guile-jsonld")
     (version "1.0.2")
-    (source
-      (origin
-        (method git-fetch)
-        (uri (git-reference
-               (url "https://framagit.org/tyreunom/guile-jsonld")
-               (commit version)))
-        (file-name (git-file-name name version))
-        (sha256
-         (base32
-          "1ryyvh71899z2inivqglb8d78zzp1sd0wv9a56kvcmrxf1966z6r"))))
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://framagit.org/tyreunom/guile-jsonld")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1ryyvh71899z2inivqglb8d78zzp1sd0wv9a56kvcmrxf1966z6r"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f)); require network
+     (list #:tests? #f))                ; require network
     (propagated-inputs
-     `(("guile-gnutls" ,gnutls)
-       ("guile-json" ,guile-json-4)
-       ("guile-rdf" ,guile-rdf)))
+     (list guile-gnutls guile-json-4 guile-rdf))
     (inputs
      (list guile-3.0))
     (native-inputs
      (list automake autoconf pkg-config texinfo))
     (home-page "https://framagit.org/tyreunom/guile-jsonld")
     (synopsis "Guile implementation of the JsonLD API specification")
-    (description "Guile JsonLD is an implementation of the JsonLD (Json for
-Linked Data) API defined by the W3C for GNU Guile.  It allows you to express links
-between data, in a way that is very similar to WikiData or RDF for instance.
-An object can have relations (in the form of an IRI) that relates it to one or
+    (description
+     "Guile JsonLD is an implementation of the JsonLD (Json for Linked Data)
+API defined by the W3C for GNU Guile.  It allows you to express links between
+data, in a way that is very similar to WikiData or RDF for instance.  An
+object can have relations (in the form of an IRI) that relates it to one or
 more objects or strings, represented by a Json object or an IRI.")
     (license license:gpl3+)))
 
@@ -4458,60 +4838,31 @@ errors.")
     (license license:expat)))
 
 (define-public guile-avahi
-  (let ((commit "6d43caf64f672a9694bf6c98bbf7a734f17a51e8")
-        (revision "1"))
-    (package
-      (name "guile-avahi")
-      (version (git-version "0.4.0" revision commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "git://git.sv.gnu.org/guile-avahi.git")
-                      (commit commit)))
-                (file-name (git-file-name name version))
-                (sha256
-                 (base32
-                  "0fvrf8x22yvc71180hd3xkhspg9yvadi0pbv8shzlsaxqncwy1m9"))
-                (modules '((guix build utils)))))
-      (build-system gnu-build-system)
-      (arguments
-       `(#:modules (((guix build guile-build-system)
-                     #:select (target-guile-effective-version))
-                    ,@%gnu-build-system-modules)
-         #:imported-modules ((guix build guile-build-system)
-                             ,@%gnu-build-system-modules)
-         #:make-flags
-         '("GUILE_AUTO_COMPILE=0")    ;to prevent guild warnings
-         ;; Parallel builds fail on powerpc64le-linux.
-         ;; See https://lists.nongnu.org/archive/html/guile-avahi-bugs/2021-01/msg00000.html
-         #:parallel-build? #f
-         #:phases
-         (modify-phases %standard-phases
-           (add-before 'check 'fix-guile-avahi-file-name
-           (lambda* (#:key outputs #:allow-other-keys)
-             (with-directory-excursion "src"
-               (invoke "make" "install"
-                       "-j" (number->string
-                             (parallel-job-count))))
-             (let* ((out   (assoc-ref outputs "out"))
-                    (files (find-files "modules" ".scm")))
-               (substitute* files
-                 (("\"guile-avahi-v-0\"")
-                  (format #f "\"~a/lib/guile/~a/extensions/guile-avahi-v-0\""
-                          out (target-guile-effective-version))))
-               #t))))))
-      (inputs
-       (list guile-3.0 avahi))
-      (native-inputs
-       (list autoconf automake libtool pkg-config texinfo))
-      (synopsis "Guile bindings to Avahi")
-      (description
-       "This package provides bindings for Avahi.  It allows programmers to
+  (package
+    (name "guile-avahi")
+    (version "0.4.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://git.sv.gnu.org/git/guile-avahi.git/")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0pxdi13kr4ylpms0xyf3xwwbhg025k7a2liwnbha1gw6ls58xgv2"))))
+    (build-system gnu-build-system)
+    (inputs
+     (list guile-3.0 avahi))
+    (native-inputs
+     (list autoconf automake libtool pkg-config texinfo guile-3.0))
+    (synopsis "Guile bindings to Avahi")
+    (description
+     "This package provides bindings for Avahi.  It allows programmers to
 use functionalities of the Avahi client library from Guile Scheme programs.
 Avahi itself is an implementation of multicast DNS (mDNS) and DNS Service
 Discovery (DNS-SD).")
-      (home-page "https://www.nongnu.org/guile-avahi/")
-      (license license:lgpl3+))))
+    (home-page "https://www.nongnu.org/guile-avahi/")
+    (license license:lgpl3+)))
 
 (define-public guile-dns
   (package
@@ -4901,7 +5252,7 @@ locations.")
 (define-public guile-netlink
   (package
     (name "guile-netlink")
-    (version "1.1.1")
+    (version "1.2")
     (source
      (origin
        (method git-fetch)
@@ -4911,7 +5262,7 @@ locations.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0jcl6mzqy04if5drflmygmggbgzsxa42mlmskqb3cfqmksq0zj0y"))))
+         "06ls830nrshzi2j532di5vdf03fp8cy1275ll4ms93x1hv2g8dk0"))))
     (build-system gnu-build-system)
     (inputs
      (list guile-3.0))
@@ -4997,7 +5348,7 @@ GitLab instance.")
 (define-public guile-smc
   (package
     (name "guile-smc")
-    (version "0.5.2")
+    (version "0.6.0")
     (source
      (origin
        (method git-fetch)
@@ -5007,7 +5358,7 @@ GitLab instance.")
        (file-name (string-append name "-" version))
        (sha256
         (base32
-         "05q20vi59whjs7jb8bgcxnnfy6c3wx26m5ps2fwlsz52nggarxzb"))))
+         "15b8m30kjl46p44xjd65vv1bv60hy130zfskkcsrj10fzahyk9zd"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags '("GUILE_AUTO_COMPILE=0")     ;to prevent guild warnings
@@ -5037,7 +5388,15 @@ GitLab instance.")
                    (,(string-append out go)
                     ,(string-append guile-lib go))))))))))
     (native-inputs
-     (list autoconf automake pkg-config texinfo help2man which))
+     (list autoconf
+           automake
+           pkg-config
+           texinfo
+           help2man
+           which
+           ;; needed when cross-compiling.
+           guile-3.0
+           guile-lib))
     (inputs
      (list bash-minimal guile-3.0 guile-lib inetutils))
     (home-page "https://github.com/artyom-poptsov/guile-smc")
@@ -5068,7 +5427,7 @@ with a FSM is being built (for example, from a Makefile.)")
 (define-public guile-ini
   (package
     (name "guile-ini")
-    (version "0.5.2")
+    (version "0.5.3")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -5077,13 +5436,20 @@ with a FSM is being built (for example, from a Makefile.)")
               (file-name (string-append name "-" version))
               (sha256
                (base32
-                "17fbys3gsfyx4f77a2fswirx76dlr57il2z27z77wljaz777jk36"))))
+                "03pdbas7f6r2q3jbcn68xpm57hika3byb4rhsf0544kw6yk3bm8q"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags '("GUILE_AUTO_COMPILE=0") ;to prevent guild warnings
        #:phases (modify-phases %standard-phases
                   (delete 'strip))))
-    (native-inputs (list autoconf automake pkg-config texinfo))
+    (native-inputs (list autoconf
+                         automake
+                         pkg-config
+                         texinfo
+                         ;; needed when cross-compiling.
+                         guile-3.0
+                         guile-lib
+                         guile-smc))
     (inputs (list bash-minimal guile-3.0 guile-lib))
     (propagated-inputs (list guile-smc))
     (home-page "https://github.com/artyom-poptsov/guile-ini")
@@ -5284,44 +5650,37 @@ This module implements this interface by use of Guile's dynamic FFI.")
 (define-public guile-goblins
   (package
     (name "guile-goblins")
-    (version "0.8")
+    (version "0.11.0")
     (source
      (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://gitlab.com/spritely/guile-goblins/")
-             (commit (string-append "v" version))))
-       (file-name (string-append name "-" version))
+       (method url-fetch)
+       (uri (string-append "https://spritely.institute/files/releases"
+                           "/guile-goblins/guile-goblins-"
+                           version ".tar.gz"))
        (sha256
         (base32
-         "1mmyykh79jwhrfgnhhw94aw7a8m6qw249kj7k60ynj16mcfm5iyy"))))
+         "1ic4f65kbziszi5cz1b7ypl6acph6kdq5pc3wasa1jns3gkzfl6l"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags
            #~(list "GUILE_AUTO_COMPILE=0")))
     (native-inputs
-     (list autoconf automake pkg-config texinfo))
+     (list pkg-config texinfo))
     (inputs (list guile-3.0))
     (propagated-inputs
      (list guile-fibers guile-gcrypt))
     (home-page "https://spritely.institute/goblins")
     (synopsis "Distributed programming environment for Guile")
-    ;; In guile-goblins 0.9, OCapN support will be added (it already
-    ;; exists in racket-goblins).  At that point we should add the
-    ;; following to this description:
-    ;;
-    ;;   Goblins allows for cooperation between networked programs
-    ;;   in a mutually suspicious network through OCapN, the Object
-    ;;   Capability Network.  This includes collaboration across
-    ;;   runtimes; for instance, programs written in the Guile and Racket
-    ;;   versions of Goblins are able to speak to each other.
     (description
      "@code{guile-goblins} is the Guile version of
-@url{https://spritely.institute/goblins, Spritely Goblins},
-a transactional, distributed programming environment following object
-capability security designs.  Goblins is a general toolkit, and also
-the core layer of Spritely's work to support healthy distributed
-networked communities.")
+@url{https://spritely.institute/goblins, Spritely Goblins}, a transactional,
+distributed programming environment following object capability security
+designs.  Goblins is a general toolkit, and also the core layer of Spritely's
+work to support healthy distributed networked communities.  Goblins allows for
+cooperation between networked programs in a mutually suspicious network
+through OCapN, the Object Capability Network.  This includes collaboration
+across runtimes; for instance, programs written in the Guile and Racket
+versions of Goblins are able to speak to each other.")
     (license license:asl2.0)))
 
 ;;;

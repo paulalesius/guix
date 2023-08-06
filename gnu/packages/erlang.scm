@@ -7,6 +7,8 @@
 ;;; Copyright © 2020-2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;; Copyright © 2021 Oskar Köök <oskar@maatriks.ee>
 ;;; Copyright © 2021 Cees de Groot <cg@evrl.com>
+;;; Copyright © 2022 jgart <jgart@dismail.de>
+;;; Copyright © 2023 wrobell <wrobell@riseup.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -44,7 +46,7 @@
 (define-public erlang
   (package
     (name "erlang")
-    (version "25.0.4")
+    (version "25.3.2")
     (source (origin
               (method git-fetch)
               ;; The tarball from http://erlang.org/download contains many
@@ -56,7 +58,7 @@
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0n39pd5d8mmyj03d8fdan0zb2pcc383pmqf0v7s356fgirdbsrcm"))
+                "092lym5a181gz89nscw7kqhw1wa6qvgcpkj80q4i9p79mxmsr1nj"))
               (patches (search-patches "erlang-man-path.patch"))))
     (build-system gnu-build-system)
     (native-inputs
@@ -70,7 +72,7 @@
                                (version-major+minor version) ".tar.gz"))
            (sha256
             (base32
-             "17ap4kawlbqmcl13c543gh54p1ng8ivxmbn6lbbij07k81ry5p1y"))))))
+             "0vnpds5q17xc4jjj3sbsllpx68wyhgvx70714vkzyd68rbjmhmk7"))))))
     (inputs
      (list ncurses openssl wxwidgets))
     (propagated-inputs
@@ -167,7 +169,8 @@
            (lambda* (#:key outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out")))
                (substitute* (string-append out "/bin/erl")
-                 (("sed") (which "sed"))))))
+                 (("basename") (which "basename"))
+                 (("dirname") (which "dirname"))))))
          (add-after 'install 'install-doc
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -280,6 +283,28 @@ Mozilla's canonical set.")
 printing extending the io:format syntax to add colours.")
     (license license:expat)))
 
+(define-public erlang-yamerl
+  (package
+    (name "erlang-yamerl")
+    (version "0.10.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             ;; There are no tests included on Hex.
+             (url "https://github.com/yakaz/yamerl")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0if8abgmispcfk7zhd0a5dndzwzbsmqrbyrm5shk375r2dbbwak6"))))
+    (build-system rebar-build-system)
+    (synopsis "YAML and JSON parser in pure Erlang")
+    (description
+     "Erlang application to parse YAML 1.1 and YAML 1.2 documents, as well as
+JSON documents.")
+    (home-page "https://hexdocs.pm/yamerl/")
+    (license license:bsd-2)))
+
 (define-public erlang-covertool
   (package
     (name "erlang-covertool")
@@ -353,14 +378,14 @@ Markdown.")
     (propagated-inputs
      (list erlang-cf))
     (native-inputs
-     (list git-minimal/fixed))  ;; Required for tests
+     (list git-minimal/pinned))  ;; Required for tests
     (arguments
      `(#:phases
        (modify-phases %standard-phases
          (add-before 'check 'check-setup
            (lambda _
              (setenv "TERM" "xterm")))))) ; enable color in logs
-    (home-page "http://erlware.github.io/erlware_commons/")
+    (home-page "https://erlware.github.io/erlware_commons/")
     (synopsis "Additional standard library for Erlang")
     (description "Erlware Commons is an Erlware project focused on all aspects
 of reusable Erlang components.")
@@ -498,6 +523,23 @@ property-based testing of Erlang programs.  It is fully integrated with
 Erlang's type language, and can also be used for the model-based random
 testing of stateful systems.")
     (license license:gpl3+)))
+
+(define-public erlang-jsx
+  (package
+    (name "erlang-jsx")
+    (version "3.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (hexpm-uri "jsx" version))
+              (sha256
+               (base32
+                "1wr7jkxm6nlgvd52xhniav64xr9rml2ngb35rwjwqlqvq7ywhp0c"))))
+    (build-system rebar-build-system)
+    (synopsis "Streaming, evented JSON parsing toolkit")
+    (description
+     "An Erlang application for consuming, producing and manipulating json.")
+    (home-page "https://github.com/talentdeficit/jsx")
+    (license license:expat)))
 
 (define-public erlang-providers
   (package
@@ -661,7 +703,7 @@ applications as a dependent libraries.")
           (base32 "1dfz56034pa25axly9vqdzv3phkn8ll0qwrkws96pbgcprhky1hx"))))
     (build-system rebar-build-system)
     (inputs
-     (list git-minimal/fixed))
+     (list git-minimal/pinned))
     (arguments
      `(;; Running the tests require binary artifact (tar-file containing
        ;; samples git repos)  TODO: remove these from the source

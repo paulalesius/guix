@@ -8,6 +8,7 @@
 ;;; Copyright © 2018, 2019 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019 Pierre Neidhardt <mail@ambrevar.xyz>
 ;;; Copyright © 2022 Luis Henrique Gomes Higino <luishenriquegh2701@gmail.com>
+;;; Copyright © 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -59,7 +60,7 @@
      '(#:configure-flags '("--disable-libevent-regress"
                            "--disable-openssl")))
     (inputs
-     `(("python" ,python-wrapper)))     ;for 'event_rpcgen.py'
+     (list python-wrapper))             ;for 'event_rpcgen.py'
     (native-inputs
      (list which))
     (home-page "https://libevent.org/")
@@ -113,14 +114,14 @@ limited support for fork events.")
 (define-public libuv
   (package
     (name "libuv")
-    (version "1.41.1")
+    (version "1.44.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://dist.libuv.org/dist/v" version
                                   "/libuv-v" version ".tar.gz"))
               (sha256
                (base32
-                "0zb818sjwnxn5yv3qvkxaprjf037yqmjipk5i3a8rg1q4izhrnv5"))))
+                "1d1wy1061cf2mfygr2j6jbm0da2mhsf0l9yq4rjkqrsmijbdrz6c"))))
     (build-system gnu-build-system)
     (arguments
      '(#:configure-flags '("--disable-static")
@@ -157,11 +158,26 @@ resolution, asynchronous file system operations, and threading primitives.")
                 "0wpb9pz3r8nksnrf4zbixj2kk9whr7abi45ydrwyv2js2ljrc4j3"))))
     (properties '((hidden? . #t)))))
 
+(define-public libuv-for-r-httpuv
+  ;; When upgrading r-httpuv, also upgrade this.
+  (package
+    (inherit libuv)
+    (name "libuv")
+    (version "1.43.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://dist.libuv.org/dist/v" version
+                                  "/libuv-v" version ".tar.gz"))
+              (sha256
+               (base32
+                "194kwq3jfj9s628kzkchdca534rikjw0xiyas0cjbphqmsvjpmwh"))))
+    (properties '((hidden? . #t)))))
+
 (define-public libuv-julia
-  (let ((commit "fb3e3364c33ae48c827f6b103e05c3f0e78b79a9")
-        (revision "3"))
+  (let ((commit "e6f0e4900e195c8352f821abe2b3cffc3089547b")
+        (revision "4"))
     ;; When upgrading Julia, also upgrade this.  Get the commit from
-    ;; https://github.com/JuliaLang/julia/blob/v1.6.1/deps/libuv.version
+    ;; https://github.com/JuliaLang/julia/blob/v1.8.2/deps/libuv.version
     (package
       (inherit libuv)
       (name "libuv-julia")
@@ -174,7 +190,10 @@ resolution, asynchronous file system operations, and threading primitives.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "1kqpn19d20aka30h6q5h8lnzyp0vw0xzgx0wm4w2r5j6yf76m2hr"))))
+                  "0ib2cprvbyviwrzm0fw6dqvlbm9akf2kj3vjzp82q3gii74cv3c9"))))
+      (arguments
+       '(#:configure-flags '("--with-pic")
+         #:tests? #f))
       (home-page "https://github.com/JuliaLang/libuv")
       (properties '((hidden? . #t))))))
 

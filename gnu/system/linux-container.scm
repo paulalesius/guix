@@ -1,10 +1,11 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2015 David Thompson <davet@gnu.org>
-;;; Copyright © 2016-2017, 2019-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2016-2017, 2019-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2019 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2020 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2020 Google LLC
 ;;; Copyright © 2022 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2023 Pierre Langlois <pierre.langlois@gmx.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -49,9 +50,12 @@ from OS that are needed on the bare metal and not in a container."
   (define base
     (remove (lambda (service)
               (memq (service-kind service)
-                    (list (service-kind %linux-bare-metal-service)
-                          firmware-service-type
-                          system-service-type)))
+                    (cons* (service-kind %linux-bare-metal-service)
+                           firmware-service-type
+                           system-service-type
+                           (if shared-network?
+                               (list hosts-service-type)
+                               '()))))
             (operating-system-default-essential-services os)))
 
   (cons (service system-service-type
@@ -121,9 +125,7 @@ containerized OS.  EXTRA-FILE-SYSTEMS is a list of file systems to add to OS."
     ;; different configs that are better suited to containers.
     (append (list console-font-service-type
                   mingetty-service-type
-                  agetty-service-type
-                  ;; Reinstantiated below with smaller caches.
-                  nscd-service-type)
+                  agetty-service-type)
             (if shared-network?
                 ;; Replace these with dummy-networking-service-type below.
                 (list
@@ -134,17 +136,13 @@ containerized OS.  EXTRA-FILE-SYSTEMS is a list of file systems to add to OS."
                 (list))))
 
   (define services-to-add
-    (append
-     ;; Many Guix services depend on a 'networking' shepherd
-     ;; service, so make sure to provide a dummy 'networking'
-     ;; service when we are sure that networking is already set up
-     ;; in the host and can be used.  That prevents double setup.
-     (if shared-network?
-         (list (service dummy-networking-service-type))
-         '())
-     (list
-      (nscd-service (nscd-configuration
-                     (caches %nscd-container-caches))))))
+    ;; Many Guix services depend on a 'networking' shepherd
+    ;; service, so make sure to provide a dummy 'networking'
+    ;; service when we are sure that networking is already set up
+    ;; in the host and can be used.  That prevents double setup.
+    (if shared-network?
+        (list (service dummy-networking-service-type))
+        '()))
 
   (operating-system
     (inherit os)
@@ -152,11 +150,29 @@ containerized OS.  EXTRA-FILE-SYSTEMS is a list of file systems to add to OS."
     (essential-services (container-essential-services
                          this-operating-system
                          #:shared-network? shared-network?))
-    (services (append (remove (lambda (service)
-                                (memq (service-kind service)
-                                      services-to-drop))
-                              (operating-system-user-services os))
-                      services-to-add))
+    (services
+     (append services-to-add
+             (filter-map (lambda (s)
+                           (cond ((memq (service-kind s) services-to-drop)
+                                  #f)
+                                 ((eq? nscd-service-type (service-kind s))
+                                  (service nscd-service-type
+                                           (nscd-configuration
+                                            (inherit (service-value s))
+                                            (caches %nscd-container-caches))))
+                                 ((eq? guix-service-type (service-kind s))
+                                  ;; Pass '--disable-chroot' so that
+                                  ;; guix-daemon can build thing even in
+                                  ;; Docker without '--privileged'.
+                                  (service guix-service-type
+                                           (guix-configuration
+                                            (inherit (service-value s))
+                                            (extra-options
+                                             (cons "--disable-chroot"
+                                                   (guix-configuration-extra-options
+                                                    (service-value s)))))))
+                                 (else s)))
+                         (operating-system-user-services os))))
     (file-systems (append (map mapping->fs
                                (if shared-network?
                                    (append %network-file-mappings mappings)

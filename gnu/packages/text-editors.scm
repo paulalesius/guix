@@ -8,7 +8,7 @@
 ;;; Copyright © 2017–2021 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2019 Andreas Enge <andreas@enge.fr>
-;;; Copyright © 2019, 2020, 2021, 2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2020-2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Tom Zander <tomz@freedommail.ch>
 ;;; Copyright © 2020 Mark Meyer <mark@ofosos.org>
@@ -21,6 +21,9 @@
 ;;; Copyright © 2022 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;; Copyright © 2022 zamfofex <zamfofex@twdb.moe>
 ;;; Copyright © 2022 jgart <jgart@dismail.de>
+;;; Copyright © 2022 Andy Tai <atai@atai.org>
+;;; Copyright © 2023 Eidvilas Markevičius <markeviciuseidvilas@gmail.com>
+;;; Copyright © 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -49,18 +52,22 @@
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (guix build-system meson)
   #:use-module (guix build-system python)
+  #:use-module (guix build-system qt)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
   #:use-module (gnu packages aspell)
   #:use-module (gnu packages assembly)
   #:use-module (gnu packages autotools)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages base)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages code)
   #:use-module (gnu packages cpp)
   #:use-module (gnu packages crates-io)
+  #:use-module (gnu packages curl)
   #:use-module (gnu packages datastructures)
   #:use-module (gnu packages documentation)
+  #:use-module (gnu packages enchant)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gettext)
@@ -70,10 +77,10 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages haskell-xyz)
-  #:use-module (gnu packages icu4c)
+  #:use-module (gnu packages hunspell)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages lesstif)
   #:use-module (gnu packages libbsd)
-  #:use-module (gnu packages libreoffice)
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages ncurses)
@@ -87,6 +94,7 @@
   #:use-module (gnu packages regex)
   #:use-module (gnu packages ruby)
   #:use-module (gnu packages sdl)
+  #:use-module (gnu packages slang)
   #:use-module (gnu packages sqlite)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages texinfo)
@@ -167,7 +175,7 @@ based command language.")
 (define-public kakoune
   (package
     (name "kakoune")
-    (version "2021.11.08")
+    (version "2022.10.31")
     (source
      (origin
        (method url-fetch)
@@ -175,7 +183,7 @@ based command language.")
                            "releases/download/v" version "/"
                            "kakoune-" version ".tar.bz2"))
        (sha256
-        (base32 "1x5mvmpf0rgmr2xdw5wjn4hr6qd8yvj0zx588fi324x1knfqhc5a"))))
+        (base32 "12z5wka649xycclbs94bfy2yyln2172dz0zycxsxr384r5i7ncgv"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags
@@ -297,7 +305,7 @@ can load dynamic libraries.")
          "1pmr598xxxm9j9dl93kq4dv36zyw0q2dh6d7x07hf134y9hhlnj9"))))
     (build-system gnu-build-system)
     (inputs (list ncurses))
-    (home-page "http://joe-editor.sourceforge.net/")
+    (home-page "https://joe-editor.sourceforge.net/")
     (synopsis "Console screen editor")
     (description
      "JOE is a powerful console screen editor with a \"mode-less\" user
@@ -308,7 +316,7 @@ bindings and many of the powerful features of GNU Emacs.")
 (define-public jucipp
   (package
     (name "jucipp")
-    (version "1.7.1")
+    (version "1.7.2")
     (home-page "https://gitlab.com/cppit/jucipp")
     (source (origin
               (method git-fetch)
@@ -320,7 +328,7 @@ bindings and many of the powerful features of GNU Emacs.")
                                   (recursive? #t)))
               (file-name (git-file-name name version))
               (sha256
-               (base32 "0xyf1fa7jvxzvg1dxh5vc50fbwjjsar4fmlvbfhicdd1f8bhz1ii"))
+               (base32 "034il3z38a7qvp95f52n9rxbqmh8fxsy416rjak3zzagvfkvzyii"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -344,7 +352,7 @@ bindings and many of the powerful features of GNU Emacs.")
                      ;; Disable the CMake build test, as it does not test
                      ;; functionality of the package, and requires doing
                      ;; an "in-source" build.
-                     (("add_test\\(cmake_build_test.*\\)")
+                     (("add_test\\(cmake_(build|file_api)_test.*\\)")
                       "")
                      ;; Disable the git test, as it requires the full checkout.
                      (("add_test\\(git_test.*\\)")
@@ -386,7 +394,7 @@ bindings and many of the powerful features of GNU Emacs.")
            clang-11               ;XXX: must be the same version as Mesas LLVM
            gtkmm-3
            gtksourceviewmm
-           json-modern-cxx
+           nlohmann-json
            libgit2
            universal-ctags))
     (synopsis "Lightweight C++ IDE")
@@ -425,7 +433,7 @@ compiled, requires few libraries, and starts up quickly.")
     (license license:gpl2+)))
 
 (define-public l3afpad
-  (let ((commit "5235c9e13bbf0d31a902c6776918c2d7cdbb61ff")
+  (let ((commit "16f22222116b78b7f6a6fd83289937cdaabed624")
         (revision "0"))
     (package
       (name "l3afpad")
@@ -438,8 +446,20 @@ compiled, requires few libraries, and starts up quickly.")
                        (commit commit)))
                 (sha256
                  (base32
-                  "1alyghm2wpakzdfag0g4g8gb1h9l4wdg7mnhq8bk0iq5ryqia16a"))))
+                  "0q55351lvvlw9bi35l49mxa43g4fv110pwprzkk9m5li77vb0bcp"))))
       (build-system glib-or-gtk-build-system)
+      (arguments
+        (list
+         #:phases
+         #~(modify-phases %standard-phases
+            (add-after 'install 'install-documentation
+              (lambda* (#:key outputs #:allow-other-keys)
+                (let* ((out (assoc-ref outputs "out"))
+                       (doc (string-append out "/share/doc/" #$name "-"
+                                           #$(package-version this-package)))
+                       (man (string-append out "/share/man/man1")))
+                  (install-file "l3afpad.1" man)
+                  (install-file "README" doc)))))))
       (native-inputs
        (list intltool autoconf automake pkg-config))
       (inputs
@@ -494,7 +514,7 @@ Wordstar-, EMACS-, Pico, Nedit or vi-like key bindings.  e3 can be used on
 (define-public mg
   (package
     (name "mg")
-    (version "20220614")
+    (version "20221112")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -503,7 +523,7 @@ Wordstar-, EMACS-, Pico, Nedit or vi-like key bindings.  e3 can be used on
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "145qk4bzys4igv98645vikswv9hqym46chh6xb9d82ihsvjq1wjk"))
+                "1wsib91f277xsx3qi8zmjcd9r9cm078rcf8hii0rwipyn04vxy83"))
               (modules '((guix build utils)))
               (snippet '(begin
                           (substitute* "GNUmakefile"
@@ -705,7 +725,7 @@ environment with Markdown markup.")
 (define-public manuskript
   (package
     (name "manuskript")
-    (version "0.14.0")
+    (version "0.15.0")
     (source
      (origin
        (method git-fetch)
@@ -714,7 +734,7 @@ environment with Markdown markup.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0qhr9bkq4yl2qjainpsv7blzcji2q9ic9zcynawmhfqy3rmf8qlr"))))
+        (base32 "0d1r62s1qidspck0b1zf8dibyjn9g72agbkjcica4bvfylnbqz9z"))))
     (build-system python-build-system)
     (arguments
      (list
@@ -769,7 +789,13 @@ environment with Markdown markup.")
                    #:icon "manuskript"
                    #:categories "Office;WordProcessor;"))))))))
     (inputs
-     (list pandoc python-lxml python-markdown python-pyqt qtsvg-5))
+     (list bash-minimal
+           pandoc
+           python-lxml
+           python-markdown
+           python-pyenchant
+           python-pyqt
+           qtsvg-5))
     (home-page "http://www.theologeek.ch/manuskript/")
     (synopsis "Tool for writers")
     (description "Manuskript provides a rich environment to help
@@ -895,6 +921,39 @@ Octave.  TeXmacs is completely extensible via Guile.")
     (license license:gpl3+)
     (home-page "https://www.texmacs.org/tmweb/home/welcome.en.html")))
 
+(define-public mogan
+  (package
+    (inherit texmacs)
+    (name "mogan")
+    (version "1.1.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/XmacsLabs/mogan")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "04wz6xmimjv2l6baxgzm8vyq5grg102m3l4wq8i6bglv529yp4ff"))))
+    (build-system qt-build-system)
+    (inputs
+     (modify-inputs (package-inputs texmacs)
+       ;; Replaced by S7 scheme
+       ;; TODO: Maybe unbundle S7
+       (delete "guile")
+       (prepend curl)))
+    (arguments
+     (substitute-keyword-arguments (package-arguments texmacs)
+       ((#:phases orig)
+        #~(modify-phases #$orig
+            ;; The non-deterministic compression issue is solved in Mogan.
+            (delete 'gzip-flags)))))
+    (home-page "https://github.com/XmacsLabs/mogan")
+    (synopsis "Scientific structural text editor")
+    (description
+     "Mogan is a scientific structural text editor, a fork of GNU TeXmacs.")
+    (license license:gpl3+)))
+
 (define-public textpieces
   (package
     (name "textpieces")
@@ -956,14 +1015,14 @@ The basic features of Text Pieces are:
 (define-public scintilla
   (package
     (name "scintilla")
-    (version "5.3.1")
+    (version "5.3.4")
     (source
      (origin
        (method url-fetch)
-       (uri (let ((v (apply string-append (string-split version #\.))))
-              (string-append "https://www.scintilla.org/scintilla" v ".tgz")))
+       (uri (string-append "https://www.scintilla.org/scintilla"
+                           (string-delete #\. version) ".tgz"))
        (sha256
-        (base32 "13xh55qv8lqbnba4x0zhd3vp8flhs2vn4i8r79p7ix9yqimvamqg"))))
+        (base32 "0inbhzqdikisvnbdzn8153p1apbghxjzkkzji9i8zsdpyapb209z"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -983,11 +1042,9 @@ The basic features of Text Pieces are:
                 (for-each (lambda (f) (install-file f lib))
                           (find-files "bin/" "\\.so$"))
                 (for-each (lambda (f) (install-file f inc))
-                          (find-files "include/" "."))))))))
-    (native-inputs
-     (list pkg-config python-wrapper))
-    (inputs
-     (list gtk+))
+                          (find-files "include/" "\\.h$"))))))))
+    (native-inputs (list pkg-config python-wrapper))
+    (inputs (list gtk+))
     (home-page "https://www.scintilla.org/")
     (synopsis "Code editor for GTK+")
     (description "Scintilla is a source code editing component for
@@ -998,6 +1055,66 @@ indicators, code completion and call tips.  Styling choices are more
 open than with many editors: Scintilla lets you use proportional
 fonts, bold and italics, multiple foreground and background colours,
 and multiple fonts.")
+    (license license:hpnd)))
+
+(define-public lexilla
+  (package
+    (name "lexilla")
+    (version "5.2.5")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://www.scintilla.org/lexilla"
+                           (string-delete #\. version) ".tgz"))
+       (sha256
+        (base32
+         "0sc3z6y82h1vq8aaydp119kymzvrv0p1xvy56r5j996jl6zxikk4"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:make-flags #~(list (string-append "CXX=" #$(cxx-for-target))
+                           (string-append "SCINTILLA_INCLUDE="
+                                          #$(this-package-input "scintilla")
+                                          "/include"))
+      #:test-target "test"
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'build
+            (lambda args
+              (with-directory-excursion "src"
+                (apply (assoc-ref %standard-phases 'build) args))))
+          (add-after 'build 'patch-more-shebangs
+            (lambda _
+              ;; Patch these bash shebangs to avoid them failing the tests.
+              (substitute* '("test/examples/bash/x.bsh.folded"
+                             "test/examples/bash/x.bsh.styled")
+                (("/usr/bin/env bash")
+                 (which "bash")))))
+          (replace 'check
+            (lambda args
+              (with-directory-excursion "test"
+                (apply (assoc-ref %standard-phases 'check) args))))
+          (add-after 'unpack 'fix-deps.mak
+            (lambda _
+              (substitute* "src/deps.mak"
+                (("../../scintilla")
+                 #$(this-package-input "scintilla")))))
+          (delete 'configure)           ;no configure script
+          (replace 'install
+            ;; Upstream provides no install script.
+            (lambda _
+              (let ((lib (string-append #$output "/lib"))
+                    (inc (string-append #$output "/include")))
+                (for-each (lambda (f) (install-file f lib))
+                          (find-files "bin/" "\\.so$"))
+                (for-each (lambda (f) (install-file f inc))
+                          (find-files "include/" "\\.h$"))))))))
+    (native-inputs (list python))
+    (inputs (list scintilla))
+    (home-page "https://www.scintilla.org/Lexilla.html")
+    (synopsis "Language lexers for Scintilla")
+    (description "Lexilla is a library of language lexers that can be
+used with the Scintilla editing component.")
     (license license:hpnd)))
 
 (define-public geany
@@ -1113,7 +1230,7 @@ card.  It offers:
 (define-public ne
   (package
     (name "ne")
-    (version "3.3.1")
+    (version "3.3.2")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1122,7 +1239,7 @@ card.  It offers:
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0sg2f6lxq6cjkpd3dvlxxns82hvq826rjnams5in97pssmknr77g"))))
+                "16hzja0x41xz6028d8qij9rh1vkiil8qkswd8yznwlcwyl4h04wr"))))
     (build-system gnu-build-system)
     (native-inputs
      (list perl texinfo))
@@ -1130,6 +1247,7 @@ card.  It offers:
      (list ncurses))
     (arguments
      `(#:tests? #f
+       #:parallel-build? #f             ; or enums.h may not yet be generated
        #:make-flags
        (list "STRIP=true"               ; don't
              (string-append "CC=" ,(cc-for-target))
@@ -1219,57 +1337,6 @@ similar to vi/ex.")
 FreeDOS as a functional clone of the old MS-DOS program edlin.")
     (license license:gpl2+)))
 
-(define-public tree-sitter
-  (package
-    (name "tree-sitter")
-    (version "0.20.6")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/tree-sitter/tree-sitter")
-                    (commit (string-append "v" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "1z20518snyg0zp75qgs5bxmzjqws4dd19vnp6sya494za3qp5b6d"))
-              (modules '((guix build utils)))
-              (snippet '(begin
-                          ;; Remove bundled ICU parts
-                          (delete-file-recursively "lib/src/unicode")
-                          #t))))
-    (build-system gnu-build-system)
-    (inputs (list icu4c))
-    (arguments
-     (list #:phases
-           '(modify-phases %standard-phases
-              (delete 'configure))
-           #:tests? #f ; there are no tests for the runtime library
-           #:make-flags
-           #~(list (string-append "PREFIX="
-                                  #$output)
-                   (string-append "CC="
-                                  #$(cc-for-target)))))
-    (home-page "https://tree-sitter.github.io/tree-sitter/")
-    (synopsis "Incremental parsing system for programming tools")
-    (description
-     "Tree-sitter is a parser generator tool and an incremental parsing
-library.  It can build a concrete syntax tree for a source file and efficiently
-update the syntax tree as the source file is edited.
-
-Tree-sitter aims to be:
-
-@itemize
-@item General enough to parse any programming language
-@item Fast enough to parse on every keystroke in a text editor
-@item Robust enough to provide useful results even in the presence of syntax errors
-@item Dependency-free so that the runtime library (which is written in pure C)
-can be embedded in any application
-@end itemize
-
-This package includes the @code{libtree-sitter} runtime library.
-")
-    (license license:expat)))
-
 (define-public mle
   (package
     (name "mle")
@@ -1323,7 +1390,7 @@ commands.")
 (define-public lite-xl
   (package
     (name "lite-xl")
-    (version "2.0.5")
+    (version "2.1.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1332,15 +1399,15 @@ commands.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0l2i9mvbkc4kqkwk2p17zd1rlm5v41acdyp2xivi53p2hkj4x6pf"))
+                "1pnmax68hvk1ry4bjsxwq4qimfn55pai8jlljw6jiqzcmh4mp7xm"))
               (modules '((guix build utils)))
               (snippet '(substitute* "meson.build"
-                          (("dependency\\('lua5\\.2',")
-                           "dependency('lua-5.2',")))))
+                          (("dependency\\('lua5\\.4',")
+                           "dependency('lua-5.4',")))))
     (build-system meson-build-system)
     (inputs (list agg
                   freetype
-                  lua-5.2
+                  lua-5.4
                   pcre2
                   reproc
                   sdl2))
@@ -1355,3 +1422,74 @@ easy to modify and extend, or to use without doing either.
 The aim of Lite XL compared to lite is to be more user-friendly, improve the
 quality of font rendering, and reduce CPU usage.")
     (license license:expat)))
+
+(define-public jed
+  (package
+    (name "jed")
+    (version "0.99-19")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://www.jedsoft.org/releases/jed/jed-"
+                                  version ".tar.bz2"))
+              (sha256
+               (base32
+                "0qspdc6wss43wh1a8fddvf62xyhld5p7hl75grv4d95h5z73k8wp"))
+              (modules '((guix build utils)))
+              (snippet #~(begin
+                           ;; Delete Windows binaries.
+                           (delete-file-recursively "bin/w32")
+
+                           (substitute* "src/Makefile.in"
+                             (("/bin/cp")
+                              "cp"))
+                           (substitute* "configure"
+                             (("TERMCAP=-ltermcap")
+                              "TERMCAP="))))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:configure-flags
+           #~(list (string-append "--with-slang="
+                                  #$(this-package-input "slang")))
+           ;; jed provides no tests
+           #:tests? #f))
+    (inputs (list slang))
+    (home-page "https://www.jedsoft.org/jed/")
+    (synopsis "Programmer's editor using S-Lang scripting for configuration")
+    (description
+     "Jed is a powerful programmer's editor using the S-Lang scripting language
+for configuration and extensibility.  It provides emulation modes for the
+key bindings of many editors (including Emacs and WordStar), and has syntax
+highlighting for dozens of languages.  Jed is very small and fast.")
+    (license license:gpl2+)))
+
+(define-public xnedit
+  (package
+    (name "xnedit")
+    (version "1.5.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://sourceforge/xnedit/" name "-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "09wvhg7rywfj7njl2fkzdhgwlgxw358423yiv2ay3k5zhbysxfik"))))
+
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:make-flags #~(list (string-append "PREFIX=" #$output)
+                           (string-append "CC=" #$(cc-for-target)))
+      #:tests? #f                       ;no tests
+      #:phases #~(modify-phases %standard-phases
+                   (delete 'configure)
+                   (replace 'build
+                     (lambda* (#:key make-flags #:allow-other-keys)
+                       (apply invoke "make" "linux" make-flags))))))
+    (inputs (list motif pcre))
+    (native-inputs (list pkg-config))
+    (home-page "https://sourceforge.net/projects/xnedit/")
+    (synopsis "Fast and classic X11 text editor")
+    (description
+     "XNEdit is a fast and classic X11 text editor, based on NEdit,
+with full unicode support and antialiased text rendering.")
+    (license license:gpl2+)))

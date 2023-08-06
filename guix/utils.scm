@@ -16,6 +16,8 @@
 ;;; Copyright © 2022 Taiju HIGASHI <higashi@taiju.info>
 ;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
 ;;; Copyright © 2022 Antero Mejr <antero@mailbox.org>
+;;; Copyright © 2023 Philip McGrath <philip@philipmcgrath.com>
+;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -35,10 +37,8 @@
 (define-module (guix utils)
   #:use-module (guix config)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-26)
-  #:use-module (srfi srfi-39)
   #:use-module (srfi srfi-71)
   #:use-module (rnrs io ports)                    ;need 'port-position' etc.
   #:use-module ((rnrs bytevectors) #:select (bytevector-u8-set!))
@@ -50,7 +50,6 @@
   #:use-module ((guix combinators) #:select (fold2))
   #:use-module (guix diagnostics)           ;<location>, &error-location, etc.
   #:use-module (ice-9 format)
-  #:use-module (ice-9 ftw)
   #:use-module ((ice-9 iconv) #:prefix iconv:)
   #:use-module (ice-9 match)
   #:use-module (ice-9 regex)
@@ -91,6 +90,7 @@
             package-name->name+version
             target-linux?
             target-hurd?
+            system-hurd?
             target-mingw?
             target-x86-32?
             target-x86-64?
@@ -104,6 +104,7 @@
             target-riscv64?
             target-mips64el?
             target-64bit?
+            target-little-endian?
             ar-for-target
             as-for-target
             cc-for-target
@@ -126,7 +127,6 @@
             file-sans-extension
             tarball-sans-extension
             compressed-file?
-            switch-symlinks
             call-with-temporary-directory
             with-atomic-file-output
 
@@ -676,6 +676,10 @@ a character other than '@'."
   (and (string-suffix? "-gnu" target)
        (not (string-contains target "linux"))))
 
+(define* (system-hurd?)
+  "Is the current system the GNU(/Hurd) system?"
+  (and=> (%current-system) target-hurd?))
+
 (define* (target-mingw? #:optional (target (%current-target-system)))
   "Is the operating system of TARGET Windows?"
   (and target
@@ -743,6 +747,12 @@ architecture (x86_64)?"
                                                (%current-system))))
   (any (cut string-prefix? <> system) '("x86_64" "aarch64" "mips64"
                                         "powerpc64" "riscv64")))
+
+(define* (target-little-endian? #:optional (target (or (%current-target-system)
+                                                       (%current-system))))
+  "Is the architecture of TARGET little-endian?"
+  ;; At least in Guix.  Aarch64 and 32-bit arm have a big-endian mode as well.
+  (not (target-ppc32? target)))
 
 (define* (ar-for-target #:optional (target (%current-target-system)))
   (if target
@@ -912,13 +922,6 @@ VERSIONS.  For example:
   "Return true if FILE denotes a compressed file."
   (->bool (member (file-extension file)
                   '("gz" "bz2" "xz" "lz" "lzma" "tgz" "tbz2" "zip"))))
-
-(define (switch-symlinks link target)
-  "Atomically switch LINK, a symbolic link, to point to TARGET.  Works
-both when LINK already exists and when it does not."
-  (let ((pivot (string-append link ".new")))
-    (symlink target pivot)
-    (rename-file pivot link)))
 
 (define* (string-replace-substring str substr replacement
                                    #:optional

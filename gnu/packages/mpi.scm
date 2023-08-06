@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2014, 2015, 2018, 2019 Eric Bavier <bavier@member.fsf.org>
-;;; Copyright © 2014-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2014-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014 Ian Denhardt <ian@zenhack.net>
 ;;; Copyright © 2016 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2017 Dave Love <fx@gnu.org>
@@ -25,6 +25,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu packages mpi)
+  #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix download)
@@ -53,8 +54,6 @@
   #:use-module (ice-9 match))
 
 (define-public hwloc-1
-  ;; Note: For now we keep 1.x as the default because many packages have yet
-  ;; to migrate to 2.0.
   (package
     (name "hwloc")
     (version "1.11.13")
@@ -140,10 +139,9 @@ bind processes, and much more.")
     (license license:bsd-3)))
 
 (define-public hwloc-2
-  ;; Note: 2.x isn't the default yet, see above.
   (package
     (inherit hwloc-1)
-    (version "2.8.0")
+    (version "2.9.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://download.open-mpi.org/release/hwloc/v"
@@ -151,7 +149,7 @@ bind processes, and much more.")
                                   "/hwloc-" version ".tar.bz2"))
               (sha256
                (base32
-                "1ha23yqfx9kfxm5fcj9m0fnyf0r2k6p4k88xxqishclcsky752il"))))
+                "1kv0n3b9knb8aawf0hxaxn9wc9bbpwh676r2gmb0pc7qfzvgv1qa"))))
 
     ;; libnuma is no longer needed.
     (inputs (modify-inputs (package-inputs hwloc-1)
@@ -167,6 +165,10 @@ bind processes, and much more.")
                (substitute* "tests/hwloc/linux-libnuma.c"
                  (("numa_available\\(\\)")
                   "-1"))))
+           (add-before 'check 'skip-tests-that-require-/sys
+             (lambda _
+               ;; 'test-gather-topology.sh' requires /sys as of 2.9.0; skip it.
+               (setenv "HWLOC_TEST_GATHER_TOPOLOGY" "0")))
            (add-before 'check 'skip-test-that-fails-on-qemu
              (lambda _
                ;; Skip test that fails on emulated hardware due to QEMU bug:
@@ -175,8 +177,6 @@ bind processes, and much more.")
                  (("hwloc_topology_init" all)
                   (string-append "exit (77);\n" all)))))))))))
 
-(define-deprecated hwloc-2.0 hwloc-2)
-
 (define-public hwloc
   ;; The latest stable series of hwloc.
   hwloc-2)
@@ -184,16 +184,16 @@ bind processes, and much more.")
 (define-public openmpi
   (package
     (name "openmpi")
-    (version "4.1.4")
+    (version "4.1.5")
     (source
      (origin
-      (method url-fetch)
-      (uri (string-append "https://www.open-mpi.org/software/ompi/v"
-                          (version-major+minor version)
-                          "/downloads/openmpi-" version ".tar.bz2"))
-      (sha256
-       (base32 "03ckngrff1cl0l81vfvrfhp99rbgk7s0633kr1l468yibwbjx4cj"))
-      (patches (search-patches "openmpi-mtl-priorities.patch"))))
+       (method url-fetch)
+       (uri (string-append "https://www.open-mpi.org/software/ompi/v"
+                           (version-major+minor version)
+                           "/downloads/openmpi-" version ".tar.bz2"))
+       (sha256
+        (base32 "1qyvc77diyrxmviirdwqpibgm32c4vkdlvw8g79rsf2pq9mrhh56"))
+       (patches (search-patches "openmpi-mtl-priorities.patch"))))
 
     (properties
      ;; Tell the 'generic-html' updater to monitor this URL for updates.
@@ -224,68 +224,69 @@ bind processes, and much more.")
      (list pkg-config perl))
     (outputs '("out" "debug"))
     (arguments
-     `(#:configure-flags `("--enable-mpi-ext=affinity" ;cr doesn't work
-                           "--with-sge"
+     (list
+      #:configure-flags #~`("--enable-mpi-ext=affinity" ;cr doesn't work
+                            "--with-sge"
 
-                           ,@(if ,(package? (this-package-input "valgrind"))
-                               `("--enable-memchecker"
-                                 "--with-valgrind")
-                               `("--without-valgrind"))
+                            #$@(if (package? (this-package-input "valgrind"))
+                                   #~("--enable-memchecker"
+                                      "--with-valgrind")
+                                   #~("--without-valgrind"))
 
-                           "--with-hwloc=external"
-                           "--with-libevent"
+                            "--with-hwloc=external"
+                            "--with-libevent"
 
-                           ;; Help 'orterun' and 'mpirun' find their tools
-                           ;; under $prefix by default.
-                           "--enable-mpirun-prefix-by-default"
+                            ;; Help 'orterun' and 'mpirun' find their tools
+                            ;; under $prefix by default.
+                            "--enable-mpirun-prefix-by-default"
 
-                           ;; InfiniBand support
-                           "--enable-openib-control-hdr-padding"
-                           "--enable-openib-dynamic-sl"
-                           "--enable-openib-udcm"
-                           "--enable-openib-rdmacm"
-                           "--enable-openib-rdmacm-ibaddr"
+                            ;; InfiniBand support
+                            "--enable-openib-control-hdr-padding"
+                            "--enable-openib-dynamic-sl"
+                            "--enable-openib-udcm"
+                            "--enable-openib-rdmacm"
+                            "--enable-openib-rdmacm-ibaddr"
 
-                           ;; Enable support for SLURM's Process Manager
-                           ;; Interface (PMI).
-                           ,(string-append "--with-pmi="
-                                           (assoc-ref %build-inputs "slurm")))
-       #:phases (modify-phases %standard-phases
-                  ;; opensm is needed for InfiniBand support.
-                  (add-after 'unpack 'find-opensm-headers
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (setenv "C_INCLUDE_PATH"
-                              (search-input-directory inputs
-                                                      "/include/infiniband"))
-                      (setenv "CPLUS_INCLUDE_PATH"
-                              (search-input-directory inputs
-                                                      "/include/infiniband"))))
-                  (add-before 'build 'remove-absolute
-                    (lambda _
-                      ;; Remove compiler absolute file names (OPAL_FC_ABSOLUTE
-                      ;; etc.) to reduce the closure size.  See
-                      ;; <https://lists.gnu.org/archive/html/guix-devel/2017-07/msg00388.html>
-                      ;; and
-                      ;; <https://www.mail-archive.com/users@lists.open-mpi.org//msg31397.html>.
-                      (substitute* '("orte/tools/orte-info/param.c"
-                                     "oshmem/tools/oshmem_info/param.c"
-                                     "ompi/tools/ompi_info/param.c")
-                        (("_ABSOLUTE") ""))
-                      ;; Avoid valgrind (which pulls in gdb etc.).
-                      (substitute*
-                          '("./ompi/mca/io/romio321/src/io_romio321_component.c")
-                        (("MCA_io_romio321_COMPLETE_CONFIGURE_FLAGS")
-                         "\"[elided to reduce closure]\""))))
-                  (add-before 'build 'scrub-timestamps ;reproducibility
-                    (lambda _
-                      (substitute* '("ompi/tools/ompi_info/param.c"
-                                     "orte/tools/orte-info/param.c"
-                                     "oshmem/tools/oshmem_info/param.c")
-                        ((".*(Built|Configured) on.*") ""))))
-                  (add-after 'install 'remove-logs ;reproducibility
-                    (lambda* (#:key outputs #:allow-other-keys)
-                      (let ((out (assoc-ref outputs "out")))
-                        (for-each delete-file (find-files out "config.log"))))))))
+                            ;; Enable support for SLURM's Process Manager
+                            ;; Interface (PMI).
+                            ,(string-append "--with-pmi="
+                                            #$(this-package-input "slurm")))
+      #:phases #~(modify-phases %standard-phases
+                   ;; opensm is needed for InfiniBand support.
+                   (add-after 'unpack 'find-opensm-headers
+                     (lambda* (#:key inputs #:allow-other-keys)
+                       (setenv "C_INCLUDE_PATH"
+                               (search-input-directory inputs
+                                                       "/include/infiniband"))
+                       (setenv "CPLUS_INCLUDE_PATH"
+                               (search-input-directory inputs
+                                                       "/include/infiniband"))))
+                   (add-before 'build 'remove-absolute
+                     (lambda _
+                       ;; Remove compiler absolute file names (OPAL_FC_ABSOLUTE
+                       ;; etc.) to reduce the closure size.  See
+                       ;; <https://lists.gnu.org/archive/html/guix-devel/2017-07/msg00388.html>
+                       ;; and
+                       ;; <https://www.mail-archive.com/users@lists.open-mpi.org//msg31397.html>.
+                       (substitute* '("orte/tools/orte-info/param.c"
+                                      "oshmem/tools/oshmem_info/param.c"
+                                      "ompi/tools/ompi_info/param.c")
+                         (("_ABSOLUTE") ""))
+                       ;; Avoid valgrind (which pulls in gdb etc.).
+                       (substitute*
+                           '("./ompi/mca/io/romio321/src/io_romio321_component.c")
+                         (("MCA_io_romio321_COMPLETE_CONFIGURE_FLAGS")
+                          "\"[elided to reduce closure]\""))))
+                   (add-before 'build 'scrub-timestamps ;reproducibility
+                     (lambda _
+                       (substitute* '("ompi/tools/ompi_info/param.c"
+                                      "orte/tools/orte-info/param.c"
+                                      "oshmem/tools/oshmem_info/param.c")
+                         ((".*(Built|Configured) on.*") ""))))
+                   (add-after 'install 'remove-logs ;reproducibility
+                     (lambda* (#:key outputs #:allow-other-keys)
+                       (let ((out (assoc-ref outputs "out")))
+                         (for-each delete-file (find-files out "config.log"))))))))
     (home-page "https://www.open-mpi.org")
     (synopsis "MPI-3 implementation")
     (description
@@ -305,7 +306,7 @@ software vendors, application developers and computer science researchers.")
     (arguments
      (substitute-keyword-arguments (package-arguments openmpi)
        ((#:configure-flags flags)
-        `(cons "--enable-mpi-cxx" ,flags))))
+        #~(cons "--enable-mpi-cxx" #$flags))))
     (synopsis "C++ bindings for MPI")))
 
 ;; TODO: javadoc files contain timestamps.
@@ -321,34 +322,35 @@ software vendors, application developers and computer science researchers.")
        ,@(package-native-inputs openmpi)))
     (outputs '("out"))
     (arguments
-     `(#:modules ((guix build gnu-build-system)
+     (cons*
+      #:modules '((guix build gnu-build-system)
                   ((guix build ant-build-system) #:prefix ant:)
                   (guix build utils))
-       #:imported-modules ((guix build ant-build-system)
+      #:imported-modules `((guix build ant-build-system)
                            ,@%gnu-build-system-modules)
-       ,@(substitute-keyword-arguments (package-arguments openmpi)
-           ((#:configure-flags flags)
-            `(cons "--enable-mpi-java" ,flags))
-           ((#:make-flags flags ''())
-            `(append '("-C" "ompi/mpi/java")
-                     ,flags))
-           ((#:phases phases)
-            `(modify-phases ,phases
-               ;; We could provide the location of the JDK in the configure
-               ;; flags, but since the configure flags are embedded in the
-               ;; info binaries that would leave a reference to the JDK in
-               ;; the "out" output.  To avoid this we set JAVA_HOME.
-               (add-after 'unpack 'set-JAVA_HOME
-                 (lambda* (#:key inputs #:allow-other-keys)
-                   (setenv "JAVA_HOME" (assoc-ref inputs "jdk"))
-                   #t))
-               (add-after 'unpack 'link-with-existing-mpi-libraries
-                 (lambda* (#:key inputs #:allow-other-keys)
-                   (substitute* "ompi/mpi/java/c/Makefile.in"
-                     (("\\$\\(top_builddir\\)/ompi/lib@OMPI_LIBMPI_NAME@.la")
-                      (search-input-file inputs "/lib/libmpi.la")))))
-               (add-after 'install 'strip-jar-timestamps
-                 (assoc-ref ant:%standard-phases 'strip-jar-timestamps)))))))
+      (substitute-keyword-arguments (package-arguments openmpi)
+        ((#:configure-flags flags)
+         #~(cons "--enable-mpi-java" #$flags))
+        ((#:make-flags flags ''())
+         #~(append '("-C" "ompi/mpi/java")
+                   #$flags))
+        ((#:phases phases)
+         #~(modify-phases #$phases
+             ;; We could provide the location of the JDK in the configure
+             ;; flags, but since the configure flags are embedded in the
+             ;; info binaries that would leave a reference to the JDK in
+             ;; the "out" output.  To avoid this we set JAVA_HOME.
+             (add-after 'unpack 'set-JAVA_HOME
+               (lambda* (#:key inputs #:allow-other-keys)
+                 (setenv "JAVA_HOME" (assoc-ref inputs "jdk"))
+                 #t))
+             (add-after 'unpack 'link-with-existing-mpi-libraries
+               (lambda* (#:key inputs #:allow-other-keys)
+                 (substitute* "ompi/mpi/java/c/Makefile.in"
+                   (("\\$\\(top_builddir\\)/ompi/lib@OMPI_LIBMPI_NAME@.la")
+                    (search-input-file inputs "/lib/libmpi.la")))))
+             (add-after 'install 'strip-jar-timestamps
+               (assoc-ref ant:%standard-phases 'strip-jar-timestamps)))))))
     (synopsis "Java bindings for MPI")))
 
 (define-public openmpi-thread-multiple
@@ -357,7 +359,7 @@ software vendors, application developers and computer science researchers.")
     (arguments
      (substitute-keyword-arguments (package-arguments openmpi)
        ((#:configure-flags flags)
-        `(cons "--enable-mpi-thread-multiple" ,flags))))
+        #~(cons "--enable-mpi-thread-multiple" #$flags))))
     (description "This version of Open@tie{}MPI has an implementation of
 @code{MPI_Init_thread} that provides @code{MPI_THREAD_MULTIPLE}.  This won't
 work correctly with all transports (such as @code{openib}), and the
@@ -383,18 +385,27 @@ only provides @code{MPI_THREAD_FUNNELED}.")))
      ;; compare stdout, such as that of 'hdf5-parallel-openmpi'.  Thus, tell
      ;; UCX to not emit those warnings.
      (setenv "UCX_LOG_LEVEL" "error")
+
+     ;; Starting from 2.9.0, hwloc fails when /sys is unavailable:
+     ;;
+     ;;  [hwloc/linux] failed to find sysfs cpu topology directory, aborting linux discovery.
+     ;;
+     ;; This in turn breaks Open MPI users.  To work around it, define a fake
+     ;; topology with 4 cores.  That silently disables CPU binding, though
+     ;; 'get_cpubind' will report there's no binding.
+     (setenv "HWLOC_SYNTHETIC" "4")
      #t))
 
 (define-public python-mpi4py
   (package
     (name "python-mpi4py")
-    (version "3.0.3")
+    (version "3.1.4")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "mpi4py" version))
        (sha256
-        (base32 "07ssbhssv27rrjx1c5vd3vsr31vay5d8xcf4zh9yblcyidn72b81"))))
+        (base32 "101lz7bnm9l17nrkbg6497kxscyh53aah7qd2b820ck2php8z18p"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -411,7 +422,9 @@ only provides @code{MPI_THREAD_FUNNELED}.")))
              #t)))))
     (inputs
      (list openmpi))
-    (home-page "https://bitbucket.org/mpi4py/mpi4py/")
+    (properties
+     '((updater-extra-inputs . ("openmpi"))))
+    (home-page "https://github.com/mpi4py/mpi4py")
     (synopsis "Python bindings for the Message Passing Interface standard")
     (description "MPI for Python (mpi4py) provides bindings of the Message
 Passing Interface (MPI) standard for the Python programming language, allowing

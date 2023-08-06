@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2014-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2014-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2015 David Thompson <davet@gnu.org>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
@@ -447,9 +447,14 @@ If an error occurs while creating the binding, defer the error report until
 the returned procedure is called."
   (catch #t
     (lambda ()
+      ;; Note: When #:library is set, try it first and fall back to libc
+      ;; proper.  This is because libraries like libutil.so have been subsumed
+      ;; by libc.so with glibc >= 2.34.
       (let ((ptr (dynamic-func name
                                (if library
-                                   (dynamic-link library)
+                                   (or (false-if-exception
+                                        (dynamic-link library))
+                                       (dynamic-link))
                                    (dynamic-link)))))
         ;; The #:return-errno? facility was introduced in Guile 2.0.12.
         (pointer->procedure return-type ptr argument-types
@@ -965,7 +970,10 @@ backend device."
                           (string->pointer key)
                           (string->pointer "")
                           0)))
-        (cond ((< size 0) #f)
+        (cond ((< size 0)
+               (throw 'system-error "getxattr" "~S: ~A"
+                      (list file key (strerror err))
+                      (list err)))
               ((zero? size) "")
               ;; Get VALUE in buffer of SIZE.  XXX actual size can race.
               (else (let*-values (((buf) (make-bytevector size))
@@ -1395,7 +1403,8 @@ exception if it's already taken."
       thunk
       (lambda ()
         (when port
-          (unlock-file port))))))
+          (unlock-file port)
+          (delete-file file))))))
 
 (define (call-with-file-lock/no-wait file thunk handler)
   (let ((port #f))
@@ -1423,7 +1432,8 @@ exception if it's already taken."
       thunk
       (lambda ()
         (when port
-          (unlock-file port))))))
+          (unlock-file port)
+          (delete-file file))))))
 
 (define-syntax-rule (with-file-lock file exp ...)
   "Wait to acquire a lock on FILE and evaluate EXP in that context."

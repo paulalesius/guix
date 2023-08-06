@@ -4,12 +4,12 @@
 ;;; Copyright © 2015 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2013, 2015, 2016, 2017, 2019 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017 Alex Vong <alexvong1995@gmail.com>
-;;; Copyright © 2017, 2018, 2019, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2017, 2018, 2019, 2021, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2017 Leo Famulari <leo@famulari.name>
 ;;; Copyright © 2018 Tobias Geerinckx-Rice <me@tobias.gr>
-;;; Copyright © 2018, 2020 Marius Bakke <mbakke@fastmail.com>
+;;; Copyright © 2018, 2020, 2022 Marius Bakke <mbakke@fastmail.com>
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -33,6 +33,7 @@
   #:use-module (gnu packages cups)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages man)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
@@ -41,250 +42,235 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (guix build-system gnu)
-  #:use-module (guix build-system trivial)
   #:use-module (srfi srfi-1))
 
 (define-public lcms
   (package
-   (name "lcms")
-   (version "2.12")
-   (source (origin
-            (method url-fetch)
-            (uri (string-append "mirror://sourceforge/lcms/lcms/" version
-                                "/lcms2-" version ".tar.gz"))
-
-            (sha256 (base32
-                     "1x8hzq8kw16lgjxmqpnqah1p3hrqqhjpcl1ymiah8434x22kjrhq"))))
-   (build-system gnu-build-system)
-   (arguments
-    `(#:configure-flags '("--disable-static")))
-   (inputs `(("libjpeg" ,libjpeg-turbo)
-             ("libtiff" ,libtiff)
-             ("zlib" ,zlib)))
-   (synopsis "Little CMS, a small-footprint colour management engine")
-   (description
-    "Little CMS is a small-footprint colour management engine, with special
+    (name "lcms")
+    (version "2.13.1")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://sourceforge/lcms/lcms/"
+                                  (version-major+minor version)
+                                  "/lcms2-" version ".tar.gz"))
+              (sha256
+               (base32
+                "121v414bg2zk0fcwx0kigr2l6nxl88nmblfn3gq5lz5jwybffwyl"))))
+    (build-system gnu-build-system)
+    (arguments
+     '(#:configure-flags '("--disable-static")))
+    (inputs
+     (list libjpeg-turbo libtiff zlib))
+    (synopsis "Little CMS, a small-footprint colour management engine")
+    (description
+     "Little CMS is a small-footprint colour management engine, with special
 focus on accuracy and performance.  It uses the International Color
 Consortium standard (ICC), approved as ISO 15076-1.")
-   (license license:x11)
-   (home-page "https://www.littlecms.com/")
-   (properties '((cpe-name . "little_cms_color_engine")))))
+    (license license:x11)
+    (home-page "https://www.littlecms.com/")
+    (properties '((cpe-name . "little_cms_color_engine")))))
 
 (define-public libpaper
   (package
-   (name "libpaper")
-   (version "1.1.24")
-   (source (origin
-            (method url-fetch)
-            (uri (string-append
-                   ;; Debian moved their libpaper-1.1.24 to archive.debian.net
-                   ;; but in the move the hash of their tarball changed.
-                   "http://pkgs.fedoraproject.org/repo/pkgs/libpaper/libpaper_"
-                   version ".tar.gz/5bc87d494ba470aba54f6d2d51471834/libpaper_"
-                   version ".tar.gz"))
-            (sha256 (base32
-                     "0zhcx67afb6b5r936w5jmaydj3ks8zh83n9rm5sv3m3k8q8jib1q"))))
-   (build-system gnu-build-system)
-   (native-inputs
-    (list automake)) ; For up to date 'config.guess' and 'config.sub'.
-   (arguments
-    `(#:configure-flags '("--disable-static")
-      #:phases
-      (modify-phases %standard-phases
-        (add-after 'unpack 'fix-configure
-          (lambda* (#:key inputs native-inputs #:allow-other-keys)
-            ;; Replace outdated config.sub and config.guess:
-            (for-each (lambda (file)
-                        (install-file
-                         (string-append (assoc-ref
-                                         (or native-inputs inputs) "automake")
-                                        "/share/automake-"
-                                        ,(version-major+minor
-                                          (package-version automake))
-                                        "/" file) "."))
-                      '("config.sub" "config.guess"))
-            #t)))))
-   (synopsis "Library for handling paper sizes")
-   (description
-    "The paper library and accompanying files are intended to provide a simple
+    (name "libpaper")
+    (version "2.0.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/rrthomas/libpaper/releases"
+                                  "/download/v" version "/libpaper-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0aipyaqp30cn919j7w5wvlgkw0v4aqsax82i2zw4wmgck8g6ax77"))))
+    (build-system gnu-build-system)
+    (native-inputs
+     (list help2man))
+    (arguments
+     (list #:configure-flags ''("--disable-static"
+                                 ;; Tests require a relocatable build.
+                                 "--enable-relocatable")
+           ;; --enable-relocate is broken on the Hurd
+           #:tests? (not (or (target-hurd?)
+                             (%current-target-system)))))
+    (outputs '("out" "debug"))
+    (home-page "https://github.com/rrthomas/libpaper")
+    (synopsis "Library for handling paper sizes")
+    (description
+     "The paper library and accompanying files are intended to provide a simple
 way for applications to take actions based on a system- or user-specified
 paper size.")
-   (license license:gpl2)
-   (home-page "https://packages.qa.debian.org/libp/libpaper.html")))
+    ;; The library is LGPL3+, everything else GPL3+.
+    (license (list license:lgpl3+ license:gpl3+))))
 
 (define-public psutils
   (package
-   (name "psutils")
-   (version "17")
-   (source (origin
-            (method url-fetch)
-            (uri "ftp://ftp.knackered.org/pub/psutils/psutils.tar.gz")
-            (sha256 (base32
-                     "1r4ab1fvgganm02kmm70b2r1azwzbav2am41gbigpa2bb1wynlrq"))))
-   (build-system gnu-build-system)
-   (inputs (list perl))
-   (arguments
-    `(#:tests? #f ; none provided
-      #:phases
-      (modify-phases %standard-phases
-        (replace 'configure
-          (lambda* (#:key inputs outputs #:allow-other-keys #:rest args)
-           (let ((perl (assoc-ref inputs "perl"))
-                 (out (assoc-ref outputs "out")))
-            (copy-file "Makefile.unix" "Makefile")
-            (substitute* "Makefile"
-              (("/usr/local/bin/perl") (string-append perl "/bin/perl")))
-            (substitute* "Makefile"
-              (("/usr/local") out))
-            ;; for the install phase
-            (substitute* "Makefile"
-              (("-mkdir") "mkdir -p"))
-            ;; drop installation of non-free files
-            (substitute* "Makefile"
-              ((" install.include") "")))
-           #t)))))
-   (synopsis "Collection of utilities for manipulating PostScript documents")
-   (description
-    "PSUtils is a collection of utilities for manipulating PostScript
+    (name "psutils")
+    (version "2.09")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/rrthomas/psutils/releases"
+                                  "/download/v" version "/psutils-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "1nmp0hb7c4a315vv1mqw2cbckvca8bzh1cv3gdvwwy24w9qba6p3"))))
+    (build-system gnu-build-system)
+    (inputs (list perl))
+    (native-inputs
+     (list libpaper))
+    (arguments
+     (list #:tests? #f           ;FIXME: requires files not present in tarball
+           #:configure-flags
+           ;; Help the build system locate Perl when cross-compiling.
+           (if (%current-target-system)
+               #~(list (string-append "ac_cv_path_PERL="
+                                      (search-input-file %build-inputs "bin/perl")))
+               #~'())))
+    (synopsis "Collection of utilities for manipulating PostScript documents")
+    (description
+     "PSUtils is a collection of utilities for manipulating PostScript
 documents.  Programs included are psnup, for placing out several logical pages
 on a single sheet of paper, psselect, for selecting pages from a document,
 pstops, for general imposition, psbook, for signature generation for booklet
 printing, and psresize, for adjusting page sizes.")
-   (license (license:non-copyleft "file://LICENSE"
-                                "See LICENSE in the distribution."))
-   (home-page "http://knackered.org/angus/psutils/")))
+    (home-page "https://github.com/rrthomas/psutils")
+    (license (list license:gpl3+
+                   ;; This file carries the "historical" psutils license (v1),
+                   ;; which is "effectively BSD 3-clause" (a quote from the file).
+                   (license:non-copyleft
+                    "file://extractres.in.in"
+                    "See extractres.in.in in the distribution.")))))
 
 (define-public ghostscript
   (package
     (name "ghostscript")
-    (version "9.54.0")
+    (version "9.56.1")
+    (replacement ghostscript/fixed)
     (source
-      (origin
-        (method url-fetch)
-        (uri (string-append "https://github.com/ArtifexSoftware/"
-                            "ghostpdl-downloads/releases/download/gs"
-                            (string-delete #\. version)
-                            "/ghostscript-" version ".tar.xz"))
-        (sha256
-         (base32
-          "0fvfvv6di5s6j4sy4gaw65klm23dby39bkdjxxq4w3v0vqyb9dy2"))
-        (patches (search-patches "ghostscript-no-header-creationdate.patch"
-                                 "ghostscript-no-header-id.patch"
-                                 "ghostscript-no-header-uuid.patch"))
-        (modules '((guix build utils)))
-        (snippet
-          ;; Remove bundled libraries. The bundled OpenJPEG is a patched fork so
-          ;; we leave it, at least for now.
-          ;; TODO Try unbundling ijs, which is developed alongside Ghostscript.
-          ;; Likewise for the thread-safe lcms2 fork called "lcms2art".
-         '(begin
-            (for-each delete-file-recursively '("freetype" "jbig2dec" "jpeg"
-                                                "libpng" "tiff" "zlib"))
-            #t))))
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://github.com/ArtifexSoftware/"
+                           "ghostpdl-downloads/releases/download/gs"
+                           (string-delete #\. version)
+                           "/ghostscript-" version ".tar.xz"))
+       (sha256
+        (base32
+         "1r5qash65m6ignki6z72q4rlai9ka99xrxnmqd19n02has00cd6l"))
+       (patches (search-patches "ghostscript-no-header-creationdate.patch"
+                                "ghostscript-no-header-id.patch"
+                                "ghostscript-no-header-uuid.patch"))
+       (modules '((guix build utils)))
+       (snippet
+        ;; Remove bundled libraries. The bundled OpenJPEG is a patched fork so
+        ;; we leave it, at least for now.
+        ;; TODO Try unbundling ijs, which is developed alongside Ghostscript.
+        ;; Likewise for the thread-safe lcms2 fork called "lcms2art".
+        '(begin
+           (for-each delete-file-recursively '("freetype" "jbig2dec" "jpeg"
+                                               "libpng" "tiff" "zlib"))))))
     (build-system gnu-build-system)
-    (outputs '("out" "doc"))                  ;19 MiB of HTML/PS doc + examples
+    (outputs '("out" "doc"))            ;19 MiB of HTML/PS doc + examples
     (arguments
-     `(#:disallowed-references ("doc")
-       ;; XXX: Starting with version 9.27, building the tests in parallel
-       ;; occasionally fails like this:
-       ;;  In file included from ./base/memory_.h:23:0,
-       ;;                   from ./obj/gsmd5.h:1,
-       ;;                   from ./obj/gsmd5.c:56:
-       ;;  ./base/std.h:25:10: fatal error: arch.h: No such file or directory
-       #:parallel-tests? #f
-       #:configure-flags
-       (list (string-append "LDFLAGS=-Wl,-rpath="
-                            (assoc-ref %outputs "out") "/lib")
-             "--with-system-libtiff"
-             "LIBS=-lz"
-             (string-append "ZLIBDIR="
-                            (assoc-ref %build-inputs "zlib") "/include")
-             "--enable-dynamic"
-             "--disable-compile-inits"
-             (string-append "--with-fontpath="
-                            (assoc-ref %build-inputs "font-ghostscript")
-                            "/share/fonts/type1/ghostscript")
+     (list
+      #:disallowed-references '("doc")
+      #:configure-flags
+      #~(list (string-append "LDFLAGS=-Wl,-rpath=" #$output "/lib")
+              "--with-system-libtiff"
+              "LIBS=-lz"
+              (string-append "ZLIBDIR="
+                             (dirname (search-input-file %build-inputs
+                                                         "include/zlib.h")))
+              "--enable-dynamic"
+              "--disable-compile-inits"
+              (string-append "--with-fontpath="
+                             (search-input-directory
+                              %build-inputs
+                              "share/fonts/type1/ghostscript"))
 
-             ,@(if (%current-target-system)
-                   '(;; Specify the native compiler, which is used to build 'echogs'
-                     ;; and other intermediary tools when cross-compiling; see
-                     ;; <https://ghostscript.com/FAQ.html>.
-                     "CCAUX=gcc"
+              #$@(if (%current-target-system)
+                     '(;; Specify the native compiler, which is used to build 'echogs'
+                       ;; and other intermediary tools when cross-compiling; see
+                       ;; <https://ghostscript.com/FAQ.html>.
+                       "CCAUX=gcc"
 
-                     ;; Save 'config.log' etc. of the native build under
-                     ;; auxtmp/, useful for debugging.
-                     "--enable-save_confaux")
-                   '()))
-       #:phases
-       (modify-phases %standard-phases
-        (add-before 'configure 'create-output-directory
-          (lambda* (#:key outputs #:allow-other-keys)
-            ;; The configure script refuses to function if the directory
-            ;; specified as -rpath does not already exist.
-            (mkdir-p (string-append (assoc-ref outputs "out") "/lib"))
-            #t))
-        (add-after 'configure 'remove-doc-reference
-          (lambda _
-            ;; Don't retain a reference to the 'doc' output in 'gs'.
-            ;; The only use of this definition is in the output of
-            ;; 'gs --help', so this change is fine.
-            (substitute* "base/gscdef.c"
-              (("GS_DOCDIR")
-               "\"~/.guix-profile/share/doc/ghostscript\""))
-            #t))
-         (add-after 'configure 'patch-config-files
-           (lambda _
-             (substitute* "base/unixhead.mak"
-               (("/bin/sh") (which "sh")))
-             #t))
-         ,@(if (%current-target-system)
-               `((add-after 'configure 'add-native-lz
-                   (lambda _
-                     ;; Add missing '-lz' for native tools such as 'mkromfs'.
-                     (substitute* "Makefile"
-                       (("^AUXEXTRALIBS=(.*)$" _ value)
-                        (string-append "AUXEXTRALIBS = -lz " value "\n")))
-                     #t)))
-               '())
-         (replace 'build
-           (lambda _
-             ;; Build 'libgs.so', but don't build the statically-linked 'gs'
-             ;; binary (saves 22 MiB).
-             (invoke "make" "so" "-j"
-                     (number->string (parallel-job-count)))))
-         (replace 'install
-           (lambda _
-             (invoke "make" "soinstall")))
-         (add-after 'install 'create-gs-symlink
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               ;; Some programs depend on having a 'gs' binary available.
-               (symlink "gsc" (string-append out "/bin/gs"))
-               #t))))))
+                       ;; Save 'config.log' etc. of the native build under
+                       ;; auxtmp/, useful for debugging.
+                       "--enable-save_confaux")
+                     '()))
+      #:phases
+      #~(modify-phases %standard-phases
+          #$@(if (target-hurd?)
+                 #~((add-after 'unpack 'patch-leptonica
+                      (lambda _
+                        (let ((patch-file
+                               #$(local-file
+                                  (search-patch
+                                   "ghostscript-leptonica-hurd.patch"))))
+                          (with-directory-excursion "leptonica"
+                            (invoke "patch" "--force" "-p1" "-i" patch-file))))))
+                 #~())
+          (add-before 'configure 'create-output-directory
+            (lambda _
+              ;; The configure script refuses to function if the directory
+              ;; specified as -rpath does not already exist.
+              (mkdir-p (string-append #$output "/lib"))))
+          (add-after 'configure 'remove-doc-reference
+            (lambda _
+              ;; Don't retain a reference to the 'doc' output in 'gs'.
+              ;; The only use of this definition is in the output of
+              ;; 'gs --help', so this change is fine.
+              (substitute* "base/gscdef.c"
+                (("GS_DOCDIR")
+                 "\"~/.guix-profile/share/doc/ghostscript\""))))
+          (add-after 'configure 'patch-config-files
+            (lambda _
+              (substitute* "base/unixhead.mak"
+                (("/bin/sh") (which "sh")))))
+          #$@(if (%current-target-system)
+                 '((add-after 'configure 'add-native-lz
+                     (lambda _
+                       ;; Add missing '-lz' for native tools such as 'mkromfs'.
+                       (substitute* "Makefile"
+                         (("^AUXEXTRALIBS=(.*)$" _ value)
+                          (string-append "AUXEXTRALIBS = -lz " value "\n"))))))
+                 '())
+          (replace 'build
+            (lambda _
+              ;; Build 'libgs.so', but don't build the statically-linked 'gs'
+              ;; binary (saves 22 MiB).
+              (invoke "make" "so" "-j"
+                      (number->string (parallel-job-count)))))
+          (replace 'install
+            (lambda _
+              (invoke "make" "soinstall")))
+          (add-after 'install 'create-gs-symlink
+            (lambda _
+              ;; Some programs depend on having a 'gs' binary available.
+              (symlink "gsc" (string-append #$output "/bin/gs")))))))
     (native-inputs
-     `(("perl" ,perl)
-       ("pkg-config" ,pkg-config)       ;needed for freetype
-       ("python" ,python-minimal-wrapper)
-       ("tcl" ,tcl)
-
-       ;; When cross-compiling, some of the natively-built tools require all
-       ;; these libraries.
-       ,@(if (%current-target-system)
-             `(("zlib/native" ,zlib)
-               ("libjpeg/native" ,libjpeg-turbo))
-             '())))
+     (append
+      (list perl
+            pkg-config                  ;needed for freetype
+            python-minimal-wrapper
+            tcl)
+      ;; When cross-compiling, some of the natively-built tools require all
+      ;; these libraries.
+      (if (%current-target-system)
+          (list zlib libjpeg-turbo)
+          '())))
     (inputs
-     `(("fontconfig" ,fontconfig)
-       ("freetype" ,freetype)
-       ("font-ghostscript" ,font-ghostscript)
-       ("jbig2dec" ,jbig2dec)
-       ("libjpeg" ,libjpeg-turbo)
-       ("libpaper" ,libpaper)
-       ("libpng" ,libpng)
-       ("libtiff" ,libtiff)
-       ("zlib" ,zlib)))
+     (list fontconfig
+           freetype
+           font-ghostscript
+           jbig2dec
+           libjpeg-turbo
+           libpaper
+           libpng
+           libtiff
+           zlib))
     (synopsis "PostScript and PDF interpreter")
     (description
      "Ghostscript is an interpreter for the PostScript language and the PDF
@@ -294,18 +280,23 @@ output file formats and printers.")
     (home-page "https://www.ghostscript.com/")
     (license license:agpl3+)))
 
+(define ghostscript/fixed
+  (package-with-patches
+   ghostscript
+   (search-patches "ghostscript-CVE-2023-36664.patch"
+                   "ghostscript-CVE-2023-36664-fixup.patch")))
+
 (define-public ghostscript/x
   (package/inherit ghostscript
     (name (string-append (package-name ghostscript) "-with-x"))
-    (inputs `(("libxext" ,libxext)
-              ("libxt" ,libxt)
-              ,@(package-inputs ghostscript)))))
+    (inputs (modify-inputs (package-inputs ghostscript)
+              (prepend libxext libxt)))))
 
 (define-public ghostscript/cups
   (package/inherit ghostscript
     (name "ghostscript-with-cups")
-    (inputs `(("cups" ,cups-minimal)
-              ,@(package-inputs ghostscript)))))
+    (inputs (modify-inputs (package-inputs ghostscript)
+              (prepend cups-minimal)))))
 
 (define-public ijs
   (package
@@ -314,7 +305,10 @@ output file formats and printers.")
    (source (package-source ghostscript))
    (build-system gnu-build-system)
    (native-inputs
-    (list libtool automake autoconf))
+    (append (if (target-riscv64?)
+              (list config)
+              '())
+            (list libtool automake autoconf)))
    (arguments
     `(#:phases
       (modify-phases %standard-phases
@@ -332,7 +326,17 @@ output file formats and printers.")
             (substitute* "autogen.sh"
               (("^.*\\$srcdir/configure.*") "")
               (("^ + && echo Now type.*$")  ""))
-            (invoke "bash" "autogen.sh"))))))
+            (invoke "bash" "autogen.sh")))
+        ,@(if (target-riscv64?)
+            `((add-after 'unpack 'update-config-scripts
+                (lambda* (#:key native-inputs inputs #:allow-other-keys)
+                  (for-each (lambda (file)
+                              (install-file
+                               (search-input-file
+                                (or native-inputs inputs)
+                                (string-append "/bin/" file)) "ijs"))
+                            '("config.guess" "config.sub")))))
+            '()))))
    (synopsis "IJS driver framework for inkjet and other raster devices")
    (description
     "IJS is a protocol for transmission of raster page images.  This package
@@ -388,14 +392,14 @@ Ghostscript.  It currently includes the 35 standard PostScript fonts.")
 (define-public libspectre
   (package
    (name "libspectre")
-   (version "0.2.9")
+   (version "0.2.10")
    (source (origin
             (method url-fetch)
             (uri (string-append "https://libspectre.freedesktop.org/releases"
                                 "/libspectre-" version ".tar.gz"))
             (sha256
              (base32
-              "1vgvxp77d5d9chhx4i9cv9hifw4x10jgw6aw8l2v90dgnm99rbj9"))))
+              "01sdaakrv5js8r6gj2r1ankyl304161z060f25mrmz3b1ylb4q6g"))))
    (build-system gnu-build-system)
    (inputs (list ghostscript))
    (native-inputs (list pkg-config))

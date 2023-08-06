@@ -40,6 +40,7 @@
   #:use-module (gnu packages graphics)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages iso-codes)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages m4)
   #:use-module (gnu packages maths)
@@ -47,6 +48,7 @@
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages protobuf)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-science)
@@ -251,6 +253,117 @@ with gas/liquid interfaces.  Large problems may be split into smaller, connected
 problems for efficient solution on parallel systems.")
     (license license:gpl3+)
     (home-page "https://openfoam.org")))
+
+(define-public open-simulation-interface
+  (package
+    (name "open-simulation-interface")
+    (version "3.5.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url (string-append "https://github.com/"
+                                        "OpenSimulationInterface/"
+                                        "open-simulation-interface"))
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "09vclrvsawx608kk0vnzywr71xn11qzwxzh2j508zjfn0kvhyx7q"))))
+    (build-system cmake-build-system)
+    (arguments (list #:tests? #f         ; tests are for the python package
+                     #:phases
+                     #~(modify-phases %standard-phases
+                         (add-after 'unpack 'fix-cmake
+                           (lambda _
+                             (substitute* "CMakeLists.txt"
+                               (("-targets\\.cmake") "_targets.cmake")))))))
+    (native-inputs (list protobuf))
+    (home-page
+     "https://github.com/OpenSimulationInterface/open-simulation-interface")
+    (synopsis "Generic interface for environmental perception")
+    (description "The Open Simulation Interface is a generic interface based on
+Google's protocol buffers for the environmental perception of automated driving
+functions in virtual scenarios.")
+    (license license:mpl2.0)))
+
+(define-public python-open-simulation-interface
+  (package/inherit open-simulation-interface
+    (name "python-open-simulation-interface")
+    (build-system python-build-system)
+    (arguments '())
+    (propagated-inputs
+     (list python-pyyaml
+           python-protobuf))))
+
+(define-public esmini
+  (package
+    (name "esmini")
+    (version "2.27.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/esmini/esmini")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (patches (search-patches "esmini-use-pkgconfig.patch"
+                                       "esmini-no-clutter-log.patch"))
+              (modules '((guix build utils) (ice-9 ftw)))
+              (snippet
+               #~(with-directory-excursion "externals"
+                   (for-each
+                    (lambda (dir) (unless (member dir '("." ".." "expr"))
+                               (delete-file-recursively dir)))
+                    (scandir "."))))
+              (sha256
+               (base32
+                "07ccydz7kxy5jc52f8fmxg4nkr1spshfnpzcv0wgd5lqz9ghjahz"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:configure-flags #~(list "-DDYN_PROTOBUF=TRUE")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-cmake
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (substitute* "CMakeLists.txt"
+                (("\\$\\{CMAKE_HOME_DIRECTORY\\}/bin")
+                 (string-append (assoc-ref outputs "out") "/bin")))
+              (substitute* "EnvironmentSimulator/CMakeLists.txt"
+                (("\\$\\{OSI_DIR\\}/(include|lib)(-dyn)?" all what)
+                 (search-input-directory
+                  inputs
+                  (string-append what "/osi"
+                                 #$(version-major
+                                    (package-version
+                                     (this-package-input
+                                      "open-simulation-interface"))))))
+                (("\\$\\{SUMO_BASE_DIR\\}/\\$\\{EXT_DIR_NAME\\}")
+                 #$(this-package-input "sumo")))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (with-directory-excursion "EnvironmentSimulator/Unittest/"
+                (for-each invoke (find-files "_test$")))))
+          (add-after 'install 'move-libraries
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let ((out (assoc-ref outputs "out")))
+                (mkdir-p (string-append out "/lib"))
+                (with-directory-excursion (string-append out "/bin")
+                  (for-each
+                   (lambda (f)
+                     (rename-file f (string-append out "/lib/"
+                                                   (basename f))))
+                   (find-files "." "\\.so$")))))))))
+    (inputs (list mesa
+                  openscenegraph `(,openscenegraph "pluginlib")
+                  open-simulation-interface
+                  protobuf pugixml sumo))
+    (native-inputs (list googletest pkg-config))
+    (home-page "https://github.com/esmini/esmini")
+    (synopsis "Basic OpenSCENARIO player")
+    (description "@command{esmini} is a tool to play OpenSCENARIO files.
+It is provided as both a standalone application and a shared library and has
+some support for generating and analysing traffic scenarios..")
+    (license license:mpl2.0)))
 
 (define-public python-fenics-dijitso
   (package
@@ -460,108 +573,111 @@ FFC is part of the FEniCS Project.")
                               "$ENV{CATCH_DIR}/include" back "\n")))))))
     (build-system cmake-build-system)
     (inputs
-     `(("blas" ,openblas)
-       ("boost" ,boost)
-       ("eigen" ,eigen)
-       ("hdf5" ,hdf5-parallel-openmpi)
-       ("lapack" ,lapack)
-       ("libxml2" ,libxml2)
-       ("openmpi" ,openmpi)
-       ("python" ,python-3)
-       ("scotch" ,pt-scotch32)
-       ("suitesparse" ,suitesparse)
-       ("sundials" ,sundials-openmpi)
-       ("zlib" ,zlib)))
+     (list openblas
+           boost
+           eigen
+           hdf5-parallel-openmpi
+           lapack
+           libxml2
+           openmpi
+           python-3
+           pt-scotch32
+           suitesparse
+           sundials-openmpi
+           zlib))
     (native-inputs
-     `(("catch" ,catch2-1)
-       ("pkg-config" ,pkg-config)))
+     (list catch-framework pkg-config))
     (propagated-inputs
-     `(("ffc" ,python-fenics-ffc)
-       ("petsc" ,petsc-openmpi)
-       ("slepc" ,slepc-openmpi)))
+     (list python-fenics-ffc petsc-openmpi slepc-openmpi))
     (arguments
-     `(#:configure-flags
-       `("-DDOLFIN_ENABLE_DOCS:BOOL=OFF"
-         "-DDOLFIN_ENABLE_HDF5:BOOL=ON"
-         "-DDOLFIN_ENABLE_MPI:BOOL=ON"
-         "-DDOLFIN_ENABLE_PARMETIS:BOOL=OFF"
-         "-DDOLFIN_ENABLE_SCOTCH:BOOL=ON"
-         "-DDOLFIN_ENABLE_SUNDIALS:BOOL=ON"
-         "-DDOLFIN_ENABLE_TRILINOS:BOOL=OFF")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'patch-usr-bin-file 'mpi-setup
-           ,%openmpi-setup)
-         (add-after 'patch-source-shebangs 'set-paths
-           (lambda _
-             ;; Define paths to store locations.
-             (setenv "BLAS_DIR" (assoc-ref %build-inputs "blas"))
-             (setenv "CATCH_DIR" (assoc-ref %build-inputs "catch"))
-             (setenv "LAPACK_DIR" (assoc-ref %build-inputs "lapack"))
-             (setenv "PETSC_DIR" (assoc-ref %build-inputs "petsc"))
-             (setenv "SLEPC_DIR" (assoc-ref %build-inputs "slepc"))
-             (setenv "SCOTCH_DIR" (assoc-ref %build-inputs "scotch"))
-             (setenv "SUNDIALS_DIR" (assoc-ref %build-inputs "sundials"))
-             (setenv "UMFPACK_DIR" (assoc-ref %build-inputs "suitesparse"))))
-         (add-before 'check 'pre-check
-           (lambda _
-             ;; The Dolfin repository uses git-lfs, whereby web links are
-             ;; substituted for large files.  Guix does not currently support
-             ;; git-lfs, so only the links are downloaded.  The tests that
-             ;; require the absent meshes cannot run and are skipped.
-             ;;
-             ;; One serial test fails and is skipped.
-             ;; i) demo_multimesh-stokes_serial:
-             ;;   Warning: Found no facets matching domain for boundary
-             ;;   condition.
-             ;;
-             ;; One mpi test fails and is skipped.
-             ;; i) demo_stokes-iterative_mpi:
-             ;;   The MPI_Comm_rank() function was called before MPI_INIT was
-             ;;   invoked
-             (call-with-output-file "CTestCustom.cmake"
-               (lambda (port)
-                 (display
-                   (string-append
-                    "set(CTEST_CUSTOM_TESTS_IGNORE "
-                    "demo_bcs_serial "
-                    "demo_bcs_mpi "
-                    "demo_eigenvalue_serial "
-                    "demo_eigenvalue_mpi "
-                    "demo_navier-stokes_serial "
-                    "demo_navier-stokes_mpi "
-                    "demo_stokes-taylor-hood_serial "
-                    "demo_stokes-taylor-hood_mpi "
-                    "demo_subdomains_serial "
-                    "demo_advection-diffusion_serial "
-                    "demo_advection-diffusion_mpi "
-                    "demo_auto-adaptive-navier-stokes_serial "
-                    "demo_contact-vi-snes_serial "
-                    "demo_contact-vi-snes_mpi "
-                    "demo_contact-vi-tao_serial "
-                    "demo_contact-vi-tao_mpi "
-                    "demo_curl-curl_serial "
-                    "demo_curl-curl_mpi "
-                    "demo_dg-advection-diffusion_serial "
-                    "demo_dg-advection-diffusion_mpi "
-                    "demo_elasticity_serial "
-                    "demo_elasticity_mpi "
-                    "demo_elastodynamics_serial "
-                    "demo_elastodynamics_mpi "
-                    "demo_lift-drag_serial "
-                    "demo_lift-drag_mpi "
-                    "demo_mesh-quality_serial "
-                    "demo_mesh-quality_mpi "
-                    "demo_multimesh-stokes_serial "
-                    ")\n") port)))))
-         (replace 'check
-           (lambda* (#:key tests? #:allow-other-keys)
-             (when tests?
-               (invoke "make" "unittests")
-               (invoke "make" "demos")
-               (invoke "ctest" "-R" "unittests")
-               (invoke "ctest" "-R" "demo" "-R" "serial")
-               (invoke "ctest" "-R" "demo" "-R" "mpi")))))))
+     (list #:configure-flags #~`("-DDOLFIN_ENABLE_DOCS:BOOL=OFF"
+                                 "-DDOLFIN_ENABLE_HDF5:BOOL=ON"
+                                 "-DDOLFIN_ENABLE_MPI:BOOL=ON"
+                                 "-DDOLFIN_ENABLE_PARMETIS:BOOL=OFF"
+                                 "-DDOLFIN_ENABLE_SCOTCH:BOOL=ON"
+                                 "-DDOLFIN_ENABLE_SUNDIALS:BOOL=ON"
+                                 "-DDOLFIN_ENABLE_TRILINOS:BOOL=OFF")
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'patch-usr-bin-file 'mpi-setup
+                 #$%openmpi-setup)
+               (add-after 'patch-source-shebangs 'set-paths
+                 (lambda _
+                   ;; Define paths to store locations.
+                   (setenv "BLAS_DIR"
+                           #$(this-package-input "openblas"))
+                   (setenv "CATCH_DIR"
+                           #$(this-package-input "catch"))
+                   (setenv "LAPACK_DIR"
+                           #$(this-package-input "lapack"))
+                   (setenv "PETSC_DIR"
+                           #$(this-package-input "petsc"))
+                   (setenv "SLEPC_DIR"
+                           #$(this-package-input "slepc"))
+                   (setenv "SCOTCH_DIR"
+                           #$(this-package-input "scotch"))
+                   (setenv "SUNDIALS_DIR"
+                           #$(this-package-input "sundials"))
+                   (setenv "UMFPACK_DIR"
+                           #$(this-package-input "suitesparse"))))
+               (add-before 'check 'pre-check
+                 (lambda _
+                   ;; The Dolfin repository uses git-lfs, whereby web links are
+                   ;; substituted for large files.  Guix does not currently support
+                   ;; git-lfs, so only the links are downloaded.  The tests that
+                   ;; require the absent meshes cannot run and are skipped.
+                   ;;
+                   ;; One serial test fails and is skipped.
+                   ;; i) demo_multimesh-stokes_serial:
+                   ;;   Warning: Found no facets matching domain for boundary
+                   ;;   condition.
+                   ;;
+                   ;; One mpi test fails and is skipped.
+                   ;; i) demo_stokes-iterative_mpi:
+                   ;;   The MPI_Comm_rank() function was called before MPI_INIT was
+                   ;;   invoked
+                   (call-with-output-file "CTestCustom.cmake"
+                     (lambda (port)
+                       (display (string-append
+                                 "set(CTEST_CUSTOM_TESTS_IGNORE "
+                                 "demo_bcs_serial "
+                                 "demo_bcs_mpi "
+                                 "demo_eigenvalue_serial "
+                                 "demo_eigenvalue_mpi "
+                                 "demo_navier-stokes_serial "
+                                 "demo_navier-stokes_mpi "
+                                 "demo_stokes-taylor-hood_serial "
+                                 "demo_stokes-taylor-hood_mpi "
+                                 "demo_subdomains_serial "
+                                 "demo_advection-diffusion_serial "
+                                 "demo_advection-diffusion_mpi "
+                                 "demo_auto-adaptive-navier-stokes_serial "
+                                 "demo_contact-vi-snes_serial "
+                                 "demo_contact-vi-snes_mpi "
+                                 "demo_contact-vi-tao_serial "
+                                 "demo_contact-vi-tao_mpi "
+                                 "demo_curl-curl_serial "
+                                 "demo_curl-curl_mpi "
+                                 "demo_dg-advection-diffusion_serial "
+                                 "demo_dg-advection-diffusion_mpi "
+                                 "demo_elasticity_serial "
+                                 "demo_elasticity_mpi "
+                                 "demo_elastodynamics_serial "
+                                 "demo_elastodynamics_mpi "
+                                 "demo_lift-drag_serial "
+                                 "demo_lift-drag_mpi "
+                                 "demo_mesh-quality_serial "
+                                 "demo_mesh-quality_mpi "
+                                 "demo_multimesh-stokes_serial "
+                                 ")\n") port)))))
+               (replace 'check
+                 (lambda* (#:key tests? #:allow-other-keys)
+                   (when tests?
+                     (invoke "make" "unittests")
+                     (invoke "make" "demos")
+                     (invoke "ctest" "-R" "unittests")
+                     (invoke "ctest" "-R" "demo" "-R" "serial")
+                     (invoke "ctest" "-R" "demo" "-R" "mpi")))))))
     (home-page "https://bitbucket.org/fenics-project/dolfin/")
     (synopsis "Problem solving environment for differential equations")
     (description
@@ -599,101 +715,114 @@ user interface to the FEniCS core components and external libraries.")
     (name "fenics")
     (build-system python-build-system)
     (inputs
-     `(("pybind11" ,pybind11)
-       ("python-matplotlib" ,python-matplotlib)
-       ,@(alist-delete "python" (package-inputs fenics-dolfin))))
+     (modify-inputs (package-inputs fenics-dolfin)
+       (delete "python")
+       (prepend pybind11 python-matplotlib)))
     (native-inputs
-     `(("cmake" ,cmake-minimal)
-       ("ply" ,python-ply)
-       ("pytest" ,python-pytest)
-       ("python-decorator" ,python-decorator)
-       ("python-pkgconfig" ,python-pkgconfig)
-       ,@(package-native-inputs fenics-dolfin)))
+     (modify-inputs (package-native-inputs fenics-dolfin)
+       (prepend cmake-minimal python-ply python-pytest python-decorator)))
     (propagated-inputs
-     `(("dolfin" ,fenics-dolfin)
-       ("petsc4py" ,python-petsc4py)
-       ("slepc4py" ,python-slepc4py)))
+     (list fenics-dolfin
+           python-petsc4py
+           python-slepc4py
+
+           ;; 'dolfin/jit/jit.py' parses 'dolfin.pc' at run time.
+           python-pkgconfig))
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'relax-requirements
-           (lambda _
-             (substitute* "python/setup.py"
-               (("pybind11==") "pybind11>="))))
-         (add-after 'patch-source-shebangs 'set-paths
-           (lambda _
-             ;; Define paths to store locations.
-             (setenv "PYBIND11_DIR" (assoc-ref %build-inputs "pybind11"))
-             ;; Move to python sub-directory.
-             (chdir "python")))
-         (add-after 'build 'mpi-setup
-           ,%openmpi-setup)
-         (add-before 'check 'pre-check
-           (lambda _
-             ;; Exclude three tests that generate
-             ;; 'NotImplementedError' in matplotlib version 3.1.2.
-             ;; See
-             ;; <https://github.com/matplotlib/matplotlib/issues/15382>.
-             ;; Also exclude tests that require meshes supplied by
-             ;; git-lfs.
-             (substitute* "demo/test.py"
-               (("(.*stem !.*)" line)
-                (string-append
-                 line "\n"
-                 "excludeList = [\n"
-                 "'built-in-meshes', \n"
-                 "'hyperelasticity', \n"
-                 "'elasticity', \n"
-                 "'multimesh-quadrature', \n"
-                 "'multimesh-marking', \n"
-                 "'mixed-poisson-sphere', \n"
-                 "'mesh-quality', \n"
-                 "'lift-drag', \n"
-                 "'elastodynamics', \n"
-                 "'dg-advection-diffusion', \n"
-                 "'curl-curl', \n"
-                 "'contact-vi-tao', \n"
-                 "'contact-vi-snes', \n"
-                 "'collision-detection', \n"
-                 "'buckling-tao', \n"
-                 "'auto-adaptive-navier-stokes', \n"
-                 "'advection-diffusion', \n"
-                 "'subdomains', \n"
-                 "'stokes-taylor-hood', \n"
-                 "'stokes-mini', \n"
-                 "'navier-stokes', \n"
-                 "'eigenvalue']\n"
-                 "demos = ["
-                 "d for d in demos if d[0].stem not in "
-                 "excludeList]\n")))
-             (setenv "HOME" (getcwd))
-             ;; Restrict OpenBLAS to MPI-only in preference to MPI+OpenMP.
-             (setenv "OPENBLAS_NUM_THREADS" "1")))
-         (replace 'check
-           (lambda* (#:key tests? #:allow-other-keys)
-             (when tests?
-               (with-directory-excursion "test"
-                 (invoke
-                  "pytest" "unit"
-                  ;; The test test_snes_set_from_options() in the file
-                  ;; unit/nls/test_PETScSNES_solver.py fails and is ignored.
-                  "--ignore" "unit/nls/test_PETScSNES_solver.py"
-                  ;; Fails with a segfault.
-                  "--ignore" "unit/io/test_XDMF.py")))))
-         (add-after 'install 'install-demo-files
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((demos (string-append
-                            (assoc-ref outputs "out")
-                            "/share/python-dolfin/demo")))
-               (mkdir-p demos)
-               (with-directory-excursion "demo"
-                 (for-each (lambda (file)
-                             (let* ((dir (dirname file))
-                                    (tgt-dir (string-append demos "/" dir)))
-                               (unless (equal? "." dir)
-                                 (mkdir-p tgt-dir)
-                                 (install-file file tgt-dir))))
-                           (find-files "." ".*\\.(py|gz|xdmf)$")))))))))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'relax-requirements
+                 (lambda _
+                   (substitute* "python/setup.py"
+                     (("pybind11==")
+                      "pybind11>="))))
+               (add-after 'unpack 'set-dolfin-pc-file-name
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   ;; Instead of cluttering the user's 'PKG_CONFIG_PATH' environment
+                   ;; variable, hard-code the 'dolfin.pc' absolute file name.
+                   (let ((pc-file (search-input-file inputs
+                                                     "/lib/pkgconfig/dolfin.pc")))
+                     (substitute* "python/dolfin/jit/jit.py"
+                       (("pkgconfig\\.parse\\(\"dolfin\"\\)")
+                        (string-append "pkgconfig.parse(\"" pc-file
+                                       "\")"))))))
+               (add-after 'patch-source-shebangs 'set-paths
+                 (lambda _
+                   ;; Define paths to store locations.
+                   (setenv "PYBIND11_DIR" #$(this-package-input "pybind11"))
+                   ;; Move to python sub-directory.
+                   (chdir "python")))
+               (add-after 'build 'mpi-setup
+                 #$%openmpi-setup)
+               (add-before 'check 'pre-check
+                 (lambda _
+                   ;; Exclude three tests that generate
+                   ;; 'NotImplementedError' in matplotlib version 3.1.2.
+                   ;; See
+                   ;; <https://github.com/matplotlib/matplotlib/issues/15382>.
+                   ;; Also exclude tests that require meshes supplied by
+                   ;; git-lfs.
+                   (substitute* "demo/test.py"
+                     (("(.*stem !.*)" line)
+                      (string-append line
+                                     "\n"
+                                     "excludeList = [\n"
+                                     "'built-in-meshes', \n"
+                                     "'hyperelasticity', \n"
+                                     "'elasticity', \n"
+                                     "'multimesh-quadrature', \n"
+                                     "'multimesh-marking', \n"
+                                     "'mixed-poisson-sphere', \n"
+                                     "'mesh-quality', \n"
+                                     "'lift-drag', \n"
+                                     "'elastodynamics', \n"
+                                     "'dg-advection-diffusion', \n"
+                                     "'curl-curl', \n"
+                                     "'contact-vi-tao', \n"
+                                     "'contact-vi-snes', \n"
+                                     "'collision-detection', \n"
+                                     "'buckling-tao', \n"
+                                     "'auto-adaptive-navier-stokes', \n"
+                                     "'advection-diffusion', \n"
+                                     "'subdomains', \n"
+                                     "'stokes-taylor-hood', \n"
+                                     "'stokes-mini', \n"
+                                     "'navier-stokes', \n"
+                                     "'eigenvalue']\n"
+                                     "demos = ["
+                                     "d for d in demos if d[0].stem not in "
+                                     "excludeList]\n")))
+                   (setenv "HOME"
+                           (getcwd))
+                   ;; Restrict OpenBLAS to MPI-only in preference to MPI+OpenMP.
+                   (setenv "OPENBLAS_NUM_THREADS" "1")))
+               (replace 'check
+                 (lambda* (#:key tests? #:allow-other-keys)
+                   (when tests?
+                     (with-directory-excursion "test"
+                       (invoke "pytest"
+                               "unit"
+                               ;; The test test_snes_set_from_options() in the file
+                               ;; unit/nls/test_PETScSNES_solver.py fails and is ignored.
+                               "--ignore"
+                               "unit/nls/test_PETScSNES_solver.py"
+                               ;; Fails with a segfault.
+                               "--ignore"
+                               "unit/io/test_XDMF.py")))))
+               (add-after 'install 'install-demo-files
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let* ((demos (string-append (assoc-ref outputs "out")
+                                                "/share/python-dolfin/demo")))
+                     (mkdir-p demos)
+                     (with-directory-excursion "demo"
+                       (for-each (lambda (file)
+                                   (let* ((dir (dirname file))
+                                          (tgt-dir (string-append
+                                                    demos "/" dir)))
+                                     (unless (equal? "." dir)
+                                       (mkdir-p tgt-dir)
+                                       (install-file file tgt-dir))))
+                                 (find-files "." ".*\\.(py|gz|xdmf)$")))))))))
     (home-page "https://fenicsproject.org/")
     (synopsis "High-level environment for solving differential equations")
     (description
@@ -922,7 +1051,7 @@ command-line utility for mesh optimisation.")
                     (invoke "py.test" "-v" "tests/migration")
                     (invoke "py.test" "-v" "tests/pyadjoint")))
              #t)))))
-    (home-page "http://www.dolfin-adjoint.org")
+    (home-page "https://www.dolfin-adjoint.org")
     (synopsis "Automatic differentiation library")
     (description "@code{python-dolfin-adjoint} is a solver of
 differential equations associated with a governing system and a
@@ -935,6 +1064,108 @@ provides the necessary tools and data structures for cases where the
 forward model is implemented in @code{fenics} or
 @url{https://firedrakeproject.org,firedrake}.")
     (license license:lgpl3)))
+
+(define %commonroad-dont-install-license-at-root
+  #~(substitute* "setup.py"
+      (("data_files=\\[\\('.', \\['LICENSE.txt'\\]\\)\\],")
+       "")))
+
+(define-public python-commonroad-vehicle-models
+  (package
+    (name "python-commonroad-vehicle-models")
+    (version "3.0.2")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "commonroad-vehicle-models" version))
+              (sha256
+               (base32
+                "13jg0cys7y4n7rg548w6mxk9g10gd5qxmj4ynrlriczpffqy6kc7"))))
+    (build-system python-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-setup.py
+                 (lambda _
+                   #$%commonroad-dont-install-license-at-root)))))
+    (propagated-inputs (list python-numpy python-omegaconf))
+    (home-page "https://commonroad.in.tum.de/")
+    (synopsis "CommonRoad vehicle models")
+    (description "This package provides vehicle models used in CommonRoad
+benchmarks.  Varying abstraction levels are used ranging from kinematic single
+track models to multi-body models.")
+    (license license:bsd-3)))
+
+(define-public python-commonroad-io
+  (package
+    (name "python-commonroad-io")
+    (version "2022.3")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "commonroad-io" version))
+              (sha256
+               (base32
+                "1cj9zj567mca8xb8sx9h3nnl2cccv6vh8h73imgpq61cimk9mvas"))))
+    (build-system python-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-setup.py
+                 (lambda _
+                   #$%commonroad-dont-install-license-at-root)))))
+    (propagated-inputs (list python-commonroad-vehicle-models
+                             python-iso3166
+                             python-lxml
+                             python-matplotlib
+                             python-networkx
+                             python-numpy
+                             python-omegaconf
+                             python-pillow
+                             python-protobuf
+                             python-rtree
+                             python-scipy
+                             python-shapely
+                             python-tqdm))
+    (native-inputs (list python-lxml python-pytest))
+    (home-page "https://commonroad.in.tum.de/")
+    (synopsis "Read, write, and visualize CommonRoad scenarios.")
+    (description "This package provides methods to read, write, and visualize
+CommonRoad scenarios and planning problems.  It can be used as a framework for
+implementing motion planning algorithms to solve CommonRoad Benchmarks
+and is the basis for other tools of the CommonRoad Framework.")
+    (license license:bsd-3)))
+
+(define-public python-commonroad-route-planner
+  (package
+    (name "python-commonroad-route-planner")
+    (version "2022.3")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.lrz.de/tum-cps/commonroad-route-planner")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0xn0l7bzmj56d4mlqacvbl8mdvsffkg2fn2lzfmis5jl4vp99ipf"))))
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-setup.py
+                 (lambda _
+                   #$%commonroad-dont-install-license-at-root)))))
+    (build-system python-build-system)
+    (propagated-inputs (list python-commonroad-io
+                             python-matplotlib
+                             python-networkx
+                             python-numpy
+                             python-setuptools
+                             python-shapely))
+    (home-page "https://gitlab.lrz.de/tum-cps/commonroad-route-planner")
+    (synopsis "Route planner for CommonRoad scenarios")
+    (description "This package provides functions for route planning, that is
+finding sequences that lead from a given start lanelet to some goal
+lanelet(s).")
+    (license license:bsd-3)))
 
 (define-public sumo
   (package

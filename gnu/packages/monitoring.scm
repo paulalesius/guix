@@ -36,7 +36,6 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix build-system perl)
   #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (guix build-system gnu)
@@ -54,6 +53,7 @@
   #:use-module (gnu packages gd)
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages gnome)               ;libnotify
+  #:use-module (gnu packages golang)
   #:use-module (gnu packages image)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages ncurses)
@@ -171,7 +171,7 @@ etc. via a Web interface.  Features include:
 (define-public zabbix-agentd
   (package
     (name "zabbix-agentd")
-    (version "6.0.9")
+    (version "6.0.14")
     (source
      (origin
        (method url-fetch)
@@ -179,7 +179,7 @@ etc. via a Web interface.  Features include:
              "https://cdn.zabbix.com/zabbix/sources/stable/"
              (version-major+minor version) "/zabbix-" version ".tar.gz"))
        (sha256
-        (base32 "0rzdlmfvyqys166zi94q1c6pbf57b0g1dygb23ixsx083gq1hh01"))
+        (base32 "0n6fqa9vbhh2syxii7ds2x6dnplrgrj98by1zl0ij1wfbnbxa6k3"))
        (modules '((guix build utils)))
        (snippet
         '(substitute* '("src/zabbix_proxy/proxy.c"
@@ -208,6 +208,32 @@ solution (client-side agent)")
     (properties
      '((release-monitoring-url . "https://www.zabbix.com/download_sources")
        (upstream-name . "zabbix")))))
+
+(define-public zabbix-agent2
+  (package/inherit zabbix-agentd
+    (name "zabbix-agent2")
+    (arguments
+     (list #:configure-flags
+           #~(list "--disable-agent"
+                   "--enable-agent2"
+                   "--enable-ipv6"
+                   "--with-libpcre2"
+                   ;; agent2 only supports OpenSSL.
+                   (string-append "--with-openssl="
+                                  (dirname (dirname
+                                            (search-input-file
+                                             %build-inputs "lib/libssl.so")))))
+           #:make-flags
+           #~'("BUILD_TIME=00:00:01" "BUILD_DATE=Jan 1 1970")
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'build 'set-HOME
+                 (lambda _
+                   (setenv "HOME" "/tmp"))))))
+    (native-inputs
+     (list go pkg-config))
+    (inputs
+     (list openssl pcre2 zlib))))
 
 (define-public zabbix-server
   (package
@@ -263,7 +289,7 @@ solution (server-side)")))
 (define-public zabbix-cli
   (package
     (name "zabbix-cli")
-    (version "2.3.0")
+    (version "2.3.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -272,7 +298,7 @@ solution (server-side)")))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1p8xkq3mxg476srwrgqax76vjzji0rjx32njmgnpa409vaqrbj5p"))))
+                "1al3gwbnh0wbal5gq2apq27kh61q8dz355k4w8kx073b4y4nz1wb"))))
     (build-system pyproject-build-system)
     (arguments
      (list #:phases
@@ -387,7 +413,7 @@ HTTP.  Features:
          "1bk29w09zcpsv8hp0g0al7nwrxa07z0ycls3mbh83wfavk83aprl"))))
     (build-system python-build-system)
     (native-inputs (list python-six))
-    (home-page "http://graphiteapp.org/")
+    (home-page "https://graphiteapp.org/")
     (synopsis "Fixed size round-robin style database for Graphite")
     (description "Whisper is one of three components within the Graphite
 project.  Whisper is a fixed-size database, similar in design and purpose to
@@ -417,7 +443,7 @@ historical data.")
            (lambda _ (setenv "GRAPHITE_NO_PREFIX" "1") #t)))))
     (propagated-inputs
      (list python-cachetools python-txamqp python-urllib3 python-whisper))
-    (home-page "http://graphiteapp.org/")
+    (home-page "https://graphiteapp.org/")
     (synopsis "Backend data caching and persistence daemon for Graphite")
     (description "Carbon is a backend data caching and persistence daemon for
 Graphite.  Carbon is responsible for receiving metrics over the network,
@@ -565,7 +591,7 @@ devices.")
 (define-public fswatch
   (package
     (name "fswatch")
-    (version "1.16.0")
+    (version "1.17.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -574,7 +600,7 @@ devices.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1zsvc8arza2ypnnmv4m0qfpnldmy1zh10q6wss05ibmanslfj2ql"))))
+                "15bk2adv1ycqn3rxvpvapwrlzsxw8fvcahqiglfkibwb9ss7s8dh"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf automake gettext-minimal libtool))
@@ -609,7 +635,7 @@ devices.")
                       ;; Required because of patched sources.
                       (invoke "autoreconf" "-vfi"))))))
     (inputs
-     (list rrdtool curl libyajl))
+     (list rrdtool curl yajl))
     (native-inputs
      (list autoconf automake libtool pkg-config))
     (home-page "https://collectd.org/")
@@ -639,7 +665,7 @@ future system load (i.e., capacity planning).")
     (build-system gnu-build-system)
     (inputs (list ncurses))
     (arguments '(#:tests? #f)) ;; No included tests.
-    (home-page "http://www.maier-komor.de/hostscope.html")
+    (home-page "https://www.maier-komor.de/hostscope.html")
     (properties `((release-monitoring-url . ,home-page)))
     (synopsis
      "System monitoring tool for multiple hosts")
@@ -655,7 +681,7 @@ the recorded data over time.")
 (define-public fatrace
   (package
     (name "fatrace")
-    (version "0.16.3")
+    (version "0.17.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -664,7 +690,7 @@ the recorded data over time.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1bxz6v1z0icp716jnv3knjyqp8bv6xnkz8gqd8z3g2b6yxj5xff3"))))
+                "067pj0z4np4mmhlin9411zpwwbfmn38ykvmxw35fnidf3kxcq49i"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
@@ -765,7 +791,7 @@ provides a simple Python client for the StatsD daemon.")
 (define-public batsignal
   (package
     (name "batsignal")
-    (version "1.6.0")
+    (version "1.6.4")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -774,7 +800,7 @@ provides a simple Python client for the StatsD daemon.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0b1j6mljnqgxwr3id3r9shzhsjk5r0qdh9cxkvy1dm4kzbyc4dxq"))))
+                "0f8jabql70nxkslgxd8pcfllqy4bnbf1c19rcri0dp054aszk637"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags
@@ -803,4 +829,3 @@ user-configured power thresholds.  This can be used to force powering off a
 laptop when the battery gets below critical levels, instead of damaging the
 battery.")
     (license license:isc)))
-

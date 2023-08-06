@@ -1,7 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2012, 2013, 2014, 2015 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2016, 2021 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2017, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2017, 2020-2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -44,7 +44,7 @@
     (arguments
      ;; 'sexp-conv' and other programs need to have their RUNPATH point to
      ;; $libdir, which is not the case by default.  Work around it.
-     '(#:configure-flags (list (string-append "LDFLAGS=-Wl,-rpath="
+     `(#:configure-flags (list (string-append "LDFLAGS=-Wl,-rpath="
                                               (assoc-ref %outputs "out")
                                               "/lib"))
        #:phases (modify-phases %standard-phases
@@ -59,7 +59,13 @@
                                       (rename-file ar (string-append
                                                        slib "/"
                                                        (basename ar))))
-                                    (find-files "." "\\.a$")))
+                                    (find-files
+                                     "."
+                                     ,(if (target-mingw?)
+                                          '(lambda (filename _)
+                                             (and (string-suffix? ".a" filename)
+                                                  (not (string-suffix? ".dll.a" filename))))
+                                          "\\.a$"))))
                         #t))))))
     (outputs '("out" "debug" "static"))
     (native-inputs (list m4))
@@ -77,14 +83,14 @@ themselves.")
   ;; This version is not API-compatible with version 2.  In particular, lsh
   ;; cannot use it yet.  So keep it separate.
   (package (inherit nettle-2)
-    (version "3.7.3")
+    (version "3.8.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/nettle/nettle-"
                                   version ".tar.gz"))
               (sha256
                (base32
-                "1w5wwc3q0r97d2ifhx77cw7y8s20bm8x52is9j93p2h47yq5w7v6"))))
+                "1znb87fi4gd2jkwbca74fl64pr9lr0cm5i6p7zlcszfdfwmkwkrn"))))
     (arguments
      (substitute-keyword-arguments (package-arguments nettle-2)
        ((#:configure-flags flags)

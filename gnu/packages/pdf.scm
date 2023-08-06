@@ -5,7 +5,7 @@
 ;;; Copyright © 2015 Paul van der Walt <paul@denknerd.org>
 ;;; Copyright © 2016 Roel Janssen <roel@gnu.org>
 ;;; Copyright © 2016 Nikita <nikita@n0.is>
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016-2020, 2022, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2017, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2016, 2017, 2019 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2016 Julien Lepiller <julien@lepiller.eu>
@@ -20,9 +20,10 @@
 ;;; Copyright © 2020-2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2020, 2022 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2020 Timotej Lazar <timotej.lazar@araneo.si>
-;;; Copyright © 2020, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2020, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2022 Paul A. Patience <paul@apatience.com>
+;;; Copyright © 2022 Petr Hodina <phodina@protonmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -52,7 +53,6 @@
   #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (guix build-system qt)
-  #:use-module (guix build-system trivial)
   #:use-module (gnu packages)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages autotools)
@@ -68,6 +68,7 @@
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages game-development)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages gl)
@@ -78,17 +79,20 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages image)
   #:use-module (gnu packages javascript)
+  #:use-module (gnu packages kde-frameworks)
   #:use-module (gnu packages lesstif)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages man)
   #:use-module (gnu packages markup)
+  #:use-module (gnu packages nss)
   #:use-module (gnu packages ocr)
   #:use-module (gnu packages pcre)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages photo)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages pretty-print)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
@@ -109,6 +113,86 @@
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg)
   #:use-module (srfi srfi-1))
+
+(define-public capypdf
+  (package
+    (name "capypdf")
+    (version "0.4.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/jpakkane/capypdf")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32 "1kn46n3j5fygivmd6ldnv8vdwfv48ffaizq61yy4z9w2jm6fgxim"))))
+    (build-system meson-build-system)
+    (arguments
+     (list #:meson meson/newer
+           #:test-options '(list "plainc")
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'add-missing-header
+                 (lambda _
+                   (substitute* "src/pdfgen.cpp"
+                     (("#include <cassert>" all)
+                      (string-append all "\n#include <unistd.h>")))))
+               (add-after 'unpack 'fix-glib-application-flags
+                 (lambda _
+                   ;; XXX: remove when bumping glib
+                   (substitute* "src/pdfviewer.cpp"
+                     (("G_APPLICATION_DEFAULT_FLAGS")
+                      "G_APPLICATION_FLAGS_NONE")))))))
+    (inputs (list fmt
+                  freetype
+                  gtk
+                  lcms
+                  libjpeg-turbo
+                  libpng
+                  zlib))
+    (native-inputs (list font-google-noto
+                         gcc-12
+                         ghostscript
+                         pkg-config
+                         python
+                         python-pillow))
+    (home-page "https://github.com/jpakkane/a4pdf")
+    (synopsis "Color-managed PDF generator")
+    (description "A4PDF is a low-level libray for generating PDF files.
+It does not have a document model and instead uses PDF primitives
+directly.  It uses LittleCMS for color management but otherwise does not
+convert data in any way.")
+    (license license:asl2.0)))
+
+(define-public a4pdf
+  (deprecated-package "a4pdf" capypdf))
+
+(define-public diffpdf
+  (let ((commit "ba68231d3d05e0cb3a2d4a4fca8b70d4044f4303")
+        (revision "1"))
+    (package
+      (name "diffpdf")
+      (version (git-version "2.1.3.1" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://gitlab.com/eang/diffpdf")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1vwgv28b291lrcs9fljnlbnicv16lwj4vvl4bz6w3ldp9n5isjmf"))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:tests? #f))
+      (inputs (list qtbase-5 qttools-5 poppler-qt5))
+      (native-inputs (list pkg-config extra-cmake-modules))
+      (home-page "http://www.qtrac.eu/diffpdf-foss.html")
+      (synopsis "Compare two PDF files")
+      (description
+       "@command{diffpdf} lets you compare PDF files, offering three
+comparison modes: words, characters, and appearance.")
+      (license license:gpl2))))
 
 (define-public extractpdfmark
   (package
@@ -136,7 +220,7 @@
            gettext-minimal
            ghostscript
            pkg-config
-           texlive-tiny))
+           (texlive-updmap.cfg)))
     (inputs
      (list poppler))
     (home-page "https://github.com/trueroad/extractpdfmark")
@@ -183,7 +267,10 @@ information.")
                    (,(string-append qtbase "/lib/qt5/plugins/platforms"))))
                #t))))))
     (inputs
-     (list python-pypdf2 python-pyqt python-poppler-qt5 qtbase-5))
+     (list python-poppler-qt5
+           python-pypdf2
+           python-pyqt
+           qtbase-5))
     (home-page "http://crazy-compilers.com/flyer-composer")
     (synopsis "Rearrange PDF pages to print as flyers on one sheet")
     (description "@command{flyer-composer} can be used to prepare one- or
@@ -228,29 +315,30 @@ please install the @code{flyer-composer-gui} package.")))
 (define-public poppler
   (package
    (name "poppler")
-   (version "21.07.0")
+   (version "22.09.0")
    (source (origin
             (method url-fetch)
             (uri (string-append "https://poppler.freedesktop.org/poppler-"
                                 version ".tar.xz"))
             (sha256
              (base32
-              "1m54hsi8z6c13jdbjwz55flkra1mahmkw2igavbf8p86d2gv4sp2"))))
+              "0bhyli95h3dkirjc0ibh08s4nim6rn7f38sbfzdwln8k454gga6p"))))
    (build-system cmake-build-system)
    ;; FIXME:
    ;;  use libcurl:        no
-   (inputs `(("fontconfig" ,fontconfig)
-             ("freetype" ,freetype)
-             ("libjpeg" ,libjpeg-turbo)
-             ("libpng" ,libpng)
-             ("libtiff" ,libtiff)
-             ("lcms" ,lcms)
-             ("openjpeg" ,openjpeg)
-             ("zlib" ,zlib)
-
-             ;; To build poppler-glib (as needed by Evince), we need Cairo and
-             ;; GLib.  But of course, that Cairo must not depend on Poppler.
-             ("cairo" ,cairo-sans-poppler)))
+   (inputs (list fontconfig
+                 freetype
+                 libjpeg-turbo
+                 libpng
+                 libtiff
+                 lcms
+                 nss                              ;for 'pdfsig'
+                 openjpeg
+                 poppler-data
+                 zlib
+                 ;; To build poppler-glib (as needed by Evince), we need Cairo and
+                 ;; GLib.  But of course, that Cairo must not depend on Poppler.
+                 cairo-sans-poppler))
    (propagated-inputs
     ;; As per poppler-cairo and poppler-glib.pc.
     ;; XXX: Ideally we'd propagate Cairo too, but that would require a
@@ -259,24 +347,26 @@ please install the @code{flyer-composer-gui} package.")))
    (native-inputs
       (list pkg-config
             `(,glib "bin") ; glib-mkenums, etc.
-            gobject-introspection))
+            gobject-introspection
+            python))
    (arguments
-    `(#:tests? #f                      ;no test data provided with the tarball
-      #:configure-flags
-      (let* ((out (assoc-ref %outputs "out"))
-             (lib (string-append out "/lib")))
-        (list "-DENABLE_UNSTABLE_API_ABI_HEADERS=ON" ;to install header files
-              "-DENABLE_ZLIB=ON"
-              "-DENABLE_BOOST=OFF"      ;disable Boost to save size
-              (string-append "-DCMAKE_INSTALL_LIBDIR=" lib)
-              (string-append "-DCMAKE_INSTALL_RPATH=" lib)))
-      ,@(if (%current-target-system)
-            `(#:phases
-              (modify-phases %standard-phases
-                (add-after 'unpack 'set-PKG_CONFIG
-                  (lambda _
-                    (setenv "PKG_CONFIG" ,(pkg-config-for-target))))))
-            '())))
+    (list
+     ;; The Poppler test suite needs to be downloaded separately and contains
+     ;; non-free (and non-auditable) files, so we skip them.  See
+     ;; <https://lists.gnu.org/archive/html/guix-devel/2022-06/msg00394.html>.
+     #:tests? #f
+     #:configure-flags
+     #~(list "-DENABLE_UNSTABLE_API_ABI_HEADERS=ON" ;to install header files
+             "-DENABLE_ZLIB=ON"
+             "-DENABLE_BOOST=OFF"      ;disable Boost to save size
+             (string-append "-DCMAKE_INSTALL_LIBDIR=" #$output "/lib")
+             (string-append "-DCMAKE_INSTALL_RPATH=" #$output "/lib"))
+     #:phases
+     (if (%current-target-system) #~%standard-phases
+         #~(modify-phases %standard-phases
+             (add-after 'unpack 'set-PKG_CONFIG
+               (lambda _
+                 (setenv "PKG_CONFIG" #$(pkg-config-for-target))))))))
    (synopsis "PDF rendering library")
    (description
     "Poppler is a PDF rendering library based on the xpdf-3.0 code base.")
@@ -312,26 +402,6 @@ When present, Poppler is able to correctly render CJK and Cyrillic text.")
     ;; the licensing.
     (license (list license:bsd-3
                    license:gpl2))))
-
-;; XXX: Remove it on core-updates.  It is only needed for evince 42.3 that
-;; requires a recent poppler.
-(define-public poppler-next
-  (package
-    (inherit poppler)
-    (name "poppler-next")
-    (version "22.09.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://poppler.freedesktop.org/poppler-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "0bhyli95h3dkirjc0ibh08s4nim6rn7f38sbfzdwln8k454gga6p"))))
-    (native-inputs
-     (list pkg-config
-           `(,glib "bin") ; glib-mkenums, etc.
-           gobject-introspection
-           python)) ))
 
 (define-public poppler-qt5
   (package/inherit poppler
@@ -385,7 +455,7 @@ Poppler PDF rendering library.")
 (define-public libharu
   (package
     (name "libharu")
-    (version "2.4.2")
+    (version "2.4.3")
     (source
      (origin
        (method git-fetch)
@@ -394,7 +464,7 @@ Poppler PDF rendering library.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1jwzqvv81zf5f7zssyixhyjirlp9ddwkbaabd177syb1bxljlsdc"))))
+        (base32 "00b89zqf0bxslx03ginzqdjg84zfmblq13p5f4xm0h05j7aq7ixz"))))
     (build-system cmake-build-system)
     (arguments
      (list #:tests? #f                  ; No tests
@@ -419,13 +489,13 @@ reading and editing of existing PDF files.")
 (define-public xpdf
   (package
    (name "xpdf")
-   (version "4.03")
+   (version "4.04")
    (source
     (origin
       (method url-fetch)
       (uri (string-append "https://dl.xpdfreader.com/xpdf-" version ".tar.gz"))
       (sha256
-       (base32 "0ip81c9vy0igjnasl9iv2lz214fb01vvvdzbvjmgwc63fi1jgr0g"))))
+       (base32 "1pmsark94xza8q31wvfvp8n7l3c4qfd4ggj09i98y13npzy27kk3"))))
    (build-system cmake-build-system)
    (inputs (list cups freetype libpng qtbase-5 zlib))
    (arguments
@@ -439,7 +509,7 @@ reading and editing of existing PDF files.")
 (define-public zathura-cb
   (package
     (name "zathura-cb")
-    (version "0.1.8")
+    (version "0.1.10")
     (source (origin
               (method url-fetch)
               (uri
@@ -447,7 +517,7 @@ reading and editing of existing PDF files.")
                               version ".tar.xz"))
               (sha256
                (base32
-                "1i6cf0vks501cggwvfsl6qb7mdaf3sszdymphimfvnspw810faj5"))))
+                "1j5v32f9ki35v1jc7a067anhlgqplzrp4fqvznlixfhcm0bwmc49"))))
     (native-inputs (list pkg-config))
     (inputs (list libarchive zathura))
     (build-system meson-build-system)
@@ -456,7 +526,7 @@ reading and editing of existing PDF files.")
        #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'patch-plugin-directory
-           ;; Something of a regression in 0.1.8: the new Meson build system
+           ;; Something of a regression in 0.1.10: the new Meson build system
            ;; now hard-codes an incorrect plugin directory.  Fix it.
            (lambda* (#:key outputs #:allow-other-keys)
              (substitute* "meson.build"
@@ -473,7 +543,7 @@ using libarchive.")
 (define-public zathura-ps
   (package
     (name "zathura-ps")
-    (version "0.2.6")
+    (version "0.2.7")
     (source (origin
               (method url-fetch)
               (uri
@@ -481,7 +551,7 @@ using libarchive.")
                               version ".tar.xz"))
               (sha256
                (base32
-                "0wygq89nyjrjnsq7vbpidqdsirjm6iq4w2rijzwpk2f83ys8bc3y"))))
+                "0ilf63wxn1yzis9m3qs8mxbk316yxdzwxrrv86wpiygm9hhgk5sq"))))
     (native-inputs (list pkg-config))
     (inputs (list libspectre zathura))
     (build-system meson-build-system)
@@ -490,7 +560,7 @@ using libarchive.")
        #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'patch-plugin-directory
-           ;; Something of a regression in 0.2.6: the new Meson build system
+           ;; Something of a regression in 0.2.7: the new Meson build system
            ;; now hard-codes an incorrect plugin directory.  Fix it.
            (lambda* (#:key outputs #:allow-other-keys)
              (substitute* "meson.build"
@@ -542,7 +612,7 @@ using the DjVuLibre library.")
 (define-public zathura-pdf-mupdf
   (package
     (name "zathura-pdf-mupdf")
-    (version "0.3.9")
+    (version "0.4.0")
     (source (origin
               (method url-fetch)
               (uri
@@ -550,7 +620,7 @@ using the DjVuLibre library.")
                               "/download/zathura-pdf-mupdf-" version ".tar.xz"))
               (sha256
                (base32
-                "01vw0lrcj9g7d5h2xvm4xb08mvfld4syfr381fjrbdj52zm9bxvp"))))
+                "0pcjxvlh4hls8mjhjghhhihyy2kza8l27wdx0yq4bkd1g1b5f74c"))))
     (native-inputs (list pkg-config))
     (inputs
      (list gumbo-parser
@@ -592,7 +662,7 @@ by using the @code{mupdf} rendering library.")
 (define-public zathura-pdf-poppler
   (package
     (name "zathura-pdf-poppler")
-    (version "0.3.0")
+    (version "0.3.1")
     (source (origin
               (method url-fetch)
               (uri
@@ -600,7 +670,7 @@ by using the @code{mupdf} rendering library.")
                               version ".tar.xz"))
               (sha256
                (base32
-                "1vfl4vkyy3rf39r1sqaa7y8113bgkh2bkfq3nn2inis9mrykmk6m"))))
+                "12qhkshpp1wjfpjmjccsyi6wscqyqvaa19j85prjpyf65i9jg0gf"))))
     (native-inputs (list pkg-config))
     (inputs
      (list poppler zathura))
@@ -627,7 +697,7 @@ by using the poppler rendering engine.")
 (define-public zathura
   (package
     (name "zathura")
-    (version "0.5.1")
+    (version "0.5.2")
     (source (origin
               (method url-fetch)
               (uri
@@ -635,7 +705,7 @@ by using the poppler rendering engine.")
                               version ".tar.xz"))
               (sha256
                (base32
-                "1c8vmfpghqlq5kdnq92bzzp2grym3x3kxxxqgs51178s4z7639lq"))))
+                "15314m9chmh5jkrd9vk2h2gwcwkcffv2kjcxkd4v3wmckz5sfjy6"))))
     (native-inputs
      (list pkg-config
            gettext-minimal
@@ -716,7 +786,7 @@ interaction.")
                ;; Look for freetype include files in the correct place.
                (substitute* "cmake/modules/FindFREETYPE.cmake"
                  (("/usr/local") freetype))))))))
-    (home-page "http://podofo.sourceforge.net")
+    (home-page "https://podofo.sourceforge.net")
     (synopsis "Tools to work with the PDF file format")
     (description
      "PoDoFo is a C++ library and set of command-line tools to work with the
@@ -754,29 +824,25 @@ and based on PDF specification 1.7.")
 (define-public mupdf
   (package
     (name "mupdf")
-    (version "1.20.3")
+    (version "1.22.2")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://mupdf.com/downloads/archive/"
-                           "mupdf-" version "-source.tar.lz"))
+                           "mupdf-" version "-source.tar.gz"))
        (sha256
-        (base32
-         "0s0qclxxdjis04mczgz0fhfpv0j8llk48g82zlfrk0daz0zgcwvg"))
-       (modules '((guix build utils)))
+        (base32 "1dxybd4fzjdmkpwd984yj511nmjxjbpj00yccycfm37gwvs6mijl"))
+       (modules '((guix build utils)
+                  (ice-9 ftw)
+                  (srfi srfi-1)))
        (snippet
-        #~(begin
-            ;; Remove bundled software.  Keep patched variants.
-            (let* ((keep (list "extract" "freeglut" "lcms2"))
-                   (from "thirdparty")
-                   (kept (string-append from "~temp")))
-              (mkdir-p kept)
-              (for-each (lambda (file)
-                          (rename-file (string-append from "/" file)
-                                       (string-append kept "/" file)))
-                        keep)
-              (delete-file-recursively from)
-              (rename-file kept from))))))
+        ;; Remove bundled software.  Keep patched variants.
+        #~(with-directory-excursion "thirdparty"
+            (let ((keep '("README" "extract" "freeglut" "lcms2")))
+              (for-each delete-file-recursively
+                        (lset-difference string=?
+                                         (scandir ".")
+                                         (cons* "." ".." keep))))))))
     (build-system gnu-build-system)
     (inputs
      (list curl
@@ -810,14 +876,13 @@ and based on PDF specification 1.7.")
               "USE_SYSTEM_JPEGXR=no # not available"
               "USE_SYSTEM_LCMS2=no # lcms2mt is strongly preferred"
               "USE_SYSTEM_LIBJPEG=yes"
-              "USE_SYSTEM_MUJS=no # not available"
+              "USE_SYSTEM_MUJS=yes"
               "USE_SYSTEM_OPENJPEG=yes"
               "USE_SYSTEM_ZLIB=yes"
               "USE_SYSTEM_GLUT=no"
               "USE_SYSTEM_CURL=yes"
               "USE_SYSTEM_LEPTONICA=yes"
               "USE_SYSTEM_TESSERACT=yes"
-              "USE_SYSTEM_MUJS=yes"
               "shared=yes"
               (string-append "LDFLAGS=-Wl,-rpath=" #$output "/lib")
               (string-append "prefix=" #$output))
@@ -843,60 +908,47 @@ line tools for batch rendering @command{pdfdraw}, rewriting files
 
 (define-public qpdf
   (package
-   (name "qpdf")
-   (version "10.0.1")
-   (source (origin
-            (method url-fetch)
-            (uri (string-append "mirror://sourceforge/qpdf/qpdf/" version
-                                "/qpdf-" version ".tar.gz"))
-            (sha256
-             (base32
-              "0yw2cpw7ygfd6jlgpwbi8vsnvv9p55zxp9h17x77z2qq733pf8jx"))))
-   (build-system gnu-build-system)
-   (arguments
-    `(#:disallowed-references (,perl)
-      #:phases
-      (modify-phases %standard-phases
-        (add-before 'configure 'patch-paths
-          (lambda _
-            (substitute* "make/libtool.mk"
-              (("SHELL=/bin/bash")
-               (string-append "SHELL=" (which "bash"))))
-            (substitute* (append
-                          '("qtest/bin/qtest-driver")
-                          (find-files "." "\\.test"))
-              (("/usr/bin/env") (which "env")))
-            #t)))))
-   (native-inputs
-    (list pkg-config perl))
-   (propagated-inputs
-    ;; In Requires.private of libqpdf.pc.
-    (list libjpeg-turbo zlib))
-   (synopsis "Command-line tools and library for transforming PDF files")
-   (description
-    "QPDF is a command-line program that does structural, content-preserving
+    (name "qpdf")
+    (version "11.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://sourceforge/qpdf/qpdf/" version
+                                  "/qpdf-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0bg2d4585nxss2zakq105ibhzzsa1bhwpmr0k8752fg2qqxcz9rl"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list #:configure-flags #~'("-DBUILD_STATIC_LIBS=OFF")))
+    (native-inputs
+     (list perl pkg-config))
+    (propagated-inputs
+     ;; In Requires.private of libqpdf.pc.
+     (list libjpeg-turbo zlib))
+    (synopsis "Command-line tools and library for transforming PDF files")
+    (description
+     "QPDF is a command-line program that does structural, content-preserving
 transformations on PDF files.  It could have been called something like
 pdf-to-pdf.  It includes support for merging and splitting PDFs and to
 manipulate the list of pages in a PDF file.  It is not a PDF viewer or a
 program capable of converting PDF into other formats.")
-   ;; Prior to the 7.0 release, QPDF was licensed under Artistic 2.0.
-   ;; Users can still choose to use the old license at their option.
-   (license (list license:asl2.0 license:clarified-artistic))
-   (home-page "http://qpdf.sourceforge.net/")))
+    ;; Prior to the 7.0 release, QPDF was licensed under Artistic 2.0.
+    ;; Users can still choose to use the old license at their option.
+    (license (list license:asl2.0 license:clarified-artistic))
+    (home-page "https://qpdf.sourceforge.net/")))
 
 (define-public qpdfview
   (package
     (name "qpdfview")
-    (version "0.4.18")
+    (version "0.5.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://launchpad.net/qpdfview/"
                            "trunk/" version "/+download/"
-                           "qpdfview-" version ".tar.gz"))
+                           "qpdfview-" (version-major+minor version) ".tar.gz"))
        (sha256
-        (base32 "0v1rl126hvblajnph2hkansgi0s8vjdc5yxrm4y3faa0lxzjwr6c"))
-       (patches (search-patches "qpdfview-qt515-compat.patch"))))
+        (base32 "16dy341927r2s1dza7g8ci1jyypfc4a6yfcvg9sxvjv1li0c9vs4"))))
     (build-system qt-build-system)
     (native-inputs
      (list pkg-config))
@@ -908,14 +960,14 @@ program capable of converting PDF into other formats.")
            qtbase-5
            qtsvg-5))
     (arguments
-     `(#:tests? #f ; no tests
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'configure
-           (lambda* (#:key outputs #:allow-other-keys)
-             (substitute* "qpdfview.pri"
-               (("/usr") (assoc-ref outputs "out")))
-             (invoke "qmake" "qpdfview.pro"))))))
+     (list #:tests? #f ; no tests
+           #:phases
+           #~(modify-phases %standard-phases
+               (replace 'configure
+                 (lambda _
+                   (substitute* "qpdfview.pri"
+                     (("/usr") #$output))
+                   (invoke "qmake" "qpdfview.pro"))))))
     (home-page "https://launchpad.net/qpdfview")
     (synopsis "Tabbed document viewer")
     (description "@command{qpdfview} is a document viewer for PDF, PS and DJVU
@@ -941,7 +993,7 @@ SyncTeX support, and rudimentary support for annotations and forms.")
      (list gtk+-2 pango poppler glib libgnomecanvas))
     (native-inputs
      (list pkg-config))
-    (home-page "http://xournal.sourceforge.net/")
+    (home-page "https://xournal.sourceforge.net/")
     (synopsis "Notetaking using a stylus")
     (description
      "Xournal is an application for notetaking, sketching, keeping a journal
@@ -951,7 +1003,7 @@ using a stylus.")
 (define-public xournalpp
   (package
     (name "xournalpp")
-    (version "1.1.2")
+    (version "1.1.3")
     (source
      (origin
        (method git-fetch)
@@ -960,7 +1012,7 @@ using a stylus.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "13q3fsrszq828gki3z42lda9gghm9wsnsg7iylp1ypcbj7hd5zhk"))))
+        (base32 "17qq3clfmiyrcah89h8c5r6pc58xcskm5z1czbasv67bfq7chzhy"))))
     (build-system cmake-build-system)
     (arguments
      (list
@@ -994,8 +1046,7 @@ using a stylus.")
            libzip
            lua
            poppler
-           portaudio
-           texlive-bin))
+           portaudio))
     (home-page "https://github.com/xournalpp/xournalpp")
     (synopsis "Handwriting notetaking software with PDF annotation support")
     (description "Xournal++ is a hand note taking software written in
@@ -1120,7 +1171,7 @@ vector formats.")
                 (install-file "impressive.1" man1)))))))
     ;; TODO: Add dependency on pdftk.
     (inputs (list python-pygame python-pillow sdl xpdf))
-    (home-page "http://impressive.sourceforge.net")
+    (home-page "https://impressive.sourceforge.net")
     (synopsis "PDF presentation tool with visual effects")
     (description
      "Impressive is a tool to display PDF files that provides visual effects
@@ -1203,6 +1254,35 @@ information for every pixel as the input.")
 the framebuffer.")
     (license license:gpl2+)))
 
+(define-public pdfcrack
+  (package
+    (name "pdfcrack")
+    (version "0.20")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://sourceforge/pdfcrack/pdfcrack/"
+                                  "pdfcrack-" version "/"
+                                  "pdfcrack-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1d751n38cbagxqpw6ncvf3jfv7zhxl3fwh5nms2bjp6diyqjk2vv"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f                  ;no test suite
+           #:make-flags #~(list (string-append "CC="
+                                               #$(cc-for-target)))
+           #:phases #~(modify-phases %standard-phases
+                        (delete 'configure) ;no configure script
+                        (replace 'install
+                          (lambda _
+                            (install-file "pdfcrack"
+                                          (string-append #$output "/bin")))))))
+    (home-page "https://pdfcrack.sourceforge.net/")
+    (synopsis "Password recovery tool for PDF files")
+    (description "PDFCrack is a simple tool for recovering passwords from PDF
+documents that use the standard security handler.")
+    (license license:gpl2+)))
+
 (define-public pdf2svg
   (package
     (name "pdf2svg")
@@ -1226,6 +1306,35 @@ the framebuffer.")
     (description "@command{pdf2svg} is a simple command-line PDF to SVG
 converter using the Poppler and Cairo libraries.")
     (license license:gpl2+)))
+
+(define-public python-pypdf
+  (package
+    (name "python-pypdf")
+    (version "3.2.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/py-pdf/pypdf")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1qwvjr694sabfblx22zd54b9ny40f2gbv3bv6q43myrlxwvvisk6"))
+              (patches (search-patches
+                        "python-pypdf-annotate-tests-appropriately.patch"))))
+    (build-system pyproject-build-system)
+    (native-inputs (list python-pytest python-flit))
+    (propagated-inputs (list python-typing-extensions))
+    (home-page "https://github.com/py-pdf/pypdf")
+    (arguments
+     (list
+      ;; Disable tests that use the network and non-free assets.
+      #:test-flags #~(list "-m" "not external and not samples")))
+    (synopsis "Python PDF library")
+    (description
+     "This package provides a PDF library capable of splitting, merging,
+cropping, and transforming PDF files.")
+    (license license:bsd-3)))
 
 (define-public python-pypdf2
   (package
@@ -1276,7 +1385,7 @@ manage or manipulate PDFs.")
 (define-public pdfarranger
   (package
     (name "pdfarranger")
-    (version "1.9.1")
+    (version "1.9.2")
     (source
      (origin
        (method git-fetch)
@@ -1285,7 +1394,7 @@ manage or manipulate PDFs.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1s0ysg8kfbrvwcr80vrsx7150ixa9v7pb4xm49s97nkiq5k69hal"))))
+        (base32 "1zj1fdaqih9d878yxy96ivgqyg4j31slvh2gqsyz2l2vj3s8z54x"))))
     (build-system python-build-system)
     (arguments
      (list
@@ -1530,7 +1639,7 @@ manipulating PDF documents from the command line.  It supports
            python-cairosvg
            python-cffi
            python-cssselect2
-           python-fonttools-full
+           python-fonttools
            python-html5lib
            python-pillow
            python-pydyf

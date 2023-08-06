@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2021-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2021-2023 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -56,6 +56,11 @@ expressions."
 (test-equal "read-with-comments: dot notation"
   (cons 'a 'b)
   (call-with-input-string "(a . b)"
+    read-with-comments))
+
+(test-equal "read-with-comments: half dot notation"
+  '(lambda x x)
+  (call-with-input-string "(lambda (. x) x)"
     read-with-comments))
 
 (test-equal "read-with-comments: list with blank line"
@@ -143,6 +148,11 @@ expressions."
                    #:max-width 11)
 
 (test-pretty-print "\
+(begin
+  1+ 1- 123/ 456*
+  (1+ 41))")
+
+(test-pretty-print "\
 (lambda (x y)
   ;; This is a procedure.
   (let ((z (+ x y)))
@@ -190,6 +200,11 @@ expressions."
 (string-append \"a\\tb\" \"\\n\")")
 
 (test-pretty-print "\
+(display \"This is a very long string.
+It contains line breaks, which are preserved,
+because it's a long string.\")")
+
+(test-pretty-print "\
 (description \"abcdefghijkl
 mnopqrstuvwxyz.\")"
                    #:max-width 30)
@@ -206,6 +221,15 @@ mnopqrstuvwxyz.\")"
                    #:max-width 33)
 
 (test-pretty-print "\
+(list ;margin comment
+      a b c)")
+
+(test-pretty-print "\
+(list
+ ;; This is a line comment immediately following the list head.
+ #:test-flags #~(list \"-m\" \"not external and not samples\"))")
+
+(test-pretty-print "\
 (modify-phases %standard-phases
   (replace 'build
     ;; Nicely indented in 'modify-phases' context.
@@ -216,6 +240,21 @@ mnopqrstuvwxyz.\")"
 (modify-inputs inputs
   ;; Regular indentation for 'replace' here.
   (replace \"gmp\" gmp))")
+
+(test-pretty-print "\
+#~(modify-phases phases
+    (add-after 'whatever 'something-else
+      (lambda _
+        ;; This comment appears inside a gexp.
+        42)))")
+
+(test-pretty-print "\
+#~(list #$@(list coreutils ;yup
+                 grep) ;margin comment
+        #+sed
+
+        ;; Line comment.
+        #$grep)")
 
 (test-pretty-print "\
 (package

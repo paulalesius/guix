@@ -94,7 +94,7 @@
                  (assoc-ref inputs "sound-theme-freedesktop")
                  "/share")))
              #t)))))
-    (home-page "http://0pointer.de/lennart/projects/libcanberra/")
+    (home-page "https://0pointer.de/lennart/projects/libcanberra/")
     (synopsis
      "Implementation of the XDG Sound Theme and Name Specifications")
     (description
@@ -103,12 +103,6 @@ Specifications, for generating event sounds on free desktops, such as
 GNOME.  It comes with several backends (ALSA, PulseAudio, OSS, GStreamer,
 null) and is designed to be portable.")
     (license lgpl2.1+)))
-
-(define-public libcanberra/gtk+-2
-  (package/inherit libcanberra
-    (name "libcanberra-gtk2")
-    (inputs `(,@(alist-delete "gtk+" (package-inputs libcanberra))
-              ("gtk+" ,gtk+-2)))))
 
 (define-public sound-theme-freedesktop
   (package

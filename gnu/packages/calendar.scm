@@ -2,7 +2,7 @@
 ;;; Copyright © 2015 David Thompson <davet@gnu.org>
 ;;; Copyright © 2015, 2016, 2017 Leo Famulari <leo@famulari.name>
 ;;; Copyright © 2016 Kei Kebreau <kkebreau@posteo.net>
-;;; Copyright © 2016, 2017, 2020, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016, 2017, 2020, 2022, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Troy Sankey <sankeytms@gmail.com>
 ;;; Copyright © 2016, 2021 Stefan Reichoer <stefan@xsteve.at>
 ;;; Copyright © 2018, 2019, 2021 Tobias Geerinckx-Rice <me@tobias.gr>
@@ -11,6 +11,7 @@
 ;;; Copyright © 2020 Tanguy Le Carrour <tanguy@bioneland.org>
 ;;; Copyright © 2020 Peng Mei Yu <pengmeiyu@riseup.net>
 ;;; Copyright © 2021 Wamm K. D. <jaft.r@outlook.com>
+;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -29,11 +30,13 @@
 
 (define-module (gnu packages calendar)
   #:use-module (gnu packages)
+  #:use-module (guix gexp)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system go)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system python)
   #:use-module (gnu packages admin)
@@ -45,6 +48,7 @@
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
+  #:use-module (gnu packages golang)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages icu4c)
   #:use-module (gnu packages perl)
@@ -119,7 +123,7 @@ the <tz.h> library for handling time zones and leap seconds.")
 (define-public libical
   (package
     (name "libical")
-    (version "3.0.14")
+    (version "3.0.16")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -127,35 +131,29 @@ the <tz.h> library for handling time zones and leap seconds.")
                     version "/libical-" version ".tar.gz"))
               (sha256
                (base32
-                "13ycghsi4iv8mnm0xv97bs0x6qvfhdxkw20n3yhcc7bg6n0bg122"))))
+                "0cqc1wpalxmxjx8dmcaga9w8kd5l7944hqmidz43hifaf7fhaixl"))))
     (build-system cmake-build-system)
     (arguments
-     '(#:tests? #f ; test suite appears broken
-       #:parallel-build? #f             ;may cause GIR generation failure
-       #:configure-flags '("-DSHARED_ONLY=true"
-                           ;; required by evolution-data-server
-                           "-DGOBJECT_INTROSPECTION=true"
-                           "-DICAL_GLIB_VAPI=true")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-docbook-reference
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* "doc/reference/libical-glib/libical-glib-docs.sgml.in"
-               (("http://www.oasis-open.org/docbook/xml/4.3/")
-                (string-append (assoc-ref inputs "docbook-xml")
-                               "/xml/dtd/docbook/")))))
-         (add-before 'configure 'patch-paths
-           (lambda* (#:key inputs #:allow-other-keys)
-             ;; TODO: libical 3.1.0 supports using TZDIR instead of a hard-coded
-             ;; zoneinfo database.  When that is released we can drop
-             ;; the tzdata dependency.
-             (let ((tzdata (assoc-ref inputs "tzdata")))
-               (substitute* "src/libical/icaltz-util.c"
-                 (("\\\"/usr/share/zoneinfo\\\",")
-                  (string-append "\"" tzdata "/share/zoneinfo\""))
-                 (("\\\"/usr/lib/zoneinfo\\\",") "")
-                 (("\\\"/etc/zoneinfo\\\",") "")
-                 (("\\\"/usr/share/lib/zoneinfo\\\"") ""))))))))
+     (list
+      #:configure-flags #~(list "-DSHARED_ONLY=true"
+                                ;; required by evolution-data-server
+                                "-DGOBJECT_INTROSPECTION=true"
+                                "-DICAL_GLIB_VAPI=true")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'configure 'patch-paths
+            (lambda* (#:key inputs #:allow-other-keys)
+              (define zoneinfo (search-input-directory inputs "share/zoneinfo"))
+              ;; The timezones test fails if TZDIR is not set, for some
+              ;; reason.  If only TZDIR is set, tests checking the timezone
+              ;; fallback fail, so also patch the source.
+              (setenv "TZDIR" zoneinfo) ;for tests
+              (substitute* "src/libical/icaltz-util.c"
+                (("\\\"/usr/share/zoneinfo\\\",")
+                 (format #f "~s" zoneinfo))
+                (("\\\"/usr/lib/zoneinfo\\\",") "")
+                (("\\\"/etc/zoneinfo\\\",") "")
+                (("\\\"/usr/share/lib/zoneinfo\\\"") "")))))))
     (native-inputs
      (list docbook-xml-4.3
            gobject-introspection
@@ -179,13 +177,13 @@ data units.")
 (define-public khal
   (package
     (name "khal")
-    (version "0.10.5")
+    (version "0.11.2")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "khal" version))
               (sha256
                (base32
-                "0xhcrx7lcjk126i2xgqmgb199vd4hxsq34mkdmhdh9ia62nbgvsf"))))
+                "1flrz01nsmvphiv673b8ia279qcp3gj6a1rsjlsj4gp5f69xif4g"))))
     (build-system python-build-system)
     (arguments
      `(#:tests? #f ; The test suite is unreliable. See <https://bugs.gnu.org/44197>
@@ -204,21 +202,23 @@ data units.")
            ;; Required to build manpage
            python-sphinxcontrib-newsfeed python-sphinx))
     (inputs
-     (list sqlite
+     (list python-atomicwrites
+           python-click
+           python-click-log
            python-configobj
            python-dateutil
            python-icalendar
+           python-pytz
+           python-pyxdg
            python-tzlocal
            python-urwid
-           python-pytz
-           python-setproctitle
-           python-atomicwrites
-           python-click
-           python-click-log
-           python-pyxdg))
+           ;; For the extras.
+           python-setproctitle))
     (synopsis "Console calendar program")
     (description "Khal is a standards based console calendar program,
-able to synchronize with CalDAV servers through vdirsyncer.")
+able to synchronize with CalDAV servers through vdirsyncer.  It includes
+both a @acronym{CLI, command-line interface} and a @acronym{TUI, textual user
+interface} named 'ikhal'.")
     (home-page "https://lostpackets.de/khal/")
     (license license:expat)))
 
@@ -426,3 +426,38 @@ written in C++ using GTK.  Launched once, it pops up a small calendar applet,
 launched again it closes the running instance.  It can additionally be
 configured to show the current time in different timezones.")
       (license license:bsd-3))))
+
+(define-public hebcal
+  (let ((commit "2384bb88dc1a41a4a5ae57a29fb58b2dd49a475d")
+        (revision "0"))
+    (package
+      (name "hebcal")
+      (version (git-version "5.3.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/hebcal/hebcal")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "12rv3b51jb7wcjwmmizz9jkw7gh37yklys4xncvpzgxdkkfgmmjx"))))
+      (build-system go-build-system)
+      (arguments
+       (list #:import-path "github.com/hebcal/hebcal"))
+      (inputs
+       (list go-github-com-hebcal-hebcal-go
+             go-github-com-pborman-getopt))
+      (synopsis "Perpetual Jewish Calendar program")
+      (description
+       "Hebcal is a program for converting between Hebrew and Gregorian
+dates, and generating lists of Jewish holidays for a given year.
+Shabbat, holiday candle lighting, and havdalah times are approximated
+using your location.
+
+It can also show daily prayer times, the weekly Torah reading, and
+the daily leaf of Talmud.  The program can help with counting of the
+Omer or with calculation of Hebrew yahrzeits, birthdays, or
+anniversaries.")
+      (home-page "https://github.com/hebcal/hebcal")
+      (license license:gpl2+))))

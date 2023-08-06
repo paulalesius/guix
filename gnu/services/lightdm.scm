@@ -151,7 +151,7 @@ icon themes."
    "The name of the cursor theme to use.")
   (cursor-theme-size
    (number 16)
-   "The size to use for the the cursor theme.")
+   "The size to use for the cursor theme.")
   (allow-debugging?
    maybe-boolean
    "Set to #t to enable debug log level.")
@@ -616,7 +616,7 @@ port=" (number->string vnc-server-port) "\n"
   (list
    (shepherd-service
     (documentation "LightDM display manager")
-    (requirement '(dbus-system user-processes host-name))
+    (requirement '(pam dbus-system user-processes host-name))
     (provision '(lightdm display-manager xorg-server))
     (respawn? #f)
     (start

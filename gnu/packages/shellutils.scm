@@ -6,7 +6,7 @@
 ;;; Copyright © 2018, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018 Benjamin Slade <slade@jnanam.net>
 ;;; Copyright © 2019 Collin J. Doering <collin@rekahsoft.ca>
-;;; Copyright © 2020 Michael Rohleder <mike@rohleder.de>
+;;; Copyright © 2020, 2022 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2020 aecepoglu <aecepoglu@fastmail.fm>
 ;;; Copyright © 2020 Dion Mendel <guix@dm9.info>
 ;;; Copyright © 2021 Brice Waegeneire <brice@waegenei.re>
@@ -15,6 +15,8 @@
 ;;; Copyright © 2021 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;; Copyright © 2021 Wiktor Żelazny <wzelazny@vurv.cz>
 ;;; Copyright © 2022 Jose G Perez Taveras <josegpt27@gmail.com>
+;;; Copyright © 2023 Timo Wilken <guix@twilken.net>
+;;; Copyright © 2023 Camilo Q.S. (Distopico) <distopico@riseup.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -102,7 +104,7 @@ chart.")
 (define-public boxes
   (package
     (name "boxes")
-    (version "2.1.1")
+    (version "2.2.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -111,7 +113,7 @@ chart.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1bf5rnfiw04ffs1l17zhbg4wvq2vfn2qbz1xmd250xqj15lysw88"))))
+                "0vv2gaav1m4z2xdk0k3ragmv4kcnzv7p3v97lkjl1wbfmk5nhz07"))))
     (build-system gnu-build-system)
     (arguments
      `(#:test-target "test"
@@ -187,39 +189,92 @@ in Zsh intelligently.")
     (build-system gnu-build-system)
     (native-inputs
      (list ruby
-           ruby-byebug
            ruby-pry
            ruby-rspec
            ruby-rspec-wait
            tmux
            zsh))
     (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-tests
-           (lambda _
-             ;; Failing tests since tmux-3.2a
-             (delete-file "spec/options/buffer_max_size_spec.rb")))
-         (delete 'configure)
-         (replace 'check ; Tests use ruby's bundler; instead execute rspec directly.
-           (lambda _
-             (setenv "TMUX_TMPDIR" (getenv "TMPDIR"))
-             (setenv "SHELL" (which "zsh"))
-             (invoke "rspec")))
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (zsh-plugins
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-tests
+            (lambda _
+              ;; Failing tests since tmux-3.2a
+              (delete-file "spec/options/buffer_max_size_spec.rb")))
+          (delete 'configure)
+          (replace 'check ; Tests use ruby's bundler; instead execute rspec directly.
+            (lambda _
+              (setenv "TMUX_TMPDIR" (getenv "TMPDIR"))
+              (setenv "SHELL" (which "zsh"))
+              (invoke "rspec")))
+          (replace 'install
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (zsh-plugins
                       (string-append out "/share/zsh/plugins/zsh-autosuggestions")))
-               (invoke "make" "all")
-               (install-file "zsh-autosuggestions.zsh" zsh-plugins)
-               #t))))))
+                (invoke "make" "all")
+                (install-file "zsh-autosuggestions.zsh" zsh-plugins)))))))
     (home-page "https://github.com/zsh-users/zsh-autosuggestions")
     (synopsis "Fish-like autosuggestions for zsh")
     (description
      "Fish-like fast/unobtrusive autosuggestions for zsh.  It suggests commands
 as you type.")
     (license license:expat)))
+
+(define-public zsh-completions
+  (package
+    (name "zsh-completions")
+    (version "0.34.0")
+    (home-page "https://github.com/zsh-users/zsh-completions")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url home-page)
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0jjgvzj3v31yibjmq50s80s3sqi4d91yin45pvn3fpnihcrinam9"))))
+    (build-system copy-build-system)
+    (arguments
+     '(#:install-plan '(("src/" "share/zsh/site-functions/")
+                        ("README.md" "share/doc/zsh-completions/"))))
+    (synopsis "Additional completion definitions for Zsh")
+    (description
+     "This projects aims at gathering/developing new completion scripts that
+are not available in Zsh yet.  The scripts may be contributed to the Zsh
+project when stable enough.")
+    (license (license:non-copyleft "file://LICENSE"
+              "Custom BSD-like, permissive, non-copyleft license."))))
+
+(define-public zsh-history-substring-search
+  (package
+    (name "zsh-history-substring-search")
+    (version "1.0.2")
+    (home-page "https://github.com/zsh-users/zsh-history-substring-search")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url home-page)
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0y8va5kc2ram38hbk2cibkk64ffrabfv1sh4xm7pjspsba9n5p1y"))))
+    (build-system copy-build-system)
+    (arguments
+     '(#:install-plan '(("zsh-history-substring-search.plugin.zsh"
+                         "share/zsh/plugins/zsh-history-substring-search/")
+                        ("zsh-history-substring-search.zsh"
+                         "share/zsh/plugins/zsh-history-substring-search/")
+                        ("README.md" "share/doc/zsh-history-substring-search/"))))
+    (synopsis "ZSH port of Fish history search (up arrow)")
+    (description
+     "This is a clean-room implementation of the Fish shell's history search
+feature, where you can type in any part of any command from history and then
+press chosen keys, such as the UP and DOWN arrows, to cycle through matches.")
+    (license license:bsd-3)))
 
 (define-public zsh-syntax-highlighting
   (package
@@ -275,7 +330,7 @@ particularly in catching syntax errors.")
 (define-public grml-zsh-config
   (package
     (name "grml-zsh-config")
-    (version "0.19.3")
+    (version "0.19.5")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -283,7 +338,7 @@ particularly in catching syntax errors.")
                     version ".tar.gz"))
               (sha256
                (base32
-                "05fri77028znjnvmh8mz3424rn8ilysj7hn8br2hk1qwkp4zzwp9"))))
+                "0ifw490z3v9ljccbmm04adz39fj2dmx8mjgayxqj0a9ln90yfdc4"))))
     (build-system copy-build-system)
     (arguments
      (list
@@ -428,7 +483,7 @@ are already there.")
 (define-public direnv
   (package
     (name "direnv")
-    (version "2.32.1")
+    (version "2.32.3")
     (source
      (origin (method git-fetch)
              (uri (git-reference
@@ -437,7 +492,7 @@ are already there.")
              (file-name (git-file-name name version))
              (sha256
               (base32
-               "1i473j7j4sx8p83zqlnakskqk0jyd3byajp7jmv2gym9s4k841y7"))))
+               "1hyl67n7na19zm3ksiiyva4228alx0jfh9l3v1mxszn9prwgcfjc"))))
     (build-system go-build-system)
     (arguments
      '(#:import-path "github.com/direnv/direnv"
@@ -519,7 +574,7 @@ below the current cursor position, scrolling the screen if necessary.")
 (define-public hstr
   (package
     (name "hstr")
-    (version "2.5")
+    (version "3.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -528,7 +583,7 @@ below the current cursor position, scrolling the screen if necessary.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0xg10jyiq12bcygi6aa9qq9pki7bipdsvsza037p2iqix19jg0x8"))))
+                "1w1xr0ddf34i46b8wwz2snf7ap6m0mv53zid3d1l5hc4m3az5qis"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
@@ -553,7 +608,7 @@ easily view, navigate, and search your command history with suggestion boxes.
 HSTR can also manage your command history (for instance you can remove
 commands that are obsolete or contain a piece of sensitive information) or
 bookmark your favourite commands.")
-    (home-page "http://me.mindforger.com/projects/hh.html")
+    (home-page "https://me.mindforger.com/projects/hh.html")
     (license license:asl2.0)))
 
 (define-public shell-functools
@@ -617,7 +672,7 @@ install -m 644 rig.6 $(DESTDIR)$(MANDIR)/man6/rig.6")
                          (("install -g 0 -m 644 -o 0 data/\\*.idx \\$\\(DATADIR\\)")
                           "install -m 644 data/*.idx $(DESTDIR)$(DATADIR)")))))
                  #:tests? #f))
-    (home-page "http://rig.sourceforge.net")
+    (home-page "https://rig.sourceforge.net")
     (synopsis "Random identity generator")
     (description
       "RIG (Random Identity Generator) generates random, yet real-looking,

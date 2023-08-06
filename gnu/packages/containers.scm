@@ -3,6 +3,7 @@
 ;;; Copyright © 2022 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2022 Zhu Zihao <all_but_last@163.com>
 ;;; Copyright © 2022 Michael Rohleder <mike@rohleder.de>
+;;; Copyright © 2023 Zongyuan Li <zongyuan.li@c0x0o.me>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -26,6 +27,7 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
+  #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system go)
   #:use-module (guix build-system meson)
@@ -46,7 +48,8 @@
   #:use-module (gnu packages selinux)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages virtualization)
-  #:use-module (gnu packages web))
+  #:use-module (gnu packages web)
+  #:use-module (gnu packages wget))
 
 (define-public crun
   (let ((commit "c381048530aa750495cf502ddb7181f2ded5b400"))
@@ -91,7 +94,7 @@
       (inputs
        (list libcap
              libseccomp
-             libyajl))
+             yajl))
       (native-inputs
        (list automake
              autoconf
@@ -152,6 +155,41 @@ Container Runtime fully written in C.")
 manager (like Podman or CRI-O) and an Open Container Initiative (OCI)
 runtime (like runc or crun) for a single container.")
     (license license:asl2.0)))
+
+(define-public distrobox
+  (package
+    (name "distrobox")
+    (version "1.4.2.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/89luca89/distrobox")
+             (commit version)))
+       (sha256
+        (base32 "0gs81m1bvlyq6ad22zsdsw1q6s3agy79vx94kdf6zjzngbanlydk"))
+       (file-name (git-file-name name version))))
+    (build-system copy-build-system)
+    (inputs
+     (list podman wget))
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'install 'refer-to-inputs
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   (substitute* (find-files "." "^distrobox.*[^1]$")
+                     (("podman") (search-input-file inputs "/bin/podman"))
+                     (("wget") (search-input-file inputs "/bin/wget"))
+                     (("command -v") "test -x"))))
+               (replace 'install
+                 (lambda _
+                   (invoke "./install" "--prefix" #$output))))))
+    (home-page "https://distrobox.privatedns.org/")
+    (synopsis "Create and start containers highly integrated with the hosts")
+    (description
+     "Distrobox is a fancy wrapper around Podman or Docker to create and start
+containers highly integrated with the hosts.")
+    (license license:gpl3)))
 
 (define-public libslirp
   (package
@@ -274,15 +312,19 @@ configure network interfaces in Linux containers.")
 (define-public podman
   (package
     (name "podman")
-    (version "4.2.1")
+    (version "4.4.1")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/containers/podman")
              (commit (string-append "v" version))))
+       (modules '((guix build utils)))
+       ;; FIXME: Btrfs libraries not detected by these scripts.
+       (snippet '(substitute* "Makefile"
+                   ((".*hack/btrfs.*") "")))
        (sha256
-        (base32 "0ph8gf5gk9z1hm1v5kv924dipswvgrz0sgk23plnh2q0vbnh4wvv"))
+        (base32 "0qbr6rbyig3c2hvdvmd94jjkg820hpdz6j7dgyv62dl6wfwvj5jj"))
        (file-name (git-file-name name version))))
 
     (build-system gnu-build-system)
@@ -318,6 +360,8 @@ configure network interfaces in Linux containers.")
                  (string-append "CATATONIT_PATH=" (which "true"))))
               (substitute* "vendor/github.com/containers/common/pkg/config/config_linux.go"
                 (("/usr/local/libexec/podman")
+                 (string-append #$output "/libexec/podman"))
+                (("/usr/local/lib/podman")
                  (string-append #$output "/bin")))
               (substitute* "vendor/github.com/containers/common/pkg/config/default.go"
                 (("/usr/libexec/podman/conmon") (which "conmon"))
@@ -344,13 +388,93 @@ configure network interfaces in Linux containers.")
     (native-inputs
      (list bats
            git
-           go
+           go-1.19
            ; strace ; XXX debug
-           pkg-config))
+           pkg-config
+           python))
     (home-page "https://podman.io")
     (synopsis "Manage containers, images, pods, and their volumes")
     (description
      "Podman (the POD MANager) is a tool for managing containers and images,
 volumes mounted into those containers, and pods made from groups of
 containers.")
+    (license license:asl2.0)))
+
+(define-public buildah
+  (package
+    (name "buildah")
+    (version "1.29.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/containers/buildah")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1mcqkz68fjccdla1bgxw57w268a586brm6x28fcm6x425ah0w07h"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:import-path "github.com/containers/buildah/cmd/buildah"
+           #:unpack-path "github.com/containers/buildah"
+
+           ;; Some dependencies require go-1.18 to build.
+           #:go go-1.18
+
+           #:tests? #f
+           #:install-source? #f
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'prepare-install-docs
+                 (lambda* (#:key unpack-path #:allow-other-keys)
+                   (substitute* (string-append "src/"
+                                               unpack-path
+                                               "/docs/Makefile")
+                     (("../tests/tools/build/go-md2man")
+                      (which "go-md2man")))
+                   (substitute* (string-append "src/"
+                                               unpack-path
+                                               "/docs/Makefile")
+                     (("/usr/local") (string-append #$output)))))
+               (add-after 'build 'build-docs
+                 (lambda* (#:key unpack-path #:allow-other-keys)
+                   (let ((doc (string-append "src/" unpack-path "/docs")))
+                     (invoke "make" "-C" doc))))
+               (add-after 'install 'install-docs
+                 (lambda* (#:key unpack-path #:allow-other-keys)
+                   (let ((doc (string-append "src/" unpack-path "/docs")))
+                     (invoke "make" "-C" doc "install")))))))
+    (inputs (list btrfs-progs
+                  cni-plugins
+                  conmon
+                  eudev
+                  glib
+                  gpgme
+                  libassuan
+                  libseccomp
+                  lvm2
+                  runc))
+    (native-inputs
+     (list go-github-com-go-md2man
+           gnu-make
+           pkg-config))
+    (synopsis "Build @acronym{OCI, Open Container Initiative} images")
+    (description
+     "Buildah is a command-line tool to build @acronym{OCI, Open Container
+Initiative} container images.  More generally, it can be used to:
+
+@itemize
+@item
+create a working container, either from scratch or using an image as a
+starting point;
+@item
+create an image, either from a working container or via the instructions
+in a @file{Dockerfile};
+@item
+mount a working container's root filesystem for manipulation;
+@item
+use the updated contents of a container's root filesystem as a filesystem
+layer to create a new image.
+@end itemize")
+    (home-page "https://buildah.io")
     (license license:asl2.0)))

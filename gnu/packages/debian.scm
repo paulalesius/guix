@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2018, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2018, 2020-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2018, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2020 Marius Bakke <marius@gnu.org>
 ;;;
@@ -47,7 +47,7 @@
 (define-public debian-archive-keyring
   (package
     (name "debian-archive-keyring")
-    (version "2021.1.1")
+    (version "2023.4")
     (source
       (origin
         (method git-fetch)
@@ -56,8 +56,7 @@
               (commit version)))
         (file-name (git-file-name name version))
         (sha256
-         (base32
-          "0dcmv7y1k6j3a646kr0rkd2a0c4j2wrz868bh8j9zjx1npzns73q"))))
+         (base32 "0gn24dgzpg9zwq2hywkac4ljr5lrh7smyqxm21k2bivl0bhc4ca6"))))
     (build-system gnu-build-system)
     (arguments
      '(#:test-target "verify-results"
@@ -74,8 +73,7 @@
                (install-file "keyrings/debian-archive-removed-keys.gpg" key)
                (for-each (lambda (file)
                            (install-file file apt))
-                         (find-files "trusted.gpg" "\\.gpg$")))
-             #t)))))
+                         (find-files "trusted.gpg" "\\.gpg$"))))))))
     (native-inputs
      (list gnupg jetring))
     (home-page "https://packages.qa.debian.org/d/debian-archive-keyring.html")
@@ -89,7 +87,7 @@ contains the archive keys used for that.")
 (define-public debian-ports-archive-keyring
   (package
     (name "debian-ports-archive-keyring")
-    (version "2022.02.15")
+    (version "2023.02.01")
     (source
       (origin
         (method url-fetch)
@@ -98,7 +96,7 @@ contains the archive keys used for that.")
                             "/debian-ports-archive-keyring_" version ".tar.xz"))
         (sha256
          (base32
-          "096m45l7g8vbk67gwc6bmkzpx8mhn6xfglgrzlg9xkgcs5gxqyc0"))))
+          "1xq7i6plgfbf4drqdmmk1yija48x11jmhnk2av3cajn2cdhkw73s"))))
     (build-system gnu-build-system)
     (arguments
      '(#:tests? #f              ; No test suite.
@@ -127,8 +125,7 @@ contains the archive keys used for that.")
                      (string-append "trusted.gpg/" (basename key ".key") ".gpg")
                      (lambda _
                        (apply invoke "gpg" (append gpg-options (list key))))))
-                 (find-files "active-keys"))
-               #t)))
+                 (find-files "active-keys")))))
          (replace 'install
            (lambda* (#:key outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -138,8 +135,7 @@ contains the archive keys used for that.")
                (install-file "debian-ports-archive-keyring-removed.gpg" key)
                (for-each (lambda (file)
                            (install-file file apt))
-                         (find-files "trusted.gpg" "\\.gpg$")))
-             #t)))))
+                         (find-files "trusted.gpg" "\\.gpg$"))))))))
     (native-inputs
      (list gnupg))
     (home-page "https://tracker.debian.org/pkg/debian-ports-archive-keyring")
@@ -194,7 +190,7 @@ contains the archive keys used for that.")
 (define-public debootstrap
   (package
     (name "debootstrap")
-    (version "1.0.126")
+    (version "1.0.128")
     (source
       (origin
         (method git-fetch)
@@ -203,7 +199,7 @@ contains the archive keys used for that.")
               (commit version)))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "0hfx6k86kby4xf0xqskpllq00g159j4khh66hfi6dhcdb91dgyd7"))))
+         (base32 "0hc7xc6qvnmjlpf3j6bm25kf0j1ifvv5j7a0iljfmbag4idxc9jv"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -273,7 +269,7 @@ unpacking them into a directory which can eventually be chrooted into.")
 (define-public debianutils
   (package
     (name "debianutils")
-    (version "5.5-1")
+    (version "5.7-0.4")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -282,7 +278,7 @@ unpacking them into a directory which can eventually be chrooted into.")
               (file-name (git-file-name "debianutils" version))
               (sha256
                (base32
-                "1sbdjcb44g2s1zxjf9kxrp9drf9mmh6b49a9z3k428gmc6zsci4r"))))
+                "0hw407fm5ylsf28b0vrwz7rm2r2rsgfwzajbkbn6n2b6kqhdjyy9"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf automake gettext-minimal po4a))
@@ -328,7 +324,7 @@ debian/copyright for more information.")))))
          #:phases (modify-phases %standard-phases (delete 'configure))))
       (inputs
        (list wget perl))
-      (home-page "http://apt-mirror.github.io/")
+      (home-page "https://apt-mirror.github.io/")
       (synopsis "Script for mirroring a Debian repository")
       (description
        "apt-mirror is a small tool that provides the ability to selectively
@@ -339,7 +335,7 @@ distributions such as Debian and Trisquel.")
 (define-public dpkg
   (package
     (name "dpkg")
-    (version "1.21.8")
+    (version "1.21.22")
     (source
       (origin
         (method git-fetch)
@@ -348,57 +344,60 @@ distributions such as Debian and Trisquel.")
                (commit version)))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "1whb78pywdlm4v1ablgvvplqjn15b6qrwqkj0pihw5j77aakyz2s"))))
+         (base32 "0b5czgif5g6pdjzcw60hzzj0i1llxvajf3nlx115axmpa3y4iynd"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before 'bootstrap 'patch-version
-           (lambda _
-             (patch-shebang "build-aux/get-version")
-             (with-output-to-file ".dist-version"
-               (lambda () (display ,version)))))
-         (add-after 'unpack 'set-perl-libdir
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((out  (assoc-ref outputs "out"))
-                   (perl (assoc-ref inputs "perl")))
-               (setenv "PERL_LIBDIR"
-                       (string-append out
-                                      "/lib/perl5/site_perl/"
-                                      ,(package-version perl))))))
-         (add-after 'install 'wrap-scripts
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (with-directory-excursion (string-append out "/bin")
-                 (for-each
-                   (lambda (file)
-                     (wrap-script file
-                       ;; Make sure all perl scripts in "bin" find the
-                       ;; required Perl modules at runtime.
-                       `("PERL5LIB" ":" prefix
-                         (,(string-append out
-                                          "/lib/perl5/site_perl")
-                           ,(getenv "PERL5LIB")))
-                       ;; DPKG perl modules always expect dpkg to be installed.
-                       ;; Work around this by adding dpkg to the path of the scripts.
-                       `("PATH" ":" prefix (,(string-append out "/bin")))))
-                   (list "dpkg-architecture"
-                         "dpkg-buildflags"
-                         "dpkg-buildpackage"
-                         "dpkg-checkbuilddeps"
-                         "dpkg-distaddfile"
-                         "dpkg-genbuildinfo"
-                         "dpkg-genchanges"
-                         "dpkg-gencontrol"
-                         "dpkg-gensymbols"
-                         "dpkg-mergechangelogs"
-                         "dpkg-name"
-                         "dpkg-parsechangelog"
-                         "dpkg-scanpackages"
-                         "dpkg-scansources"
-                         "dpkg-shlibdeps"
-                         "dpkg-source"
-                         "dpkg-vendor")))))))))
+     (list #:modules
+           `((srfi srfi-71)
+             ,@%gnu-build-system-modules)
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'bootstrap 'patch-version
+                 (lambda _
+                   (patch-shebang "build-aux/get-version")
+                   (with-output-to-file ".dist-version"
+                     (lambda () (display #$version)))))
+               (add-after 'unpack 'set-perl-libdir
+                 (lambda _
+                   (let* ((perl #$(this-package-input "perl"))
+                          (_ perl-version (package-name->name+version perl)))
+                     (setenv "PERL_LIBDIR"
+                             (string-append #$output
+                                            "/lib/perl5/site_perl/"
+                                            perl-version)))))
+               (add-after 'install 'wrap-scripts
+                 (lambda _
+                   (with-directory-excursion (string-append #$output "/bin")
+                     (for-each
+                      (lambda (file)
+                        (wrap-script file
+                          ;; Make sure all perl scripts in "bin" find the
+                          ;; required Perl modules at runtime.
+                          `("PERL5LIB" ":" prefix
+                            (,(string-append #$output
+                                             "/lib/perl5/site_perl")
+                             ,(getenv "PERL5LIB")))
+                          ;; DPKG perl modules expect dpkg to be installed.
+                          ;; Work around it by adding dpkg to the script's path.
+                          `("PATH" ":" prefix (,(string-append #$output
+                                                               "/bin")))))
+                      (list "dpkg-architecture"
+                            "dpkg-buildflags"
+                            "dpkg-buildpackage"
+                            "dpkg-checkbuilddeps"
+                            "dpkg-distaddfile"
+                            "dpkg-genbuildinfo"
+                            "dpkg-genchanges"
+                            "dpkg-gencontrol"
+                            "dpkg-gensymbols"
+                            "dpkg-mergechangelogs"
+                            "dpkg-name"
+                            "dpkg-parsechangelog"
+                            "dpkg-scanpackages"
+                            "dpkg-scansources"
+                            "dpkg-shlibdeps"
+                            "dpkg-source"
+                            "dpkg-vendor"))))))))
     (native-inputs
      (list autoconf
            automake

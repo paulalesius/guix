@@ -7,7 +7,7 @@
 ;;; Copyright © 2015, 2017 Cyril Roelandt <tipecaml@gmail.com>
 ;;; Copyright © 2015 Federico Beffa <beffa@fbengineering.ch>
 ;;; Copyright © 2015 Andreas Enge <andreas@enge.fr>
-;;; Copyright © 2015, 2016, 2018-2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015, 2016, 2018-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2017 Leo Famulari <leo@famulari.name>
 ;;; Copyright © 2016 Christine Lemmer-Webber <cwebber@dustycloud.org>
 ;;; Copyright © 2016, 2017 Danny Milosavljevic <dannym+a@scratchpost.org>
@@ -24,7 +24,7 @@
 ;;; Copyright © 2017, 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2017, 2019 Kei Kebreau <kkebreau@posteo.net>
 ;;; Copyright © 2017 Nikita <nikita@n0.is>
-;;; Copyright © 2015, 2017, 2018, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2015, 2017, 2018, 2020, 2021, 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016-2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2017, 2018, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2018 Fis Trivial <ybbs.daans@hotmail.com>
@@ -35,12 +35,16 @@
 ;;; Copyright © 2020 Josh Marshall <joshua.r.marshall.1991@gmail.com>
 ;;; Copyright © 2020 Vinicius Monego <monego@posteo.net>
 ;;; Copyright © 2020 Tanguy Le Carrour <tanguy@bioneland.org>
-;;; Copyright © 2020, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Hugo Lecomte <hugo.lecomte@inria.fr>
 ;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
-;;; Copyright © 2022 David Elsing <david.elsing@posteo.net>
+;;; Copyright © 2022, 2023 David Elsing <david.elsing@posteo.net>
 ;;; Copyright © 2022 Sharlatan Hellseher <sharlatanus@gmail.com>
 ;;; Copyright © 2022 jgart <jgart@dismail.de>
+;;; Copyright © 2023 Luis Felipe López Acevedo <luis.felipe.la@protonmail.com>
+;;; Copyright © 2023 Timo Wilken <guix@twilken.net>
+;;; Copyright © 2023 Zhu Zihao <all_but_last@163.com>
+;;; Copyright © 2023 Bruno Victal <mirai@makinata.eu>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -70,6 +74,8 @@
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages golang)
   #:use-module (gnu packages gtk)
+  #:use-module (gnu packages guile)
+  #:use-module (gnu packages guile-xyz)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
@@ -78,6 +84,7 @@
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages python-science)
+  #:use-module (gnu packages texinfo)
   #:use-module (gnu packages time)
   #:use-module (gnu packages xml)
   #:use-module (guix utils)
@@ -90,10 +97,12 @@
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system go)
+  #:use-module (guix build-system guile)
   #:use-module (guix build-system meson)
   #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (guix build-system trivial)
+  #:use-module (guix deprecation)
   #:use-module (srfi srfi-1))
 
 (define-public pict
@@ -251,6 +260,9 @@ source code editors and IDEs.")
               (base32
                "0d22h8xshmbpl9hba9ch3xj8vb9ybm5akpsbbh7yj07fic4h2hj6"))))))
 
+;;; XXX: This project is abandoned upstream, and included in modern catch2
+;;; releases.  It is still depended by the restinio test suite at this time,
+;;; so keep it (see: https://github.com/Stiffstream/restinio/issues/181).
 (define-public clara
   (package
     (name "clara")
@@ -263,16 +275,28 @@ source code editors and IDEs.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "08mlm9ax5d7wkmsihm1xnlgp7rfgff0bfl4ly4850xmrdaxmmkl3"))))
+                "08mlm9ax5d7wkmsihm1xnlgp7rfgff0bfl4ly4850xmrdaxmmkl3"))
+              (modules '((guix build utils)))
+              (snippet '(begin
+                          ;; Un-bundle catch2.
+                          (delete-file-recursively "third_party")
+                          (substitute* "CMakeLists.txt"
+                            (("include_directories\\( include third_party )")
+                             "include_directories( include )"))))))
     (build-system cmake-build-system)
     (arguments
      (list
+      #:configure-flags
+      #~(list (string-append "-DCMAKE_CXX_FLAGS=-I"
+                             (search-input-directory %build-inputs
+                                                     "include/catch2")))
       #:phases
       #~(modify-phases %standard-phases
           (replace 'install
             (lambda _
               (install-file (string-append #$source "/single_include/clara.hpp")
                             (string-append #$output "/include")))))))
+    (native-inputs (list catch2))
     (home-page "https://github.com/catchorg/Clara")
     (synopsis "Simple command line parser for C++")
     (description "Clara is a simple to use, composable, command line parser
@@ -288,6 +312,7 @@ for C++ 11 and beyond implemented as a single-header library.")
               (method git-fetch)
               (uri (git-reference (url home-page) (commit version)))
               (file-name (git-file-name name version))
+              (patches (search-patches "clitest-grep-compat.patch"))
               (sha256
                (base32
                 "1p745mxiq3hgi3ywfljs5sa1psi06awwjxzw0j9c2xx1b09yqv4a"))))
@@ -303,13 +328,6 @@ for C++ 11 and beyond implemented as a single-header library.")
           (replace 'check
             (lambda* (#:key tests? #:allow-other-keys)
               (when tests?
-                (substitute* "test.md"
-                  ;; One test looks for an error from grep in the form "grep: foo",
-                  ;; but our grep returns the absolute file name on errors.  Adjust
-                  ;; the test to cope with that.
-                  (("sed 's/\\^e\\*grep: \\.\\*/")
-                   "sed 's/.*e*grep: .*/"))
-
                 (setenv "HOME" "/tmp")
                 (invoke "./clitest" "test.md"))))
           (replace 'install
@@ -350,7 +368,7 @@ testing of Unix command lines.")
                      (lambda _ (invoke "autoreconf" "-vfi"))))))
     (native-inputs
      (list automake autoconf libtool))
-    (home-page "http://cunit.sourceforge.net/")
+    (home-page "https://cunit.sourceforge.net/")
     (synopsis "Automated testing framework for C")
     (description
      "CUnit is a lightweight system for writing, administering, and running
@@ -580,6 +598,33 @@ It allows the specification of behaviour scenarios using a given-when-then
 pattern.")
       (license license:apsl2))))
 
+(define-public catch2-3.3
+  (package
+    (name "catch2")
+    (version "3.3.2")
+    (home-page "https://github.com/catchorg/Catch2")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/catchorg/Catch2")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0m6i3lr0qk303ashjpz5vpwmxf76n5d6s8jq6r6kcy6gph525zmp"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:configure-flags
+      #~(list "-DCATCH_DEVELOPMENT_BUILD=ON"
+              "-DCATCH_ENABLE_WERROR=OFF"
+              "-DBUILD_SHARED_LIBS=ON")))
+    (inputs (list python-wrapper))
+    (synopsis "Automated test framework for C++ and Objective-C")
+    (description "Catch2 stands for C++ Automated Test Cases in Headers and is
+a multi-paradigm automated test framework for C++ and Objective-C.")
+    (license license:boost1.0)))
+
 (define-public cmdtest
   (package
     (name "cmdtest")
@@ -636,7 +681,7 @@ format.")
 (define-public cppcheck
   (package
     (name "cppcheck")
-    (version "2.3")
+    (version "2.10.3")
     (source (origin
       (method git-fetch)
       (uri (git-reference
@@ -644,11 +689,12 @@ format.")
              (commit version)))
       (file-name (git-file-name name version))
       (sha256
-       (base32 "03ic5mig3ryzkf85r95ryagf84s7y5nd6sqr915l3zj30apnifvz"))))
+       (base32 "1xfxcg00rxjrb9m2k78yd3jjlldkciv67fsbmjb6n3l43hgfxb9k"))
+      (patches (search-patches "cppcheck-disable-char-signedness-test.patch"))))
     (build-system cmake-build-system)
     (arguments
      '(#:configure-flags '("-DBUILD_TESTS=ON")))
-    (home-page "http://cppcheck.sourceforge.net")
+    (home-page "https://cppcheck.sourceforge.io")
     (synopsis "Static C/C++ code analyzer")
     (description "Cppcheck is a static code analyzer for C and C++.  Unlike
 C/C++ compilers and many other analysis tools it does not detect syntax errors
@@ -656,6 +702,51 @@ in the code.  Cppcheck primarily detects the types of bugs that the compilers
 normally do not detect.  The goal is to detect only real errors in the code
 (i.e. have zero false positives).")
     (license license:gpl3+)))
+
+(define-public cukinia
+  (package
+    (name "cukinia")
+    (version "0.6.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/savoirfairelinux/cukinia")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1i92b37w8kb0rzkazlnnhjjbh1l1nmk2yrjvar7rpl97i9gn212m"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      ;; The test suite assumes the host system runs systemd, has a root user,
+      ;; among other things (see:
+      ;; https://github.com/savoirfairelinux/cukinia/issues/51).
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)           ;no configure script
+          (delete 'build)               ;no build system
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "./cukinia" "tests/testcases.conf"))))
+          (replace 'install
+            (lambda _
+              (install-file "cukinia" (string-append #$output "/bin")))))))
+    (home-page "https://github.com/savoirfairelinux/cukinia")
+    (synopsis "Simple on-target system test framework")
+    (description "Cukinia is designed to help GNU/Linux-based embedded
+firmware developers run simple system-level validation tests on their
+firmware.  Cukinia integrates well with embedded firmware generation
+frameworks such as Buildroot and Yocto, and can be run manually or by your
+favourite continuous integration framework.  Among Cukinia features are:
+@itemize
+@item simple to use
+@item no dependencies other than BusyBox or GNU Coreutils
+@item easy integration with CI/CD pipelines.
+@end itemize")
+    (license (list license:gpl3+ license:asl2.0)))) ;dual license
 
 (define-public cxxtest
   (package
@@ -694,7 +785,7 @@ normally do not detect.  The goal is to detect only real errors in the code
                #t))))))
     (propagated-inputs
      (list python-ply))
-    (home-page "https://cxxtest.com/")
+    (home-page "https://web.archive.org/web/20230604070022/http://cxxtest.com/")
     (synopsis "Unit testing framework for C++")
     (description "CxxTest is a unit testing framework for C++ that is similar
 in spirit to JUnit, CppUnit, and xUnit.  CxxTest does not require precompiling
@@ -705,7 +796,7 @@ and it supports a very flexible form of test discovery.")
 (define-public doctest
   (package
     (name "doctest")
-    (version "2.4.8")
+    (version "2.4.9")
     (home-page "https://github.com/onqtam/doctest")
     (source (origin
               (method git-fetch)
@@ -714,13 +805,48 @@ and it supports a very flexible form of test discovery.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "057wdkv3gcz42mh1j284sgvm16i5fk1f9b1plgvavca70q4p52gz"))))
+                "1pkpwwvskcr21p00zrbnxpddv34p605mls86qirqqdwggmws82ds"))))
     (build-system cmake-build-system)
     (synopsis "C++ test framework")
     (description
      "doctest is a single-header testing framework for C++11 and later.  It
 has been designed to be fast, light and unintrusive.")
     (license license:expat)))
+
+(define-public python-gixy
+  ;; The 0.1.20 release is missing some important fixes.
+  ;; XXX: Commit 'e9008dcbd11f43ccac109b0cf2bf98a94e76b449' breaks tests
+  ;; since it improperly removes an import.
+  (let ((commit "303eb6887ddecab18138b6e427b04ae77c41d2f1")
+        (revision "0")
+        (base-version "0.1.20"))
+    (package
+      (name "python-gixy")
+      (version (git-version base-version revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/yandex/gixy")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0gymjcnvjx9snyrzdbmjnk93ibb161q72xam29vnl3yyac4r1330"))))
+      (build-system pyproject-build-system)
+      (native-inputs (list python-nose))
+      (propagated-inputs
+       (list python-cached-property python-configargparse
+             python-jinja2 python-six
+             ;; XXX: gixy is incompatible with pyparsing >= 3.x.
+             ;; See <https://github.com/yandex/gixy/pull/132> and
+             ;; <https://github.com/yandex/gixy/pull/122>.
+             python-pyparsing-2.4.7))
+      (home-page "https://github.com/yandex/gixy")
+      (synopsis "Static NGINX configuration analyzer")
+      (description "Gixy is a static analyzer whose main goal is to help
+prevent common NGINX misconfigurations.  It provides the @command{gixy}
+command.")
+      (license license:mpl2.0))))
 
 (define-public go-github.com-smartystreets-gunit
   (package
@@ -813,7 +939,7 @@ test coverage and has a web user interface that will refresh automatically.")
 (define-public googletest
   (package
     (name "googletest")
-    (version "1.11.0")
+    (version "1.12.1")
     (source
      (origin
        (method git-fetch)
@@ -822,7 +948,7 @@ test coverage and has a web user interface that will refresh automatically.")
              (commit (string-append "release-" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0pd4y1gpx1z8fiyarkvqlmk6hbv0lc8fr00ivnsvqzi1xg34jfaa"))))
+        (base32 "1cv55x3amwrvfan9pr8dfnicwr8r6ar3yf6cg9v6nykd6m2v3qsv"))))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags '("-DBUILD_SHARED_LIBS=ON")))
@@ -899,16 +1025,68 @@ C++ but is used in C and C++ projects and frequently used in embedded systems
 but it works for any C/C++ project.")
     (license license:bsd-3)))
 
+(define-public actionlint
+  (package
+    (name "actionlint")
+    (version "1.6.23")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/rhysd/actionlint")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "07is4920a40zrl7mfldg0az2pisi7f6dv4vh3ijn3nzb4i7fqbni"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/rhysd/actionlint/cmd/actionlint"
+       #:unpack-path "github.com/rhysd/actionlint"
+       #:install-source? #f))
+    (inputs (list go-github-com-fatih-color
+                  go-github-com-mattn-go-colorable
+                  go-github-com-mattn-go-runewidth
+                  go-github-com-robfig-cron-1.2
+                  go-golang.org-x-sync-errgroup
+                  go-golang.org-x-sync-semaphore
+                  go-gopkg-in-yaml-v3))
+    (native-inputs (list go-github-com-google-go-cmp-cmp))
+    (home-page "https://rhysd.github.io/actionlint/")
+    (synopsis "Static checker for GitHub Actions workflow files")
+    (description
+     "actionlint is a static checker for GitHub Actions
+workflow files.  Features include:
+
+@itemize
+@item Syntax check for workflow files to check unexpected or missing
+keys following workflow syntax
+@item Strong type check for @code{$@{@{ @}@}} expressions to catch
+several semantic errors like access to not existing property, type
+mismatches, ...
+@item Actions usage check to check that inputs at @code{with:} and
+outputs in @code{steps.@{id@}.outputs} are correct
+@item Reusable workflow check to check inputs/outputs/secrets of
+reusable workflows and workflow calls
+@item shellcheck and pyflakes integrations for scripts at @code{run:}
+@item Security checks; script injection by untrusted inputs,
+hard-coded credentials
+@item Other several useful checks; glob syntax validation,
+dependencies check for @code{needs:}, runner label validation, cron
+syntax validation, ...
+@end itemize
+")
+    (license license:expat)))
+
 (define-public python-parameterized
   (package
     (name "python-parameterized")
-    (version "0.7.4")
+    (version "0.8.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "parameterized" version))
        (sha256
-        (base32 "1444fdz5bj0k10nmhxv0bv2gfrfisi7hfzqdndb0pvhf4g3qq3qr"))))
+        (base32 "0p1vhfw552rgd7gb2vy4l4l4k8mnbdz7f3chgzvk0r0qsqvzzfs1"))))
     (build-system python-build-system)
     (arguments
      '(#:phases (modify-phases %standard-phases
@@ -990,7 +1168,7 @@ available via the @code{unittest.mock} module.")
                   (add-after 'unpack 'invoke-2to3
                     (lambda _
                       (invoke "2to3" "-w" "."))))))
-    (home-page "http://readthedocs.org/docs/nose/")
+    (home-page "https://readthedocs.org/docs/nose/")
     (synopsis "Python testing library")
     (description
      "Nose extends the unittest library to make testing easier.")
@@ -1063,57 +1241,55 @@ standard library.")
 (define-public python-pytest
   (package
     (name "python-pytest")
-    (version "6.2.5")
+    (version "7.1.3")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pytest" version))
        (sha256
         (base32
-         "12cyi0lnyaq8sdqfnqlppd76gkw6zcg10gyih5knx9v611l3c6qk"))))
+         "0f8c31v5r2kgjixvy267n0nhc4xsy65g3n9lz1i1377z5pn5ydjg"))
+       (patches (search-patches "pytest-fix-unstrable-exception-test.patch"))))
     (build-system python-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'pretend-version
-           ;; The version string is usually derived via setuptools-scm, but
-           ;; without the git metadata available, the version string is set to
-           ;; '0.0.0'.
-           (lambda _
-             (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" ,version)))
-         (replace 'check
-           (lambda* (#:key (tests? #t) #:allow-other-keys)
-             (setenv "TERM" "dumb")     ;attempt disabling markup tests
-             (if tests?
-                 (invoke "pytest" "-vv" "-k"
-                         (string-append
-                          ;; This test involves the /usr directory, and fails.
-                          " not test_argcomplete"
-                          ;; These test do not honor the isatty detection and
-                          ;; fail.
-                          " and not test_code_highlight"
-                          " and not test_color_yes"))
-                 (format #t "test suite not run~%")))))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'build 'pretend-version
+            ;; The version string is usually derived via setuptools-scm, but
+            ;; without the git metadata available, the version string is set to
+            ;; '0.0.0'.
+            (lambda _
+              (setenv "SETUPTOOLS_SCM_PRETEND_VERSION"
+                      #$(package-version this-package))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (setenv "TERM" "dumb")    ;attempt disabling markup tests
+              (if tests?
+                  (invoke "pytest" "-vv" "-k"
+                          (string-append
+                           ;; This test involves the /usr directory, and fails.
+                           " not test_argcomplete"
+                           ;; These test do not honor the isatty detection and
+                           ;; fail.
+                           " and not test_code_highlight"
+                           " and not test_color_yes"))
+                  (format #t "test suite not run~%")))))))
     (propagated-inputs
-     `(("python-attrs" ,python-attrs-bootstrap)
-       ("python-iniconfig" ,python-iniconfig)
-       ("python-more-itertools" ,python-more-itertools)
-       ("python-packaging" ,python-packaging-bootstrap)
-       ("python-pluggy" ,python-pluggy)
-       ("python-py" ,python-py)
-       ("python-six" ,python-six-bootstrap)
-       ("python-toml" ,python-toml)
-       ("python-wcwidth" ,python-wcwidth)))
+     (list python-attrs-bootstrap
+           python-iniconfig
+           python-packaging-bootstrap
+           python-pluggy
+           python-py
+           python-tomli))
     (native-inputs
-     `(;; Tests need the "regular" bash since 'bash-final' lacks `compgen`.
-       ("bash" ,bash)
-       ("python-hypothesis" ,python-hypothesis)
-       ("python-nose" ,python-nose)
-       ("python-mock" ,python-mock)
-       ("python-pytest" ,python-pytest-bootstrap)
-       ("python-setuptools-scm" ,python-setuptools-scm)
-       ("python-toml" ,python-toml)
-       ("python-xmlschema" ,python-xmlschema)))
+     ;; Tests need the "regular" bash since 'bash-final' lacks `compgen`.
+     (list bash
+           python-hypothesis
+           python-nose
+           python-pytest-bootstrap
+           python-setuptools-scm
+           python-xmlschema))
     (home-page "https://docs.pytest.org/en/latest/")
     (synopsis "Python testing library")
     (description
@@ -1122,36 +1298,18 @@ and functions, detailed info on failing assert statements, modular fixtures,
 and many external plugins.")
     (license license:expat)))
 
-(define-public python-pytest-6 python-pytest)
+(define-deprecated python-pytest-6 python-pytest)
+(export python-pytest-6)
 
-;; Astropy started using hard dependencies for Pytest 7+, which might
-;; happen for some other projects. It could be set as default in staging.
-(define-public python-pytest-7.1
-  (package
-    (inherit python-pytest)
-    (version "7.1.3")
-    (name "python-pytest")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "pytest" version))
-       (sha256
-        (base32
-         "0f8c31v5r2kgjixvy267n0nhc4xsy65g3n9lz1i1377z5pn5ydjg"))))
-    (arguments
-     (substitute-keyword-arguments (package-arguments python-pytest)
-      ((#:phases phases #~%standard-phases)
-        #~(modify-phases #$phases
-            (add-before 'build 'pretend-version
-              (lambda _
-                (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" #$version)))))))))
+(define-deprecated python-pytest-7 python-pytest)
+(export python-pytest-7)
 
 (define-public python-pytest-bootstrap
   (package
     (inherit python-pytest)
     (name "python-pytest-bootstrap")
     (native-inputs (list python-iniconfig python-setuptools-scm
-                         python-toml))
+                         python-tomli))
     (arguments `(#:tests? #f))))
 
 (define-public python-pytest-assume
@@ -1341,28 +1499,39 @@ Python's @code{random.seed}.")
 (define-public python-pytest-runner
   (package
     (name "python-pytest-runner")
-    (version "5.2")
+    (version "6.0.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pytest-runner" version))
        (sha256
         (base32
-         "0awll1bva5zy8cspsxcpv7pjcrdf5c6pf56nqn4f74vvmlzfgiwn"))))
+         "11dnhxnjmh4nf1j8rnvx944ha3wg8ggrgrwdcx4c7d19xmi57n5l"))))
     (build-system python-build-system)
     (arguments
-     '(;; FIXME: The test suite requires 'python-flake8' and 'python-black',
-       ;; but that introduces a circular dependency.
-       #:tests? #f
-       #:phases (modify-phases %standard-phases
-                  (replace 'check
-                    (lambda* (#:key tests? #:allow-other-keys)
-                      (if tests?
-                          (invoke "pytest" "-vv")
-                          (format #t "test suite not run~%"))
-                      #t)))))
+     (list
+      ;; FIXME: The test suite requires 'python-flake8' and 'python-black',
+      ;; but that introduces a circular dependency.
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'build
+            (lambda _
+              (let ((circa-1980 (* 10 366 24 60 60)))
+                (setenv "SOURCE_DATE_EPOCH" (number->string circa-1980))
+                (invoke "python" "-m" "build" "--wheel" "--no-isolation" "."))))
+          (replace 'install
+            (lambda _
+              (let ((whl (car (find-files "dist" "\\.whl$"))))
+                (invoke "pip" "--no-cache-dir" "--no-input"
+                        "install" "--no-deps" "--prefix" #$output whl))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (if tests?
+                  (invoke "pytest" "-vv")
+                  (format #t "test suite not run~%")))))))
     (native-inputs
-     (list python-setuptools-scm))
+     (list python-pypa-build python-setuptools-scm python-wheel))
     (home-page "https://github.com/pytest-dev/pytest-runner")
     (synopsis "Invoke py.test as a distutils command")
     (description
@@ -1400,13 +1569,13 @@ Python's @code{random.seed}.")
 (define-public python-pytest-mock
   (package
     (name "python-pytest-mock")
-    (version "3.6.1")
+    (version "3.10.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pytest-mock" version))
        (sha256
-        (base32 "0qhfmd05z3g88bnwq6644jl6p5wy01i4yy7h8883z9jjih2pl8a0"))
+        (base32 "0kzdwwdjw001qzf1n4qzh7c364rvmb0cmkfqdwr2l9bwxy2v1ggv"))
        (modules '((guix build utils)))
        (snippet
         ;; Some tests do a string match on Pytest output, and fails when
@@ -1446,44 +1615,26 @@ same arguments.")
 (define-public python-pytest-xdist
   (package
     (name "python-pytest-xdist")
-    (version "2.1.0")
+    (version "2.5.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pytest-xdist" version))
        (sha256
         (base32
-         "0wh6pn66nncfs6ay0n863bgyriwsgppn8flx5l7551j1lbqkinc2"))
-       (modules '((guix build utils)))
-       (snippet
-        '(begin
-           ;; Remove pre-compiled .pyc files from source.
-           (for-each delete-file-recursively
-                     (find-files "." "__pycache__" #:directories? #t))
-           (for-each delete-file (find-files "." "\\.pyc$"))
-           #t))))
+         "1psf5dqxvc38qzxvc305mkg5xpdmdkbkkfiyqlmdnkgh7z5dx025"))))
     (build-system python-build-system)
     (arguments
-     '(#:tests? #f ; Lots of tests fail.
-       #:phases
+     '(#:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'patch-setup-py
-           (lambda _
-             ;; Relax pytest requirement.
-             (substitute* "setup.py"
-               (("pytest>=6\\.0\\.0") "pytest"))))
          (replace 'check
-           (lambda* (#:key inputs outputs tests? #:allow-other-keys)
+           (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
-               (add-installed-pythonpath inputs outputs)
                (invoke "pytest" "-vv"
                        "-n" (number->string (parallel-job-count)))))))))
-    (native-inputs
-     (list python-setuptools-scm))
-    (propagated-inputs
-     (list python-execnet python-pytest python-py python-pytest-forked))
-    (home-page
-     "https://github.com/pytest-dev/pytest-xdist")
+    (native-inputs (list python-setuptools-scm python-filelock python-pytest))
+    (propagated-inputs (list python-execnet python-pytest-forked))
+    (home-page "https://github.com/pytest-dev/pytest-xdist")
     (synopsis
      "Plugin for py.test with distributed testing and loop-on-failing modes")
     (description
@@ -1495,31 +1646,17 @@ program code to a remote location, executes there, and then syncs the
 result back.")
     (license license:expat)))
 
-(define-public python-pytest-xdist-next
-  (package/inherit python-pytest-xdist
-    (name "python-pytest-xdist")
-    (version "2.5.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "pytest-xdist" version))
-       (sha256
-        (base32
-         "1psf5dqxvc38qzxvc305mkg5xpdmdkbkkfiyqlmdnkgh7z5dx025"))))
-    (propagated-inputs (list python-execnet python-pytest
-                             python-pytest-forked-next))))
-
 (define-public python-pytest-timeout
   (package
     (name "python-pytest-timeout")
-    (version "2.0.2")
+    (version "2.1.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pytest-timeout" version))
        (sha256
         (base32
-         "04l1cd2qyp3fbccw95a8nqg682r647v7yil8807dgs7xv9a8pyg6"))))
+         "1nf339zg6qam3681f72j9c8fbqk8qcilna92psmzh4n60isa0z60"))))
     (build-system python-build-system)
     (arguments
      '(#:phases (modify-phases %standard-phases
@@ -1542,7 +1679,7 @@ timeout has been exceeded.")
 (define-public python-pytest-forked
   (package
     (name "python-pytest-forked")
-    (version "1.3.0")
+    (version "1.6.0")
     (source
      (origin
        (method git-fetch)               ;for tests
@@ -1552,29 +1689,23 @@ timeout has been exceeded.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1aip4kx50ynvykl7kq2mlbsi82vx701dvb8mm64lhp69bbv105rc"))))
-    (build-system python-build-system)
+         "1y93q914gwf0nshql1qix6sj826q163b04vw17zmwhsnbv00c2d3"))))
+    (build-system pyproject-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'disable-setuptools-scm
-           (lambda _
-             (substitute* "setup.py"
-               (("use_scm_version=True")
-                (format #f "version=~s" ,version))
-               (("setup_requires=\\['setuptools_scm'\\],.*")
-                ""))))
-         (replace 'check
-           (lambda* (#:key inputs outputs tests? #:allow-other-keys)
-             (when tests?
-               (add-installed-pythonpath inputs outputs)
-               (invoke "pytest" "-vv")))))))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'build 'pretend-version
+                 ;; The version string is usually derived via setuptools-scm,
+                 ;; but without the git metadata available, the version string
+                 ;; is set to '0.0.0'.
+                 (lambda _
+                   (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" #$version))))))
     (native-inputs
      ;; XXX: The bootstrap variant of Pytest is used to ensure the
      ;; 'hypothesis' plugin is not in the environment (due to
      ;; <http://issues.guix.gnu.org/25235>), which would cause the test suite
      ;; to fail (see: https://github.com/pytest-dev/pytest-forked/issues/54).
-     `(("python-pytest" ,python-pytest-bootstrap)))
+     (list python-pytest-bootstrap python-setuptools-scm))
     (home-page "https://github.com/pytest-dev/pytest-forked")
     (synopsis "Pytest plugin to run tests in isolated forked subprocesses")
     (description "This package provides a Pytest plugin which enables running
@@ -1582,23 +1713,6 @@ each test in a subprocess and will report if a test crashed the process.  It
 can be useful to isolate tests against undesirable global environment
 side-effects (such as setting environment variables).")
     (license license:expat)))
-
-(define-public python-pytest-forked-next
-  (package
-    (inherit python-pytest-forked)
-    (name "python-pytest-forked")
-    (version "1.4.0")
-    (source
-     (origin
-       (method git-fetch)               ;for tests
-       (uri (git-reference
-             (url "https://github.com/pytest-dev/pytest-forked")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "0j9bbjny7h3b4fig6l26f26c697r67mm62fzdd9m9rqyy2bmnqjs"))))
-    (native-inputs (list python-pytest-bootstrap python-setuptools-scm))))
 
 (define-public python-scripttest
   (package
@@ -1625,19 +1739,18 @@ subprocess and see the output as well as any file modifications.")
 (define-public python-testtools-bootstrap
   (package
     (name "python-testtools-bootstrap")
-    (version "2.5.0")
+    (version "2.6.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "testtools" version))
        (sha256
         (base32
-         "0gxjbjk93jjqi491k4s9rh3ia37v21yifd35pvizv7sgv4rk9hap"))))
+         "02mkphygx8897617m8qnmj0alksyvvfcjmazzfxyrlzjq0a5xdi8"))))
     (build-system python-build-system)
     (arguments '(#:tests? #f))
     (propagated-inputs
-     `(("python-extras" ,python-extras)
-       ("python-fixtures" ,python-fixtures-bootstrap)
+     `(("python-fixtures" ,python-fixtures-bootstrap)
        ("python-pbr" ,python-pbr-minimal)))
     (home-page "https://github.com/testing-cabal/testtools")
     (synopsis
@@ -1659,7 +1772,7 @@ subprocess and see the output as well as any file modifications.")
                (invoke "python" "-m" "testtools.run"
                        "testtools.tests.test_suite")))))))
     (propagated-inputs
-     (list python-extras python-fixtures python-pbr))
+     (list python-fixtures python-pbr))
     (native-inputs
      `(("python-testscenarios" ,python-testscenarios-bootstrap)))
     (description
@@ -1799,7 +1912,7 @@ protocol.")))
            ;; Package is not loadable on its own at this stage.
            (delete 'sanity-check))))
     (propagated-inputs
-     (list python-pbr-minimal python-six))
+     (list python-pbr-minimal python-six python-extras))
     (home-page "https://launchpad.net/python-fixtures")
     (synopsis "Python test fixture library")
     (description
@@ -1821,7 +1934,7 @@ python-fixtures package instead.")
                        "fixtures.test_suite")))))))
     (propagated-inputs
      ;; Fixtures uses pbr at runtime to check versions, etc.
-     (list python-pbr python-six))
+     (list python-pbr python-six python-extras))
     (native-inputs
      `(("python-mock" ,python-mock)
        ("python-testtools" ,python-testtools-bootstrap)))
@@ -1872,18 +1985,20 @@ have failed since the last commit or what tests are currently failing.")))
 (define-public python-coverage
   (package
     (name "python-coverage")
-    (version "5.2.1")
+    (version "6.4.3")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "coverage" version))
        (sha256
         (base32
-         "16z8i18msgs8k74n73dj9x49wzkl0vk4vq8k5pl1bsj70y7b4k53"))))
+         "157vndwrzyv9ypn2w3b6g8gv7vw07v994hq8nxasdb75k3ry2apc"))))
     (build-system python-build-system)
     (arguments
      ;; FIXME: 95 tests failed, 539 passed, 6 skipped, 2 errors.
      '(#:tests? #f))
+    (propagated-inputs
+     (list python-tomli))
     (home-page "https://coverage.readthedocs.io")
     (synopsis "Code coverage measurement for Python")
     (description
@@ -1896,7 +2011,7 @@ executed.")
 (define-public python-pytest-asyncio
   (package
     (name "python-pytest-asyncio")
-    (version "0.17.2")
+    (version "0.21.0")
     (source
      (origin
        (method git-fetch)               ;for tests
@@ -1905,24 +2020,18 @@ executed.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0sl0ckc23m40q6r2xcidsizrgqbbsfa7rwmr80fss359xsydf073"))))
-    (build-system python-build-system)
+        (base32 "03wljn0gdwyfr5s1795w3h2mfvvi23bn42nwjv5568rgphqyldqq"))))
+    (build-system pyproject-build-system)
     (arguments
-     (list #:phases
+     (list #:tests? #f          ;XXX: to avoid a cycle with python-pytest-trio
+           #:phases
            #~(modify-phases %standard-phases
                (add-after 'unpack 'pretend-version
                  (lambda _
                    (setenv "SETUPTOOLS_SCM_PRETEND_VERSION"
-                           #$(package-version this-package))))
-               (replace 'check
-                 (lambda* (#:key tests? #:allow-other-keys)
-                   (invoke "pytest" "-vv" "tests"))))))
-    (native-inputs
-     (list python-async-generator
-           python-flaky
-           python-hypothesis
-           python-pytest
-           python-setuptools-scm))
+                           #$(package-version this-package)))))))
+    (native-inputs (list python-setuptools-scm))
+    (propagated-inputs (list python-pytest))
     (home-page "https://github.com/pytest-dev/pytest-asyncio")
     (synopsis "Pytest support for asyncio")
     (description "Python asyncio code is usually written in the form of
@@ -2064,13 +2173,13 @@ the last py.test invocation.")
 (define-public python-pytest-localserver
   (package
     (name "python-pytest-localserver")
-    (version "0.5.0")
+    (version "0.7.1")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "pytest-localserver" version))
               (sha256
                (base32
-                "1hpgpxrpfq5c731ndnsay2lc0y9nh2wy9fn1f83s3z8xkn82fm1s"))))
+                "0fzysfzvlc2p5dh6lhs5sq3h8g4mypwvqm4w44fr6f5lbialcyz7"))))
     (build-system python-build-system)
     (arguments
      '(#:phases
@@ -2155,20 +2264,24 @@ instantly.")
 (define-public python-hypothesis
   (package
     (name "python-hypothesis")
-    (version "6.0.2")
+    (version "6.54.5")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "hypothesis" version))
               (sha256
                (base32
-                "0wj7ip779naf2n076nylf2gi0sjz68z1ir9d9r2rgs7br18naqdf"))))
+                "1ivyrjpnahvj359pfndnk8x3h0gw37kqm02fmnzibx4mas15d44a"))))
     (build-system python-build-system)
     (arguments
      ;; XXX: Tests are not distributed with the PyPI archive.
-     '(#:tests? #f))
+     (list #:tests? #f
+           #:phases
+           #~(modify-phases %standard-phases
+               ;; XXX: hypothesis requires pytest at runtime, but we can
+               ;; not propagate it due to a circular dependency.
+               (delete 'sanity-check))))
     (propagated-inputs
-     `(("python-attrs" ,python-attrs-bootstrap)
-       ("python-sortedcontainers" ,python-sortedcontainers)))
+     (list python-attrs-bootstrap python-exceptiongroup python-sortedcontainers))
     (synopsis "Library for property based testing")
     (description "Hypothesis is a library for testing your Python code against a
 much larger range of examples than you would ever want to write by hand.  It’s
@@ -2177,20 +2290,8 @@ seamlessly into your existing Python unit testing work flow.")
     (home-page "https://hypothesis.works/")
     (license license:mpl2.0)))
 
-;;; TODO: Make the default python-hypothesis in the next rebuild cycle.
-(define-public python-hypothesis-next
-  (package
-    (inherit python-hypothesis)
-    (version "6.43.3")
-    (source (origin
-              (method url-fetch)
-              (uri (pypi-uri "hypothesis" version))
-              (sha256
-               (base32
-                "0d67dlc5a47i48fxzmji2mnybzby0h1wdscmj54555fghcyp1045"))))
-    (propagated-inputs
-     (modify-inputs (package-propagated-inputs python-hypothesis)
-       (append python-pytest)))))       ;to satisfy the sanity-check phase
+(define-deprecated python-hypothesis-next python-hypothesis)
+(export python-hypothesis-next)
 
 (define-public python-hypothesmith
   (package
@@ -2216,23 +2317,24 @@ programs, something like CSmith, a random generator of C programs.")
 (define-public python-lit
   (package
     (name "python-lit")
-    (version "14.0.3")
+    (version "16.0.0")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "lit" version))
         (sha256
          (base32
-          "162x7pddwl395c3mdb0mfn3f5z24x1jz6g27x303lfxpzidnn4m4"))))
+          "04dyv8b2nbdbn61zdgm042a21dwidyapn9zbinlf879a29rc6jiw"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
        (modify-phases %standard-phases
          (replace 'check
-           (lambda _
-             (invoke "python" "lit.py" "tests"))))))
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (invoke "python" "lit.py" "tests")))))))
     (native-inputs
-     (list llvm))
+     (list llvm-14))
     (home-page "https://llvm.org/")
     (synopsis "LLVM Software Testing Tool")
     (description "@code{lit} is a portable tool for executing LLVM and Clang
@@ -2269,9 +2371,9 @@ failures.")
   (package/inherit python-pytest-enabler-bootstrap
     (arguments
      (substitute-keyword-arguments
-         (package-arguments python-pytest-enabler-bootstrap)
-       ((#:tests? _ #f)
-        #t)
+       (strip-keyword-arguments
+         '(#:tests?)
+         (package-arguments python-pytest-enabler-bootstrap))
        ((#:phases phases #~%standard-phases)
         #~(modify-phases #$phases
             (replace 'check
@@ -2346,6 +2448,30 @@ by the test.")
     (description "@code{pytest-mypi} is a static type checker plugin for
 Pytest that runs the mypy static type checker on your source files as part of
 a Pytest test execution.")
+    (license license:expat)))
+
+(define-public python-pytest-mypy-plugins
+  (package
+    (name "python-pytest-mypy-plugins")
+    (version "1.10.1")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "pytest-mypy-plugins" version))
+              (sha256
+               (base32
+                "05ng29b05gasqj195i9hyyhx5shmwypyvajb7plxwha3g36qq98z"))))
+    (build-system pyproject-build-system)
+    (arguments (list #:tests? #false)) ;there are none
+    (propagated-inputs (list python-chevron
+                             python-decorator
+                             python-mypy
+                             python-pytest
+                             python-pyyaml
+                             python-regex))
+    (home-page "https://github.com/TypedDjango/pytest-mypy-plugins")
+    (synopsis "Pytest plugin for writing tests for mypy plugins")
+    (description "This package provides a pytest plugin for writing tests for
+mypy plugins.")
     (license license:expat)))
 
 (define-public python-pytest-pep8
@@ -2442,13 +2568,13 @@ each of the environments.")
 (define-public python-pytest-flakes
   (package
     (name "python-pytest-flakes")
-    (version "4.0.1")
+    (version "4.0.5")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "pytest-flakes" version))
               (sha256
                (base32
-                "0045h3hnrkn2jwr42jgy2j98npx4amwr6wxzi9j0nppaqz33l49p"))))
+                "0959qfxb4ayvfxvmpargvh4zfhwdq5l77gczhzv33bhmfblk8ccm"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -2461,8 +2587,7 @@ each of the environments.")
              (add-installed-pythonpath inputs outputs)
              (invoke "py.test" "-vv" "-k" "not test_syntax_error"))))))
     (native-inputs
-     (list python-coverage python-pytest python-pytest-cache
-           python-pytest-pep8))
+     (list python-coverage python-pytest python-pytest-pep8))
     (propagated-inputs
      (list python-pyflakes))
     (home-page "https://github.com/fschulze/pytest-flakes")
@@ -2503,7 +2628,7 @@ statements in the module it tests.")
 (define-public python-pylint
   (package
     (name "python-pylint")
-    (version "2.12.2")
+    (version "2.14.5")
     (source
      (origin
        (method git-fetch)
@@ -2512,7 +2637,7 @@ statements in the module it tests.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0spmy7j1vvh55shzgma80q61y0d1cj45dcgslb4g5w3y602miq5i"))))
+        (base32 "0ljfvyzr2i07pi7m19kbshlc3cfnwr53mjhcpydaa0w8bak4cc95"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -2531,10 +2656,11 @@ statements in the module it tests.")
      (list python-pytest python-pytest-xdist))
     (propagated-inputs
      (list python-astroid
+           python-dill
            python-isort
            python-mccabe
            python-platformdirs
-           python-toml
+           python-tomlkit
            python-typing-extensions))
     (home-page "https://github.com/PyCQA/pylint")
     (synopsis "Advanced Python code static checker")
@@ -2547,6 +2673,24 @@ all on a minimally sized program.  It's highly configurable and handle
 pragmas to control it from within your code.  Additionally, it is
 possible to write plugins to add your own checks.")
     (license license:gpl2+)))
+
+(define-public python-setuptools-lint
+  (package
+    (name "python-setuptools-lint")
+    (version "0.6.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "setuptools-lint" version))
+              (sha256
+               (base32
+                "16a1ac5n7k7sx15cnk03gw3fmslab3a7m74dc45rgpldgiff3577"))))
+    (build-system python-build-system)
+    (propagated-inputs (list python-pylint))
+    (home-page "https://github.com/johnnoone/setuptools-pylint")
+    (synopsis "Run pylint with @command{python setup.py lint}")
+    (description "This package expose pylint as a lint command into
+setup.py.")
+    (license license:bsd-3)))
 
 (define-public python-paramunittest
   (package
@@ -2954,7 +3098,7 @@ retried.")
                     (lambda* (#:key inputs outputs #:allow-other-keys)
                       (add-installed-pythonpath inputs outputs)
                       (invoke "pytest" "-vv"))))))
-    (home-page "http://hamcrest.org/")
+    (home-page "https://hamcrest.org/")
     (synopsis "Hamcrest matchers for Python")
     (description "PyHamcrest is a framework for writing matcher objects,
 allowing you to declaratively define \"match\" rules.")
@@ -2988,7 +3132,7 @@ portable to just about any platform.")
 (define-public libfaketime
   (package
     (name "libfaketime")
-    (version "0.9.9")
+    (version "0.9.10")
     (home-page "https://github.com/wolfcw/libfaketime")
     (source (origin
               (method git-fetch)
@@ -2997,42 +3141,40 @@ portable to just about any platform.")
                     (commit (string-append "v" version))))
               (sha256
                (base32
-                "1gi1xciqga5hl2xlk7rc3j8wy47ag97pi7ngmdl6ny1d11b2wn1z"))
+                "112l7x2gv4f47hpffpb8djfwvgrs8w5h9s266h1fshi1c916x10d"))
               (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (arguments
-     `(#:phases (modify-phases %standard-phases
-                  (add-after 'unpack 'embed-date-reference
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (let ((coreutils (assoc-ref inputs "coreutils")))
-                        (substitute* "src/faketime.c"
-                          (("\"date\"")
-                           (string-append "\"" coreutils "/bin/date\""))))))
-                  (replace 'configure
-                    (lambda* (#:key outputs #:allow-other-keys)
-                      (let ((out (assoc-ref outputs "out")))
-                        (setenv "CC" ,(cc-for-target))
-                        (setenv "PREFIX" out)
+     (list
+      #:test-target "test"
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'embed-date-reference
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "src/faketime.c"
+                (("\"date\"")
+                 (format #f "~s" (search-input-file inputs "bin/date"))))))
+          (replace 'configure
+            (lambda* (#:key outputs #:allow-other-keys)
+              (setenv "CC" #$(cc-for-target))
+              (setenv "PREFIX" #$output)
 
-                        ;; XXX: Without this flag, the CLOCK_REALTIME test hangs
-                        ;; indefinitely.  See README.packagers for more information.
-                        ;; There are specific instructions to not enable more flags
-                        ;; than absolutely needed.
-                        ,(if (or (target-ppc64le?)
-                                 (target-riscv64?))
-                           `(setenv "FAKETIME_COMPILE_CFLAGS"
-                                    "-DFORCE_MONOTONIC_FIX -DFORCE_PTHREAD_NONVER")
-                           `(setenv "FAKETIME_COMPILE_CFLAGS"
-                                    "-DFORCE_MONOTONIC_FIX")))))
-                  (add-before 'check 'pre-check
-                    (lambda _
-                      (substitute* "test/functests/test_exclude_mono.sh"
-                        (("/bin/bash") (which "bash"))))))
-       #:test-target "test"))
-    (native-inputs
-     (list perl))                           ;for tests
-    (inputs
-     (list coreutils))
+              ;; XXX: Without this flag, the CLOCK_REALTIME test hangs
+              ;; indefinitely.  See README.packagers for more information.
+              ;; There are specific instructions to not enable more flags
+              ;; than absolutely needed.
+              #$@(if (or (target-ppc64le?)
+                         (target-riscv64?))
+                     #~((setenv "FAKETIME_COMPILE_CFLAGS"
+                                "-DFORCE_MONOTONIC_FIX -DFORCE_PTHREAD_NONVER"))
+                     #~((setenv "FAKETIME_COMPILE_CFLAGS"
+                                "-DFORCE_MONOTONIC_FIX")))))
+          (add-before 'check 'pre-check
+            (lambda _
+              (substitute* "test/functests/test_exclude_mono.sh"
+                (("/bin/bash") (which "bash"))))))))
+    (native-inputs (list perl))         ;for tests
+    (inputs (list coreutils-minimal))
     (synopsis "Fake the system time for single applications")
     (description
      "The libfaketime library allows users to modify the system time that an
@@ -3040,6 +3182,46 @@ application \"sees\".  It is meant to be loaded using the dynamic linker's
 @code{LD_PRELOAD} environment variable.  The @command{faketime} command
 provides a simple way to achieve this.")
     (license license:gpl2)))
+
+(define-public rapidcheck
+  (let ((commit "a5724ea5b0b00147109b0605c377f1e54c353ba2")
+        (revision "0"))
+    (package
+      (name "rapidcheck")
+      (version (git-version "0.0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri
+          (git-reference
+           (url "https://github.com/emil-e/rapidcheck")
+           (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0f2dmsym8ibnwkaidxmgp73mg0sdniwsyn6ppskh74246h29bbcy"))))
+      (arguments
+       (list
+        #:tests? #f                     ;require fetching submodules
+        #:configure-flags #~(list "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'install 'install-extra-headers
+              (lambda _
+                (with-directory-excursion "../source/extras"
+                  (for-each
+                   (lambda (dir)
+                     (let ((dir (string-append dir "/include/rapidcheck/"))
+                           (dest (string-append #$output
+                                                "/include/rapidcheck")))
+                       (copy-recursively dir dest)))
+                   '("boost" "boost_test" "catch" "gmock" "gtest"))))))))
+      (build-system cmake-build-system)
+      (home-page "https://github.com/emil-e/rapidcheck")
+      (synopsis "Property based testing framework for C++")
+      (description "Rapidcheck is a property based testing framework for C++.
+It works by generating random data to try and find a case breaks your given
+pre-condition.")
+      (license license:bsd-2))))
 
 (define-public umockdev
   (package
@@ -3136,7 +3318,7 @@ grew out of the @dfn{Vc} project.")
 (define-public python-pyfakefs
   (package
     (name "python-pyfakefs")
-    (version "3.7.1")
+    (version "4.6.3")
     (source (origin
               (method url-fetch)
               ;; We use the PyPI URL because there is no proper release
@@ -3145,22 +3327,13 @@ grew out of the @dfn{Vc} project.")
               (uri (pypi-uri "pyfakefs" version))
               (sha256
                (base32
-                "1cp2yw96fa2qkgi39xa3nlr3inf8wb5rgh9kdq53256ca2r8pdhy"))
+                "18bcv8yalg80zgigx40fk692yr3wf9ch1hkb0cdplqspyry2mwbd"))
               (patches (search-patches
                         "python-pyfakefs-remove-bad-test.patch"))
               (file-name (string-append name "-" version ".tar.gz"))))
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'patch-testsuite
-           (lambda _
-             ;; Time difference is larger than expected.
-             (substitute* "pyfakefs/tests/fake_filesystem_unittest_test.py"
-               (("(\\s+)def test_copy_real_file" all indent)
-                (string-append
-                  indent
-                  "@unittest.skip('disabled by guix')\n"
-                  all)))))
          ;; The default test suite does not run these extra tests.
          (add-after 'check 'check-pytest-plugin
            (lambda _
@@ -3190,7 +3363,7 @@ system.  The code under test requires no modification to work with pyfakefs.")
 (define-public python-aiounittest
   (package
     (name "python-aiounittest")
-    (version "1.4.1")
+    (version "1.4.2")
     ;; Pypi package lacks tests.
     (source
      (origin (method git-fetch)
@@ -3200,7 +3373,7 @@ system.  The code under test requires no modification to work with pyfakefs.")
              (file-name (git-file-name name version))
              (sha256
               (base32
-               "10x7ds09b9415r92f7g9714gxixvvq3bm5mnh29ml9aba8blcb0n"))))
+               "0srahyzrk5awfh4rmppvqkblfmiavdklxl9i5mcr8gl7ahiwwl7f"))))
     (build-system python-build-system)
     (arguments
      '(#:phases (modify-phases %standard-phases
@@ -3319,7 +3492,6 @@ directories and files.")
            python-numpy
            python-pandas
            python-pillow
-           python-pre-commit
            python-restructuredtext-lint
            python-tox
            python-setuptools-scm
@@ -3331,3 +3503,112 @@ directories and files.")
 tables by saving expected data in a data directory (courtesy of pytest-datadir)
 that can be used to verify that future runs produce the same data.")
     (license license:expat)))
+
+(define-public guile-proba
+  (package
+    (name "guile-proba")
+    (version "0.3.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://codeberg.org/luis-felipe/guile-proba")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1mjnrbb6gv5f95i1ihn75yh7ya445pcnj13cy34x2v58h9n2r80s"))))
+    (build-system guile-build-system)
+    (inputs (list bash-minimal guile-3.0))
+    (native-inputs (list texinfo))
+    (propagated-inputs (list guile-config guile-lib))
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'set-paths 'add-output-to-guile-load-paths
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (guile-version (target-guile-effective-version))
+                     (scm-path (string-append out
+                                              "/share/guile/site/"
+                                              guile-version))
+                     (go-path (string-append out
+                                             "/lib/guile/"
+                                             guile-version
+                                             "/site-ccache")))
+                (setenv "GUILE_LOAD_PATH"
+                        (string-append scm-path ":"
+                                       (getenv "GUILE_LOAD_PATH")))
+                (setenv "GUILE_LOAD_COMPILED_PATH"
+                        (string-append
+                         go-path ":"
+                         (getenv "GUILE_LOAD_COMPILED_PATH"))))))
+          (add-after 'build 'build-manual
+            (lambda _
+              (invoke "makeinfo" "manual/main.texi")))
+          (add-after 'build 'check
+            (lambda _
+              (invoke "guile" "proba.scm" "run" "tests")))
+          (add-after 'install 'install-wrapped-script
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (bin-dir (string-append out "/bin"))
+                     (script (string-append bin-dir "/proba")))
+                (mkdir-p bin-dir)
+                (copy-file "proba.scm" script)
+                (chmod script #o555)
+                (wrap-program script
+                  `("GUILE_LOAD_PATH" = (,(getenv "GUILE_LOAD_PATH")))
+                  `("GUILE_LOAD_COMPILED_PATH" =
+                    (,(getenv "GUILE_LOAD_COMPILED_PATH")))))))
+          (add-after 'install 'install-manual
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (info-dir (string-append out "/share/info")))
+                (mkdir-p info-dir)
+                (install-file "guile-proba" info-dir)))))
+      #:scheme-file-regexp
+      #~(begin
+          (use-modules (ice-9 regex))
+          (lambda (file stat) (string-match "/proba/.*\\.scm$" file)))))
+    (home-page "https://luis-felipe.gitlab.io/guile-proba/")
+    (synopsis "Testing tools for GNU Guile projects with SRFI 64 test suites")
+    (description
+     "This software is a set of testing tools for GNU Guile projects
+with SRFI 64-based test suites.  It comes with a command-line interface
+to run test collections, and a library that includes a test runner and
+helpers for writing tests.")
+    (license license:public-domain)))
+
+(define-public subunit
+  (package
+    (name "subunit")
+    (version "1.4.2")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/testing-cabal/subunit")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "16n1zxwnmhb7vzixngvmm5zzk4q5jaqqjwyr6pr6w0ys60b7xja3"))))
+    (build-system gnu-build-system)
+    (native-inputs (list autoconf
+                         automake
+                         check
+                         cppunit
+                         libtool
+                         pkg-config
+                         python-fixtures
+                         python-hypothesis
+                         python-testscenarios))
+    (inputs (list perl python))
+    (propagated-inputs (list python-testtools))
+    (home-page "https://github.com/testing-cabal/subunit")
+    (synopsis "Test reporting and control protocol")
+    (description
+     "Subunit is a streaming protocol for test results.  Subunit comes with
+command line filters to process a subunit stream and language bindings for
+Python, C, C++ and shell.  Bindings are easy to write for other languages.")
+    (license (list license:asl2.0 license:bsd-3)))) ;user can pick

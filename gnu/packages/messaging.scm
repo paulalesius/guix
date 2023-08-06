@@ -4,12 +4,12 @@
 ;;; Copyright © 2015 Taylan Ulrich Bayırlı/Kammer <taylanbayirli@gmail.com>
 ;;; Copyright © 2015 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
-;;; Copyright © 2015, 2018, 2019, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015, 2018-2021, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2017 Nikita <nikita@n0.is>
 ;;; Copyright © 2016 Andy Patterson <ajpatter@uwaterloo.ca>
 ;;; Copyright © 2016, 2017, 2018, 2019 Clément Lassieur <clement@lassieur.org>
 ;;; Copyright © 2017 Mekeor Melire <mekeor.melire@gmail.com>
-;;; Copyright © 2017, 2018, 2020, 2021, 2022 Arun Isaac <arunisaac@systemreboot.net>
+;;; Copyright © 2017, 2018, 2020, 2021, 2022, 2023 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2017–2021 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2017 Theodoros Foradis <theodoros@foradis.org>
 ;;; Copyright © 2017, 2018, 2019 Rutger Helling <rhelling@mykolab.com>
@@ -35,8 +35,11 @@
 ;;; Copyright © 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2022 Jai Vetrivelan <jaivetrivelan@gmail.com>
 ;;; Copyright © 2022 Jack Hill <jackhill@jackhill.us>
-;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2022 Giovanni Biscuolo <g@xelera.eu>
+;;; Copyright © 2023 Giacomo Leidi <goodoldpaul@autistici.org>
+;;; Copyright © 2023 Yovan Naumovski <yovan@gorski.stream>
+;;; Copyright © 2023 gemmaro <gemmaro.dev@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -88,6 +91,7 @@
   #:use-module (gnu packages gstreamer)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages hunspell)
   #:use-module (gnu packages icu4c)
   #:use-module (gnu packages image)
   #:use-module (gnu packages kde)
@@ -98,7 +102,6 @@
   #:use-module (gnu packages libevent)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages libidn)
-  #:use-module (gnu packages libreoffice)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages logging)
   #:use-module (gnu packages lua)
@@ -123,6 +126,7 @@
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages readline)
+  #:use-module (gnu packages regex)
   #:use-module (gnu packages ruby)
   #:use-module (gnu packages sphinx)
   #:use-module (gnu packages sqlite)
@@ -192,62 +196,6 @@ by @acronym{OMEMO, OMEMO Multi-End Message and Object Encryption}, during
 XMPP-based sessions.")
     (license license:lgpl3+)))
 
-(define-public psi
-  (package
-    (name "psi")
-    (version "1.5")
-    (source
-     (origin
-       (method url-fetch)
-       (uri
-        (string-append "mirror://sourceforge/psi/Psi/"
-                       version "/psi-" version ".tar.xz"))
-       (modules '((guix build utils)))
-       (snippet
-        `(begin
-           (delete-file-recursively "3rdparty")))
-       (sha256
-        (base32 "1dxmm1d1zr0pfs51lba732ipm6hm2357jlfb934lvarzsh7karri"))))
-    (build-system qt-build-system)
-    (arguments
-     `(#:tests? #f                      ; No target
-       #:configure-flags
-       (list
-        "-DUSE_ENCHANT=ON"
-        "-DUSE_CCACHE=OFF")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-cmake
-           (lambda _
-             (substitute* "cmake/modules/FindHunspell.cmake"
-               (("hunspell-1.6")
-                "hunspell-1.7"))
-             #t)))))
-    (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("python" ,python-wrapper)
-       ("ruby" ,ruby)))
-    (inputs
-     `(("aspell" ,aspell)
-       ("enchant" ,enchant-1.6)
-       ("hunspell" ,hunspell)
-       ("libidn" ,libidn)
-       ("qca" ,qca)
-       ("qtbase" ,qtbase-5)
-       ("qtmultimedia-5" ,qtmultimedia-5)
-       ("qtsvg-5" ,qtsvg-5)
-       ("qtwebkit" ,qtwebkit)
-       ("qtx11extras" ,qtx11extras)
-       ("x11" ,libx11)
-       ("xext" ,libxext)
-       ("xcb" ,libxcb)
-       ("zlib" ,zlib)))
-    (synopsis "Qt-based XMPP Client")
-    (description "Psi is a capable XMPP client aimed at experienced users.
-Its design goals are simplicity and stability.")
-    (home-page "https://psi-im.org")
-    (license license:gpl2+)))
-
 (define-public libgnt
   (package
     (name "libgnt")
@@ -263,43 +211,29 @@ Its design goals are simplicity and stability.")
     (build-system meson-build-system)
     (outputs '("out" "doc"))
     (arguments
-     `(#:glib-or-gtk? #t     ; To wrap binaries and/or compile schemas
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-ncurses-path
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* "meson.build"
-               (("'/usr'")
-                (string-append "'"
-                               (assoc-ref inputs "ncurses")
-                               "'")))))
-         (add-before 'configure 'patch-docbook-xml
-           (lambda* (#:key inputs #:allow-other-keys)
-             (with-directory-excursion "doc"
-               (substitute* "libgnt-docs.xml"
-                 (("http://www.oasis-open.org/docbook/xml/4.1.2/")
-                  (string-append (assoc-ref inputs "docbook-xml")
-                                 "/xml/dtd/docbook/"))))))
-         (add-after 'install 'move-doc
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (doc (assoc-ref outputs "doc")))
-               (mkdir-p (string-append doc "/share"))
-               (rename-file
-                (string-append out "/share/gtk-doc")
-                (string-append doc "/share/gtk-doc"))))))))
+     (list #:glib-or-gtk? #t         ; To wrap binaries and/or compile schemas
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'patch-ncurses-path
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   (substitute* "meson.build"
+                     (("'/usr'")
+                      (string-append "'" #$(this-package-input "ncurses")
+                                     "'")))))
+               (add-after 'install 'move-doc
+                 (lambda _
+                   (mkdir-p (string-append #$output:doc "/share"))
+                   (rename-file
+                    (string-append #$output "/share/gtk-doc")
+                    (string-append #$output:doc "/share/gtk-doc")))))))
     (native-inputs
-     `(("docbook-xml" ,docbook-xml-4.1.2)
-       ("glib:bin" ,glib "bin")
-       ("gobject-introspection" ,gobject-introspection)
-       ("gtk-doc" ,gtk-doc)
-       ("pkg-config" ,pkg-config)))
-    (inputs
-     (list ncurses))
-    (propagated-inputs
-     `(("glib" ,glib)
-       ("libxml" ,libxml2)
-       ("python" ,python-2)))
+     (list docbook-xml-4.1.2
+           `(,glib "bin")
+           gobject-introspection
+           gtk-doc
+           pkg-config))
+    (inputs (list ncurses))
+    (propagated-inputs (list glib libxml2 python-2))
     (synopsis "GLib Ncurses Toolkit")
     (description "GNT is an ncurses toolkit for creating text-mode graphical
 user interfaces in a fast and easy way.  It is based on GLib and ncurses.")
@@ -470,7 +404,7 @@ TCP sessions from existing clients.")
 (define-public poezio
   (package
     (name "poezio")
-    (version "0.13.2")
+    (version "0.14")
     (source
      (origin
        (method git-fetch)
@@ -482,10 +416,11 @@ TCP sessions from existing clients.")
        (file-name
         (git-file-name name version))
        (sha256
-        (base32 "0p92k8ssjsgavyfv1fd5cgzyw87dmdd84vaz7zvfsf5crvpr1mkf"))))
+        (base32 "15vlmymqlcf94h1g6dvgzjvj15c47dqsm78qs40wl2dlwspvqkxj"))))
     (build-system python-build-system)
     (arguments
-      (list #:phases
+      (list #:tests? #f ; tests fails without the OTR plugin
+            #:phases
             #~(modify-phases %standard-phases
                 (add-after 'unpack 'patch
                   (lambda _
@@ -496,13 +431,13 @@ TCP sessions from existing clients.")
      (list pkg-config python-setuptools python-sphinx))
     (inputs
      (list python-mpd2
-           python-potr
            python-pyasn1
            python-pyasn1-modules
            python-pygments
            python-pyinotify
            python-qrcode
-           python-slixmpp))
+           python-slixmpp
+           python-typing-extensions))
     (synopsis "Console Jabber/XMPP Client")
     (description "Poezio is a free console XMPP client (the protocol on which
 the Jabber IM network is built).
@@ -514,7 +449,7 @@ made in a configuration file or directly from the client.
 You'll find the light, fast, geeky and anonymous spirit of IRC while using a
 powerful, standard and open protocol.")
     (home-page "https://poez.io/en/")
-    (license license:zlib)))
+    (license license:gpl3+)))
 
 (define-public libotr
   (package
@@ -527,6 +462,12 @@ powerful, standard and open protocol.")
                            version ".tar.gz"))
        (sha256
         (base32 "1x8rliydhbibmzwdbyr7pd7n87m2jmxnqkpvaalnf4154hj1hfwb"))
+       (modules '((guix build utils)))
+       (snippet
+        ;; Add missing #include that causes a build failure with glibc 2.35.
+        #~(substitute* "tests/regression/client/client.c"
+            (("_GNU_SOURCE" all)
+             (string-append all "\n#include <sys/socket.h>\n"))))
        (patches
         (search-patches "libotr-test-auth-fix.patch"))))
     (build-system gnu-build-system)
@@ -1177,7 +1118,7 @@ of xmpppy.")
 (define-public gajim
   (package
     (name "gajim")
-    (version "1.4.6")
+    (version "1.4.7")
     (source
      (origin
        (method url-fetch)
@@ -1186,7 +1127,7 @@ of xmpppy.")
                        (version-major+minor version)
                        "/gajim-" version ".tar.gz"))
        (sha256
-        (base32 "0ks25hh7ksx0nfydixpixcli556w7qcylxp2z2xsx8mgzqv7c9la"))
+        (base32 "1ww46qlxr14nq0ka8wsf8qpn5qfi5dvgyksfh9411crl7azhfj0s"))
        (patches (search-patches "gajim-honour-GAJIM_PLUGIN_PATH.patch"))))
     (build-system python-build-system)
     (arguments
@@ -1286,6 +1227,7 @@ of xmpppy.")
            python-css-parser
            python-dbus
            python-gssapi
+           python-idna
            python-keyring
            python-nbxmpp
            python-packaging
@@ -1375,7 +1317,7 @@ Encryption to Gajim.")
 (define-public dino
   (package
     (name "dino")
-    (version "0.3.0")
+    (version "0.4.2")
     (source
      (origin
        (method url-fetch)
@@ -1383,11 +1325,11 @@ Encryption to Gajim.")
         (string-append "https://github.com/dino/dino/releases/download/v"
                        version "/dino-" version ".tar.gz"))
        (sha256
-        (base32 "07nw275xfamczzvzps8hsnpbhzvr4qc726fx92w8ncmdag7wlw1r"))))
+        (base32 "1vbyrnivibsn4jzmfb6sfq5fxhb0xh1cnhgcmg1rafq751q55cg1"))))
     (build-system cmake-build-system)
     (outputs '("out" "debug"))
     (arguments
-     (list #:configure-flags #~(list "-DBUILD_TESTS=true")
+     (list #:configure-flags #~(list "-DBUILD_TESTS=true" "-DUSE_SOUP3=true")
            #:parallel-build? #f         ; not supported
            #:modules '((guix build cmake-build-system)
                        ((guix build glib-or-gtk-build-system) #:prefix glib-or-gtk:)
@@ -1398,13 +1340,18 @@ Encryption to Gajim.")
            #:phases
            #~(modify-phases %standard-phases
                ;; For A/V support.
+               (add-after 'unpack 'generate-gdk-pixbuf-loaders-cache-file
+                 (assoc-ref glib-or-gtk:%standard-phases
+                            'generate-gdk-pixbuf-loaders-cache-file))
                (add-after 'install 'wrap
                  (lambda* (#:key outputs #:allow-other-keys)
                    (let* ((out (assoc-ref outputs "out"))
                           (dino (string-append out "/bin/dino"))
                           (gst-plugin-path (getenv "GST_PLUGIN_SYSTEM_PATH")))
                      (wrap-program dino
-                       `("GST_PLUGIN_SYSTEM_PATH" ":" prefix (,gst-plugin-path))))))
+                       `("GST_PLUGIN_SYSTEM_PATH" ":" prefix (,gst-plugin-path))
+                       `("GDK_PIXBUF_MODULE_FILE" =
+                         (,(getenv "GDK_PIXBUF_MODULE_FILE")))))))
                (add-after 'install 'glib-or-gtk-wrap
                  (assoc-ref glib-or-gtk:%standard-phases 'glib-or-gtk-wrap))
                (replace 'check
@@ -1417,11 +1364,13 @@ Encryption to Gajim.")
      (list gettext-minimal
            `(,glib "bin")
            gobject-introspection
-           `(,gtk+ "bin")
+           `(,gtk "bin")
            pkg-config
            vala))
     (inputs
-     (list atk
+     (list adwaita-icon-theme
+           at-spi2-core
+           bash-minimal
            cairo
            librsvg
            glib
@@ -1432,16 +1381,17 @@ Encryption to Gajim.")
            gstreamer                    ;for A/V support
            gst-plugins-base
            gst-plugins-good
-           gtk+
+           gtk
            icu4c                        ;for emoji support
+           libadwaita
            libcanberra                  ;for sound-notification support
            libgcrypt
            libgee
            libnice
            libsignal-protocol-c
-           libsoup-minimal-2
+           libsoup
            libsrtp                      ;for calls support
-           pango
+           pango                        ;gtk4 wants pango 1.50+
            qrencode
            sqlite
            webrtc-audio-processing))    ;for A/V support
@@ -1507,14 +1457,14 @@ Qt-based XMPP library QXmpp.")
 (define-public prosody
   (package
     (name "prosody")
-    (version "0.12.1")
+    (version "0.12.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://prosody.im/downloads/source/"
                                   "prosody-" version ".tar.gz"))
               (sha256
                (base32
-                "1rch9gzp9ksnniv6r1vskifvfv5wbp8wcfjr0lc2b9013zjbpv57"))))
+                "0091vc0v8xnxkpdi4qpy4dirn92y4pa09q1qssi40q7l3w1hvnim"))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f                      ;tests require "busted"
@@ -2139,7 +2089,7 @@ is also scriptable and extensible via Guile.")
 (define-public libstrophe
   (package
     (name "libstrophe")
-    (version "0.12.2")
+    (version "0.12.3")
     (source
      (origin
        (method git-fetch)
@@ -2148,7 +2098,7 @@ is also scriptable and extensible via Guile.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1ispq6sf7pq02irrqfga4i1xhrg1pg0f86qvvnix15clm8i1agld"))))
+        (base32 "17wxaqdcwhm34bl31g9fmsgmnsd7znyxcb9dhw9lmaghkql1sf0h"))))
     (build-system gnu-build-system)
     (arguments
      (list #:configure-flags '(list "--disable-static")
@@ -2157,8 +2107,7 @@ is also scriptable and extensible via Guile.")
          (add-after 'unpack 'patch-make
            (lambda _
              (substitute* "Makefile.am"
-               (("'\\^xmpp_'") "'.'"))
-             #t))
+               (("'\\^xmpp_'") "'.'"))))
          (add-after 'install-licence-files 'install-extra-licence-files
            (lambda _
             (let ((license-directory (string-append #$output
@@ -2351,7 +2300,7 @@ QMatrixClient project.")
 (define-public mtxclient
   (package
     (name "mtxclient")
-    (version "0.8.2")
+    (version "0.9.1")
     (source
      (origin
        (method git-fetch)
@@ -2360,7 +2309,7 @@ QMatrixClient project.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "041ckjvfxapv1q6x9xd8q70x43cz10x7p11aql58lnc0jp0kwry7"))))
+        (base32 "0m8agc3c4n03r92nz3gxkpxmj2c3ncf125nmfdv0jf24gxib126z"))))
     (arguments
      `(#:configure-flags
        (list
@@ -2378,11 +2327,12 @@ QMatrixClient project.")
      (list boost
            coeurl
            curl
-           json-modern-cxx
+           nlohmann-json
            libevent
-           libolm
            libsodium
+           olm
            openssl
+           re2
            spdlog
            zlib))
     (native-inputs
@@ -2396,7 +2346,7 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
 (define-public nheko
   (package
     (name "nheko")
-    (version "0.10.2")
+    (version "0.11.3")
     (source
      (origin
        (method git-fetch)
@@ -2405,7 +2355,7 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "114hbv58209bwar6qjdjg2l1vh3xk20ppv6n301i7zkmwrf7q9w2"))
+        (base32 "0yjbxyba87nkpjmql7s6nv2r2i9s956zgwlfhdi4jjg96v2rgmnr"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -2459,11 +2409,11 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
            curl
            gst-plugins-base
            gst-plugins-bad              ; sdp & webrtc for voip
-           gst-plugins-good             ; rtpmanager for voip
-           json-modern-cxx
+           gst-plugins-good-qt          ; rtpmanager for voip
+           nlohmann-json
            libevent
            libnice                      ; for voip
-           libolm
+           olm
            lmdb
            lmdbxx
            mtxclient
@@ -2475,6 +2425,7 @@ for the Matrix protocol.  It is built on to of @code{Boost.Asio}.")
            qtmultimedia-5
            qtquickcontrols2-5
            qtsvg-5
+           re2
            spdlog
            single-application-qt5
            xcb-util-wm
@@ -2664,15 +2615,15 @@ replacement.")
 (define-public tdlib
   (package
     (name "tdlib")
-    (version "1.8.4")
+    (version "1.8.10")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/tdlib/td")
-             (commit "7eabd8ca60de025e45e99d4e5edd39f4ebd9467e")))
+             (commit "ef4c3902fe082b83192d578af7a0bb956a917fed")))
        (sha256
-        (base32 "1chs0ibghjj275v9arsn3k68ppblpm7ysqk0za9kya5vdnldlld5"))
+        (base32 "1pi53v8qjl0lzann99pv90i4qx2lbjz10rvnwzkbqbn932y3j3gg"))
        (file-name (git-file-name name version))))
     (build-system cmake-build-system)
     (arguments
@@ -2697,21 +2648,6 @@ from almost any programming language with a C-FFI and features first-class
 support for high performance Telegram Bot creation.")
     (home-page "https://core.telegram.org/tdlib")
     (license license:boost1.0)))
-
-(define-public tdlib-1.8.0
-  (package
-    (inherit tdlib)
-    (name "tdlib-1.8.0")
-    (version "1.8.0")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/tdlib/td")
-                    (commit (string-append "v" version))))
-              (file-name (git-file-name "tdlib" version))
-              (sha256
-               (base32
-                "19psqpyh9a2kzfdhgqkirpif4x8pzy89phvi59dq155y30a3661q"))))))
 
 (define-public purple-mm-sms
   (package
@@ -2871,6 +2807,7 @@ validating international phone numbers.")
     (native-inputs
      (list gettext-minimal
            `(,glib "bin")
+           itstool
            pkg-config
            protobuf
            xorg-server-for-tests))
@@ -2884,7 +2821,7 @@ validating international phone numbers.")
            libgcrypt
            libgee
            libhandy
-           libolm
+           olm
            libphonenumber
            modem-manager
            pidgin
@@ -2901,7 +2838,7 @@ as well as on desktop platforms.  It's based on libpurple and ModemManager.")
 (define-public mosquitto
   (package
     (name "mosquitto")
-    (version "1.6.12")
+    (version "2.0.15")
     (source
      (origin
        (method url-fetch)
@@ -2909,10 +2846,10 @@ as well as on desktop platforms.  It's based on libpurple and ModemManager.")
                            version ".tar.gz"))
        (sha256
         (base32
-         "1yq7y329baa1ly488rw125c3mvsnsa7kjkik602xv1xpkz8p73al"))))
+         "1ils0ckxz86gvr37k2gfl4q9gs12625dhhb7i6lcg49z5v9v2da7"))))
     (build-system cmake-build-system)
     (inputs
-     (list openssl))
+     (list openssl libxslt))
     (synopsis "Message broker")
     (description "This package provides Eclipse Mosquitto, a message broker
 that implements the MQTT protocol versions 5.0, 3.1.1 and 3.1.  Mosquitto
@@ -3133,6 +3070,9 @@ social and chat platform.")
 designed for experienced users.")
     (license license:gpl2+)))
 
+(define-public psi
+  (deprecated-package "psi" psi-plus))
+
 (define-public python-zulip
   (package
     (name "python-zulip")
@@ -3147,7 +3087,13 @@ designed for experienced users.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0da1ki1v252avy27j6d7snnc0gyq0xa9fypm3qdmxhw2w79d6q36"))))
+         "0da1ki1v252avy27j6d7snnc0gyq0xa9fypm3qdmxhw2w79d6q36"))
+       (modules '((guix build utils)))
+       (snippet
+        '(begin
+           ;; TODO: This is fixed upstream in later versions
+           (substitute* "zulip/tests/test_default_arguments.py"
+             (("optional arguments:") "options:"))))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -3315,14 +3261,14 @@ notifications.")
 (define-public pounce
   (package
     (name "pounce")
-    (version "3.0")
+    (version "3.1")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://git.causal.agency/pounce/snapshot/pounce-"
                            version ".tar.gz"))
        (sha256
-        (base32 "1w4x34bspkqvk9p7bfj0zmvmbzvxb7lxrrr3g6lrfdj9f3qzfxpp"))))
+        (base32 "0kk0jrfiwfaybr0i5xih3b0yd4i6v3bz866a7xal1j8wddalbwlp"))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f                      ;there are no tests
@@ -3334,7 +3280,7 @@ notifications.")
      (list pkg-config universal-ctags))
     (inputs
      (list libressl))
-    (home-page "https://code.causal.agency/june/pounce")
+    (home-page "https://git.causal.agency/pounce")
     (synopsis "Simple multi-client TLS-only IRC bouncer")
     (description
      "@command{pounce} is a multi-client, TLS-only IRC bouncer.  It maintains
@@ -3410,7 +3356,7 @@ Weechat communicate over the Matrix protocol.")
 (define-public weechat-wee-slack
   (package
     (name "weechat-wee-slack")
-    (version "2.9.0")
+    (version "2.9.1")
     (source
      (origin
        (method git-fetch)
@@ -3420,7 +3366,7 @@ Weechat communicate over the Matrix protocol.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "01h9n6a39sgpczvjywvxb5z5vz3jb3h2xx2vspjkkz06gzwniijq"))))
+         "1zhiwbljh4rgbj8i9rrcimi9v3a7g1nm7v2m2f754rnddck9343z"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -3445,7 +3391,7 @@ Weechat communicate over the Matrix protocol.")
              (when tests?
                (invoke "pytest")))))))
     (inputs
-     (list python-websocket-client))
+     (list python-mock python-websocket-client))
     (native-inputs
      (list python-pytest))
     (home-page "https://github.com/wee-slack/wee-slack")
@@ -3501,6 +3447,23 @@ for notification of events.")
 Discord.")
     (home-page "https://github.com/taylordotfish/harmony")
     (license license:gpl3+)))
+
+(define-public python-pypresence
+  (package
+    (name "python-pypresence")
+    (version "4.2.1")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "pypresence" version))
+              (sha256
+               (base32
+                "0rp09lfxbc3syd1rhbai2516c3wyfxkzrsw8v4bd57qqr2cay7b9"))))
+    (build-system python-build-system)
+    (home-page "https://github.com/qwertyquerty/pypresence")
+    (synopsis "Discord RPC client")
+    (description "This package provides @code{python-pypresence}, a Discord
+RPC client written in Python.")
+    (license license:expat)))
 
 (define-public pn
   (package

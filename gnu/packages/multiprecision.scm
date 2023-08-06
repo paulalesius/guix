@@ -6,9 +6,10 @@
 ;;; Copyright © 2016, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018 Eric Bavier <bavier@member.fsf.org>
-;;; Copyright © 2018, 2019, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2018, 2019, 2021, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2021 Vinicius Monego <monego@posteo.net>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -119,13 +120,24 @@ It is aimed at use in, for example, cryptography and computational algebra.")
 (define-public mpfr
   (package
    (name "mpfr")
-   (version "4.1.0")
+   (version "4.2.0")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnu/mpfr/mpfr-" version
                                 ".tar.xz"))
             (sha256 (base32
-                     "0zwaanakrqjf84lfr5hfsdr7hncwv9wj0mchlr7cmxigfgqs760c"))))
+                     "14yr4sf4mys64nzbgnd997l6l4n8l9vsjnnvnb0lh4jh2ggpi8q6"))))
+   (arguments
+    (list
+     #:phases (if (system-hurd?)
+                  #~(modify-phases %standard-phases
+                      (add-after 'unpack 'skip-tests
+                        (lambda _
+                          (substitute*
+                              "tests/tsprintf.c"
+                            (("(^| )main *\\(.*" all)
+                             (string-append all "{\n  exit (77);//"))))))
+                  #~%standard-phases)))
    (build-system gnu-build-system)
    (outputs '("out" "debug"))
    (propagated-inputs (list gmp))            ; <mpfr.h> refers to <gmp.h>
@@ -140,14 +152,14 @@ correct rounding.")
 (define-public mpc
   (package
    (name "mpc")
-   (version "1.2.1")
+   (version "1.3.1")
    (source (origin
             (method url-fetch)
             (uri (string-append
                   "mirror://gnu/mpc/mpc-" version ".tar.gz"))
             (sha256
               (base32
-                "0n846hqfqvmsmim7qdlms0qr86f1hck19p12nq3g3z2x74n3sl0p"))))
+                "1f2rqz0hdrrhx4y1i5f8pv6yv08a876k1dqcm9s2p26gyn928r5b"))))
    (build-system gnu-build-system)
    (outputs '("out" "debug"))
    (propagated-inputs (list gmp ; <mpc.h> refers to both
@@ -158,7 +170,7 @@ correct rounding.")
 for performing arithmetic on complex numbers.  It supports arbitrarily high
 precision and correctly rounds the results.")
    (license lgpl3+)
-   (home-page "http://www.multiprecision.org/mpc/")))
+   (home-page "https://www.multiprecision.org/mpc/")))
 
 (define-public mpfi
   ;; The last release, 1.5.4, lacks source files such as div_ext.c and others
@@ -450,7 +462,8 @@ number generators, public key cryptography and a plethora of other routines.")
                             "download/v" version "/ltm-" version ".tar.xz"))
         (sha256
          (base32
-          "1c8q1qy88cjhdjlk3g24mra94h34c1ldvkjz0n2988c0yvn5xixp"))))
+          "1c8q1qy88cjhdjlk3g24mra94h34c1ldvkjz0n2988c0yvn5xixp"))
+        (patches (search-patches "libtommath-integer-overflow.patch"))))
     (build-system gnu-build-system)
     (arguments
      '(#:phases
@@ -469,9 +482,10 @@ number generators, public key cryptography and a plethora of other routines.")
                                          "/lib/libtommath.a"))
              #t))
          (replace 'check
-           (lambda* (#:key test-target make-flags #:allow-other-keys)
-             (apply invoke "make" test-target make-flags)
-             (invoke "sh" "test")))
+           (lambda* (#:key tests? test-target make-flags #:allow-other-keys)
+             (when tests?
+               (apply invoke "make" test-target make-flags)
+               (invoke "sh" "test"))))
          (add-after 'install 'install-static-library
            (lambda* (#:key outputs #:allow-other-keys)
              (invoke "make" "-f" "makefile.unix" "install"

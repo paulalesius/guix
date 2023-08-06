@@ -6,7 +6,7 @@
 ;;; Copyright © 2015, 2016, 2020 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2017–2022 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018, 2019 Rutger Helling <rhelling@mykolab.com>
-;;; Copyright © 2018, 2019 Marius Bakke <mbakke@fastmail.com>
+;;; Copyright © 2018, 2019, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Vincent Legoll <vincent.legoll@gmail.com>
 ;;; Copyright © 2021 Guillaume Le Vaillant <glv@posteo.net>
 ;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
@@ -107,7 +107,7 @@ textfiles to roff for terminal display, and also to HTML for the web.")
 (define-public libpipeline
   (package
     (name "libpipeline")
-    (version "1.5.3")
+    (version "1.5.6")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -115,9 +115,9 @@ textfiles to roff for terminal display, and also to HTML for the web.")
                     version ".tar.gz"))
               (sha256
                (base32
-                "1c5dl017xil2ssb6a5vg927bnsbc9vymfgi9ahvqbb8gypx0igsx"))))
+                "15xpx7kbzkn63ab8mkghv7jkzji8pdbsyxm7ygjji19rvkkvkyv0"))))
     (build-system gnu-build-system)
-    (home-page "http://libpipeline.nongnu.org/")
+    (home-page "https://libpipeline.nongnu.org/")
     (synopsis "C library for manipulating pipelines of subprocesses")
     (description
      "libpipeline is a C library for manipulating pipelines of subprocesses in
@@ -127,14 +127,14 @@ a flexible and convenient way.")
 (define-public man-db
   (package
     (name "man-db")
-    (version "2.10.2")
+    (version "2.11.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://savannah/man-db/man-db-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "0kaiymd5lh4dnp6z15fnvfg0ir81kdxp5l690ccp64ra956rb5zf"))))
+                "1k5nhy2c33k0p2f1sbb4hxpwrjw6v4scchwykkg4g61la59amarf"))))
     (build-system gnu-build-system)
     (arguments
      (list #:phases
@@ -211,7 +211,7 @@ a flexible and convenient way.")
      (list (search-path-specification
             (variable "MANPATH")
             (files '("share/man")))))
-    (home-page "http://man-db.nongnu.org/")
+    (home-page "https://man-db.nongnu.org/")
     (synopsis "Standard Unix documentation system")
     (description
      "Man-db is an implementation of the standard Unix documentation system
@@ -270,7 +270,7 @@ PostScript, and PDF.  Additional tools include the @command{man} viewer, and
 (define-public man-pages
   (package
     (name "man-pages")
-    (version "6.00")
+    (version "6.02")
     (source
      (origin
        (method url-fetch)
@@ -280,7 +280,7 @@ PostScript, and PDF.  Additional tools include the @command{man} viewer, and
               (string-append "mirror://kernel.org/linux/docs/man-pages/Archive/"
                              "man-pages-" version ".tar.xz")))
        (sha256
-        (base32 "1252c1356z5spya3yl0lcmmymglx3bmfwmamiz1y5l13xqpwbnwy"))))
+        (base32 "159p60a0w5ri3i7bbfxzjfmj8sbpf030m38spny1ws585fv0kn36"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -316,6 +316,7 @@ Linux kernel and C library interfaces employed by user-space programs.")
 (define-public man-pages-posix
   (package
     (name "man-pages-posix")
+    ;; Make sure that updates are still legally distributable.  2017-a is not.
     (version "2013-a")
     (source
      (origin
@@ -351,36 +352,36 @@ on any distribution, and the nroff source is included."))))
   ;; input "locales" contain the original (English) text.
   (package
     (name "help2man")
-    (version "1.48.5")
+    (version "1.49.2")
     (source
      (origin
-      (method url-fetch)
-      (uri (string-append "mirror://gnu/help2man/help2man-"
-                          version ".tar.xz"))
-      (sha256
-       (base32
-        "1gl24n9am3ivhql1gs9lffb415irg758fhxyk4ryssiflk5f8fb7"))))
+       (method url-fetch)
+       (uri (string-append "mirror://gnu/help2man/help2man-"
+                           version ".tar.xz"))
+       (sha256
+        (base32
+         "0dnxx96lbcb8ab8yrdkqll14cl5n0bch8qpd9qj3c2ky78hhwbly"))))
     (build-system gnu-build-system)
-    (arguments `(;; There's no `check' target.
-                 #:tests? #f
-                 #:phases
-                 (modify-phases %standard-phases
-                   (add-after 'unpack 'patch-help2man-with-perl-gettext
-                     (lambda* (#:key inputs #:allow-other-keys)
-                       (let ((lib (assoc-ref inputs "perl-gettext"))
-                             (fmt "use lib '~a/lib/perl5/site_perl';~%~a"))
-                         (substitute* "help2man.PL"
-                           (("^use Locale::gettext.*$" load)
-                            (format #f fmt lib load))))
-                       #t)))))
+    (arguments
+     (list
+      #:tests? #f                       ;no `check' target
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-help2man-with-perl-gettext
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((lib #$(this-package-input "perl-gettext"))
+                    (fmt "use lib '~a/lib/perl5/site_perl';~%~a"))
+                (substitute* "help2man.PL"
+                  (("^use Locale::gettext.*$" load)
+                   (format #f fmt lib load)))))))))
     (inputs
-     `(("perl" ,perl)
-       ,@(if (%current-target-system)
-             '()
-             `(("perl-gettext" ,perl-gettext)))))
+     (append
+      (list perl)
+      (if (%current-target-system)
+          '()
+          (list perl-gettext))))
     (native-inputs
-     `(("perl" ,perl)
-       ("gettext" ,gettext-minimal)))
+     (list perl gettext-minimal))
     (home-page "https://www.gnu.org/software/help2man/")
     (synopsis "Automatically generate man pages from program --help")
     (description

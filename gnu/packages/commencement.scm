@@ -1,13 +1,13 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2012 Nikita Karetnikov <nikita@karetnikov.org>
 ;;; Copyright © 2014, 2015, 2017 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2017, 2018, 2019, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2018 Tobias Geerinckx-Rice <me@tobias.gr>
-;;; Copyright © 2018, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2019, 2020, 2021 Marius Bakke <marius@gnu.org>
-;;; Copyright © 2020 Timothy Sample <samplet@ngyro.com>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019-2022 Marius Bakke <marius@gnu.org>
+;;; Copyright © 2020, 2022 Timothy Sample <samplet@ngyro.com>
 ;;; Copyright © 2020 Guy Fleury Iteriteka <gfleury@disroot.org>
 ;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Chris Marusich <cmmarusich@gmail.com>
@@ -33,6 +33,7 @@
 (define-module (gnu packages commencement)
   #:use-module (gnu packages)
   #:use-module (gnu packages bootstrap)
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages c)
@@ -56,7 +57,10 @@
   #:use-module (gnu packages xml)
   #:use-module (guix gexp)
   #:use-module (guix packages)
+  #:use-module ((guix store) #:select (%store-monad))
+  #:use-module (guix monads)
   #:use-module (guix download)
+  #:use-module ((guix git-download) #:select (git-reference git-file-name))
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
   #:use-module ((guix licenses) #:prefix license:)
@@ -89,10 +93,42 @@
 ;;;
 ;;; Code:
 
+(define* (git-fetch-from-tarball tarball)
+  "Return an <origin> method equivalent to 'git-fetch', except that it fetches
+the checkout from TARBALL, a tarball containing said checkout.
+
+  The purpose of this procedure is to work around bootstrapping issues:
+'git-fetch' depends on Git, which is much higher in the dependency graph."
+  (lambda* (url hash-algo hash
+                #:optional name
+                #:key (system (%current-system))
+                (guile %bootstrap-guile))
+    (mlet %store-monad ((guile (package->derivation guile system)))
+      (gexp->derivation
+       (or name "git-checkout")
+       (with-imported-modules '((guix build utils))
+         #~(begin
+             (use-modules (guix build utils)
+                          (ice-9 ftw)
+                          (ice-9 match))
+             (setenv "PATH"
+                     #+(file-append %bootstrap-coreutils&co "/bin"))
+             (invoke "tar" "xf" #$tarball)
+             (match (scandir ".")
+               (("." ".." directory)
+                (copy-recursively directory #$output)))))
+       #:recursive? #t
+       #:hash-algo hash-algo
+       #:hash hash
+       #:system system
+       #:guile-for-build guile
+       #:graft? #f
+       #:local-build? #t))))
+
 (define bootar
   (package
     (name "bootar")
-    (version "1a")
+    (version "1b")
     (source (origin
               (method url-fetch)
               (uri (list (string-append
@@ -102,7 +138,7 @@
                           version ".ses")))
               (sha256
                (base32
-                "0mvp6vgx0q316fvy3z2lddlc5xgq5np3bm1fypgvj6dnayibg9np"))))
+                "0cf5vj5yxfvkgzvjvh2l7b2nz5ji5l534n9g4mfp8f5jsjqdrqjc"))))
     (build-system gnu-build-system)
     (arguments
      `(#:implicit-inputs? #f
@@ -121,9 +157,10 @@
                       (guile (string-append guile-dir "/bin/guile")))
                  (invoke guile "--no-auto-compile" source)
                  (chdir "bootar"))))
-           (replace 'configure (bootstrap-configure ,version "." "scripts"))
-           (replace 'build (bootstrap-build "."))
-           (replace 'install (bootstrap-install "." "scripts"))))))
+           (replace 'configure (bootstrap-configure "Bootar" ,version
+                                                    '(".") "scripts"))
+           (replace 'build (bootstrap-build '(".")))
+           (replace 'install (bootstrap-install '(".") "scripts"))))))
     (inputs `(("guile" ,%bootstrap-guile)))
     (home-page "https://git.ngyro.com/bootar")
     (synopsis "Tar decompression and extraction in Guile Scheme")
@@ -143,9 +180,6 @@ pure Scheme to Tar and decompression in one easy step.")
   (package
     (inherit gash)
     (name "gash-boot")
-    (source (origin
-              (inherit (package-source gash))
-              (snippet #f)))            ;discard snippet for Guile 3.0 support
     (arguments
      `(#:implicit-inputs? #f
        #:tests? #f
@@ -157,9 +191,10 @@ pure Scheme to Tar and decompression in one easy step.")
          (use-modules (guix build gnu-bootstrap))
          (modify-phases %standard-phases
            (replace 'configure
-             (bootstrap-configure ,(package-version gash) "gash" "scripts"))
-           (replace 'build (bootstrap-build "gash"))
-           (replace 'install (bootstrap-install "gash" "scripts"))
+             (bootstrap-configure "Gash" ,(package-version gash)
+                                  '("gash") "scripts"))
+           (replace 'build (bootstrap-build '("gash")))
+           (replace 'install (bootstrap-install '("gash") "scripts"))
            (add-after 'install 'install-symlinks
              (lambda* (#:key outputs #:allow-other-keys)
                (let ((out (assoc-ref outputs "out")))
@@ -174,10 +209,6 @@ pure Scheme to Tar and decompression in one easy step.")
   (package
     (inherit gash-utils)
     (name "gash-utils-boot")
-    (source (origin
-              (inherit (package-source gash-utils))
-              (patches '())
-              (snippet #f)))            ;discard snippet for Guile 3.0 support
     (arguments
      `(#:implicit-inputs? #f
        #:tests? #f
@@ -209,9 +240,9 @@ pure Scheme to Tar and decompression in one easy step.")
                              (substitute* target
                                (("@UTILITY@") script))))
                          '("awk" "basename" "cat" "chmod" "cmp" "command"
-                           "compress" "cp" "cut" "diff" "dirname" "expr"
-                           "false" "find" "grep" "head" "ln" "ls" "mkdir"
-                           "mv" "printf" "pwd" "reboot" "rm" "rmdir"
+                           "compress" "cp" "cut" "diff" "dirname" "env"
+                           "expr" "false" "find" "grep" "head" "ln" "ls"
+                           "mkdir" "mv" "printf" "pwd" "reboot" "rm" "rmdir"
                            "sed" "sleep" "sort" "tar" "test" "touch" "tr"
                            "true" "uname" "uniq" "wc" "which"))
                (format #t "Creating scripts/[.in~%")
@@ -220,10 +251,11 @@ pure Scheme to Tar and decompression in one easy step.")
                  (("@UTILITY@") "testb"))
                (delete-file "scripts/template.in")))
            (replace 'configure
-             (bootstrap-configure ,(package-version gash-utils)
-                                  "gash" "scripts"))
-           (replace 'build (bootstrap-build "gash"))
-           (replace 'install (bootstrap-install "gash" "scripts"))
+             (bootstrap-configure "Gash-Utils" ,(package-version gash-utils)
+                                  '("gash" "gash-utils") "scripts"))
+           (replace 'build (bootstrap-build '("gash" "gash-utils")))
+           (replace 'install
+             (bootstrap-install '("gash" "gash-utils") "scripts"))
            ;; XXX: The scripts should add Gash to their load paths and
            ;; this phase should not exist.
            (add-after 'install 'copy-gash
@@ -247,7 +279,19 @@ pure Scheme to Tar and decompression in one easy step.")
                  (copy-file (string-append gash-godir "/gash/compat.go")
                             (string-append godir "/gash/compat.go"))
                  (copy-recursively (string-append gash-godir "/gash/compat")
-                                   (string-append godir "/gash/compat")))))))))
+                                   (string-append godir "/gash/compat")))))
+           ;; We need an external echo.
+           (add-after 'install 'make-echo
+             (lambda* (#:key inputs outputs #:allow-other-keys)
+               (let* ((out (assoc-ref outputs "out"))
+                      (gash (assoc-ref inputs "gash")))
+                 (with-output-to-file (string-append out "/bin/echo")
+                   (lambda ()
+                     (display (string-append "#!" gash "/bin/gash\n"))
+                     (newline)
+                     (display "echo \"$@\"")
+                     (newline)))
+                 (chmod (string-append out "/bin/echo") #o755))))))))
     (inputs `(("gash" ,gash-boot)
               ("guile" ,%bootstrap-guile)))
     (native-inputs `(("bootar" ,bootar)))))
@@ -258,186 +302,239 @@ pure Scheme to Tar and decompression in one easy step.")
     ("bootar" ,bootar)
     ("guile" ,%bootstrap-guile)))
 
-(define %bootstrap-mes-rewired
+(define bootstrap-seeds
   (package
-    (inherit mes)
-    (name "bootstrap-mes-rewired")
-    (version "0.19")
-    (source #f)
-    (native-inputs `(("mes" ,%bootstrap-mes)
-                     ("gash" ,gash-boot)))
-    (inputs '())
-    (propagated-inputs '())
-    (outputs '("out"))
+    (name "bootstrap-seeds")
+    (version "1.0.0")
+    (source (origin
+              (method url-fetch)
+              (uri (list
+                    (string-append "mirror://gnu/guix/mirror/"
+                                   "bootstrap-seeds-" version ".tar.gz")
+                    (string-append
+                     "https://lilypond.org/janneke/guix/20220501/"
+                     "bootstrap-seeds-" version ".tar.gz")))
+       (sha256
+        (base32
+         "0scz2bx8fd8c821h6y1j3x6ywgxxns7iinyn9z32dnkiacfdcpfn"))))
+    (native-inputs (list bootar))
     (build-system trivial-build-system)
     (arguments
-     `(#:guile ,%bootstrap-guile
-       #:modules ((guix build utils))
+     (list #:guile %bootstrap-guile
+           #:modules '((guix build utils))
+           #:builder
+           #~(begin
+               (use-modules (guix build utils))
+               (let ((source #$(package-source this-package))
+                     (tar #$(this-package-native-input "bootar"))
+                     (out #$output))
+                 (setenv "PATH" (string-append tar "/bin:"))
+                 (invoke "tar" "xvf" source)
+                 (mkdir-p out)
+                 (copy-recursively "bootstrap-seeds" out)))))
+    (home-page "https://github.com/oriansj/bootstrap-seeds")
+    (synopsis "The initial bootstrap seeds: 357-byte hex0 and kaem shell")
+    (description
+     "This package provides pre-built binaries of the bootstrap seeds.  It
+contains a hex0-seed and an optional kaem-minimal shell.  The size of the hex0
+seeds are for knight: 250 bytes, x86-linux: 357 bytes, x86_64-linux: 431
+bytes, and aarch64-linux 526 bytes.  These can be used to build stage0: hex0,
+hex1, hex2, M1, and M2-Planet.")
+    (license license:gpl3+)))
 
-       #:builder (begin
-                   (use-modules (guix build utils)
-                                (srfi srfi-26))
-
-                   (let* ((mes (assoc-ref %build-inputs "mes"))
-                          (gash (assoc-ref %build-inputs "gash"))
-                          (mes-bin (string-append mes "/bin"))
-                          (guile (string-append mes-bin "/mes"))
-                          (mes-module (string-append mes "/share/mes/module"))
-                          (out (assoc-ref %outputs "out"))
-                          (bin (string-append out "/bin"))
-                          (mescc (string-append bin "/mescc"))
-                          (module (string-append out "/share/mes/module")))
-                     (define (rewire file)
-                       (substitute* file
-                         ((mes) out)
-                         (("/gnu/store[^ ]+mes-minimal-[^/)}\"]*") out)
-                         (("/gnu/store[^ ]+guile-[^/]*/bin/guile") guile)
-                         (("/gnu/store[^ ]+bash-[^/)}\"]*") gash)))
-
-                     (mkdir-p bin)
-                     (for-each (lambda (file) (install-file file bin))
-                               (find-files mes-bin))
-                     (mkdir-p module)
-                     (copy-recursively (string-append mes-module "/mes")
-                                       (string-append module "/mes"))
-                     (copy-recursively (string-append mes-module "/srfi")
-                                       (string-append module "/srfi"))
-                     (for-each rewire
-                               ;; Cannot easily rewire "mes" because it
-                               ;; contains NUL characters; would require
-                               ;; remove-store-references alike trick
-                               (filter (negate (cut string-suffix? "/mes" <>))
-                                       (find-files bin)))
-                     (rewire (string-append module "/mes/boot-0.scm"))
-
-                     (delete-file mescc)
-                     (with-output-to-file mescc
-                       (lambda _
-                         (display (string-append
-                                   "\
-#! " gash "/bin/sh
-LANG=C
-LC_ALL=C
-export LANG LC_ALL
-
-MES_PREFIX=${MES_REWIRED_PREFIX-" out "/share/mes}
-MES=" bin "/mes
-export MES MES_PREFIX
-
-MES_ARENA=${MES_REWIRED_ARENA-10000000}
-MES_MAX_ARENA=${MES_REWIRED_ARENA-10000000}
-MES_STACK=${MES_REWIRED_STACK-1000000}
-export MES_ARENA MES_MAX_ARENA MES_STACK
-
-$MES -e '(mescc)' module/mescc.scm -- \"$@\"
-"))))
-                     (chmod mescc #o555)
-
-                     (with-directory-excursion module
-                       (chmod "mes/base.mes" #o644)
-                       (copy-file "mes/base.mes" "mes/base.mes.orig")
-                       (let ((base.mes (open-file "mes/base.mes" "a")))
-                         (display "
-;; A fixed map, from Mes 0.21, required to bootstrap Mes 0.21
-(define (map f h . t)
-  (if (or (null? h)
-          (and (pair? t) (null? (car t)))
-          (and (pair? t) (pair? (cdr t)) (null? (cadr t)))) '()
-      (if (null? t) (cons (f (car h)) (map f (cdr h)))
-          (if (null? (cdr t))
-              (cons (f (car h) (caar t)) (map f (cdr h) (cdar t)))
-              (if (null? (cddr t))
-                  (cons (f (car h) (caar t) (caadr t)) (map f (cdr h) (cdar t) (cdadr t)))
-                  (error 'unsupported (cons* 'map-4: f h t))b )))))
-" base.mes)
-                         (close base.mes))
-
-                       (chmod "mes/guile.mes" #o644)
-                       (copy-file "mes/guile.mes" "mes/guile.mes.orig")
-                       (let ((guile.mes (open-file "mes/guile.mes" "a")))
-                         (display "
-;; After booting guile.scm; use Mes 0.21; especially: MesCC 0.21
-(let* ((self (car (command-line)))
-       (prefix (dirname (dirname self))))
-  (set! %moduledir (string-append prefix \"/mes/module/\"))
-  (setenv \"%numbered_arch\" \"true\"))
-
-" guile.mes)
-                         (close guile.mes)))
-                     #t))))))
+(define stage0-posix
+  ;; The initial bootstrap package: no binary inputs except those from
+  ;; `bootstrap-seeds, for x86 a 357 byte binary seed: `x86/hex0-seed'.
+  (let* ((mescc-tools-version "1.4.0")
+         (m2-planet-version "1.9.0")
+         (mescc-tools
+          (origin
+            (method url-fetch)
+            (uri (list
+                  (string-append
+                   "mirror://gnu/guix/mirror/"
+                   "mescc-tools-" mescc-tools-version ".tar.gz")
+                  (string-append
+                   "https://lilypond.org/janneke/guix/20220502/"
+                   "mescc-tools-" mescc-tools-version ".tar.gz")))
+            (sha256
+             (base32
+              "1xi6f48pf5bhajhfis189gpizxij7nbp1vzvsb1aafhz4skkiqvg"))))
+         (m2-planet
+          (origin
+            (method url-fetch)
+            (uri (list
+                  (string-append
+                   "mirror://gnu/guix/mirror/"
+                   "M2-Planet-" m2-planet-version ".tar.gz")
+                  (string-append
+                   "https://lilypond.org/janneke/guix/20220502/"
+                   "M2-Planet-" m2-planet-version ".tar.gz")))
+            (sha256
+             (base32
+              "1xrn69sc5nz4hwaishqyrcidp1ncxwib9zswl45x378ddz3mmk7g")))))
+    (package
+      (name "stage0-posix")
+      (version "1.4")
+      (source (origin
+                (method url-fetch)
+                (uri (list
+                      (string-append "mirror://gnu/guix/mirror/"
+                                     "stage0-posix-" version ".tar.gz")
+                      (string-append
+                       "https://lilypond.org/janneke/guix/20220502/"
+                       "stage0-posix-" version ".tar.gz")))
+                (sha256
+                 (base32
+                  "1ammifkj33205qrpfm84yb1c99lwgbn4jsl1hd08aab8c9ffz6p4"))))
+      (supported-systems '("i686-linux" "x86_64-linux"
+                           "aarch64-linux"
+                           "riscv64-linux"))
+      (native-inputs
+       `(("bootstrap-seeds" ,bootstrap-seeds)
+         ,@(%boot-gash-inputs)))
+      (build-system trivial-build-system)
+      (arguments
+       (list
+        #:guile %bootstrap-guile
+        #:modules '((guix build utils))
+        #:builder
+        #~(begin
+            (use-modules (guix build utils))
+            (let* ((bootstrap-seeds #$(this-package-native-input
+                                       "bootstrap-seeds"))
+                   (source #$(package-source this-package))
+                   (tar #$(this-package-native-input "bootar"))
+                   (bash #$(this-package-native-input "bash"))
+                   (coreutils #$(this-package-native-input "coreutils"))
+                   (guile #$(this-package-input "guile"))
+                   (out #$output)
+                   (bindir (string-append out "/bin"))
+                   (target (or #$(%current-target-system)
+                               #$(%current-system)))
+                   (stage0-cpu
+                    (cond
+                     ((or #$(target-x86-64?) #$(target-x86-32?))
+                      "x86")
+                     (#$(target-aarch64?)
+                      "AArch64")
+                     (#$(target-riscv64?)
+                      "riscv64")
+                     (else
+                      (error "stage0-posix: system not supported" target))))
+                   (kaem (string-append "../bootstrap-seeds/POSIX/"
+                                        stage0-cpu "/kaem-optional-seed")))
+              (setenv "PATH" (string-append tar "/bin:"
+                                            coreutils "/bin:"
+                                            bash "/bin"))
+              (invoke "tar" "xvf" source)
+              (chdir (string-append "stage0-posix-" #$version))
+              (copy-recursively bootstrap-seeds "bootstrap-seeds")
+              (invoke "tar" "xvf" #$mescc-tools)
+              (rmdir "mescc-tools")
+              (symlink (string-append "mescc-tools-" #$mescc-tools-version)
+                       "mescc-tools")
+              (invoke "tar" "xvf" #$m2-planet)
+              (rmdir "M2-Planet")
+              (symlink (string-append "M2-Planet-" #$m2-planet-version)
+                       "M2-Planet")
+              (rmdir "M2libc")
+              (symlink "M2-Planet/M2libc" "M2libc")
+              (mkdir-p bindir)
+              (with-directory-excursion stage0-cpu
+                (with-output-to-file "mes-m2.kaem"
+                  (lambda _ (display "")))
+                (with-output-to-file "mescc-tools-extra.kaem"
+                  (lambda _ (display "")))
+                (invoke kaem "kaem.run"))
+              (with-directory-excursion "bin"
+                (install-file "hex2" bindir)
+                (install-file "M1" bindir)
+                (install-file "blood-elf" bindir)
+                (install-file "kaem" bindir)
+                (install-file "get_machine" bindir)
+                (install-file "M2-Planet" bindir))))))
+      (home-page "https://github.com/oriansj/stage0-posix/")
+      (synopsis "The initial bootstrap package, builds stage0 up to M2-Planet")
+      (description "Starting from the 357-byte hex0-seed binary provided by
+the bootstrap-seeds, the stage0-posix package first builds hex0 and then all
+the way up: hex1, catm, hex2, M0, cc_x86, M1, M2, get_machine (that's all of
+MesCC-Tools), and finally M2-Planet.")
+      (license license:gpl3+))))
 
 (define mes-boot
   (package
     (inherit mes)
     (name "mes-boot")
-    (version "0.22")
+    (version "0.24.2")
     (source (origin
               (method url-fetch)
-              (uri (string-append "mirror://gnu/mes/"
-                                  "mes-" version ".tar.gz"))
+              (uri (list (string-append "mirror://gnu/mes/"
+                                   "mes-" version ".tar.gz")
+                         (string-append "https://lilypond.org/janneke/mes/"
+                                        "mes-" version ".tar.gz")))
               (sha256
                (base32
-                "0p1jsrrmcbc0zrvbvnjbb6iyxr0in71km293q8qj6gnar6bw09av"))))
+                "0vp8v88zszh1imm3dvdfi3m8cywshdj7xcrsq4cgmss69s2y1nkx"))))
     (inputs '())
     (propagated-inputs '())
+    (supported-systems '("i686-linux" "x86_64-linux"))
     (native-inputs
-     `(("nyacc-source" ,(origin (inherit (package-source nyacc-0.99))
-                                (snippet #f)))
-       ("mes" ,%bootstrap-mes-rewired)
-       ("mescc-tools" ,%bootstrap-mescc-tools)
+     `(("m2-planet" ,stage0-posix)
+       ("nyacc-source" ,(bootstrap-origin
+                         (origin (inherit (package-source nyacc-1.00.2))
+                                 (snippet #f))))
        ,@(%boot-gash-inputs)))
     (arguments
-     `(#:implicit-inputs? #f
-       #:tests? #f
-       #:guile ,%bootstrap-guile
-       #:strip-binaries? #f    ; binutil's strip b0rkes MesCC/M1/hex2 binaries
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'unpack-seeds
-           (lambda _
-             (let ((nyacc-source (assoc-ref %build-inputs "nyacc-source")))
-               (with-directory-excursion ".."
-                 (invoke "tar" "-xvf" nyacc-source)))))
-         (replace 'configure
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref %outputs "out"))
-                   (gash (assoc-ref %build-inputs "bash"))
-                   (mes (assoc-ref %build-inputs "mes"))
-                   (dir (with-directory-excursion ".." (getcwd))))
-               (setenv "AR" (string-append "gash " (getcwd) "/scripts/mesar"))
-               (setenv "BASH" (string-append gash "/bin/bash"))
-               (setenv "CC" (string-append mes "/bin/mescc"))
-               (setenv "GUILE_LOAD_PATH"
-                       (string-append
-                        mes "/share/mes/module"
-                        ":" dir "/nyacc-0.99.0/module"))
-               (invoke "gash" "configure.sh"
-                       (string-append "--prefix=" out)
-                       (string-append "--host=i686-linux-gnu")))))
-         (replace 'build
-           (lambda _
-             (invoke "sh" "bootstrap.sh")))
-         (delete 'check)
-         (replace 'install
-           (lambda _
-             (substitute* "install.sh"  ; show some progress
-               ((" -xf") " -xvf")
-               (("^( *)((cp|mkdir|tar) [^']*[^\\])\n" all space cmd)
-                (string-append space "echo '" cmd "'\n"
-                               space cmd "\n")))
-             (invoke "sh" "install.sh")
-             ;; Keep ASCII output, for friendlier comparison and bisection
-             (let* ((out (assoc-ref %outputs "out"))
-                    (cache (string-append out "/lib/cache")))
-               (define (objects-in-dir dir)
-                 (find-files dir
-                             (lambda (name stat)
-                               (and (equal? (dirname name) dir)
-                                    (or (string-suffix? ".o" name)
-                                        (string-suffix? ".s" name))))))
-               (for-each (lambda (x) (install-file x cache))
-                         (append (objects-in-dir ".")
-                                 (objects-in-dir "mescc-lib")))))))))
+     (list
+      #:implicit-inputs? #f
+      #:tests? #f
+      #:guile %bootstrap-guile
+      #:strip-binaries? #f              ;no strip yet
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'unpack-seeds
+            (lambda _
+              (let ((nyacc-source #$(this-package-native-input "nyacc-source")))
+                (with-directory-excursion ".."
+                  (invoke "tar" "-xvf" nyacc-source)))))
+          (replace 'configure
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (let ((out #$output)
+                    (gash #$(this-package-native-input "bash"))
+                    (dir (with-directory-excursion ".." (getcwd))))
+                (setenv "GUILE_LOAD_PATH" (string-append
+                                           dir "/nyacc-1.00.2/module"))
+                (invoke "gash" "configure.sh"
+                        (string-append "--prefix=" out)
+                        "--host=i686-linux-gnu"))))
+          (replace 'build
+            (lambda _
+              (invoke "gash" "bootstrap.sh")))
+          (delete 'check)
+          (replace 'install
+            (lambda* (#:key outputs #:allow-other-keys)
+              (substitute* "install.sh" ; show some progress
+                ((" -xf") " -xvf")
+                (("^( *)((cp|mkdir|tar) [^']*[^\\])\n" all space cmd)
+                 (string-append space "echo '" cmd "'\n"
+                                space cmd "\n")))
+              (invoke "gash" "install.sh")
+              ;; Keep ASCII output, for friendlier comparison and bisection
+              (let* ((out #$output)
+                     (cache (string-append out "/lib/cache")))
+                (define (objects-in-dir dir)
+                  (find-files dir
+                              (lambda (name stat)
+                                (and (equal? (dirname name) dir)
+                                     (or (string-suffix? ".M1" name)
+                                         (string-suffix? ".hex2" name)
+                                         (string-suffix? ".o" name)
+                                         (string-suffix? ".s" name))))))
+                (for-each (lambda (x) (install-file x cache))
+                          (append (objects-in-dir "m2")
+                                  (objects-in-dir ".")
+                                  (objects-in-dir "mescc-lib")))))))))
     (native-search-paths
      (list (search-path-specification
             (variable "C_INCLUDE_PATH")
@@ -452,7 +549,7 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
 
 
 (define tcc-boot0
-  ;; Pristine tcc cannot be built by MesCC, we are keeping a delta of 11
+  ;; Pristine tcc cannot be built by MesCC, we are keeping a delta of 30
   ;; patches.  In a very early and rough form they were presented to the
   ;; TinyCC developers, who at the time showed no interest in supporting the
   ;; bootstrappable effort; we will try again later.  These patches have been
@@ -461,82 +558,83 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
   (package
     (inherit tcc)
     (name "tcc-boot0")
-    (version "0.9.26-1103-g6e62e0e")
+    (version "0.9.26-1136-g5bba73cc")
     (source (origin
               (method url-fetch)
-              (uri (list (string-append "mirror://gnu/guix/mirror/tcc-"
-                                        version ".tar.gz")
-                         (string-append
-                          "http://lilypond.org/janneke/mes/20191117/"
-                          "/tcc-" version ".tar.gz")))
+              (uri (list
+                    (string-append "mirror://gnu/guix/mirror/"
+                                   "tcc-" version ".tar.gz")
+                    (string-append "https://lilypond.org/janneke/tcc/"
+                                   "tcc-" version ".tar.gz")))
               (sha256
                (base32
-                "1qbybw7mxbgkv3sazvz1v7c8byq998vk8f1h25ik8w3d2l63lxng"))))
+                "1y2f04qwdqg7dgxiscbf0ibybx2gclniwbbcsxpayazzii2cvji3"))))
     (build-system gnu-build-system)
     (supported-systems '("i686-linux" "x86_64-linux"))
     (inputs '())
     (propagated-inputs '())
     (native-inputs
      `(("mes" ,mes-boot)
-       ("nyacc-source" ,(origin (inherit (package-source nyacc-0.99))
-                                (snippet #f)))
-       ("mescc-tools" ,%bootstrap-mescc-tools)
+       ("mescc-tools" ,stage0-posix)
+       ("nyacc-source" ,(bootstrap-origin
+                         (origin (inherit (package-source nyacc-1.00.2))
+                                 (snippet #f))))
        ,@(%boot-gash-inputs)))
     (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:validate-runpath? #f           ; no dynamic executables
-       #:strip-binaries? #f             ; no strip yet
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'unpack-seeds
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((nyacc-source (assoc-ref %build-inputs "nyacc-source")))
-               (with-directory-excursion ".."
-                 (invoke "tar" "-xvf" nyacc-source)))))
-         (replace 'configure
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref %outputs "out"))
-                    (dir (with-directory-excursion ".." (getcwd)))
-                    (interpreter "/lib/mes-loader"))
+     (list
+      #:implicit-inputs? #f
+      #:guile %bootstrap-guile
+      #:validate-runpath? #f            ; no dynamic executables
+      #:strip-binaries? #f              ; no strip yet
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'unpack-extra-sources
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let ((nyacc-source #$(this-package-native-input "nyacc-source")))
+                (with-directory-excursion ".."
+                  (invoke "tar" "-xvf" nyacc-source)))))
+          (replace 'configure
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (let* ((out #$output)
+                     (dir (with-directory-excursion ".." (getcwd)))
+                     (interpreter "/lib/mes-loader")
+                     (mes #$(this-package-native-input "mes"))
+                     (mescc (string-append mes "/bin/mescc")))
+                (substitute* "conftest.c"
+                  (("volatile") ""))
+                (setenv "prefix" out)
+                (setenv "GUILE_LOAD_PATH"
+                        (string-append dir "/nyacc-1.00.2/module"))
+                (invoke "sh" "configure"
+                        "--cc=mescc"
+                        (string-append "--prefix=" out)
+                        (string-append "--elfinterp=" interpreter)
+                        "--crtprefix=."
+                        "--tccdir=."))))
+          (replace 'build
+            (lambda _
+              (substitute* "bootstrap.sh" ; Show some progress
+                (("^( *)((cp|ls|mkdir|rm|[.]/tcc|[.]/[$][{program_prefix[}]tcc) [^\"]*[^\\])\n" all space cmd)
+                 (string-append space "echo \"" cmd "\"\n"
+                                space cmd "\n")))
+              (invoke "sh" "bootstrap.sh")))
+          (replace 'check
+            (lambda _
+              ;; fail fast tests
+              (system* "./tcc" "--help") ; --help exits 1
+              ;; (invoke "sh" "test.sh" "mes/scaffold/tests/30-strlen")
+              ;; (invoke "sh" "-x" "test.sh" "mes/scaffold/tinycc/00_assignment")
+              ;; TODO: add sensible check target (without depending on make)
+              ;; (invoke "sh" "check.sh")
+              ))
+          (replace 'install
+            (lambda _
+              (substitute* "install.sh" ; Show some progress
+                (("^( *)((cp|ls|mkdir|rm|tar|./[$][{PROGRAM_PREFIX[}]tcc) [^\"]*[^\\])\n" all space cmd)
+                 (string-append space "echo \"" cmd "\"\n"
+                                space cmd "\n")))
 
-               (setenv "prefix" out)
-               (setenv "GUILE_LOAD_PATH"
-                       (string-append dir "/nyacc-0.99.0/module"))
-
-               (substitute* "conftest.c"
-                 (("volatile") ""))
-
-               (invoke "sh" "configure"
-                       "--cc=mescc"
-                       (string-append "--prefix=" out)
-                       (string-append "--elfinterp=" interpreter)
-                       "--crtprefix=."
-                       "--tccdir=."))))
-         (replace 'build
-           (lambda _
-             (substitute* "bootstrap.sh" ; Show some progress
-               (("^( *)((cp|ls|mkdir|rm|[.]/tcc|[.]/[$][{PROGRAM_PREFIX[}]tcc) [^\"]*[^\\])\n" all space cmd)
-                (string-append space "echo \"" cmd "\"\n"
-                               space cmd "\n")))
-             (invoke "sh" "bootstrap.sh")))
-         (replace 'check
-           (lambda _
-             ;; fail fast tests
-             (system* "./tcc" "--help") ; --help exits 1
-             ;; (invoke "sh" "test.sh" "mes/scaffold/tests/30-strlen")
-             ;; (invoke "sh" "-x" "test.sh" "mes/scaffold/tinycc/00_assignment")
-             ;; TODO: add sensible check target (without depending on make)
-             ;; (invoke "sh" "check.sh")
-             #t))
-         (replace 'install
-           (lambda _
-             (substitute* "install.sh"  ; Show some progress
-               (("^( *)((cp|ls|mkdir|rm|tar|./[$][{PROGRAM_PREFIX[}]tcc) [^\"]*[^\\])\n" all space cmd)
-                (string-append space "echo \"" cmd "\"\n"
-                               space cmd "\n")))
-
-             (invoke "sh" "install.sh"))))))
+              (invoke "sh" "install.sh"))))))
     (native-search-paths
      (list (search-path-specification
             (variable "C_INCLUDE_PATH")
@@ -657,152 +755,6 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
     ("tcc" ,tcc-boot0)
     ,@(%boot-gash-inputs)))
 
-(define bzip2-mesboot
-  ;; The initial bzip2
-  (package
-    (inherit bzip2)
-    (name "bzip2-mesboot")
-    (version (package-version bzip2))
-    (source (bootstrap-origin (package-source bzip2)))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (propagated-inputs '())
-    (native-inputs (%boot-tcc0-inputs))
-    (outputs '("out"))
-    (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:parallel-build? #f
-       #:tests? #f            ; check is naive, also checks non-built PROGRAMS
-       #:strip-binaries? #f   ; no strip yet
-       #:make-flags (list "CC=tcc -I ." "AR=tcc -ar" "bzip2"
-                          (string-append "PREFIX="
-                                         (assoc-ref %outputs "out")))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'scripted-patch
-           (lambda _
-             (substitute* "Makefile"
-               (("\tln " all)
-                (string-append "\t#" all)))
-             (substitute* "bzip2.c"
-               (("struct utimbuf uTimBuf;" all)
-                (string-append "// " all))
-               (("uTimBuf[.]" all)
-                (string-append "// " all))
-               (("retVal = utime [(] dstName, &uTimBuf [)];" all)
-                (string-append "retVal = 0; // " all)))))
-         (replace 'configure
-           (lambda _
-             (with-output-to-file "utime.h"
-               (lambda _ (display "
-#define fchown(filedes, owner, group) 0
-#define fchmod(filedes, mode) 0
-")))))
-         (replace 'check
-           (lambda _
-             (invoke "./bzip2" "--help")))
-         ;; FIXME: no compressing gzip yet
-         (delete 'compress-documentation))))))
-
-(define bash-mesboot0
-  ;; The initial Bash
-  (package
-    (inherit static-bash)
-    (name "bash-mesboot0")
-    (version "2.05b")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/bash/bash-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "1r1z2qdw3rz668nxrzwa14vk2zcn00hw7mpjn384picck49d80xs"))))
-    (inputs '())
-    (propagated-inputs '())
-    (native-inputs (%boot-tcc0-inputs))
-    (outputs '("out"))
-    (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:parallel-build? #f
-       #:strip-binaries? #f             ; no strip yet
-       #:configure-flags
-       (list "--build=i686-unknown-linux-gnu"
-             "--host=i686-unknown-linux-gnu"
-
-             "--without-bash-malloc"
-             "--disable-readline"
-             "--disable-history"
-             "--disable-help-builtin"
-             "--disable-progcomp"
-             "--disable-net-redirections"
-             "--disable-nls"
-
-             ;; Pretend 'dlopen' is missing so we don't build loadable
-             ;; modules and related code.
-             "ac_cv_func_dlopen=no")
-       #:make-flags '("bash")
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'setenv
-           (lambda _
-             (let* ((gash (assoc-ref %build-inputs "bash"))
-                    (shell (string-append gash "/bin/gash")))
-               (setenv "CONFIG_SHELL" shell)
-               (setenv "SHELL" shell)
-               (setenv "CC" "tcc")
-               (setenv "LD" "tcc")
-               (setenv "AR" "tcc -ar")
-               (setenv "CFLAGS" "-D _POSIX_VERSION=1"))))
-         (add-after 'unpack 'scripted-patch
-           (lambda _
-             (substitute* "Makefile.in"
-               (("mksyntax\\.c\n") "mksyntax.c -lgetopt\n")
-               (("buildversion[.]o\n") "buildversion.o -lgetopt\n")
-               ;; No size in Gash
-               (("\tsize ") "#\tsize"))
-             (substitute* "lib/sh/oslib.c"
-               (("int name, namelen;") "char *name; int namelen;"))
-             (substitute* "lib/sh/snprintf.c"
-               (("^#if (defined [(]HAVE_LOCALE_H[)])" all define) (string-append "#if 0 //" define)))
-             (substitute* "configure"
-               ((" egrep") " grep"))))
-         (replace 'configure
-           (lambda* (#:key configure-flags #:allow-other-keys)
-             (let ((configure-flags (filter (lambda (x)
-                                              (and (not (string-prefix? "CONFIG_SHELL=" x))
-                                                   (not (string-prefix? "SHELL=" x))))
-                                            configure-flags)))
-               (format (current-error-port)
-                       "running ./configure ~a\n" (string-join configure-flags)))
-             (apply invoke (cons "./configure" configure-flags))))
-         (add-after 'configure 'configure-fixups
-           (lambda _
-             (substitute* "config.h"
-               (("#define GETCWD_BROKEN 1") "#undef GETCWD_BROKEN"))
-             (let ((config.h (open-file "config.h" "a")))
-               (display "
-// tcc: error: undefined symbol 'enable_hostname_completion'
-#define enable_hostname_completion(on_or_off) 0
-
-// /gnu/store/…-tcc-boot0-0.9.26-6.c004e9a/lib/libc.a: error: 'sigprocmask' defined twice
-#define HAVE_POSIX_SIGNALS 1
-#define endpwent(x) 0
-"
-                        config.h)
-               (close config.h))))
-         (replace 'check
-           (lambda _
-             (invoke "./bash" "--version")))
-         (replace 'install
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bin (string-append out "/bin")))
-               (mkdir-p bin)
-               (copy-file "bash" (string-append bin "/bash"))
-               (copy-file "bash" (string-append bin "/sh"))))))))))
-
 (define tcc-boot
   ;; The final tcc.
   (package
@@ -819,7 +771,7 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
     (build-system gnu-build-system)
     (inputs '())
     (propagated-inputs '())
-    (native-inputs `(("bzip2" ,bzip2-mesboot)
+    (native-inputs `(("mes" ,mes-boot)
                      ,@(%boot-tcc0-inputs)))
     (arguments
      `(#:implicit-inputs? #f
@@ -828,14 +780,6 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
        #:strip-binaries? #f             ; no strip yet
        #:phases
        (modify-phases %standard-phases
-         ;; tar xvf ..bz2 gives
-         ;; bzip2: PANIC -- internal consistency error
-         (replace 'unpack
-           (lambda* (#:key source #:allow-other-keys)
-             (copy-file source "tarball.tar.bz2")
-             (invoke "bzip2" "-d" "tarball.tar.bz2")
-             (invoke "tar" "xvf" "tarball.tar")
-             (chdir (string-append "tcc-" ,version))))
          (add-after 'unpack 'scripted-patch
            (lambda* (#:key inputs #:allow-other-keys)
              (substitute* "libtcc.c"
@@ -887,8 +831,26 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
              (= 1 (status:exit-val (system* "./tcc" "--help")))))
          (replace 'install
            (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref %outputs "out"))
-                   (tcc (assoc-ref %build-inputs "tcc")))
+             (let* ((out (assoc-ref %outputs "out"))
+                    (mes (assoc-ref %build-inputs "mes"))
+                    (tcc (assoc-ref %build-inputs "tcc"))
+                    (interpreter "/mes/loader")
+                    (cppflags
+                     (list
+                      "-D" "BOOTSTRAP=1"
+                      "-D" "ONE_SOURCE=1"
+                      "-D" "TCC_TARGET_I386=1"
+                      "-D" "CONFIG_TCCBOOT=1"
+                      "-D" "CONFIG_TCC_STATIC=1"
+                      "-D" "CONFIG_USE_LIBGCC=1"
+                      "-D" (string-append "CONFIG_TCCDIR=\"" out "/lib/tcc\"")
+                      "-D" (string-append "CONFIG_TCC_CRTPREFIX=\"" out "/lib:{B}/lib:.\"")
+                      "-D" (string-append "CONFIG_TCC_ELFINTERP=\"" interpreter "\"")
+                      "-D" (string-append "CONFIG_TCC_LIBPATHS=\"" tcc "/lib:{B}/lib:{B}/lib/tcc:.\"")
+                      "-D" (string-append "CONFIG_TCC_SYSINCLUDEPATHS=\""
+                                          tcc "/include" ":/include:{B}/include\"")
+                      "-D" (string-append "TCC_LIBGCC=\"" tcc "/lib/libc.a\"")
+                      "-D" (string-append "TCC_LIBTCC1_MES=\"libtcc1-mes.a\""))))
                (and
                 (mkdir-p (string-append out "/bin"))
                 (copy-file "tcc" (string-append out "/bin/tcc"))
@@ -897,12 +859,21 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
                                   (string-append out "/include"))
                 (copy-recursively (string-append tcc "/lib")
                                   (string-append out "/lib"))
-                (invoke "tcc" "-D" "TCC_TARGET_I386=1" "-c" "-o" "libtcc1.o" "lib/libtcc1.c")
-                (invoke "tcc" "-ar" "rc" "libtcc1.a" "libtcc1.o")
+                (invoke "./tcc" "-D" "TCC_TARGET_I386=1" "-c" "-o" "libtcc1.o" "lib/libtcc1.c")
+                (invoke "./tcc" "-ar" "rc" "libtcc1.a" "libtcc1.o")
                 (copy-file "libtcc1.a" (string-append out "/lib/libtcc1.a"))
                 (delete-file (string-append out "/lib/tcc/libtcc1.a"))
                 (copy-file "libtcc1.a"
-                           (string-append out "/lib/tcc/libtcc1.a")))))))))))
+                           (string-append out "/lib/tcc/libtcc1.a"))
+
+                (delete-file (string-append out "/lib/libc.a"))
+                (apply invoke "./tcc" "-c" "-o" "libc.o"
+                       "-I" (string-append tcc "/include")
+                       "-I" (string-append tcc "/include/linux/x86")
+                       (string-append mes "/lib/libc+gnu.c")
+                       cppflags)
+                (invoke "./tcc" "-ar" "rc" "libc.a" "libc.o")
+                (copy-file "libc.a" (string-append out "/lib/libc.a")))))))))))
 
 (define patch-mesboot
   ;; The initial patch.
@@ -939,56 +910,9 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
          ;; FIXME: no compressing gzip yet
          (delete 'compress-documentation))))))
 
-(define sed-mesboot0
-  ;; The initial sed.
-  (package
-    (inherit sed)
-    (name "sed-mesboot0")
-    (version "1.18")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/sed/sed-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "1hyv7i82jd0q18xcql51ylc8jwadp3gb3irgcqlis3v61p35jsv2"))))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (propagated-inputs '())
-    (native-inputs (%boot-tcc0-inputs))
-    (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:parallel-build? #f
-       #:configure-flags '("CC=tcc")
-       #:make-flags '("CC=tcc" "extra_objs=" "DEFS=-D HAVE_BCOPY")
-       #:strip-binaries? #f             ; no strip yet
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'scripted-patch
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bash (assoc-ref %build-inputs "bash"))
-                    (shell (string-append bash "/bin/bash")))
-               (substitute* "configure"
-                 (("/bin/sh") shell)))))
-         (replace 'check
-           (lambda _
-             (invoke "./sed" "--version")))
-         (replace 'install
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bin (string-append out "/bin")))
-               (install-file "sed" bin)))))))))
-
 (define (%boot-tcc-inputs)
-  `(("bash" ,bash-mesboot0)
-    ("bzip2" ,bzip2-mesboot)
-    ("gzip" ,gzip-mesboot)
+  `(("gzip" ,gzip-mesboot)
     ("patch" ,patch-mesboot)
-    ("sed" ,sed-mesboot0)
-    ;; Place lower than sed so we don't override it.
-    ("gash-utils" ,gash-utils-boot)
     ("tcc" ,tcc-boot)
     ,@(alist-delete "tcc" (%boot-tcc0-inputs))))
 
@@ -997,14 +921,17 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
   (package
     (inherit binutils)
     (name "binutils-mesboot0")
-    (version "2.14")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/binutils/binutils-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "1w8xp7k44bkijr974x9918i4p1sw4g2fcd5mxvspkjpg38m214ds"))))
+    (version "2.20.1a")
+    (source (bootstrap-origin
+             (origin
+               (method url-fetch)
+               (uri (string-append "mirror://gnu/binutils/binutils-"
+                                   version ".tar.bz2"))
+               (patches (search-patches "binutils-boot-2.20.1a.patch"))
+               (patch-guile %bootstrap-guile)
+               (sha256
+                (base32
+                 "0r7dr0brfpchh5ic0z9r4yxqn4ybzmlh25sbp30cacqk8nb7rlvi")))))
     (inputs '())
     (propagated-inputs '())
     (native-inputs (%boot-tcc-inputs))
@@ -1016,40 +943,21 @@ $MES -e '(mescc)' module/mescc.scm -- \"$@\"
        #:parallel-build? #f
        #:strip-binaries? #f             ; no strip yet
        #:configure-flags
-       (let ((out (assoc-ref %outputs "out")))
-         `("--disable-nls"
+       (let ((cppflags (string-append " -D __GLIBC_MINOR__=6"
+                                      " -D MES_BOOTSTRAP=1"))
+             (bash (assoc-ref %build-inputs "bash")))
+         `(,(string-append "CONFIG_SHELL=" bash "/bin/sh")
+           ,(string-append "CPPFLAGS=" cppflags)
+           "AR=tcc -ar"
+           "CXX=false"
+           "RANLIB=true"
+           ,(string-append "CC=tcc" cppflags)
+           "--disable-nls"
            "--disable-shared"
            "--disable-werror"
-           "--build=i386-unknown-linux"
-           "--host=i386-unknown-linux"
-           "--target=i386-unknown-linux"
-           "--with-sysroot=/"
-           ,(string-append "--prefix=" out)))
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'setenv
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bash (assoc-ref %build-inputs "bash"))
-                    (shell (string-append bash "/bin/bash")))
-               (setenv "CONFIG_SHELL" shell)
-               (setenv "SHELL" shell)
-               (setenv "AR" "tcc -ar")
-               (setenv "RANLIB" "true")
-               (setenv "CC" "tcc -D __GLIBC_MINOR__=6"))))
-         (add-after 'unpack 'scripted-patch
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* "bfd/configure"
-               (("^sed -e '/SRC-POTFILES.*" all)
-                "echo -e 'all:\\n\\ttrue\\n\\ninstall:\\n\\ttrue\\n' > po/Makefile\n"))))
-         (replace 'configure           ; needs classic invocation of configure
-           (lambda* (#:key configure-flags #:allow-other-keys)
-             (format (current-error-port)
-                     "running ./configure ~a\n" (string-join configure-flags))
-             (apply system* "./configure" configure-flags)
-             (substitute* "config.status"
-               (("[.]//dev/null") "/dev/null"))
-             (invoke "sh" "./config.status"))))))))
+           "--build=i686-unknown-linux-gnu"
+           "--host=i686-unknown-linux-gnu"
+           "--with-sysroot=/"))))))
 
 (define gcc-core-mesboot0
   ;; Gcc-2.95.3 is the most recent GCC that is supported by what the Mes C
@@ -1176,7 +1084,6 @@ ac_cv_c_float_format='IEEE (little-endian)'
 
 (define (%boot-mesboot-core-inputs)
   `(("binutils" ,binutils-mesboot0)
-    ("gawk" ,gawk-mesboot0)
     ("gcc" ,gcc-core-mesboot0)
     ,@(alist-delete "tcc" (%boot-tcc-inputs))))
 
@@ -1206,72 +1113,6 @@ ac_cv_c_float_format='IEEE (little-endian)'
                (mkdir-p include)
                (copy-recursively "include" out)
                (copy-recursively headers out)))))))))
-
-(define gawk-mesboot0
-  ;; The initial Gawk.
-  (package
-    (inherit gawk)
-    (name "gawk-mesboot0")
-    (version "3.0.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/gawk/gawk-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "087s7vpc8zawn3l7bwv9f44bf59rc398hvaiid63klw6fkbvabr3"))))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (propagated-inputs '())
-    (native-inputs (%boot-tcc-inputs))
-    (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:configure-flags '("--build=i686-unknown-linux-gnu"
-                           "--host=i686-unknown-linux-gnu"
-                           "--disable-nls")
-       #:make-flags '("gawk")
-       #:parallel-build? #f
-       #:parallel-tests? #f
-       #:strip-binaries? #f             ; no strip yet
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'scripted-patch
-           (lambda _
-             (substitute* "Makefile.in"
-               (("date ") "echo today ")
-               ((" autoheader") "true")
-               ((" -lm ") " "))
-             (substitute* "test/Makefile.in"
-               (("^bigtest:.*") "bigtest: basic\n")
-               (("( |\t)(childin|convfmt|fflush|longwrds|math|negexp)" all sep) sep))))
-         (add-before 'configure 'setenv
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bash (assoc-ref %build-inputs "bash"))
-                    (shell (string-append bash "/bin/bash")))
-               (setenv "CONFIG_SHELL" shell)
-               (setenv "SHELL" shell)
-               (setenv "CC" "tcc")
-               (setenv "CPP" "tcc -E")
-               (setenv "LD" "tcc")
-               (setenv "ac_cv_func_getpgrp_void" "yes")
-               (setenv "ac_cv_func_tzset" "yes"))))
-         (replace 'configure           ; needs classic invocation of configure
-           (lambda* (#:key configure-flags #:allow-other-keys)
-             (let* ((out (assoc-ref %outputs "out"))
-                    (configure-flags
-                     `(,@configure-flags
-                       ,(string-append "--prefix=" out))))
-               (format (current-error-port) "running ./configure ~a\n" (string-join configure-flags))
-               (system* "touch" "configure") ; aclocal.m4 is newer than configure
-               (apply invoke (cons "./configure" configure-flags)))))
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin")))
-               (install-file "gawk" bin)
-               (symlink "gawk" (string-append bin "/awk"))))))))))
 
 (define glibc-mesboot0
   ;; GNU C Library 2.2.5 is the most recent glibc that we managed to build
@@ -1417,97 +1258,6 @@ ac_cv_c_float_format='IEEE (little-endian)'
     ("libc" ,glibc-mesboot0)
     ,@(alist-delete "gcc" (%boot-mesboot-core-inputs))))
 
-(define tar-mesboot
-  ;; Initial tar with support for xz compression.
-  (package
-    (inherit tar)
-    (name "tar-mesboot")
-    (version  "1.22")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/tar/tar-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "19nvix64y95n5v6rr5g9g3fn08zz85cb5anzd7csfv4a4sz9lw4y"))))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (propagated-inputs '())
-    (native-inputs (%boot-mesboot0-inputs))
-    (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:parallel-build? #f
-       #:tests? #f            ; check is naive, also checks non-built PROGRAMS
-       #:strip-binaries? #f   ; no strip yet
-       #:configure-flags '("--build=i686-unknown-linux-gnu"
-                           "--host=i686-unknown-linux-gnu"
-                           "--disable-nls")
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'configure
-           (lambda* (#:key configure-flags #:allow-other-keys)
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bash (assoc-ref %build-inputs "bash"))
-                    (shell (string-append bash "/bin/bash")))
-               (setenv "CONFIG_SHELL" shell)
-               (setenv "SHELL" shell)
-               (setenv "LIBS" "-lc -lnss_files -lnss_dns -lresolv")
-               (setenv "gl_cv_func_rename_dest_works" "yes")
-               (format (current-error-port)
-                       "running ./configure ~a\n" (string-join configure-flags))
-               (apply invoke (cons "./configure" configure-flags)))))
-         (add-after 'unpack 'scripted-patch
-           (lambda _
-             (let* ((bash (assoc-ref %build-inputs "bash"))
-                    (shell (string-append bash "/bin/bash")))
-               (substitute* "configure"
-                 ((" /bin/sh") shell)))
-             (substitute* "Makefile.in"
-               (("^SUBDIRS = doc") "SUBDIRS ="))))
-         (replace 'install
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bin (string-append out "/bin")))
-               (install-file "src/tar" bin)))))))))
-
-(define grep-mesboot
-  ;; The initial grep.
-  (package
-    (inherit grep)
-    (name "grep-mesboot")
-    (version "2.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/grep/grep-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "1w862l80lgc5mxvpiy4cfwk761d6xxavn0m3xd2l7xs2kmzvp6lq"))))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (propagated-inputs '())
-    (native-inputs (%boot-mesboot0-inputs))
-    (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:parallel-build? #f
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'patch-configure
-           (lambda _
-             (let* ((bash (assoc-ref %build-inputs "bash"))
-                    (shell (string-append bash "/bin/bash")))
-               (substitute* "configure"
-                 ((" [|][|] ./config.status") " || sh ./config.status")))))
-         (replace 'install
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bin (string-append out "/bin")))
-               (install-file "grep" bin)
-               (symlink "grep" (string-append bin "/egrep"))
-               (symlink "grep" (string-append bin "/fgrep"))))))))))
-
 (define binutils-mesboot1
   (package
     (inherit binutils-mesboot0)
@@ -1523,46 +1273,7 @@ ac_cv_c_float_format='IEEE (little-endian)'
              "--build=i686-unknown-linux-gnu"
              "--host=i686-unknown-linux-gnu"
              "--with-sysroot=/"
-             ,(string-append "--prefix=" out))))
-       ((#:phases phases)
-        `(modify-phases ,phases
-           (replace 'setenv
-             (lambda _
-               (let* ((out (assoc-ref %outputs "out"))
-                      (bash (assoc-ref %build-inputs "bash"))
-                      (shell (string-append bash "/bin/bash")))
-                 (setenv "CONFIG_SHELL" shell))))))))))
-
-(define coreutils-mesboot0
-  (package
-    (inherit coreutils)
-    (name "coreutils-mesboot0")
-    ;; The latest .gz release of Coreutils is 8.13; which does not build with gcc-2.95.3:
-    ;; randperm.c: In function `sparse_swap':
-    ;; randperm.c:117: invalid lvalue in unary `&'
-    (version "5.0")                     ; 2003-04
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/coreutils/coreutils-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "10wq6k66i8adr4k08p0xmg87ff4ypiazvwzlmi7myib27xgffz62"))))
-    (native-inputs (%boot-mesboot0-inputs))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (propagated-inputs '())
-    (arguments
-     `(#:implicit-inputs? #f
-       #:tests? #f                      ; WARNING: `perl' is needed, ...
-       #:parallel-build? #f
-       #:strip-binaries? #f   ; strip: unrecognized option `--only-keep-debug'
-       #:guile ,%bootstrap-guile
-       #:configure-flags
-       '("--disable-doc"
-         "LIBS=-lc -lnss_files -lnss_dns -lresolv"
-         "ac_cv_func_gethostbyname=no"
-         "gl_cv_func_rename_dest_works=yes")))))
+             ,(string-append "--prefix=" out))))))))
 
 (define gnu-make-mesboot
   (package
@@ -1596,150 +1307,11 @@ ac_cv_c_float_format='IEEE (little-endian)'
                     (bin (string-append out "/bin")))
                (install-file "make" bin)))))))))
 
-(define gawk-mesboot
-  (package
-    (inherit gawk)
-    (name "gawk-mesboot")
-    (version "3.1.8")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/gawk/gawk-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "03d5y7jabq7p2s7ys9alay9446mm7i5g2wvy8nlicardgb6b6ii1"))))
-    (native-inputs `(,@(%boot-mesboot0-inputs)
-                     ("mesboot-headers" ,mesboot-headers)))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (propagated-inputs '())
-    (arguments
-     `(#:implicit-inputs? #f
-       #:parallel-build? #f
-       #:guile ,%bootstrap-guile
-       #:configure-flags '("ac_cv_func_connect=no")
-       #:make-flags '("gawk")
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda _
-             (invoke "./gawk" "--version")))
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin")))
-               (install-file "gawk" bin)
-               (symlink "gawk" (string-append bin "/awk"))))))))))
-
-(define sed-mesboot
-  (package
-    (inherit sed)
-    (name "sed-mesboot")
-    (version "4.0.6")                   ; 2003-04
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/sed/sed-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "0861ij94cqc4vaaki6r2wlapwcmhpx4ggp4r70f46mb21a8fkvf1"))))
-    (native-inputs (%boot-mesboot0-inputs))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (propagated-inputs '())
-    (arguments
-     `(#:implicit-inputs? #f
-       #:parallel-build? #f
-       #:guile ,%bootstrap-guile
-       #:tests? #f                      ; 8to7 fails
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack '/bin/sh
-           (lambda _
-             (let* ((bash (assoc-ref %build-inputs "bash"))
-                    (shell (string-append bash "/bin/bash")))
-               (substitute* "testsuite/Makefile.tests"
-                 (("^SHELL = /bin/sh")
-                  (string-append "SHELL = " shell)))))))))))
-
-(define bash-mesboot
-  (package
-    (inherit bash-mesboot0)
-    (version "4.4")
-    (name "bash-mesboot")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/bash/bash-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "1jyz6snd63xjn6skk7za6psgidsd53k05cr3lksqybi0q6936syq"))))
-    (inputs '())
-    (propagated-inputs '())
-    (native-inputs (%boot-mesboot0-inputs))
-    (outputs '("out"))
-    (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:parallel-build? #f
-       #:configure-flags
-       '("--build=i686-unknown-linux-gnu"
-         "--host=i686-unknown-linux-gnu"
-
-         "--without-bash-malloc"
-         "--disable-readline"
-         "--disable-history"
-         "--disable-help-builtin"
-         "--disable-progcomp"
-         "--disable-net-redirections"
-         "--disable-nls"
-
-         ;; Pretend 'dlopen' is missing so we don't build loadable
-         ;; modules and related code.
-         "ac_cv_func_dlopen=no")
-       #:make-flags '("bash")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'scripted-patch
-           (lambda _
-             (substitute* "shell.c"
-               ((";;") ";"))))
-         (add-before 'configure 'setenv
-           (lambda _
-             (setenv "AWK" "gawk")
-             (setenv "LIBS" "-lc -lnss_files -lnss_dns -lresolv")
-             (setenv "gl_cv_func_rename_dest_works" "yes")))
-         (add-after 'configure 'configure-fixups
-           (lambda _
-             (let ((config.h (open-file "config.h" "a")))
-               (display (string-append "
-#define enable_hostname_completion(on_or_off) 0
-")
-                        config.h)
-               (close config.h))))
-         (replace 'check
-           (lambda _
-             (invoke "./bash" "--version")))
-         (replace 'install
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (bin (string-append out "/bin")))
-               (mkdir-p bin)
-               (copy-file "bash" (string-append bin "/bash"))
-               (copy-file "bash" (string-append bin "/sh"))))))))))
-
 (define (%boot-mesboot1-inputs)
-  `(("bash" ,bash-mesboot)
-    ("binutils" ,binutils-mesboot1)
-    ("coreutils" ,coreutils-mesboot0)
-    ("gawk" ,gawk-mesboot)
-    ("grep" ,grep-mesboot)
+  `(("binutils" ,binutils-mesboot1)
     ("make" ,gnu-make-mesboot)
-    ("sed" ,sed-mesboot)
-    ("tar" ,tar-mesboot)
     ,@(fold alist-delete (%boot-mesboot0-inputs)
-            '("bash" "binutils" "bootar" "coreutils" "gash"
-              "gawk" "grep" "guile" "make" "sed" "tar"))))
+            '("binutils" "make"))))
 
 (define gmp-boot
   (let ((version "4.3.2"))
@@ -1933,57 +1505,22 @@ ac_cv_c_float_format='IEEE (little-endian)'
   `(("gcc" ,gcc-mesboot1)
     ,@(alist-delete "gcc" (%boot-mesboot1-inputs))))
 
-(define xz-mesboot
-  ;; Finally, we can build xz.
-  (package
-    (inherit xz)
-    (name "xz-mesboot")
-    (version "5.0.0")
-    (source (bootstrap-origin
-             (origin
-               (method url-fetch)
-               (uri (list (string-append "http://tukaani.org/xz/xz-" version
-                                         ".tar.gz")
-                          (string-append "http://multiprecision.org/guix/xz-"
-                                         version ".tar.gz")))
-               (sha256
-                (base32
-                 "0kf40ggbs1vaaj5s9k4csycahzqcf65n20pa6lngqhm6j0cj3agb")))))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (inputs '())
-    (outputs '("out"))
-    (propagated-inputs '())
-    (native-inputs (%boot-mesboot2-inputs))
-    (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:parallel-build? #f
-       #:configure-flags
-       `("--disable-assembler"
-         "--disable-shared"
-         "--enable-small"
-         "--disable-threads"
-         "--disable-xzdec"
-         "--disable-lzmadec"
-         "--disable-lzmainfo"
-         "--disable-lzma-links"
-         "--disable-scripts"
-         "--disable-doc"
-         "--disable-nls"
-         "--disable-symbol-versions"
-         ;; configure disqualifies BASH, CPP, GCC and GREP
-         ;; all of which seem fine for the build
-         "ac_cv_prog_cc_c99=-std=gnu9x"
-         "ac_cv_path_GREP=grep"
-         "gl_cv_posix_shell=bash"
-         "ac_cv_have_decl_optreset=no"
-         "CPPFLAGS=-D__GNUC__=1")))))
-
 (define hello-mesboot
-  ;; Check for Scheme-only bootstrap.
+  ;; Check for Scheme-only bootstrap.  Note that newer versions of Hello
+  ;; break due to the way that newer versions of Gnulib handle
+  ;; "limits.h".  Hence, we stick to 2.10.
   (package
     (inherit hello)
     (name "hello-mesboot")
+    (version "2.10")
+    (source
+     (origin
+       (inherit (package-source hello))
+       (uri (string-append "mirror://gnu/hello/hello-" version
+                           ".tar.gz"))
+       (sha256
+        (base32
+         "0ssi1wpaf7plaswqqjwigppsg5fyh99vdlb9kzl7c9lng89ndq1i"))))
     (supported-systems '("i686-linux" "x86_64-linux"))
     (inputs '())
     (propagated-inputs '())
@@ -2003,76 +1540,51 @@ ac_cv_c_float_format='IEEE (little-endian)'
 
 (define binutils-mesboot
   (package
-    (inherit binutils)
+    (inherit binutils-mesboot1)
     (name "binutils-mesboot")
-    (version "2.20.1a")
-    (source (bootstrap-origin
-             (origin
-               (method url-fetch)
-               (uri (string-append "mirror://gnu/binutils/binutils-"
-                                   version ".tar.bz2"))
-               (patches (search-patches "binutils-boot-2.20.1a.patch"))
-               (sha256
-                (base32
-                 "0r7dr0brfpchh5ic0z9r4yxqn4ybzmlh25sbp30cacqk8nb7rlvi")))))
+    (native-inputs (%boot-mesboot2-inputs))))
+
+;; Sadly we have to introduce Gawk here.  The "versions.awk" script of
+;; glibc 2.16.0 is too complicated for Gash-Utils.  This is the version
+;; of Gawk used previously during bootstrap.  It's possible that a newer
+;; version would work, too, but this one was already ready to go.
+(define gawk-mesboot
+  (package
+    (inherit gawk)
+    (name "gawk-mesboot")
+    (version "3.1.8")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnu/gawk/gawk-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "03d5y7jabq7p2s7ys9alay9446mm7i5g2wvy8nlicardgb6b6ii1"))))
+    (native-inputs (%boot-mesboot2-inputs))
+    (supported-systems '("i686-linux" "x86_64-linux"))
     (inputs '())
     (propagated-inputs '())
-    (native-inputs `(("xz" ,xz-mesboot)
-                     ,@(%boot-mesboot2-inputs)))
-    (supported-systems '("i686-linux" "x86_64-linux"))
     (arguments
      `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:tests? #f                     ; runtest: command not found
        #:parallel-build? #f
-       #:strip-binaries? #f            ; no strip yet
-       #:configure-flags
-       `("CC=gcc"
-         "CXX=false"
-         "RANLIB=true"
-         "--disable-doc"
-         "--disable-nls"
-         "--disable-shared"
-         "--disable-werror"
-         "--build=i686-unknown-linux-gnu"
-         "--host=i686-unknown-linux-gnu"
-         "--with-sysroot=/"
-         ;; checking for grep that handles long lines and -e
-         "ac_cv_path_GREP=grep")
-       ;; FIXME: ac_cv_path_GREP=grep doesn't seem to be forwarded to
-       ;; cascading configure's?
-       #:make-flags '("ac_cv_path_GREP=grep")
+       #:guile ,%bootstrap-guile
+       #:configure-flags '("ac_cv_func_connect=no")
+       #:make-flags '("gawk")
        #:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'scripted-patch
+         (replace 'check
            (lambda _
-             ;; sed-mesboot0 cannot build these
-             (copy-file "binutils/Makefile.in" "binutils/Makefile.in.orig")
-             (substitute* "binutils/Makefile.in"
-               ;; binutils/binutils uses an amazingly complex install
-               ;; command, using FOR, SED, READ, IF, ECHO, SED, SED, AWK,
-               ;; READ, and then LIBTOOL (to do something like
-               ;; `mkdir $DESTDIR$bindir; cp readline $DESTDIR$bindir ...')
-
-               ;; Some tool [debugme!] cannot handle two escaped newlines
-               ;; (bash?), and the install stops after $(am__EXEEXT_11)
-               ;; ("objcopy"), so $(am__EXEEXT_13) ("readelf") and others do
-               ;; not get installed.  Remove the stray newline:
-               (("^\t@BUILD_NLMCONV@ @BUILD_SRCONV@ @BUILD_DLLTOOL@ @BUILD_WINDRES@ .*") ""))
-             (substitute* "opcodes/Makefile.in"
-               (("^SUBDIRS = [.] po") "SUBDIRS = ."))
-             (substitute* "binutils/Makefile.in"
-               (("^SUBDIRS = doc po") "SUBDIRS ="))
-             (substitute* "gas/Makefile.in"
-               (("^SUBDIRS = doc po") "SUBDIRS ="))
-             (substitute* "gprof/Makefile.in"
-               (("^SUBDIRS = po") "SUBDIRS ="))
-             (substitute* "ld/Makefile.in"
-               (("^SUBDIRS = po") "SUBDIRS =")))))))))
+             (invoke "./gawk" "--version")))
+         (replace 'install
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (bin (string-append out "/bin")))
+               (install-file "gawk" bin)
+               (symlink "gawk" (string-append bin "/awk"))))))))))
 
 (define (%boot-mesboot3-inputs)
   `(("binutils" ,binutils-mesboot)
-    ("xz" ,xz-mesboot)
+    ("gawk" ,gawk-mesboot)
     ,@(alist-delete "binutils" (%boot-mesboot2-inputs))))
 
 (define glibc-headers-mesboot
@@ -2149,6 +1661,11 @@ ac_cv_c_float_format='IEEE (little-endian)'
                       (out (assoc-ref outputs "out")))
                   (apply invoke "make" make-flags)
                   (copy-recursively kernel-headers out))))
+            (add-before 'configure 'remove-bashism
+              (lambda _
+                (substitute* "sysdeps/unix/make-syscalls.sh"
+                  (("\\$[{]vdso_symver//\\./_[}]")
+                   "$(echo $vdso_symver | sed -e 's/\\./_/g')"))))
             (replace 'configure
               (lambda* (#:key configure-flags #:allow-other-keys)
                 (format (current-error-port) "running ../configure ~a\n"
@@ -2194,6 +1711,17 @@ SHELL := " shell "
                 (list (string-append "SHELL=" bash "/bin/sh"))))
            ((#:phases phases)
             #~(modify-phases #$phases
+                (add-after 'unpack 'simplify-intl-tests
+                  (lambda _
+                    ;; The bootstrap Guile (2.0.9) crashes trying to
+                    ;; perform a regex on non-ASCII text.  This gets
+                    ;; triggered by 'intl/po2test.sed' running over
+                    ;; 'po/de.po'.  If we ever remove the bootstrap
+                    ;; Guile or add pure-Scheme regex to Gash, this can
+                    ;; be removed.
+                    (substitute* '("catgets/Makefile"
+                                   "intl/Makefile")
+                      (("de\\.po") "en_GB.po"))))
                 (replace 'install
                   (lambda* (#:key outputs make-flags #:allow-other-keys)
                     (let* ((kernel-headers (assoc-ref %build-inputs "kernel-headers"))
@@ -2215,8 +1743,8 @@ SHELL := " shell "
     (name "gcc-mesboot1-wrapper")
     (source #f)
     (inputs '())
-    (native-inputs `(("bash" ,bash-mesboot)
-                     ("coreutils" ,coreutils-mesboot0)
+    (native-inputs `(("bash" ,gash-boot)
+                     ("coreutils" ,gash-utils-boot)
                      ("libc" ,glibc-mesboot)
                      ("gcc" ,gcc-mesboot1)))
     (arguments
@@ -2354,8 +1882,8 @@ exec " gcc "/bin/" program
     (version (package-version gcc-mesboot))
     (source #f)
     (inputs '())
-    (native-inputs `(("bash" ,bash-mesboot)
-                     ("coreutils" ,coreutils-mesboot0)
+    (native-inputs `(("bash" ,gash-boot)
+                     ("coreutils" ,gash-utils-boot)
                      ("libc" ,glibc-mesboot)
                      ("gcc" ,gcc-mesboot)))))
 
@@ -2364,24 +1892,74 @@ exec " gcc "/bin/" program
     ("gcc" ,gcc-mesboot)
     ,@(fold alist-delete (%boot-mesboot4-inputs) '("gcc" "gcc-wrapper"))))
 
-(define coreutils-mesboot
+(define (mesboot-package name pkg)
   (package
-    (inherit coreutils)
-    (name "coreutils-mesboot")
-    (source (bootstrap-origin (package-source coreutils)))
+    (inherit pkg)
+    (name name)
+    (source (bootstrap-origin (package-source pkg)))
     (native-inputs (%boot-mesboot5-inputs))
     (supported-systems '("i686-linux" "x86_64-linux"))
     (inputs '())
     (propagated-inputs '())
     (arguments
-     `(#:implicit-inputs? #f
-       #:guile ,%bootstrap-guile
-       #:tests? #f))))
+     (ensure-keyword-arguments (package-arguments pkg)
+                               `(#:implicit-inputs? #f
+                                 #:guile ,%bootstrap-guile
+                                 #:tests? #f)))))
+
+;; These packages are needed to complete the rest of the bootstrap.
+;; In the future, Gash et al. could handle it directly, but it's not
+;; ready yet.
+(define bash-mesboot (mesboot-package "bash-mesboot" static-bash))
+(define sed-mesboot (mesboot-package "sed-mesboot" sed))
+
+;; "sed" from Gash-Utils lacks the 'w' command as of 0.2.0.
+(define coreutils-mesboot
+  (let ((pkg (mesboot-package "coreutils-mesboot" coreutils)))
+    (package
+      (inherit pkg)
+      (native-inputs
+       `(("sed" ,sed-mesboot)
+         ,@(package-native-inputs pkg))))))
+
+(define grep-mesboot
+  (let ((pkg (mesboot-package "grep-mesboot" grep)))
+    (package
+      (inherit pkg)
+      (native-inputs
+       `(("sed" ,sed-mesboot)
+         ,@(package-native-inputs pkg))))))
+
+;; The XZ implementation in Bootar cannot decompress 'tar'.
+(define xz-mesboot
+  (let ((pkg (mesboot-package "xz-mesboot" xz)))
+    (package
+      (inherit pkg)
+      (arguments
+       (ensure-keyword-arguments (package-arguments pkg)
+                                 ;; XXX: This fails even though the
+                                 ;; actual runpaths seem fine.
+                                 `(#:validate-runpath? #f))))))
+
+;; We don't strictly need Tar here, but it allows us to get rid of
+;; Bootar and Gash-Utils and continue with the standard GNU tools.
+(define tar-mesboot
+  (let ((pkg (mesboot-package "tar-mesboot" tar)))
+    (package
+      (inherit pkg)
+      (native-inputs
+       `(("xz" ,xz-mesboot)
+         ,@(package-native-inputs pkg))))))
 
 (define (%boot-mesboot6-inputs)
-  `(("coreutils" ,coreutils-mesboot)
+  `(("bash" ,bash-mesboot)
+    ("coreutils" ,coreutils-mesboot)
+    ("grep" ,grep-mesboot)
+    ("sed" ,sed-mesboot)
+    ("tar" ,tar-mesboot)
+    ("xz" ,xz-mesboot)
     ,@(fold alist-delete (%boot-mesboot5-inputs)
-            '("coreutils" "kernel-headers"))))
+            '("bash" "coreutils" "bootar" "kernel-headers"))))
 
 (define (%bootstrap-inputs+toolchain)
   ;; The traditional bootstrap-inputs.  For the i686-linux, x86_64-linux
@@ -2458,7 +2036,21 @@ exec " gcc "/bin/" program
      `(#:tests? #f
        #:implicit-inputs? #f
        #:guile ,%bootstrap-guile
-       ,@(package-arguments coreutils)))))
+       ,@(package-arguments coreutils)
+       ;; The %bootstrap-glibc for aarch64 and armhf doesn't have
+       ;; $output/include/linux/prctl.h which causes some binaries
+       ;; to fail to build with coreutils-9.0+.
+       ,@(if (target-arm?)
+           `(#:configure-flags '(,(string-append
+                                    "--enable-no-install-program="
+                                    ;; the defaults to not install.
+                                    "arch,coreutils,hostname"
+                                    ;; fails due to missing headers.
+                                    ",timeout,sort")
+                                  ,@(if (target-arm32?)
+                                      `("--disable-year2038")
+                                      `())))
+           '())))))
 
 (define diffutils-boot0
   (package
@@ -2526,9 +2118,7 @@ exec " gcc "/bin/" program
                            (substitute* "gnulib-tests/Makefile"
                              (("^XFAIL_TESTS =")
                               "XFAIL_TESTS = test-fnmatch ")))))
-                     '())))
-           ((#:make-flags flags ''())
-            ''()))))))
+                     '()))))))))
 
 (define file
   (package
@@ -2554,6 +2144,7 @@ exec " gcc "/bin/" program
        #:implicit-inputs? #f
        #:guile ,%bootstrap-guile
        #:configure-flags '("--disable-bzlib")
+       #:make-flags '("CFLAGS+=-std=c11")
        #:strip-binaries? #f
        #:validate-runpath? #f
        ,@(package-arguments file)))))
@@ -2702,14 +2293,20 @@ exec " gcc "/bin/" program
              ((or "i686-linux" "x86_64-linux")
               (substitute-keyword-arguments (package-arguments lib)
                 ((#:phases phases)
-                 `(modify-phases ,phases
-                    (add-after 'unpack 'workaround-wrapper-bug
-                      ;; XXX: The crude gcc-cross-wrapper causes "g++ -v" to
-                      ;; fail, which in turn confuses the configure script.
-                      (lambda _
-                        (substitute* "libstdc++-v3/configure"
-                          (("g\\+\\+ -v") "true"))))))))
-             (_ (package-arguments lib)))))
+                 #~(modify-phases #$phases
+                     (add-after 'unpack 'workaround-wrapper-bug
+                       ;; XXX: The crude gcc-cross-wrapper causes "g++ -v" to
+                       ;; fail, which in turn confuses the configure script.
+                       (lambda _
+                         (substitute* "libstdc++-v3/configure"
+                           (("g\\+\\+ -v") "true"))))))))
+             (_ (package-arguments lib)))
+
+         ;; Explicitly add #:modules so MAKE-LIBSTDC++ can be changed
+         ;; without a full bootstrap.
+         #:modules ((guix build gnu-build-system)
+                    (guix build utils))))
+
       (inputs (%boot0-inputs))
       (native-inputs '()))))
 
@@ -2729,28 +2326,28 @@ exec " gcc "/bin/" program
 
          ,@(substitute-keyword-arguments (package-arguments lib)
              ((#:phases phases)
-              `(modify-phases ,phases
-                 (add-after 'unpack 'unpack-gmp&co
-                   (lambda* (#:key inputs #:allow-other-keys)
-                     (let ((gmp  (assoc-ref %build-inputs "gmp-source"))
-                           (mpfr (assoc-ref %build-inputs "mpfr-source"))
-                           (mpc  (assoc-ref %build-inputs "mpc-source")))
+              #~(modify-phases #$phases
+                  (add-after 'unpack 'unpack-gmp&co
+                    (lambda* (#:key inputs #:allow-other-keys)
+                      (let ((gmp  (assoc-ref %build-inputs "gmp-source"))
+                            (mpfr (assoc-ref %build-inputs "mpfr-source"))
+                            (mpc  (assoc-ref %build-inputs "mpc-source")))
 
-                       ;; To reduce the set of pre-built bootstrap inputs, build
-                       ;; GMP & co. from GCC.
-                       (for-each (lambda (source)
-                                   (invoke "tar" "xvf" source))
-                                 (list gmp mpfr mpc))
+                        ;; To reduce the set of pre-built bootstrap inputs, build
+                        ;; GMP & co. from GCC.
+                        (for-each (lambda (source)
+                                    (invoke "tar" "xvf" source))
+                                  (list gmp mpfr mpc))
 
-                       ;; Create symlinks like `gmp' -> `gmp-x.y.z'.
-                       ,@(map (lambda (lib)
-                                ;; Drop trailing letters, as gmp-6.0.0a unpacks
-                                ;; into gmp-6.0.0.
-                                `(symlink ,(string-trim-right
-                                            (package-full-name lib "-")
-                                            char-set:letter)
-                                          ,(package-name lib)))
-                              (list gmp-6.0 mpfr mpc))))))))))
+                        ;; Create symlinks like `gmp' -> `gmp-x.y.z'.
+                        #$@(map (lambda (lib)
+                                  ;; Drop trailing letters, as gmp-6.0.0a unpacks
+                                  ;; into gmp-6.0.0.
+                                  #~(symlink #$(string-trim-right
+                                                (package-full-name lib "-")
+                                                char-set:letter)
+                                             #$(package-name lib)))
+                                (list gmp-6.0 mpfr mpc))))))))))
       (inputs `(("gmp-source" ,(bootstrap-origin (package-source gmp-6.0)))
                 ("mpfr-source" ,(bootstrap-origin (package-source mpfr)))
                 ("mpc-source" ,(bootstrap-origin (package-source mpc)))
@@ -2762,83 +2359,100 @@ exec " gcc "/bin/" program
     (inherit gcc)
     (name "gcc-cross-boot0")
     (outputs (delete "debug" (package-outputs gcc)))
-    (source (bootstrap-origin (package-source gcc)))
+    (source
+     (bootstrap-origin
+      (origin
+        (inherit (package-source gcc))
+        (snippet
+         #~(begin
+             ;; XXX: The GCC test suite contains files with non-ASCII file
+             ;; names, which cannot be repacked by BOOTSTRAP-ORIGIN.  Nor
+             ;; can it be deleted from Guile, so resort to this evil hack.
+             #$(origin-snippet (package-source gcc))
+             (system* #$(file-append (let-system system
+                                       ;; 'coreutils-boot0' is Linux-only.
+                                       (if (target-hurd? system)
+                                           %bootstrap-coreutils&co
+                                           coreutils-boot0))
+                                     "/bin/rm") "-rf"
+                      "gcc/testsuite/go.test/test/fixedbugs/issue27836.dir"))))))
     (arguments
-     `(#:guile ,%bootstrap-guile
-       #:implicit-inputs? #f
-       #:modules ((guix build gnu-build-system)
+     (cons*
+      #:guile %bootstrap-guile
+      #:implicit-inputs? #f
+      #:modules '((guix build gnu-build-system)
                   (guix build utils)
                   (ice-9 regex)
                   (srfi srfi-1)
                   (srfi srfi-26))
-       ,@(substitute-keyword-arguments (package-arguments gcc)
-           ((#:configure-flags flags)
-            `(append (list ,(string-append "--target=" (boot-triplet))
+      (substitute-keyword-arguments (package-arguments gcc)
+        ((#:configure-flags flags)
+         #~(append (list #$(string-append "--target=" (boot-triplet))
 
-                           ;; No libc yet.
-                           "--without-headers"
+                         ;; No libc yet.
+                         "--without-headers"
 
-                           ;; Disable features not needed at this stage.
-                           "--disable-shared"
-                           "--enable-languages=c,c++"
+                         ;; Disable features not needed at this stage.
+                         "--disable-shared"
+                         "--enable-languages=c,c++"
 
-                           ;; libstdc++ cannot be built at this stage
-                           ;; ("Link tests are not allowed after
-                           ;; GCC_NO_EXECUTABLES.").
-                           "--disable-libstdc++-v3"
+                         ;; libstdc++ cannot be built at this stage
+                         ;; ("Link tests are not allowed after
+                         ;; GCC_NO_EXECUTABLES.").
+                         "--disable-libstdc++-v3"
 
-                           "--disable-threads"
-                           "--disable-libmudflap"
-                           "--disable-libatomic"
-                           "--disable-libsanitizer"
-                           "--disable-libitm"
-                           "--disable-libgomp"
-                           "--disable-libmpx"
-                           "--disable-libcilkrts"
-                           "--disable-libvtv"
-                           "--disable-libssp"
-                           "--disable-libquadmath"
-                           "--disable-decimal-float")
-                     (remove (cut string-match
-                               "--(with-system-zlib|enable-languages.*)" <>)
-                             ,flags)))
-           ((#:make-flags flags)
-            `(let* ((libc        (assoc-ref %build-inputs "libc"))
-                    (libc-native (or (assoc-ref %build-inputs "libc-native")
-                                     libc)))
-               `(,(string-append "LDFLAGS="
-                                 "-Wl,-rpath=" libc-native "/lib "
-                                 "-Wl,-dynamic-linker "
-                                 "-Wl," libc-native ,(glibc-dynamic-linker
-                                                      (match (%current-system)
-                                                        ("x86_64-linux" "i686-linux")
-                                                        (_ (%current-system))))))))
-           ((#:phases phases)
-            `(modify-phases ,phases
-               (add-after 'unpack 'unpack-gmp&co
-                 (lambda* (#:key inputs #:allow-other-keys)
-                   (let ((gmp  (assoc-ref %build-inputs "gmp-source"))
-                         (mpfr (assoc-ref %build-inputs "mpfr-source"))
-                         (mpc  (assoc-ref %build-inputs "mpc-source")))
+                         "--disable-threads"
+                         "--disable-libmudflap"
+                         "--disable-libatomic"
+                         "--disable-libsanitizer"
+                         "--disable-libitm"
+                         "--disable-libgomp"
+                         "--disable-libmpx"
+                         "--disable-libcilkrts"
+                         "--disable-libvtv"
+                         "--disable-libssp"
+                         "--disable-libquadmath"
+                         "--disable-decimal-float")
+                   (remove (cut string-match
+                                "--(with-system-zlib|enable-languages.*)" <>)
+                           #$flags)))
+        ((#:make-flags flags)
+         `(let* ((libc        (assoc-ref %build-inputs "libc"))
+                 (libc-native (or (assoc-ref %build-inputs "libc-native")
+                                  libc)))
+            `(,(string-append "LDFLAGS="
+                              "-Wl,-rpath=" libc-native "/lib "
+                              "-Wl,-dynamic-linker "
+                              "-Wl," libc-native ,(glibc-dynamic-linker
+                                                   (match (%current-system)
+                                                     ("x86_64-linux" "i686-linux")
+                                                     (_ (%current-system))))))))
+        ((#:phases phases)
+         #~(modify-phases #$phases
+             (add-after 'unpack 'unpack-gmp&co
+               (lambda* (#:key inputs #:allow-other-keys)
+                 (let ((gmp  (assoc-ref %build-inputs "gmp-source"))
+                       (mpfr (assoc-ref %build-inputs "mpfr-source"))
+                       (mpc  (assoc-ref %build-inputs "mpc-source")))
 
-                     ;; To reduce the set of pre-built bootstrap inputs, build
-                     ;; GMP & co. from GCC.
-                     (for-each (lambda (source)
-                                 (invoke "tar" "xvf" source))
-                               (list gmp mpfr mpc))
+                   ;; To reduce the set of pre-built bootstrap inputs, build
+                   ;; GMP & co. from GCC.
+                   (for-each (lambda (source)
+                               (invoke "tar" "xvf" source))
+                             (list gmp mpfr mpc))
 
-                     ;; Create symlinks like `gmp' -> `gmp-x.y.z'.
-                     ,@(map (lambda (lib)
-                              ;; Drop trailing letters, as gmp-6.0.0a unpacks
-                              ;; into gmp-6.0.0.
-                              `(symlink ,(string-trim-right
-                                          (package-full-name lib "-")
-                                          char-set:letter)
-                                        ,(package-name lib)))
-                            (list gmp-6.0 mpfr mpc)))))
-               ,(match (%current-system)
-                  ((or "i686-linux" "x86_64-linux")
-                   '(add-before 'configure 'fix-libcc1
+                   ;; Create symlinks like `gmp' -> `gmp-x.y.z'.
+                   #$@(map (lambda (lib)
+                             ;; Drop trailing letters, as gmp-6.0.0a unpacks
+                             ;; into gmp-6.0.0.
+                             #~(symlink #$(string-trim-right
+                                           (package-full-name lib "-")
+                                           char-set:letter)
+                                        #$(package-name lib)))
+                           (list gmp-6.0 mpfr mpc)))))
+             #$(match (%current-system)
+                 ((or "i686-linux" "x86_64-linux")
+                  #~(add-before 'configure 'fix-libcc1
                       (lambda* (#:key inputs #:allow-other-keys)
                         ;; libcc1.so NEEDs libgcc_s.so, so provide one here
                         ;; to placate the 'validate-runpath' phase.
@@ -2849,18 +2463,18 @@ exec " gcc "/bin/" program
                         ;; XXX: "g++ -v" is broken (see also libstdc++ above).
                         (substitute* "libcc1/configure"
                           (("g\\+\\+ -v") "true")))))
-                  (_ '(add-before 'configure 'return-true
+                 (_ #~(add-before 'configure 'return-true
                         (lambda _ #t))))
-               (add-after 'install 'symlink-libgcc_eh
-                 (lambda* (#:key outputs #:allow-other-keys)
-                   (let ((out (assoc-ref outputs "lib")))
-                     ;; Glibc wants to link against libgcc_eh, so provide
-                     ;; it.
-                     (with-directory-excursion
-                         (string-append out "/lib/gcc/"
-                                        ,(boot-triplet)
-                                        "/" ,(package-version gcc))
-                       (symlink "libgcc.a" "libgcc_eh.a"))))))))))
+             (add-after 'install 'symlink-libgcc_eh
+               (lambda* (#:key outputs #:allow-other-keys)
+                 (let ((out (assoc-ref outputs "lib")))
+                   ;; Glibc wants to link against libgcc_eh, so provide
+                   ;; it.
+                   (with-directory-excursion
+                       (string-append out "/lib/gcc/"
+                                      #$(boot-triplet)
+                                      "/" #$(package-version gcc))
+                     (symlink "libgcc.a" "libgcc_eh.a"))))))))))
 
     (inputs `(("gmp-source" ,(bootstrap-origin (package-source gmp-6.0)))
               ("mpfr-source" ,(bootstrap-origin (package-source mpfr)))
@@ -2878,7 +2492,7 @@ exec " gcc "/bin/" program
               ,@(alist-delete "libc" (%boot0-inputs))))
 
     ;; No need for the native-inputs to build the documentation at this stage.
-    (native-inputs `())))
+    (native-inputs '())))
 
 (define perl-boot0
   (package
@@ -2918,7 +2532,10 @@ exec " gcc "/bin/" program
     (arguments
      `(#:guile ,%bootstrap-guile
        #:implicit-inputs? #f
-       ,@(package-arguments m4)))))
+       ,@(package-arguments m4)
+       ;; Ignore test failure in gnulib for armhf/aarch64 and Hurd
+       #:tests? ,(and (not (target-arm?))
+                      (not (target-hurd?)))))))
 
 (define bison-boot0
   ;; This Bison is needed to build MiG so we need it early in the process.
@@ -2997,7 +2614,18 @@ memoized as a function of '%current-system'."
     (arguments
      `(#:guile ,%bootstrap-guile
        #:implicit-inputs? #f
-       ,@(package-arguments linux-libre-headers)))
+       ,@(substitute-keyword-arguments (package-arguments linux-libre-headers)
+           ((#:phases phases)
+            `(modify-phases ,phases
+               (add-after 'unpack 'lower-version-requirements
+                 (lambda _
+                   ;; Pacify version checks so it works with the bootstrap
+                   ;; toolchain, since we are not building the full kernel.
+                   (substitute* "scripts/min-tool-version.sh"
+                     (("echo 5\\.1\\.0")  ;GCC
+                      "echo 4.8.4")
+                     (("echo 2\\.23\\.0") ;binutils
+                      "echo 2.20.1")))))))))
     (native-inputs
      `(("perl" ,perl-boot0)
 
@@ -3010,63 +2638,123 @@ memoized as a function of '%current-system'."
   (package-with-explicit-inputs %boot0-inputs
                                 %bootstrap-guile))
 
+(define autoconf-boot0
+  (with-boot0
+   (package
+     (inherit autoconf)
+     (name "autoconf-boot0")
+     (native-inputs (list m4-boot0 perl-boot0))
+     (inputs '())
+     (arguments (list #:tests? #f)))))
+
+(define automake-boot0
+  (with-boot0
+   (package
+     (inherit automake)
+     (name "automake-boot0")
+     (source (origin
+               (inherit (package-source automake))
+               (patches '())))        ;test are skipped anyway
+     (native-inputs (list autoconf-boot0 m4-boot0 perl-boot0))
+     (inputs '())
+     (arguments
+      (list #:tests? #f)))))
+
 (define gnumach-headers-boot0
   (with-boot0
    (package
      (inherit gnumach-headers)
-     (version "1.8-116-g28b53508")
-     (source (bootstrap-origin
-              (origin
-                (method url-fetch)
-                (uri (list (string-append "mirror://gnu/guix/mirror/gnumach-"
-                                          version ".tar.gz")
-                           (string-append "https://lilypond.org/janneke/hurd/"
-                                          "gnumach-" version ".tar.gz")))
-                (sha256
-                 (base32
-                  "006i0zgwy81vxarpfm12vip4q6i5mgmi5mmy5ldvxp5hx9h3l0zg")))))
-     (native-inputs '()))))
+     (name "gnumach-headers-boot0")
+     (version "1.8+git20221224")
+     (source
+      (origin
+        (inherit (package-source gnumach-headers))
+        (method
+         (git-fetch-from-tarball
+          (origin
+            (method url-fetch)
+            (uri (string-append
+                  "https://git.savannah.gnu.org/cgit/hurd/gnumach.git/snapshot/"
+                  "gnumach-" version ".tar.gz"))
+            (sha256
+             (base32
+              "0vb19ynvrxz302snqxkd0wgizwa5fw2x06a4zjsllqb9ijbq9mc8")))))))
+     (native-inputs (list autoconf-boot0 automake-boot0 texinfo-boot0))
+     (arguments
+      (substitute-keyword-arguments (package-arguments gnumach-headers)
+        ((#:phases phases)
+         #~(modify-phases #$phases
+             (add-after 'unpack 'patch-compat
+               (lambda _
+                 (substitute* '("include/device/device_types.h"
+                                "include/mach_debug/slab_info.h"
+                                "include/mach_debug/vm_info.h")
+                   (("rpc_vm_size_t") "unsigned int")
+                   (("rpc_vm_offset_t") "unsigned int")
+                   (("rpc_long_natural_t") "unsigned long")
+                   (("long_natural_t") "unsigned long")))))))))))
 
 (define mig-boot0
-  (let* ((mig (package
-                 (inherit (package-with-bootstrap-guile mig))
-                 (native-inputs `(("bison" ,bison-boot0)
-                                  ("flex" ,flex-boot0)))
-                 (inputs `(("flex" ,flex-boot0)))
-                 (arguments
-                  `(#:configure-flags
-                    `(,(string-append "LDFLAGS=-Wl,-rpath="
-                                      (assoc-ref %build-inputs "flex") "/lib/")))))))
-    (with-boot0 mig)))
-
-(define hurd-version-boot0 "0.9-229-ga1efcee8")
-(define hurd-source-boot0
-  (let ((version hurd-version-boot0))
-    (origin
-      (method url-fetch)
-      (uri (list (string-append "mirror://gnu/guix/mirror/hurd-v"
-                                version ".tar.gz")
-                 (string-append "https://lilypond.org/janneke/hurd/"
-                                "hurd-v" version ".tar.gz")))
-      (sha256
-       (base32
-        "0bq2q2jisxcy0kgcm6rz0z2fddwxxm7azsama7li28a2m08kdpzy")))))
+  (with-boot0
+   (package
+     (inherit mig)
+     (name "mig-boot0")
+     (version "1.8+git20230520")
+     (source
+      (origin
+        (inherit (package-source mig))
+        (method
+         (git-fetch-from-tarball
+          (origin
+            (method url-fetch)
+            (uri (string-append
+                  "https://git.savannah.gnu.org/cgit/hurd/mig.git/snapshot/"
+                  "mig-" version ".tar.gz"))
+            (sha256
+             (base32
+              "1l1vfm4wap5yxylv91wssgpy7fnq22wp3akgd5nv995kychfa9jy")))))))
+     (native-inputs (list autoconf-boot0 automake-boot0 bison-boot0 flex-boot0
+                          gnumach-headers-boot0))
+     (inputs (list flex-boot0 gnumach-headers-boot0))
+     (arguments
+      (list
+       #:configure-flags
+       #~(list (string-append "LDFLAGS=-Wl,-rpath="
+                              #$(this-package-native-input "flex")
+                              "/lib/")))))))
 
 (define hurd-headers-boot0
-  (let ((hurd-headers (package (inherit hurd-headers)
-                               (version hurd-version-boot0)
-                               (source hurd-source-boot0)
-                               (native-inputs `(("mig" ,mig-boot0)))
-                               (inputs '()))))
-    (with-boot0 (package-with-bootstrap-guile hurd-headers))))
+  (with-boot0
+   (package
+     (inherit hurd-headers)
+     (name "hurd-headers-boot0")
+     (version "0.9.git20230216")
+     (source
+      (origin
+        (inherit (package-source hurd-headers))
+        (method
+         (git-fetch-from-tarball
+          (origin
+            (method url-fetch)
+            (uri (string-append
+                  "https://git.savannah.gnu.org/cgit/hurd/hurd.git/snapshot/"
+                  "hurd-v" version ".tar.gz"))
+            (sha256
+             (base32
+              "1f75nlkcl00dqnnrbrj1frvzs2qibfpygj3gwywqi85aldjl48y7")))))))
+     (native-inputs
+      (list autoconf-boot0 automake-boot0 mig-boot0))
+     (inputs '()))))
 
 (define hurd-minimal-boot0
-  (let ((hurd-minimal (package (inherit hurd-minimal)
-                               (version hurd-version-boot0)
-                               (source hurd-source-boot0)
-                               (native-inputs `(("mig" ,mig-boot0)))
-                               (inputs '()))))
-    (with-boot0 (package-with-bootstrap-guile hurd-minimal))))
+  (with-boot0
+   (package
+     (inherit hurd-minimal)
+     (name "hurd-minimal-boot0")
+     (source (package-source hurd-headers-boot0))
+     (native-inputs
+      (list autoconf-boot0 automake-boot0 gnumach-headers-boot0 mig-boot0))
+     (inputs (list gnumach-headers-boot0)))))
 
 (define/system-dependent hurd-core-headers-boot0
   ;; Return the Hurd and Mach headers as well as initial Hurd libraries for
@@ -3092,6 +2780,7 @@ memoized as a function of '%current-system'."
   ;; Also, use (%BOOT0-INPUTS) to avoid building Perl once more.
   (package
     (inherit texinfo)
+    (source (bootstrap-origin (package-source texinfo)))
     (native-inputs '())
     (inputs `(,@(%boot0-inputs)
               ("perl" ,perl-boot0)))
@@ -3159,8 +2848,7 @@ memoized as a function of '%current-system'."
      `(,@(%boot0-inputs)
        ("expat" ,expat-sans-tests)))              ;remove OpenSSL, zlib, etc.
     (native-inputs                                ;and pkg-config
-     `(("sitecustomize.py" ,(local-file (search-auxiliary-file
-                                         "python/sitecustomize.py")))))
+     `())
     (arguments
      `(#:implicit-inputs? #f
        #:guile ,%bootstrap-guile
@@ -3186,18 +2874,28 @@ memoized as a function of '%current-system'."
                ;; Prevent the 'ossaudiodev' extension from being
                ;; built, since it requires Linux headers.
                (("'linux', ") ""))))
-         ,@(if (hurd-system?)
+         (add-after 'install 'remove-tests
+           (lambda* (#:key outputs #:allow-other-keys)
+             (delete-file-recursively
+               (string-append (assoc-ref outputs "out")
+                              "/lib/python"
+                              ,(version-major+minor version)
+                              "/test"))))
+         ,@(if (system-hurd?)
                `((add-before 'build 'fix-regen
                    (lambda* (#:key inputs #:allow-other-keys)
                      (let ((libc (assoc-ref inputs "libc")))
                        (substitute* "Lib/plat-generic/regen"
                          (("/usr/include/")
                           (string-append libc "/include/")))))))
-               '())
-         (add-after 'install 'install-sitecustomize.py
-           ,(customize-site version)))))
+               '()))))
     (native-search-paths
-     (list (guix-pythonpath-search-path version)))))
+     (list (search-path-specification
+            (variable "PYTHONPATH")
+            (files (list (string-append
+                           "lib/python"
+                           (version-major+minor version)
+                           "/site-packages"))))))))
 
 (define/system-dependent ld-wrapper-boot0
   ;; The first 'ld' wrapper, defined with 'define/system-dependent' because
@@ -3219,64 +2917,65 @@ memoized as a function of '%current-system'."
     ("binutils-cross" ,binutils-boot0)
     ,@(alist-delete "binutils" (%boot0-inputs))))
 
-(define glibc-final-with-bootstrap-bash
+(define/system-dependent glibc-final-with-bootstrap-bash
   ;; The final libc, "cross-built".  If everything went well, the resulting
   ;; store path has no dependencies.  Actually, the really-final libc is
   ;; built just below; the only difference is that this one uses the
   ;; bootstrap Bash.
-  (package
-    (inherit glibc)
-    (name "glibc-intermediate")
-    (outputs (delete "debug" (package-outputs glibc)))
-    (source (bootstrap-origin (package-source glibc)))
-    (arguments
-     `(#:guile ,%bootstrap-guile
-       #:implicit-inputs? #f
+  (let ((libc (libc-for-target)))
+    (package
+      (inherit libc)
+      (name "glibc-intermediate")
+      (outputs (delete "debug" (package-outputs libc)))
+      (source (bootstrap-origin (package-source libc)))
+      (arguments
+       `(#:guile ,%bootstrap-guile
+         #:implicit-inputs? #f
 
-       ,@(substitute-keyword-arguments (package-arguments glibc)
-           ((#:configure-flags flags)
-            `(append (list ,(string-append "--host=" (boot-triplet))
-                           ,(string-append "--build="
-                                           (nix-system->gnu-triplet))
-                           ,(if (hurd-system?) "--disable-werror"
-                                ""))
-                     ,flags))
-           ((#:phases phases)
-            `(modify-phases ,phases
-               (add-before 'configure 'pre-configure
-                 (lambda* (#:key inputs #:allow-other-keys)
-                   ;; Don't clobber include paths with the bootstrap libc.
-                   (unsetenv "C_INCLUDE_PATH")
-                   (unsetenv "CPLUS_INCLUDE_PATH")
+         ,@(substitute-keyword-arguments (package-arguments libc)
+             ((#:configure-flags flags)
+              `(append (list ,(string-append "--host=" (boot-triplet))
+                             ,(string-append "--build="
+                                             (nix-system->gnu-triplet))
+                             ,(if (system-hurd?) "--disable-werror"
+                                  ""))
+                       ,flags))
+             ((#:phases phases)
+              `(modify-phases ,phases
+                 (add-before 'configure 'pre-configure
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     ;; Don't clobber include paths with the bootstrap libc.
+                     (unsetenv "C_INCLUDE_PATH")
+                     (unsetenv "CPLUS_INCLUDE_PATH")
 
-                   ;; Tell 'libpthread' where to find 'libihash' on Hurd systems.
-                   ,@(if (hurd-system?)
-                       '((substitute* '("sysdeps/mach/Makefile"
-                                        "sysdeps/mach/hurd/Makefile")
-                           (("LDLIBS-pthread.so =.*")
-                            (string-append "LDLIBS-pthread.so = "
-                                           (assoc-ref %build-inputs "kernel-headers")
-                                           "/lib/libihash.a\n"))))
-                       '()))))))))
-    (propagated-inputs `(("kernel-headers" ,(kernel-headers-boot0))))
-    (native-inputs
-     `(("bison" ,bison-boot0)
-       ("texinfo" ,texinfo-boot0)
-       ("perl" ,perl-boot0)
-       ("python" ,python-boot0)))
-    (inputs
-     `( ;; The boot inputs.  That includes the bootstrap libc.  We don't want
-       ;; it in $CPATH, hence the 'pre-configure' phase above.
-       ,@(%boot1-inputs)
+                     ;; Tell 'libpthread' where to find 'libihash' on Hurd systems.
+                     ,@(if (system-hurd?)
+                           '((substitute* '("sysdeps/mach/Makefile"
+                                            "sysdeps/mach/hurd/Makefile")
+                               (("LDLIBS-pthread.so =.*")
+                                (string-append "LDLIBS-pthread.so = "
+                                               (assoc-ref %build-inputs "kernel-headers")
+                                               "/lib/libihash.a\n"))))
+                           '()))))))))
+      (propagated-inputs `(("kernel-headers" ,(kernel-headers-boot0))))
+      (native-inputs
+       `(("bison" ,bison-boot0)
+         ("texinfo" ,texinfo-boot0)
+         ("perl" ,perl-boot0)
+         ("python" ,python-boot0)))
+      (inputs
+       `( ;; The boot inputs.  That includes the bootstrap libc.  We don't want
+         ;; it in $CPATH, hence the 'pre-configure' phase above.
+         ,@(%boot1-inputs)
 
-       ;; A native MiG is needed to build Glibc on Hurd.
-       ,@(if (hurd-system?)
-             `(("mig" ,mig-boot0))
-             '())
+         ;; A native MiG is needed to build Glibc on Hurd.
+         ,@(if (system-hurd?)
+               `(("mig" ,mig-boot0))
+               '())
 
-       ;; Here, we use the bootstrap Bash, which is not satisfactory
-       ;; because we don't want to depend on bootstrap tools.
-       ("static-bash" ,@(assoc-ref (%boot0-inputs) "bash"))))))
+         ;; Here, we use the bootstrap Bash, which is not satisfactory
+         ;; because we don't want to depend on bootstrap tools.
+         ("static-bash" ,@(assoc-ref (%boot0-inputs) "bash")))))))
 
 (define (cross-gcc-wrapper gcc binutils glibc bash)
   "Return a wrapper for the pseudo-cross toolchain GCC/BINUTILS/GLIBC
@@ -3287,41 +2986,42 @@ that makes it available under the native tool names."
     (build-system trivial-build-system)
     (outputs '("out"))
     (arguments
-     `(#:guile ,%bootstrap-guile
-       #:modules ((guix build utils))
-       #:builder (begin
-                   (use-modules (guix build utils))
+     (list
+      #:guile %bootstrap-guile
+      #:modules '((guix build utils))
+      #:builder #~(begin
+                    (use-modules (guix build utils))
 
-                   (let* ((binutils (assoc-ref %build-inputs "binutils"))
-                          (gcc      (assoc-ref %build-inputs "gcc"))
-                          (libc     (assoc-ref %build-inputs "libc"))
-                          (bash     (assoc-ref %build-inputs "bash"))
-                          (out      (assoc-ref %outputs "out"))
-                          (bindir   (string-append out "/bin"))
-                          (triplet  ,(boot-triplet)))
-                     (define (wrap-program program)
-                       ;; GCC-BOOT0 is a libc-less cross-compiler, so it
-                       ;; needs to be told where to find the crt files and
-                       ;; the dynamic linker.
-                       (call-with-output-file program
-                         (lambda (p)
-                           (format p "#!~a/bin/bash
+                    (let* ((binutils (assoc-ref %build-inputs "binutils"))
+                           (gcc      (assoc-ref %build-inputs "gcc"))
+                           (libc     (assoc-ref %build-inputs "libc"))
+                           (bash     (assoc-ref %build-inputs "bash"))
+                           (out      (assoc-ref %outputs "out"))
+                           (bindir   (string-append out "/bin"))
+                           (triplet  #$(boot-triplet)))
+                      (define (wrap-program program)
+                        ;; GCC-BOOT0 is a libc-less cross-compiler, so it
+                        ;; needs to be told where to find the crt files and
+                        ;; the dynamic linker.
+                        (call-with-output-file program
+                          (lambda (p)
+                            (format p "#!~a/bin/bash
 exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
-                                   bash
-                                   gcc triplet program
-                                   libc libc
-                                   ,(glibc-dynamic-linker))))
+                                    bash
+                                    gcc triplet program
+                                    libc libc
+                                    #$(glibc-dynamic-linker))))
 
-                       (chmod program #o555))
+                        (chmod program #o555))
 
-                     (mkdir-p bindir)
-                     (with-directory-excursion bindir
-                       (for-each (lambda (tool)
-                                   (symlink (string-append binutils "/bin/"
-                                                           triplet "-" tool)
-                                            tool))
-                                 '("ar" "ranlib"))
-                       (for-each wrap-program '("gcc" "g++")))))))
+                      (mkdir-p bindir)
+                      (with-directory-excursion bindir
+                        (for-each (lambda (tool)
+                                    (symlink (string-append binutils "/bin/"
+                                                            triplet "-" tool)
+                                             tool))
+                                  '("ar" "ranlib"))
+                        (for-each wrap-program '("gcc" "g++")))))))
     (native-inputs
      `(("binutils" ,binutils)
        ("gcc" ,gcc)
@@ -3351,14 +3051,14 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
        #:guile ,%bootstrap-guile
 
        ,@(substitute-keyword-arguments (package-arguments static-bash)
-           ((#:configure-flags flags '())
+           ((#:configure-flags flags #~'())
             ;; Add a '-L' flag so that the pseudo-cross-ld of
             ;; BINUTILS-BOOT0 can find libc.a.
-            `(append ,flags
-                     (list (string-append "LDFLAGS=-static -L"
-                                          (assoc-ref %build-inputs
-                                                     "libc:static")
-                                          "/lib")))))))))
+            #~(append #$flags
+                      (list (string-append "LDFLAGS=-static -L"
+                                           (assoc-ref %build-inputs
+                                                      "libc:static")
+                                           "/lib")))))))))
 
 (define gettext-boot0
   ;; A minimal gettext used during bootstrap.
@@ -3393,39 +3093,39 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
                         (("^PROGRAMS =.*$")
                          "PROGRAMS =\n")))))))))
 
-(define glibc-final
+(define/system-dependent glibc-final
   ;; The final glibc, which embeds the statically-linked Bash built above.
   ;; Use 'package/inherit' so we get the 'replacement' of 'glibc', if any.
-  (package/inherit
-   glibc
-   (name "glibc")
-   (source (bootstrap-origin (package-source glibc)))
-   (inputs `(("static-bash" ,static-bash-for-glibc)
-             ,@(alist-delete
-                "static-bash"
-                (package-inputs glibc-final-with-bootstrap-bash))))
+  (let ((libc (libc-for-target)))
+    (package/inherit libc
+      (name "glibc")
+      (source (bootstrap-origin (package-source libc)))
+      (inputs `(("static-bash" ,static-bash-for-glibc)
+                ,@(alist-delete
+                   "static-bash"
+                   (package-inputs glibc-final-with-bootstrap-bash))))
 
-   ;; This time we need 'msgfmt' to install all the libc.mo files.
-   (native-inputs `(,@(package-native-inputs glibc-final-with-bootstrap-bash)
-                    ("gettext" ,gettext-boot0)))
+      ;; This time we need 'msgfmt' to install all the libc.mo files.
+      (native-inputs `(,@(package-native-inputs glibc-final-with-bootstrap-bash)
+                       ("gettext" ,gettext-boot0)))
 
-   (propagated-inputs
-    (package-propagated-inputs glibc-final-with-bootstrap-bash))
+      (propagated-inputs
+       (package-propagated-inputs glibc-final-with-bootstrap-bash))
 
-   ;; The final libc only refers to itself, but the 'debug' output contains
-   ;; references to GCC-BOOT0 and to the Linux headers.  XXX: Would be great
-   ;; if 'allowed-references' were per-output.
-   (arguments
-    `(#:allowed-references
-      (,(gexp-input gcc-boot0 "lib")
-       ,(kernel-headers-boot0)
-       ,static-bash-for-glibc
-       ,@(if (hurd-system?)
-             `(,gnumach-headers-boot0
-               ,hurd-headers-boot0)
-             '())
-       ,@(package-outputs glibc-final-with-bootstrap-bash))
-      ,@(package-arguments glibc-final-with-bootstrap-bash)))))
+      ;; The final libc only refers to itself, but the 'debug' output contains
+      ;; references to GCC-BOOT0 and to the Linux headers.  XXX: Would be great
+      ;; if 'allowed-references' were per-output.
+      (arguments
+       `(#:allowed-references
+         (,(gexp-input gcc-boot0 "lib")
+          ,(kernel-headers-boot0)
+          ,static-bash-for-glibc
+          ,@(if (system-hurd?)
+                `(,gnumach-headers-boot0
+                  ,hurd-headers-boot0)
+                '())
+          ,@(package-outputs glibc-final-with-bootstrap-bash))
+         ,@(package-arguments glibc-final-with-bootstrap-bash))))))
 
 (define/system-dependent gcc-boot0-wrapped
   ;; Make the cross-tools GCC-BOOT0 and BINUTILS-BOOT0 available under the
@@ -3464,7 +3164,7 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
 (define libstdc++
   ;; Intermediate libstdc++ that will allow us to build the final GCC
   ;; (remember that GCC-BOOT0 cannot build libstdc++.)
-  (let ((lib (make-libstdc++ gcc)))
+  (let ((lib (make-libstdc++ gcc-boot0)))
     (package
       (inherit lib)
       (source (bootstrap-origin (package-source lib)))
@@ -3494,6 +3194,7 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
   ;; Zlib used by GCC-FINAL.
   (package
     (inherit zlib)
+    (source (bootstrap-origin (package-source zlib)))
     (arguments
      `(#:guile ,%bootstrap-guile
        #:implicit-inputs? #f
@@ -3520,55 +3221,80 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
     (outputs (delete "debug" (package-outputs gcc-boot0)))
 
     (arguments
-     `(#:guile ,%bootstrap-guile
-       #:implicit-inputs? #f
+     (cons*
+      #:guile %bootstrap-guile
+      #:implicit-inputs? #f
 
-       #:allowed-references ("out" "lib" ,zlib-final
+      #:allowed-references `("out" "lib" ,zlib-final
                              ,glibc-final ,static-bash-for-glibc)
 
-       ;; Things like libasan.so and libstdc++.so NEED ld.so for some
-       ;; reason, but it is not in their RUNPATH.  This is a false
-       ;; positive, so turn it off.
-       #:validate-runpath? #f
+      ;; Things like libasan.so and libstdc++.so NEED ld.so for some
+      ;; reason, but it is not in their RUNPATH.  This is a false
+      ;; positive, so turn it off.
+      #:validate-runpath? #f
 
-       ,@(substitute-keyword-arguments (package-arguments gcc)
-           ((#:make-flags flags)
-            ;; Since $LIBRARY_PATH is not honored, add the relevant flags.
-            `(let ((zlib (assoc-ref %build-inputs "zlib")))
-               (map (lambda (flag)
-                      (if (string-prefix? "LDFLAGS=" flag)
-                          (string-append flag " -L"
-                                         (assoc-ref %build-inputs "libstdc++")
-                                         "/lib -L" zlib "/lib -Wl,-rpath="
-                                         zlib "/lib")
-                          flag))
-                    ,flags)))
-           ;; Build again GMP & co. within GCC's build process, because it's hard
-           ;; to do outside (because GCC-BOOT0 is a cross-compiler, and thus
-           ;; doesn't honor $LIBRARY_PATH, which breaks `gnu-build-system'.)
-           ((#:phases phases)
-            `(modify-phases ,phases
-                (add-after 'unpack 'unpack-gmp&co
-                  (lambda* (#:key inputs #:allow-other-keys)
-                    (let ((gmp  (assoc-ref %build-inputs "gmp-source"))
-                          (mpfr (assoc-ref %build-inputs "mpfr-source"))
-                          (mpc  (assoc-ref %build-inputs "mpc-source")))
+      ;; Additional modules for the libstdc++ phase below.
+      #:modules `((srfi srfi-1)
+                  (srfi srfi-26)
+                  ,@%gnu-build-system-modules)
 
-                      ;; To reduce the set of pre-built bootstrap inputs, build
-                      ;; GMP & co. from GCC.
-                      (for-each (lambda (source)
-                                  (invoke "tar" "xvf" source))
-                                (list gmp mpfr mpc))
+      (substitute-keyword-arguments (package-arguments gcc)
+        ((#:make-flags flags)
+         ;; Since $LIBRARY_PATH is not honored, add the relevant flags.
+         #~(let ((zlib (assoc-ref %build-inputs "zlib")))
+             (map (lambda (flag)
+                    (if (string-prefix? "LDFLAGS=" flag)
+                        (string-append flag " -L"
+                                       (assoc-ref %build-inputs "libstdc++")
+                                       "/lib -L" zlib "/lib -Wl,-rpath="
+                                       zlib "/lib")
+                        flag))
+                  #$flags)))
+        ;; Build again GMP & co. within GCC's build process, because it's hard
+        ;; to do outside (because GCC-BOOT0 is a cross-compiler, and thus
+        ;; doesn't honor $LIBRARY_PATH, which breaks `gnu-build-system'.)
+        ((#:phases phases)
+         #~(modify-phases #$phases
+             (add-after 'unpack 'unpack-gmp&co
+               (lambda* (#:key inputs #:allow-other-keys)
+                 (let ((gmp  (assoc-ref %build-inputs "gmp-source"))
+                       (mpfr (assoc-ref %build-inputs "mpfr-source"))
+                       (mpc  (assoc-ref %build-inputs "mpc-source")))
 
-                      ;; Create symlinks like `gmp' -> `gmp-x.y.z'.
-                      ,@(map (lambda (lib)
-                               ;; Drop trailing letters, as gmp-6.0.0a unpacks
-                               ;; into gmp-6.0.0.
-                               `(symlink ,(string-trim-right
+                   ;; To reduce the set of pre-built bootstrap inputs, build
+                   ;; GMP & co. from GCC.
+                   (for-each (lambda (source)
+                               (invoke "tar" "xvf" source))
+                             (list gmp mpfr mpc))
+
+                   ;; Create symlinks like `gmp' -> `gmp-x.y.z'.
+                   #$@(map (lambda (lib)
+                             ;; Drop trailing letters, as gmp-6.0.0a unpacks
+                             ;; into gmp-6.0.0.
+                             #~(symlink #$(string-trim-right
                                            (package-full-name lib "-")
                                            char-set:letter)
-                                         ,(package-name lib)))
-                             (list gmp-6.0 mpfr mpc))))))))))
+                                        #$(package-name lib)))
+                           (list gmp-6.0 mpfr mpc)))))
+             (add-after 'unpack 'fix-build-with-external-libstdc++
+               (lambda* (#:key inputs #:allow-other-keys)
+                 (let ((libstdc++ (assoc-ref inputs "libstdc++")))
+                   ;; Fix a regression in GCC 11 where the libstc++ input
+                   ;; shadows glibc headers when building libstdc++.  An
+                   ;; upstream fix was added in GCC 11.3.0, but it only
+                   ;; hides system include directories, not those on
+                   ;; CPLUS_INCLUDE_PATH.  See discussion at
+                   ;; <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100017>.
+                   (substitute* "libstdc++-v3/src/c++17/Makefile.in"
+                     (("AM_CXXFLAGS = ")
+                      (string-append "CPLUS_INCLUDE_PATH = "
+                                     (string-join
+                                      (remove (cut string-prefix? libstdc++ <>)
+                                              (string-split
+                                               (getenv "CPLUS_INCLUDE_PATH")
+                                               #\:))
+                                      ":")
+                                     "\nAM_CXXFLAGS = ")))))))))))
 
     ;; This time we want Texinfo, so we get the manual.  Add
     ;; STATIC-BASH-FOR-GLIBC so that it's used in the final shebangs of
@@ -3623,7 +3349,7 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
   ;; This package must be public because other modules refer to it.  However,
   ;; mark it as hidden so that 'fold-packages' ignores it.
   (with-boot4 (hidden-package
-               (package-with-bootstrap-guile guile-3.0/fixed))))
+               (package-with-bootstrap-guile guile-3.0/pinned))))
 
 (define-public glibc-utf8-locales-final
   ;; Now that we have GUILE-FINAL, build the UTF-8 locales.  They are needed
@@ -3703,11 +3429,19 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
                      (inputs (alist-delete "pcre" (package-inputs grep)))
                      (native-inputs `(("perl" ,perl-boot0))))))
 
+(define xz-final
+  ;; The final xz.  We need to replace the bootstrap xz with a newer one
+  ;; before we get to the %final-inputs so file doesn't try to link to it.
+  (let ((xz (with-boot5 (package-with-bootstrap-guile xz))))
+    (package/inherit xz)))
+
 (define (%boot6-inputs)
   ;; Now use the final Coreutils.
   `(("coreutils" ,coreutils-final)
     ("grep" ,grep-final)
-    ,@(%boot5-inputs)))
+    ("xz" ,xz-final)
+    ,@(fold alist-delete (%boot5-inputs)
+            '("coreutils" "xz"))))
 
 (define with-boot6
   (package-with-explicit-inputs %boot6-inputs))
@@ -3718,45 +3452,49 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
     (package/inherit sed (native-inputs `(("perl" ,perl-boot0))))))
 
 (define-public %final-inputs
-  ;; Final derivations used as implicit inputs by 'gnu-build-system'.  We
-  ;; still use 'package-with-bootstrap-guile' so that the bootstrap tools are
-  ;; used for origins that have patches, thereby avoiding circular
-  ;; dependencies.
-  (let ((finalize (compose with-boot6
-                           package-with-bootstrap-guile)))
-    `(,@(map (match-lambda
-               ((name package)
-                (list name (finalize package))))
-             `(("tar" ,tar)
-               ("gzip" ,gzip)
-               ("bzip2" ,bzip2)
-               ("xz" ,xz)
-               ("file" ,file)
-               ("diffutils" ,diffutils)
-               ("patch" ,patch)
-               ("findutils" ,findutils)
-               ("gawk" ,gawk)))
-      ("sed" ,sed-final)
-      ("grep" ,grep-final)
-      ("coreutils" ,coreutils-final)
-      ("make" ,gnu-make-final)
-      ("bash" ,bash-final)
-      ("ld-wrapper" ,ld-wrapper)
-      ("binutils" ,binutils-final)
-      ("gcc" ,gcc-final)
-      ("libc" ,glibc-final)
-      ("libc:static" ,glibc-final "static")
-      ("locales" ,glibc-utf8-locales-final))))
+  ;; The 'glibc-final' package is not the same depending on what system is
+  ;; targeted, so this whole list must be parameterized.
+  (mlambda (system)
+    ;; Final derivations used as implicit inputs by 'gnu-build-system'.  We
+    ;; still use 'package-with-bootstrap-guile' so that the bootstrap tools are
+    ;; used for origins that have patches, thereby avoiding circular
+    ;; dependencies.
+    (let ((finalize (compose with-boot6
+                             package-with-bootstrap-guile)))
+      `(,@(map (match-lambda
+                 ((name package)
+                  (list name (finalize package))))
+               `(("tar" ,tar)
+                 ("gzip" ,gzip)
+                 ("bzip2" ,bzip2)
+                 ("file" ,file)
+                 ("diffutils" ,diffutils)
+                 ("patch" ,patch)
+                 ("findutils" ,findutils)
+                 ("gawk" ,gawk)))
+        ("sed" ,sed-final)
+        ("grep" ,grep-final)
+        ("xz" ,xz-final)
+        ("coreutils" ,coreutils-final)
+        ("make" ,gnu-make-final)
+        ("bash" ,bash-final)
+        ("ld-wrapper" ,ld-wrapper)
+        ("binutils" ,binutils-final)
+        ("gcc" ,gcc-final)
+        ("libc" ,glibc-final)
+        ("libc:static" ,glibc-final "static")
+        ("locales" ,glibc-utf8-locales-final)))))
 
 (define-public canonical-package
-  (let ((name->package (fold (lambda (input result)
-                               (match input
-                                 ((_ package . outputs)
-                                  (vhash-cons (package-full-name package)
-                                              package result))))
-                             vlist-null
-                             `(("guile" ,guile-final)
-                               ,@%final-inputs))))
+  (let ((name->package (mlambda (system)
+                         (fold (lambda (input result)
+                                 (match input
+                                   ((_ package . outputs)
+                                    (vhash-cons (package-full-name package)
+                                                package result))))
+                               vlist-null
+                               `(("guile" ,guile-final)
+                                 ,@(%final-inputs system))))))
     (lambda (package)
       "Return the 'canonical' variant of PACKAGE---i.e., if PACKAGE is one of
 the implicit inputs of 'gnu-build-system', return that one, otherwise return
@@ -3766,7 +3504,8 @@ The goal is to avoid duplication in cases like GUILE-FINAL vs. GUILE-2.2,
 COREUTILS-FINAL vs. COREUTILS, etc."
       ;; XXX: This doesn't handle dependencies of the final inputs, such as
       ;; libunistring, GMP, etc.
-      (match (vhash-assoc (package-full-name package) name->package)
+      (match (vhash-assoc (package-full-name package)
+                          (name->package (%current-system)))
         ((_ . canon)
          ;; In general we want CANON, except if we're cross-compiling: CANON
          ;; uses explicit inputs, so it is "anchored" in the bootstrapped
@@ -3848,7 +3587,8 @@ is the GNU Compiler Collection.")
       ;; install everything that we need, and (2) to make sure ld-wrapper comes
       ;; before Binutils' ld in the user's profile.
       (inputs `(("gcc" ,gcc)
-                ("ld-wrapper" ,(car (assoc-ref %final-inputs "ld-wrapper")))
+                ("ld-wrapper" ,(car (assoc-ref (%final-inputs (%current-system))
+                                               "ld-wrapper")))
                 ("binutils" ,binutils-final)
                 ("libc" ,libc)
                 ("libc-debug" ,libc "debug")
@@ -3879,10 +3619,10 @@ is the GNU Compiler Collection.")
   (make-gcc-toolchain gcc-9))
 
 (define-public gcc-toolchain-10
-  gcc-toolchain)
+  (make-gcc-toolchain gcc-10))
 
 (define-public gcc-toolchain-11
-  (make-gcc-toolchain gcc-11))
+  gcc-toolchain)
 
 (define-public gcc-toolchain-12
   (make-gcc-toolchain gcc-12))
@@ -3890,11 +3630,19 @@ is the GNU Compiler Collection.")
 (define-public gcc-toolchain-aka-gcc
   ;; It's natural for users to try "guix install gcc".  This package
   ;; automatically "redirects" them to 'gcc-toolchain'.
-  (deprecated-package "gcc" gcc-toolchain-10))
+  (deprecated-package "gcc" gcc-toolchain-11))
 
 
 (define-public gdc-toolchain-10
   (package (inherit (make-gcc-toolchain gdc-10))
+    (synopsis "Complete GCC tool chain for D lang development")
+    (description "This package provides a complete GCC tool chain for
+D lang development to be installed in user profiles.  This includes
+gdc, as well as libc (headers and binaries, plus debugging symbols
+in the @code{debug} output), and binutils.")))
+
+(define-public gdc-toolchain-11
+  (package (inherit (make-gcc-toolchain gdc-11))
     (synopsis "Complete GCC tool chain for D lang development")
     (description "This package provides a complete GCC tool chain for
 D lang development to be installed in user profiles.  This includes

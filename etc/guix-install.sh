@@ -9,8 +9,9 @@
 # Copyright © 2020 Daniel Brooks <db48x@db48x.net>
 # Copyright © 2021 Jakub Kądziołka <kuba@kadziolka.net>
 # Copyright © 2021 Chris Marusich <cmmarusich@gmail.com>
-# Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+# Copyright © 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 # Copyright © 2022 Prafulla Giri <prafulla.giri@protonmail.com>
+# Copyright © 2023 Andrew Tropin <andrew@trop.in>
 #
 # This file is part of GNU Guix.
 #
@@ -29,6 +30,22 @@
 
 # We require Bash but for portability we'd rather not use /bin/bash or
 # /usr/bin/env in the shebang, hence this hack.
+
+# Environment variables
+#
+# GUIX_BINARY_FILE_NAME
+#
+# Can be used to override the automatic download mechanism and point
+# to a local Guix binary archive filename like
+# "/tmp/guix-binary-1.4.0rc2.armhf-linux.tar.xz"
+#
+# GUIX_ALLOW_OVERWRITE
+#
+# Instead of aborting to avoid overwriting a previous installations,
+# allow copying over /var/guix or /gnu.  This can be useful when the
+# installation required the user to extract Guix packs under /gnu to
+# satisfy its dependencies.
+
 if [ "x$BASH_VERSION" = "x" ]
 then
     exec bash "$0" "$@"
@@ -53,6 +70,7 @@ REQUIRE=(
     "chmod"
     "uname"
     "groupadd"
+    "useradd"
     "tail"
     "tr"
     "xz"
@@ -120,10 +138,8 @@ chk_require()
         command -v "$c" &>/dev/null || warn+=("$c")
     done
 
-    [ "${#warn}" -ne 0 ] &&
-        { _err "${ERR}Missing commands: ${warn[*]}.";
-          return 1; }
-    
+    [ "${#warn}" -ne 0 ] && die "Missing commands: ${warn[*]}."
+
     _msg "${PAS}verification of required commands completed"
 }
 
@@ -337,16 +353,18 @@ sys_create_store()
 
     _debug "--- [ ${FUNCNAME[0]} ] ---"
 
-    if [[ -e "/var/guix" || -e "/gnu" ]]; then
-        die "A previous Guix installation was found.  Refusing to overwrite."
+    if [[ -e /var/guix && -e /gnu ]]; then
+        if [ -n "$GUIX_ALLOW_OVERWRITE" ]; then
+            _msg "${WAR}Overwriting existing installation!"
+        else
+            die "A previous Guix installation was found.  Refusing to overwrite."
+        fi
     fi
 
     cd "$tmp_path"
-    tar --extract --file "$pkg" && _msg "${PAS}unpacked archive"
-
     _msg "${INF}Installing /var/guix and /gnu..."
-    mv "${tmp_path}/var/guix" /var/
-    mv "${tmp_path}/gnu" /
+    # Strip (skip) the leading ‘.’ component, which fails on read-only ‘/’.
+    tar --extract --strip-components=1 --file "$pkg" -C /
 
     _msg "${INF}Linking the root user's profile"
     mkdir -p ~root/.config/guix
@@ -416,36 +434,27 @@ sys_enable_guix_daemon()
                 _msg "${PAS}enabled Guix daemon via upstart"
             ;;
         systemd)
-            { # systemd .mount units must be named after the target directory.
-              # Here we assume a hard-coded name of /gnu/store.
-              # XXX Work around <https://issues.guix.gnu.org/41356> until next release.
-              if [ -f ~root/.config/guix/current/lib/systemd/system/gnu-store.mount ]; then
-                  cp ~root/.config/guix/current/lib/systemd/system/gnu-store.mount \
-                     /etc/systemd/system/;
-                  chmod 664 /etc/systemd/system/gnu-store.mount;
-                  systemctl daemon-reload &&
-                      systemctl enable gnu-store.mount;
-              fi
+            { install_unit()
+              {
+                  local dest="/etc/systemd/system/$1"
+                  rm -f "$dest"
+                  cp ~root/.config/guix/current/lib/systemd/system/"$1" "$dest"
+                  chmod 664 "$dest"
+                  systemctl daemon-reload
+                  systemctl enable "$1"
+              }
 
-              cp ~root/.config/guix/current/lib/systemd/system/guix-daemon.service \
-                 /etc/systemd/system/;
-              chmod 664 /etc/systemd/system/guix-daemon.service;
-
-              # Work around <https://bugs.gnu.org/36074>, present in 1.0.1.
-              sed -i /etc/systemd/system/guix-daemon.service \
-                  -e "s/GUIX_LOCPATH='/'GUIX_LOCPATH=/";
-
-              # Work around <https://bugs.gnu.org/35671>, present in 1.0.1.
-              if ! grep en_US /etc/systemd/system/guix-daemon.service >/dev/null;
-              then sed -i /etc/systemd/system/guix-daemon.service \
-                       -e 's/^Environment=\(.*\)$/Environment=\1 LC_ALL=en_US.UTF-8';
-              fi;
+              install_unit guix-daemon.service
 
               configure_substitute_discovery \
                   /etc/systemd/system/guix-daemon.service
 
+              # Install after guix-daemon.service to avoid a harmless warning.
+              # systemd .mount units must be named after the target directory.
+              # Here we assume a hard-coded name of /gnu/store.
+              install_unit gnu-store.mount
+
               systemctl daemon-reload &&
-                  systemctl enable guix-daemon &&
                   systemctl start  guix-daemon; } &&
                 _msg "${PAS}enabled Guix daemon via systemd"
             ;;
@@ -492,14 +501,22 @@ sys_enable_guix_daemon()
 }
 
 sys_authorize_build_farms()
-{ # authorize the public key of the build farm
+{ # authorize the public key(s) of the build farm(s)
+    local hosts=(
+	ci.guix.gnu.org
+	bordeaux.guix.gnu.org
+    )
+
     if prompt_yes_no "Permit downloading pre-built package binaries from the \
-project's build farm?"; then
-        guix archive --authorize \
-             < ~root/.config/guix/current/share/guix/ci.guix.gnu.org.pub \
-            && _msg "${PAS}Authorized public key for ci.guix.gnu.org"
-        else
-            _msg "${INF}Skipped authorizing build farm public keys"
+project's build farms?"; then
+	for host in "${hosts[@]}"; do
+	    local key=~root/.config/guix/current/share/guix/$host.pub
+	    [ -f "$key" ] \
+		&& guix archive --authorize < "$key" \
+		&& _msg "${PAS}Authorized public key for $host"
+	done
+    else
+        _msg "${INF}Skipped authorizing build farm public keys"
     fi
 }
 
@@ -527,15 +544,19 @@ export PATH="$_GUIX_PROFILE/bin${PATH:+:}$PATH"
 # searches 'Info-default-directory-list'.
 export INFOPATH="$_GUIX_PROFILE/share/info:$INFOPATH"
 
-# GUIX_PROFILE: User's default profile
-# Prefer the one from 'guix home' if it exists.
+# GUIX_PROFILE: User's default profile and home profile
+GUIX_PROFILE="$HOME/.guix-profile"
+[ -f "$GUIX_PROFILE/etc/profile" ] && . "$GUIX_PROFILE/etc/profile"
+[ -L "$GUIX_PROFILE" ] || \
+GUIX_LOCPATH="$GUIX_PROFILE/lib/locale:${GUIX_LOCPATH:+:}$GUIX_LOCPATH"
+
 GUIX_PROFILE="$HOME/.guix-home/profile"
-[ -L $GUIX_PROFILE ] || GUIX_PROFILE="$HOME/.guix-profile"
-[ -L $GUIX_PROFILE ] || return
-GUIX_LOCPATH="$GUIX_PROFILE/lib/locale"
+[ -f "$GUIX_PROFILE/etc/profile" ] && . "$GUIX_PROFILE/etc/profile"
+[ -L "$GUIX_PROFILE" ] || \
+GUIX_LOCPATH="$GUIX_PROFILE/lib/locale:${GUIX_LOCPATH:+:}$GUIX_LOCPATH"
+
 export GUIX_LOCPATH
 
-[ -f "$GUIX_PROFILE/etc/profile" ] && . "$GUIX_PROFILE/etc/profile"
 EOF
 }
 
@@ -560,7 +581,8 @@ sys_create_shell_completion()
 
 sys_customize_bashrc()
 {
-    prompt_yes_no "Customize users Bash shell prompt for Guix?" || return
+    prompt_yes_no "Customize users Bash shell prompt for Guix?" || return 0
+
     for bashrc in /home/*/.bashrc /root/.bashrc; do
         test -f "$bashrc" || continue
         grep -Fq '$GUIX_ENVIRONMENT' "$bashrc" && continue
@@ -575,6 +597,30 @@ fi
 ' >> "$bashrc"
     done
     _msg "${PAS}Bash shell prompt successfully customized for Guix"
+}
+
+sys_maybe_setup_selinux()
+{
+    if ! [ -f /sys/fs/selinux/policy ]
+    then
+	return
+    fi
+
+    local c
+    for c in semodule restorecon
+    do
+        if ! command -v "$c" &>/dev/null
+	then
+	    return
+	fi
+    done
+
+    prompt_yes_no "Install SELinux policy that might be required to run guix-daemon?" \
+	|| return 0
+
+    local var_guix=/var/guix/profiles/per-user/root/current-guix
+    semodule -i "${var_guix}/share/selinux/guix-daemon.cil"
+    restorecon -R /gnu /var/guix
 }
 
 welcome()
@@ -607,7 +653,10 @@ https://www.gnu.org/software/guix/
 EOF
     # Don't use ‘read -p’ here!  It won't display when run non-interactively.
     echo -n "Press return to continue..."$'\r'
-    read -r char
+    if ! read -r char; then
+	echo
+	die "Can't read standard input.  Hint: don't pipe scripts into a shell."
+    fi
     if [ "$char" ]; then
 	echo
 	echo "...that ($char) was not a return!"
@@ -649,6 +698,7 @@ main()
 
     sys_create_store "${GUIX_BINARY_FILE_NAME}" "${tmp_path}"
     sys_create_build_user
+    sys_maybe_setup_selinux
     sys_enable_guix_daemon
     sys_authorize_build_farms
     sys_create_init_profile

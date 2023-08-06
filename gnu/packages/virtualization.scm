@@ -1,7 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2013-2017, 2020-2022 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2015, 2016, 2017, 2018 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2016, 2017, 2018. 2019, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016-2021, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2017 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2017 Alex Vong <alexvong1995@gmail.com>
 ;;; Copyright © 2017 Andy Patterson <ajpatter@uwaterloo.ca>
@@ -28,6 +28,7 @@
 ;;; Copyright © 2022 Ekaitz Zarraga <ekaitz@elenq.tech>
 ;;; Copyright © 2022 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2022 Zhu Zihao <all_but_last@163.com>
+;;; Copyright © 2023 Juliana Sims <juli@incana.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -96,6 +97,7 @@
   #:use-module (gnu packages libusb)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages m4)
+  #:use-module (gnu packages man)
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages nettle)
@@ -160,25 +162,42 @@
 (define-public qemu
   (package
     (name "qemu")
-    (version "7.1.0")
+    (version "7.2.4")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://download.qemu.org/qemu-"
                            version ".tar.xz"))
        (sha256
-        (base32
-         "1rmvrgqjhrvcmchnz170dxvrrf14n6nm39y8ivrprmfydd9lwqx0"))
+        (base32 "0795l8xsy67fnh4mbdz40jm880iisd7q6d7ly6nfzpac3gjr8zyf"))
        (patches (search-patches "qemu-build-info-manual.patch"
                                 "qemu-disable-aarch64-migration-test.patch"
                                 "qemu-fix-agent-paths.patch"))
        (modules '((guix build utils)))
        (snippet
         '(begin
+           ;; TODO: Scrub all firmwares from this directory!
+           (with-directory-excursion "pc-bios"
+             ;; Delete firmwares provided by SeaBIOS.
+             (for-each delete-file (find-files "." "^(bios|vgabios).*\\.bin$"))
+             ;; Delete SGABIOS.
+             (delete-file "sgabios.bin")
+             ;; Delete ppc64 OpenBIOS.  TODO: Remove sparc32 and sparc64 too
+             ;; once they are supported in Guix.
+             (delete-file "openbios-ppc")
+             ;; Delete riscv64 OpenSBI.  TODO: Remove riscv32 when supported
+             ;; in Guix.
+             (delete-file "opensbi-riscv64-generic-fw_dynamic.bin")
+             ;; Delete iPXE firmwares.
+             (for-each delete-file (find-files "." "^(efi|pxe)-.*\\.rom$")))
            ;; Delete bundled code that we provide externally.
-           ;; TODO: Unbundle SeaBIOS!
            (for-each delete-file-recursively
-                     '("dtc" "meson" "slirp"))))))
+                     '("dtc" "meson"
+                       "roms/ipxe"
+                       "roms/openbios"
+                       "roms/opensbi"
+                       "roms/seabios"
+                       "roms/sgabios"))))))
     (outputs '("out" "static" "doc"))   ;5.3 MiB of HTML docs
     (build-system gnu-build-system)
     (arguments
@@ -189,14 +208,33 @@
                    (not (string=? "i686-linux" (%current-system))))
       #:configure-flags
       #~(let ((gcc (search-input-file %build-inputs "/bin/gcc"))
+              (meson (search-input-file %build-inputs "bin/meson"))
+              (openbios (search-input-file %build-inputs
+                                           "share/qemu/openbios-ppc"))
+              (opensbi (search-input-file
+                        %build-inputs
+                        "share/qemu/opensbi-riscv64-generic-fw_dynamic.bin"))
+              (seabios (search-input-file %build-inputs
+                                          "share/qemu/bios.bin"))
+              (sgabios (search-input-file %build-inputs
+                                          "/share/qemu/sgabios.bin"))
+              (ipxe (search-input-file %build-inputs
+                                       "share/qemu/pxe-virtio.rom"))
               (out #$output))
           (list (string-append "--cc=" gcc)
                 ;; Some architectures insist on using HOST_CC.
                 (string-append "--host-cc=" gcc)
+                (string-append "--meson=" meson)
                 (string-append "--prefix=" out)
+
                 "--sysconfdir=/etc"
-                "--enable-slirp=system"
                 "--enable-fdt=system"
+                (string-append "--firmwarepath=" out "/share/qemu:"
+                               (dirname seabios) ":"
+                               (dirname ipxe) ":"
+                               (dirname openbios) ":"
+                               (dirname opensbi) ":"
+                               (dirname sgabios))
                 (string-append "--smbd=" out "/libexec/samba-wrapper")
                 "--disable-debug-info"  ;for space considerations
                 ;; The binaries need to be linked against -lrt.
@@ -210,6 +248,44 @@
                   ,@%gnu-build-system-modules)
       #:phases
       #~(modify-phases %standard-phases
+          ;; Since we removed the bundled firmwares above, many tests
+          ;; can't work.  Re-add them here.
+          (add-after 'unpack 'replace-firmwares
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let* ((seabios (dirname (search-input-file
+                                        inputs "share/qemu/bios.bin")))
+                     (seabios-firmwares (find-files seabios "\\.bin$"))
+                     (sgabios (search-input-file inputs "share/qemu/sgabios.bin"))
+                     (ipxe (dirname (search-input-file
+                                     inputs "share/qemu/pxe-virtio.rom")))
+                     (ipxe-firmwares (find-files ipxe "\\.rom$"))
+                     (openbios (search-input-file
+                                inputs "share/qemu/openbios-ppc"))
+                     (opensbi-riscv64
+                      (search-input-file
+                       inputs
+                       "share/qemu/opensbi-riscv64-generic-fw_dynamic.bin"))
+                     (allowed-differences
+                      ;; Ignore minor differences (addresses etc) in the firmware
+                      ;; data tables compared to what the test suite expects.
+                      '("tests/data/acpi/pc/SSDT.dimmpxm"
+                        "tests/data/acpi/pc/DSDT.dimmpxm"
+                        "tests/data/acpi/pc/ERST.acpierst"
+                        "tests/data/acpi/q35/ERST.acpierst"
+                        "tests/data/acpi/q35/DSDT.cxl"))
+                     (allowed-differences-whitelist
+                      (open-file "tests/qtest/bios-tables-test-allowed-diff.h"
+                                 "a")))
+                (with-directory-excursion "pc-bios"
+                  (for-each (lambda (file)
+                              (symlink file (basename file)))
+                            (append seabios-firmwares ipxe-firmwares
+                                    (list openbios opensbi-riscv64 sgabios))))
+                (for-each (lambda (file)
+                            (format allowed-differences-whitelist
+                                    "\"~a\",~%" file))
+                          allowed-differences)
+                (close-port allowed-differences-whitelist))))
           (add-after 'unpack 'extend-test-time-outs
             (lambda _
               ;; These tests can time out on heavily-loaded and/or slow storage.
@@ -227,7 +303,11 @@
                 ;; Comment out the test-char test, which needs networking and
                 ;; fails within the build environment.
                 ((".*'test-char':.*" all)
-                 (string-append "# " all)))))
+                 (string-append "# " all)))
+              (substitute* "tests/qtest/meson.build"
+                ;; These tests fail to get the expected number of tests
+                ;; on arm platforms.
+                (("'arm-cpu-features',") ""))))
           #$@(if (target-riscv64?)
                  '((add-after 'unpack 'disable-some-tests
                      (lambda _
@@ -276,6 +356,7 @@
               (mkdir-p "b/qemu")
               (chdir "b/qemu")
               (apply invoke "../../configure" configure-flags)))
+
           ;; Configure, build and install QEMU user-emulation static binaries.
           (add-after 'configure 'configure-user-static
             (lambda* (#:key inputs outputs #:allow-other-keys)
@@ -312,6 +393,20 @@
                                         (scandir "."
                                                  (cut string-suffix?
                                                       "-linux-user" <>))))))))
+
+          (add-after 'install 'delete-firmwares
+            (lambda _
+              ;; Delete firmares that are accessible on --firmwarepath.
+              ;; For some reason tests fail if we simply remove them from
+              ;; pc-bios/meson.build, hence this roundabout way.
+              (with-directory-excursion (string-append #$output "/share/qemu")
+                (for-each delete-file
+                          (append
+                           '("openbios-ppc"
+                             "opensbi-riscv64-generic-fw_dynamic.bin"
+                             "sgabios.bin")
+                           (find-files "." "^(vga)?bios(-[a-z0-9-]+)?\\.bin$")
+                           (find-files "." "^(efi|pxe)-.*\\.rom$"))))))
           ;; Create a wrapper for Samba. This allows QEMU to use Samba without
           ;; pulling it in as an input. Note that you need to explicitly install
           ;; Samba in your Guix profile for Samba support.
@@ -339,6 +434,7 @@ exec smbd $@")))
            dtc
            glib
            gtk+
+           ipxe-qemu
            libaio
            libcacard                    ;smartcard support
            attr libcap-ng               ;VirtFS support
@@ -352,10 +448,14 @@ exec smbd $@")))
            libusb                       ;USB pass-through support
            mesa
            ncurses
+           openbios-qemu-ppc
+           opensbi-qemu
            ;; ("pciutils" ,pciutils)
            pixman
            pulseaudio
            sdl2
+           seabios-qemu
+           sgabios
            spice
            usbredir
            util-linux
@@ -366,13 +466,16 @@ exec smbd $@")))
            zlib
            `(,zstd "lib")))
     (native-inputs
-     (list gettext-minimal
-           `(,glib "bin")               ;gtester, etc.
-           perl
-           flex
+     ;; Note: acpica is here only to pretty-print firmware differences with IASL
+     ;; (see the replace-firmwares phase above).
+     (list acpica
            bison
+           flex
+           gettext-minimal
+           `(,glib "bin")               ;gtester, etc.
            meson
            ninja
+           perl
            pkg-config
            python-wrapper
            python-sphinx
@@ -494,55 +597,54 @@ server and embedded PowerPC, and S390 guests.")
     (name "libx86emu")
     (version "3.5")
     (home-page "https://github.com/wfeldt/libx86emu")
-    (source
-     (origin
-       (method git-fetch)
-       (uri
-        (git-reference
-         (url home-page)
-         (commit version)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "11nj3y7maz9ch15b1c2b69gd8d7mpaha377zpdbvfsmg5w9zz93l"))
-       (modules
-        '((guix build utils)))
-       (snippet
-        `(begin
-           ;; Remove git2log program file.
-           (delete-file "git2log")
-           ;; Remove variables that depends on git2log.
-           (substitute* "Makefile"
-             (("GIT2LOG.*=.*$") "")
-             (("GITDEPS.*=.*$") "")
-             (("BRANCH.*=.*$") ""))))))
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url home-page)
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32 "11nj3y7maz9ch15b1c2b69gd8d7mpaha377zpdbvfsmg5w9zz93l"))
+              (modules '((guix build utils)))
+              (snippet `(begin
+                          ;; Remove git2log program file.
+                          (delete-file "git2log")
+                          ;; Remove variables that depends on git2log.
+                          (substitute* "Makefile"
+                            (("GIT2LOG.*=.*$") "")
+                            (("GITDEPS.*=.*$") "")
+                            (("BRANCH.*=.*$") ""))))))
     (build-system gnu-build-system)
     (arguments
      `(#:test-target "test"
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (include (string-append out "/include"))
-                    (lib (string-append out "/lib")))
-               ;; Correct the values of version and install directories.
-               (substitute* "Makefile"
-                 (("VERSION.*=.*$")
-                  (string-append "VERSION := "
-                                 ,version "\n"))
-                 (("PREFIX.*=.*$")
-                  (string-append "PREFIX := " out "\n"))
-                 (("MAJOR_VERSION.*=.*$")
-                  (string-append "MAJOR_VERSION := "
-                                 ,(version-major version) "\n"))
-                 (("LIBDIR.*=.*$")
-                  (string-append "LIBDIR = " lib "\n"))
-                 (("/usr/include") include)))))
-         (delete 'configure))))         ; no configure script
-    (native-inputs
-     (list nasm perl))
+       ;; sys/io.h is not present from glibc on non-x86 systems.
+       #:tests? ,(and (target-x86?)
+                      (not (%current-target-system)))
+       #:phases (modify-phases %standard-phases
+                  (add-after 'unpack 'patch
+                    (lambda* (#:key outputs #:allow-other-keys)
+                      (let* ((out (assoc-ref outputs "out"))
+                             (include (string-append out "/include"))
+                             (lib (string-append out "/lib")))
+                        ;; Correct the values of version and install directories.
+                        (substitute* "Makefile"
+                          (("VERSION.*=.*$")
+                           (string-append "VERSION := "
+                                          ,version "\n"))
+                          (("PREFIX.*=.*$")
+                           (string-append "PREFIX := " out "\n"))
+                          (("MAJOR_VERSION.*=.*$")
+                           (string-append "MAJOR_VERSION := "
+                                          ,(version-major version) "\n"))
+                          (("LIBDIR.*=.*$")
+                           (string-append "LIBDIR = " lib "\n"))
+                          (("/usr/include")
+                           include)))))
+                  (delete 'configure)))) ;no configure script
+    (native-inputs (list nasm perl))
     (synopsis "Library for x86 emulation")
-    (description "Libx86emu is a small library to emulate x86 instructions.  The
+    (description
+     "Libx86emu is a small library to emulate x86 instructions.  The
 focus here is not a complete emulation but to cover enough for typical
 firmware blobs.  You can
 @enumerate
@@ -1026,6 +1128,57 @@ Guix to build virtual machines.")
 Debian or a derivative using @command{debootstrap}.")
     (license license:gpl2+)))
 
+(define-public rvvm
+  (package
+    (name "rvvm")
+    (version "0.5")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/LekKit/RVVM")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1ldabcrmpa044bahpqa6ymwbhhwy69slh77f0m3421sq6j50l06p"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+       #:configure-flags
+       ;; See src/rvjit/rvjit.h for list of architectures.
+       #~(#$@(if (or (target-x86?)
+                     (target-arm?))
+               #~'()
+               #~(list "-DRVVM_USE_JIT=NO")))
+       #:modules `((srfi srfi-26)
+                  (guix build utils)
+                  (guix build cmake-build-system))
+       #:phases
+       #~(modify-phases %standard-phases
+           ;; Install phase inspired by the Makefile.
+           (replace 'install
+             (lambda _
+               (let ((src "../source/src/")
+                     (incl (string-append #$output "/include/rvvm/")))
+                 (install-file "rvvm" (string-append #$output "/bin"))
+                 (for-each
+                   (cut install-file <> (string-append #$output "/lib"))
+                   (find-files "." "\\.(so|a)$"))
+                 (install-file (string-append src "rvvmlib.h") incl)
+                 (for-each
+                   (cut install-file <> (string-append incl "devices"))
+                   (find-files (string-append src "devices") "\\.h$"))))))
+       #:tests? #f))    ; no tests
+    (home-page "https://github.com/LekKit/RVVM")
+    (synopsis "RISC-V virtual machine")
+    (description
+     "RVVM is a RISC-V CPU and system software implementation written in C.  It
+supports the entire RV64GC ISA, and it passes compliance tests for both RV64 and
+RV32.  OpenSBI, U-Boot, and custom firmwares boot and execute properly.  It is
+capable of running Linux, FreeBSD, OpenBSD, Haiku, and other OSes.  Furthermore,
+it emulates a variety of hardware and peripherals.")
+    (license (list license:gpl3+ license:mpl2.0))))
+
 (define-public spike
   (package
     (name "spike")
@@ -1090,7 +1243,7 @@ of one or more RISC-V harts.")
                  (format #f "path = ~s;"
                          (search-input-directory (or native-inputs inputs)
                                                  "share/osinfo")))))))))
-    (inputs (list libsoup-minimal-2 libxml2 libxslt osinfo-db))
+    (inputs (list libsoup libxml2 libxslt osinfo-db))
     (native-inputs
      (list `(,glib "bin")                ;glib-mkenums, etc.
            gobject-introspection
@@ -1158,23 +1311,25 @@ manage system or application containers.")
 (define-public lxcfs
   (package
     (name "lxcfs")
-    (version "4.0.11")
+    (version "5.0.4")
     (home-page "https://github.com/lxc/lxcfs")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference (url home-page)
-                                  (commit (string-append "lxcfs-" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "02cgzh97cgxh9iyf7gkn5ikdc0sfzqfjj6al0hikdf9rbwcscqwd"))))
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference (url home-page)
+                           (commit (string-append "lxcfs-" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "15cc7kvnln4qqlv22hprfzmq89jbkx7yra730hap8wkvamn33sxy"))))
+    (build-system meson-build-system)
     (arguments
-     '(#:configure-flags '("--localstatedir=/var")))
+     (list
+      #:configure-flags
+      #~(list "-Dinit-script=sysvinit"))) ; no ‘none’ option
     (native-inputs
-     (list autoconf automake libtool pkg-config))
+     (list help2man pkg-config python python-jinja2))
     (inputs
      (list fuse))
-    (build-system gnu-build-system)
     (synopsis "FUSE-based file system for LXC")
     (description "LXCFS is a small FUSE file system written with the intention
 of making Linux containers feel more like a virtual machine.
@@ -1347,7 +1502,7 @@ pretty simple, REST API.")
     (inputs
      (list acl
            attr
-           fuse
+           fuse-2
            libxml2
            eudev
            libpciaccess
@@ -1363,7 +1518,7 @@ pretty simple, REST API.")
            openssl
            readline
            cyrus-sasl
-           libyajl
+           yajl
            audit
            dmidecode
            dnsmasq
@@ -1403,7 +1558,7 @@ to integrate other virtualization mechanisms if needed.")
     (build-system meson-build-system)
     (inputs
      (list openssl cyrus-sasl lvm2 ; for libdevmapper
-           libyajl))
+           yajl))
     (native-inputs
      (list pkg-config intltool
            `(,glib "bin") vala))
@@ -1595,6 +1750,8 @@ domains, their live performance and resource utilization statistics.")
              (string-append "XMLTO="
                             (search-input-file %build-inputs
                                                "/bin/xmlto")))
+       #:modules ((ice-9 ftw)
+                  ,@%gnu-build-system-modules)
        #:phases
        (modify-phases %standard-phases
          (delete 'configure)            ; no configure script
@@ -1617,6 +1774,17 @@ domains, their live performance and resource utilization statistics.")
              (substitute* "criu/include/plugin.h"
                (("/var") (string-append (assoc-ref outputs "out"))))
              ))
+         ;; TODO: use
+         ;; (@@ (guix build python-build-system) ensure-no-mtimes-pre-1980)
+         ;; when it no longer throws due to trying to call UTIME on symlinks.
+         (add-after 'unpack 'ensure-no-mtimes-pre-1980
+           (lambda _
+             (let ((early-1980 315619200))  ; 1980-01-02 UTC
+               (ftw "." (lambda (file stat flag)
+                          (unless (or (<= early-1980 (stat:mtime stat))
+                                      (eq? (stat:type stat) 'symlink))
+                            (utime file early-1980 early-1980))
+                          #t)))))
          (add-before 'build 'fix-symlink
            (lambda* (#:key inputs #:allow-other-keys)
              ;; The file 'images/google/protobuf/descriptor.proto' points to
@@ -1646,7 +1814,6 @@ domains, their live performance and resource utilization statistics.")
                (for-each delete-file (find-files out "\\.a$"))))))))
     (inputs
      `(("protobuf" ,protobuf)
-       ("python" ,python)
        ("python-protobuf" ,python-protobuf)
        ("iproute" ,iproute)
        ("libaio" ,libaio)
@@ -1661,7 +1828,8 @@ domains, their live performance and resource utilization statistics.")
            asciidoc
            xmlto
            docbook-xml
-           docbook-xsl))
+           docbook-xsl
+           python-toolchain))
     (propagated-inputs
      ;; included by 'rpc.pb-c.h'
      (list protobuf-c))
@@ -2021,7 +2189,7 @@ virtual machines.")
 (define-public bubblewrap
   (package
     (name "bubblewrap")
-    (version "0.6.1")
+    (version "0.8.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/containers/bubblewrap/"
@@ -2029,7 +2197,7 @@ virtual machines.")
                                   version ".tar.xz"))
               (sha256
                (base32
-                "10ij62jg7p2scwdx0pm141ss7p2gjdkbbymb56y8miib2vfcf2cn"))
+                "0fik7l8rm4yjkasskj7gw52s8jg3xfy152wqisw3s0xrklad2ylm"))
                (patches (search-patches "bubblewrap-fix-locale-in-tests.patch"))))
     (build-system gnu-build-system)
     (arguments
@@ -2098,7 +2266,7 @@ by default and can be made read-only.")
      `(#:tests? #f))                    ; no tests exist
     (inputs
      (list libxrandr))
-    (home-page "http://bochs.sourceforge.net/")
+    (home-page "https://bochs.sourceforge.net/")
     (synopsis "Emulator for x86 PC")
     (description
      "Bochs is an emulator which can emulate Intel x86 CPU, common I/O
@@ -2269,7 +2437,7 @@ override CC = " (assoc-ref inputs "cross-gcc") "/bin/i686-linux-gnu-gcc"))
        ("iproute" ,iproute) ; TODO: patch invocations.
        ("libaio" ,libaio)
        ("libx11" ,libx11)
-       ("libyajl" ,libyajl)
+       ("yajl" ,yajl)
        ("ncurses" ,ncurses)
        ("openssl" ,openssl)
        ("ovmf" ,ovmf)
@@ -2321,7 +2489,7 @@ which is a hypervisor.")
 (define-public osinfo-db-tools
   (package
     (name "osinfo-db-tools")
-    (version "1.9.0")
+    (version "1.10.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://releases.pagure.org/libosinfo/osinfo-db-tools-"
@@ -2329,7 +2497,7 @@ which is a hypervisor.")
 
               (sha256
                (base32
-                "1h23a8nzdxjyvw44dwh903563n3b1z5skx8g0b1p1v5cif3iqpr5"))))
+                "0s6ah44wbay7kb3l1ydr0r4ip335zgf6s12ghjjnww0nni9xsb40"))))
     (build-system meson-build-system)
     (inputs
      (list libsoup-minimal-2 libxml2 libxslt json-glib libarchive))
@@ -2351,28 +2519,28 @@ administrators and developers in managing the database.")
 (define-public osinfo-db
   (package
     (name "osinfo-db")
-    (version "20220516")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://releases.pagure.org/libosinfo/osinfo-db-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "0vfsdk3c6n6y04c5rf92m31zvl969kaniyx2fqywbp69mzc6j3yn"))))
+    (version "20230719")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://releases.pagure.org/libosinfo/osinfo-db-"
+                           version ".tar.xz"))
+       (sha256
+        (base32 "0nl4wh8i9skcg1wx84p31x7rl1xv1267g5ycbn9kfwfnqxzwkl8k"))))
     (build-system trivial-build-system)
     (arguments
-     `(#:modules ((guix build utils))
-       #:builder
-       (begin
-         (use-modules (guix build utils))
-         (let* ((out (assoc-ref %outputs "out"))
-                (osinfo-dir (string-append out "/share/osinfo"))
+     (list
+      #:modules '((guix build utils))
+      #:builder
+      #~(begin
+          (use-modules (guix build utils))
+          (let ((osinfo (string-append #$output "/share/osinfo"))
                 (source (assoc-ref %build-inputs "source"))
-                (osinfo-db-import
-                 (string-append (assoc-ref %build-inputs "osinfo-db-tools")
+                (import-osinfo-db
+                 (string-append #$(this-package-native-input "osinfo-db-tools")
                                 "/bin/osinfo-db-import")))
-           (mkdir-p osinfo-dir)
-           (invoke osinfo-db-import "--dir" osinfo-dir source)))))
+            (mkdir-p osinfo)
+            (invoke import-osinfo-db "--dir" osinfo source)))))
     (native-inputs
      (list intltool osinfo-db-tools))
     (home-page "https://gitlab.com/libosinfo/osinfo-db")

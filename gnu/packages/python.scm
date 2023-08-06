@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2013 Nikita Karetnikov <nikita@karetnikov.org>
-;;; Copyright © 2013, 2014, 2015, 2016, 2017, 2018, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2013, 2014, 2015, 2016, 2017, 2018, 2021, 2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2013, 2014, 2015, 2016 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2014, 2015 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2014, 2017, 2019 Eric Bavier <bavier@member.fsf.org>
@@ -56,7 +56,7 @@
 ;;; Copyright © 2018 Luther Thompson <lutheroto@gmail.com>
 ;;; Copyright © 2018 Vagrant Cascadian <vagrant@debian.org>
 ;;; Copyright © 2019 Tanguy Le Carrour <tanguy@bioneland.org>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Greg Hogan <code@greghogan.com>
 ;;; Copyright © 2022 Philip McGrath <philip@philipmcgrath.com>
 ;;; Copyright © 2022 jgart <jgart@dismail.de>
@@ -85,7 +85,6 @@
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages dbm)
-  #:use-module (gnu packages hurd)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python-build)
@@ -150,6 +149,7 @@
                                 "python-2.7-adjust-tests.patch"
                                 "python-cross-compile.patch"
                                 "python-2.7-CVE-2021-3177.patch"
+                                "python-2.7-expat-compat.patch"
                                 "python-2.7-no-static-lib.patch"))
        (modules '((guix build utils)))
        (snippet
@@ -244,7 +244,7 @@
                                     "Lib/test/support/__init__.py"
                                     "Lib/test/test_subprocess.py"))
                (("/bin/sh") (which "sh")))))
-         ,@(if (hurd-system?)
+         ,@(if (system-hurd?)
                `((add-before 'build 'patch-regen-for-hurd
                    (lambda* (#:key inputs #:allow-other-keys)
                      (let ((libc (assoc-ref inputs "libc")))
@@ -419,11 +419,11 @@ data types.")
 ;; Current 2.x version.
 (define-public python-2 python-2.7)
 
-(define-public python-3.9
+(define-public python-3.10
   (package
     (inherit python-2)
     (name "python")
-    (version "3.9.9")
+    (version "3.10.7")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://www.python.org/ftp/python/"
@@ -433,11 +433,10 @@ data types.")
                         "python-3-deterministic-build-info.patch"
                         "python-3-fix-tests.patch"
                         "python-3-hurd-configure.patch"
-                        "python-3-search-paths.patch"
-                        "python-3-no-static-lib.patch"))
+                        "python-3-search-paths.patch"))
               (sha256
                (base32
-                "09vd7g71i11iz5ydqghwc8kaxr0vgji94hhwwnj77h3kll28r0h6"))
+                "0j6wvh2ad5jjq5n7sjmj1k66mh6lipabavchc3rb4vsinwaq9vbf"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -451,12 +450,14 @@ data types.")
                             (find-files "Lib/distutils/command" "\\.exe$"))))))
     (arguments
      (substitute-keyword-arguments (package-arguments python-2)
+       ((#:configure-flags flags)
+        `(append ,flags '("--without-static-libpython")))
        ((#:make-flags _)
         `(list (string-append
                 (format #f "TESTOPTS=-j~d" (parallel-job-count))
                 ;; test_mmap fails on low-memory systems
                 " --exclude test_mmap test_socket"
-                ,@(if (hurd-target?)
+                ,@(if (system-hurd?)
                       '(" test_posix"      ;multiple errors
                         " test_time"
                         " test_pty"
@@ -486,12 +487,33 @@ data types.")
                         " test_open_unix_connection"
                         " test_open_unix_connection_error"
                         " test_read_pty_output"
-                        " test_write_pty")
+                        " test_write_pty"
+                        " test_concurrent_futures" ;freeze
+                        " test_venv"       ;freeze
+                        " test_multiprocessing_forkserver" ;runs over 10min
+                        " test_multiprocessing_spawn" ;runs over 10min
+                        " test_builtin"
+                        " test_capi"
+                        " test_dbm_ndbm"
+                        " test_exceptions"
+                        " test_faulthandler"
+                        " test_getopt"
+                        " test_importlib"
+                        " test_json"
+                        " test_multiprocessing_fork"
+                        " test_multiprocessing_main_handling"
+                        " test_pdb "
+                        " test_regrtest"
+                        " test_sqlite")
                       '()))))
        ((#:phases phases)
         `(modify-phases ,phases
-           ,@(if (hurd-system?)
-                 `((delete 'patch-regen-for-hurd)) ;regen was removed after 3.5.9
+           ,@(if (system-hurd?)
+                 `((delete 'patch-regen-for-hurd)  ;regen was removed after 3.5.9
+                   (add-after 'unpack 'disable-multi-processing
+                     (lambda _
+                       (substitute* "Makefile.pre.in"
+                         (("-j0") "-j1")))))
                  '())
            (add-after 'unpack 'remove-windows-binaries
              (lambda _
@@ -559,13 +581,13 @@ data types.")
      (modify-inputs (package-inputs python-2.7)
        (replace "openssl" openssl)))
     (native-inputs
-     `(("tzdata" ,tzdata-for-tests)
-       ("unzip" ,unzip)
-       ("zip" ,(@ (gnu packages compression) zip))
-       ,@(if (%current-target-system)
-             `(("python3" ,this-package))
-             '())
-       ,@(package-native-inputs python-2)))
+     (let ((inputs (modify-inputs (package-native-inputs python-2)
+                     (prepend tzdata-for-tests
+                              unzip
+                              (@ (gnu packages compression) zip)))))
+       (if (%current-target-system)
+           (modify-inputs inputs (prepend this-package))
+           inputs)))
     (native-search-paths
      (list (guix-pythonpath-search-path version)
            ;; Used to locate tzdata by the zoneinfo module introduced in
@@ -575,7 +597,7 @@ data types.")
             (files (list "share/zoneinfo")))))))
 
 ;; Current 3.x version.
-(define-public python-3 python-3.9)
+(define-public python-3 python-3.10)
 
 ;; Current major version.
 (define-public python python-3)
@@ -592,9 +614,7 @@ data types.")
     ;; is invoked upon 'make install'.  'pip' also expects 'ctypes' and thus
     ;; libffi.  Expat is needed for XML support which is expected by a lot
     ;; of libraries out there.
-    (inputs `(("expat" ,expat)
-              ("libffi" ,libffi)
-              ("zlib" ,zlib)))))
+    (inputs (list expat libffi zlib))))
 
 (define-public python-minimal
   (package/inherit python
@@ -605,10 +625,7 @@ data types.")
     ;; OpenSSL is a mandatory dependency of Python 3.x, for urllib;
     ;; zlib is required by 'zipimport', used by pip.  Expat is needed
     ;; for XML support, which is generally expected to be available.
-    (inputs `(("expat" ,expat)
-              ("libffi" ,libffi)
-              ("openssl" ,openssl)
-              ("zlib" ,zlib)))))
+    (inputs (list expat libffi openssl zlib))))
 
 (define-public python-debug
   (package/inherit python
@@ -638,30 +655,36 @@ for more information.")))
     (inputs `(("bash" ,bash)))
     (propagated-inputs `(("python" ,python)))
     (arguments
-     `(#:modules ((guix build utils))
-       #:builder
-         (begin
-           (use-modules (guix build utils))
-           (let ((bin (string-append (assoc-ref %outputs "out") "/bin"))
-                 (python (string-append (assoc-ref %build-inputs "python") "/bin/")))
-                (mkdir-p bin)
-                (for-each
+     (list #:modules '((guix build utils))
+           #:builder
+           #~(begin
+               (use-modules (guix build utils))
+               (let ((bin (string-append #$output "/bin"))
+                     (python (string-append
+                              ;; XXX: '%build-inputs' contains the native
+                              ;; Python when cross-compiling.
+                              #$(if (%current-target-system)
+                                    (this-package-input "python")
+                                    #~(assoc-ref %build-inputs "python"))
+                              "/bin/")))
+                 (mkdir-p bin)
+                 (for-each
                   (lambda (old new)
                     (symlink (string-append python old)
                              (string-append bin "/" new)))
                   `("python3" ,"pydoc3" ,"pip3")
                   `("python"  ,"pydoc"  ,"pip"))
-                ;; python-config outputs search paths based upon its location,
-                ;; use a bash wrapper to avoid changing its outputs.
-                (let ((bash (string-append (assoc-ref %build-inputs "bash")
-                                           "/bin/bash"))
-                      (old  (string-append python "python3-config"))
-                      (new  (string-append bin "/python-config")))
-                  (with-output-to-file new
-                    (lambda ()
-                      (format #t "#!~a~%" bash)
-                      (format #t "exec \"~a\" \"$@\"~%" old)
-                      (chmod new #o755))))))))
+                 ;; python-config outputs search paths based upon its location,
+                 ;; use a bash wrapper to avoid changing its outputs.
+                 (let ((bash (string-append (assoc-ref %build-inputs "bash")
+                                            "/bin/bash"))
+                       (old  (string-append python "python3-config"))
+                       (new  (string-append bin "/python-config")))
+                   (with-output-to-file new
+                     (lambda ()
+                       (format #t "#!~a~%" bash)
+                       (format #t "exec \"~a\" \"$@\"~%" old)
+                       (chmod new #o755))))))))
     (synopsis "Wrapper for the Python 3 commands")
     (description
      "This package provides wrappers for the commands of Python@tie{}3.x such

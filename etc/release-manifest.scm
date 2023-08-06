@@ -1,6 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2020-2022 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2023 Andreas Enge <andreas@enge.fr>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -61,7 +62,7 @@ TARGET."
   ;; XXX: For now we are less demanding of "i586-gnu".
   (map specification->package
        '("coreutils" "grep" "findutils" "gawk" "make"
-         "gcc-toolchain" "tar" "xz")))
+         #;"gcc-toolchain" "tar" "xz")))
 
 (define %system-packages
   ;; Key packages proposed by the Guix System installer.
@@ -73,16 +74,14 @@ TARGET."
                  "connman" "network-manager" "network-manager-applet"
                  "openssh" "ntp" "tor"
                  "linux-libre" "grub-hybrid"
-                 ;; FIXME: Add IceCat when Rust is available on i686.
-                 ;;"icecat"
-                 ))
+                 "icecat"))
           %default-xorg-modules))
 
 (define %packages-to-cross-build
   ;; Packages that must be cross-buildable from x86_64-linux.
   ;; FIXME: Add (@ (gnu packages gcc) gcc) when <https://bugs.gnu.org/40463>
   ;; is fixed.
-  (append (list (@ (gnu packages guile) guile-3.0/fixed))
+  (append (list (@ (gnu packages guile) guile-3.0/pinned))
           (map specification->package
                '("coreutils" "grep" "sed" "findutils" "diffutils" "patch"
                  "gawk" "gettext" "gzip" "xz"

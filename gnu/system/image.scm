@@ -4,6 +4,7 @@
 ;;; Copyright © 2022 Pavel Shlyak <p.shlyak@pantherx.org>
 ;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
 ;;; Copyright © 2022 Alex Griffin <a@ajgrf.com>
+;;; Copyright © 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -138,17 +139,22 @@ parent image record."
    (size 'guess)
    (label root-label)
    (file-system "ext4")
+   ;; Disable the metadata_csum and 64bit features of ext4, for compatibility
+   ;; with U-Boot.
+   (file-system-options (list "-O" "^metadata_csum,^64bit"))
    (flags '(boot))
    (initializer (gexp initialize-root-partition))))
 
 (define efi-disk-image
   (image-without-os
    (format 'disk-image)
+   (partition-table-type 'gpt)
    (partitions (list esp-partition root-partition))))
 
 (define efi32-disk-image
   (image-without-os
    (format 'disk-image)
+   (partition-table-type 'gpt)
    (partitions (list esp32-partition root-partition))))
 
 (define iso9660-image
@@ -211,6 +217,7 @@ set to the given OS."
    (constructor (cut image-with-os
                  (image
                   (inherit efi-disk-image)
+                  (partition-table-type 'mbr)
                   (name 'image.qcow2)
                   (format 'compressed-qcow2))
                  <>))))
@@ -387,6 +394,9 @@ used in the image."
          ((or (string=? file-system "vfat")
               (string=? file-system "fat16")
               (string=? file-system "fat32")) "F")
+         ((and (string=? file-system "unformatted")
+               (partition-uuid partition))
+          (uuid->string (partition-uuid partition)))
          (else
           (raise (condition
                   (&message
@@ -411,7 +421,14 @@ used in the image."
               (with-imported-modules*
                (let ((initializer (or #$(partition-initializer partition)
                                       initialize-root-partition))
-                     (inputs '#+(list e2fsprogs fakeroot dosfstools mtools))
+                     (inputs '#+(cond
+                                  ((string-prefix? "ext" type)
+                                   (list e2fsprogs fakeroot))
+                                  ((or (string=? type "vfat")
+                                       (string-prefix? "fat" type))
+                                   (list dosfstools fakeroot mtools))
+                                  (else
+                                    '())))
                      (image-root "tmp-root"))
                  (sql-schema #$schema)
 
@@ -972,9 +989,9 @@ image, depending on IMAGE format."
                 (G_ "~a: unsupported image format") image-format)))))))
 
 
-;;
-;; Image detection.
-;;
+;;;
+;;; Image type discovery.
+;;;
 
 (define (image-modules)
   "Return the list of image modules."

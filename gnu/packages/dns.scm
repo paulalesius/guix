@@ -19,6 +19,8 @@
 ;;; Copyright © 2020 Brice Waegeneire <brice@waegenei.re>
 ;;; Copyright © 2020 Simon South <simon@simonsouth.net>
 ;;; Copyright © 2021 Zheng Junjie <873216071@qq.com>
+;;; Copyright © 2023 Bruno Victal <mirai@makinata.eu>
+;;; Copyright © 2023 Hilton Chain <hako@ultrarare.space>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -64,6 +66,7 @@
   #:use-module (gnu packages nettle)
   #:use-module (gnu packages networking)
   #:use-module (gnu packages perl)
+  #:use-module (gnu packages perl-check)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages python)
@@ -81,6 +84,7 @@
   #:use-module (guix gexp)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
+  #:use-module ((guix search-paths) #:select ($SSL_CERT_DIR $SSL_CERT_FILE))
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix utils)
@@ -290,7 +294,7 @@ prompt the user with the option to go with insecure DNS only.")
 (define-public dnsmasq
   (package
     (name "dnsmasq")
-    (version "2.87")
+    (version "2.89")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -298,7 +302,7 @@ prompt the user with the option to go with insecure DNS only.")
                     version ".tar.xz"))
               (sha256
                (base32
-                "0ynyi4mixhxhbfxb2bivinkrjc5zgj9lj5bzgvymc8vz98vc0a02"))))
+                "02dnxfnman38armn3sw56w80f9wb2vgm3qgm15crs2yg8q1j7g82"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
@@ -312,7 +316,7 @@ prompt the user with the option to go with insecure DNS only.")
                           (string-append "PKG_CONFIG=" ,(pkg-config-for-target))
                           "COPTS=\"-DHAVE_DBUS\"")
        #:tests? #f))                    ; no ‘check’ target
-    (home-page "http://www.thekelleys.org.uk/dnsmasq/doc.html")
+    (home-page "https://www.thekelleys.org.uk/dnsmasq/doc.html")
     (synopsis "Small caching DNS proxy and DHCP/TFTP server")
     (description
      "Dnsmasq is a light-weight DNS forwarder and DHCP server.  It is designed
@@ -333,14 +337,14 @@ and BOOTP/TFTP for network booting of diskless machines.")
     ;; When updating, check whether isc-dhcp's bundled copy should be as well.
     ;; The BIND release notes are available here:
     ;; https://www.isc.org/bind/
-    (version "9.16.35")
+    (version "9.16.38")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://ftp.isc.org/isc/bind9/" version
                            "/bind-" version ".tar.xz"))
        (sha256
-        (base32 "0gkvilfhqwalcv69240v6j1p3hwj0j4fyzli18q5qil2y4brc59y"))
+        (base32 "03y52iyc2g63lkk9x2vaizpr0jv27g1z6mcxnjw8m8l4kaflrx4d"))
        (patches
         (search-patches "bind-re-add-attr-constructor-priority.patch"))))
     (build-system gnu-build-system)
@@ -506,89 +510,55 @@ the two.")
                    license:gpl2
                    license:gpl3))))
 
-(define-public libasr
-  (package
-    (name "libasr")
-    (version "1.0.4")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "https://www.opensmtpd.org/archives/"
-                           "libasr-" version ".tar.gz"))
-       (sha256
-        (base32 "1d6s8njqhvayx2gp47409sp1fn8m608ws26hr1srfp6i23nnpyqr"))))
-    (build-system gnu-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'install-documentation
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (install-file "src/asr_run.3"
-                             (string-append out "/share/man/man3"))
-               #t))))))
-    (native-inputs
-     (list autoconf automake libtool pkg-config))
-    (home-page "https://www.opensmtpd.org")
-    (synopsis "Asynchronous resolver library by the OpenBSD project")
-    (description
-     "libasr is a free, simple and portable asynchronous resolver library.
-It runs DNS queries and performs hostname resolution in a fully
-asynchronous fashion.")
-    (license (list license:isc
-                   license:bsd-2 ; last part of getrrsetbyname_async.c
-                   license:bsd-3
-                   (license:non-copyleft "file://LICENSE") ; includes.h
-                   license:openssl))))
-
 (define-public nsd
   (package
     (name "nsd")
-    (version "4.4.0")
+    (version "4.7.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://www.nlnetlabs.nl/downloads/nsd/nsd-"
                            version ".tar.gz"))
        (sha256
-        (base32 "0dl8iriy0mscppfa6ar5qcglgvxw87140abwxyksak1lk7fnzkfg"))))
+        (base32 "057jxhhyggqhy4swwqlwf1lflc96cfqpm200l1gr3lls557a9b4g"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:configure-flags
-       (list "--enable-pie"             ; fully benefit from ASLR
-             "--enable-ratelimit"
-             "--enable-recvmmsg"
-             "--enable-relro-now"       ; protect GOT and .dtor areas
-             "--disable-radix-tree"
-             (string-append "--with-libevent="
-                            (assoc-ref %build-inputs "libevent"))
-             (string-append "--with-ssl="
-                            (assoc-ref %build-inputs "openssl"))
-             "--with-configdir=/etc"
-             "--with-nsd_conf_file=/etc/nsd/nsd.conf"
-             "--with-logfile=/var/log/nsd.log"
-             "--with-pidfile=/var/db/nsd/nsd.pid"
-             "--with-dbfile=/var/db/nsd/nsd.db"
-             "--with-zonesdir=/etc/nsd"
-             "--with-xfrdfile=/var/db/nsd/xfrd.state"
-             "--with-zonelistfile=/var/db/nsd/zone.list")
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'patch-installation-paths
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (doc (string-append out "/share/doc/" ,name "-" ,version)))
-               ;; The ‘make install’ target tries to create the parent
-               ;; directories of run-time things like ‘pidfile’ above, and
-               ;; useless empty directories like 'configdir'.  Remove such
-               ;; '$(INSTALL)' lines and install the example configuration file
-               ;; in an appropriate location.
-               (substitute* "Makefile.in"
-                 ((".*INSTALL.*\\$\\((config|pid|xfr|db)dir" command)
-                  (string-append "#" command))
-                 (("\\$\\(nsdconfigfile\\)\\.sample" file-name)
-                  (string-append doc "/examples/" file-name)))))))
-       #:tests? #f))                    ; no tests
+     (list
+      #:configure-flags
+      #~(list "--enable-pie"            ; fully benefit from tasty ASLR
+              "--enable-ratelimit"
+              "--enable-recvmmsg"
+              "--enable-relro-now"      ; protect GOT and .dtor areas
+              "--disable-radix-tree"
+              (string-append "--with-libevent="
+                             #$(this-package-input "libevent"))
+              (string-append "--with-ssl="
+                             #$(this-package-input "openssl"))
+              "--with-configdir=/etc"
+              "--with-nsd_conf_file=/etc/nsd/nsd.conf"
+              "--with-logfile=/var/log/nsd.log"
+              "--with-pidfile=/var/db/nsd/nsd.pid"
+              "--with-dbfile=/var/db/nsd/nsd.db"
+              "--with-zonesdir=/etc/nsd"
+              "--with-xfrdfile=/var/db/nsd/xfrd.state"
+              "--with-zonelistfile=/var/db/nsd/zone.list")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'configure 'patch-installation-paths
+            (lambda _
+              (let ((doc (string-append #$output "/share/doc/"
+                                        #$name "-" #$version)))
+                ;; The ‘make install’ target tries to create the parent
+                ;; directories of run-time things like ‘pidfile’ above, and
+                ;; useless empty directories like 'configdir'.  Remove such
+                ;; '$(INSTALL)' lines and install the example configuration file
+                ;; in an appropriate location.
+                (substitute* "Makefile.in"
+                  ((".*INSTALL.*\\$\\((config|pid|xfr|db)dir" command)
+                   (string-append "#" command))
+                  (("\\$\\(nsdconfigfile\\)\\.sample" file-name)
+                   (string-append doc "/examples/" file-name)))))))
+      #:tests? #f))                    ; no tests
     (inputs
      (list libevent openssl))
     (home-page "https://www.nlnetlabs.nl/projects/nsd/about/")
@@ -666,14 +636,14 @@ BIND and djbdns---whilst using relatively little memory.")
 (define-public unbound
   (package
     (name "unbound")
-    (version "1.17.0")
+    (version "1.17.1")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://www.unbound.net/downloads/unbound-"
                            version ".tar.gz"))
        (sha256
-        (base32 "0h8k5yh49vasyzwkm3n1xsidxr7xybqwkvg4cq6937qxi7brbg6w"))))
+        (base32 "1x55f5aqlzynpy24ryf1rsmdy8m8iyi19n7k03k889g1rk78ah7f"))))
     (build-system gnu-build-system)
     (outputs '("out" "python"))
     (native-inputs
@@ -708,8 +678,7 @@ BIND and djbdns---whilst using relatively little memory.")
                  (("^PYTHON_SITE_PKG=.*$")
                   (string-append
                    "PYTHON_SITE_PKG="
-                   pyout "/lib/python-" ver "/site-packages\n"))))
-             #t))
+                   pyout "/lib/python-" ver "/site-packages\n"))))))
          (add-before 'check 'fix-missing-nss-for-tests
            ;; Unfortunately, the package's unittests involve some checks
            ;; looking up protocols and services which are not provided
@@ -810,8 +779,7 @@ struct servent *getservbyport(int port, const char *proto) {
                ;; The preload library only affects the unittests.
                (substitute* "Makefile"
                  (("./unittest")
-                  "LD_PRELOAD=/tmp/nss_preload.so ./unittest")))
-             #t)))))
+                  "LD_PRELOAD=/tmp/nss_preload.so ./unittest"))))))))
     (home-page "https://www.unbound.net")
     (synopsis "Validating, recursive, and caching DNS resolver")
     (description
@@ -825,16 +793,16 @@ served by AS112.  Stub and forward zones are supported.")
 (define-public yadifa
   (package
     (name "yadifa")
-    (version "2.5.3")
+    (version "2.6.4")
     (source
-     (let ((build "10333"))
+     (let ((build "10892"))
        (origin
          (method url-fetch)
          (uri
           (string-append "https://www.yadifa.eu/sites/default/files/releases/"
                          "yadifa-" version "-" build ".tar.gz"))
          (sha256
-          (base32 "1mwy6sfnlaslx26f3kpj9alh8i8y8bf1nbnsdd5j04hjsbavd07p")))))
+          (base32 "0wdm0gc01bhd04p3jqxy3y8lgx5v8wlm8saiy35llna5ssi77fyq")))))
     (build-system gnu-build-system)
     (native-inputs
      (list which))
@@ -843,6 +811,12 @@ served by AS112.  Stub and forward zones are supported.")
     (arguments
      `(#:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'unhard-code
+           (lambda _
+             (substitute* (list "lib/dnslg/Makefile.in"
+                                "lib/dnsdb/Makefile.in"
+                                "lib/dnscore/Makefile.in")
+               (("/usr/bin/(install)" _ command) command))))
          (add-before 'configure 'omit-example-configurations
            (lambda _
              (substitute* "Makefile.in"
@@ -871,7 +845,7 @@ Extensions} (DNSSEC).")
 (define-public knot
   (package
     (name "knot")
-    (version "3.2.2")
+    (version "3.2.9")
     (source
      (origin
        (method git-fetch)
@@ -880,7 +854,7 @@ Extensions} (DNSSEC).")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1x1waa2cb91zhsqkx4mkiqy00kq1f1pavjfhlz7wknlnll48iayd"))
+        (base32 "1kxmplngnlpd6j9nbzq1c1z02ipd38ypnppy7frg5crn83phfbxm"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -896,79 +870,77 @@ Extensions} (DNSSEC).")
     (build-system gnu-build-system)
     (outputs (list "out" "doc" "lib" "tools"))
     (arguments
-     `(#:configure-flags
-       (list (string-append "--docdir=" (assoc-ref %outputs "doc")
-                            "/share/" ,name "-" ,version)
-             (string-append "--infodir=" (assoc-ref %outputs "doc")
-                            "/share/info")
-             (string-append "--libdir=" (assoc-ref %outputs "lib") "/lib")
-             "--sysconfdir=/etc"
-             "--localstatedir=/var"
-             "--disable-static"         ; static libraries are built by default
-             "--enable-dnstap"          ; let tools read/write capture files
-             "--enable-fastparser"      ; disabled by default when .git/ exists
-             "--enable-xdp=yes"
-             "--with-module-dnstap=yes") ; detailed query capturing & logging
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'link-missing-libbpf-dependency
-           ;; Linking against -lbpf later would fail to find -lz: libbpf.pc has
-           ;; zlib in its Requires.private (not Requires) field.  Add it here.
-           (lambda _
-             (substitute* "configure.ac"
-               (("enable_xdp=yes" match)
-                (string-append match "\nlibbpf_LIBS=\"$libbpf_LIBS -lz\"")))))
-         (add-before 'bootstrap 'update-parser
-           (lambda _
-             (with-directory-excursion "src"
-               (invoke "sh" "../scripts/update-parser.sh"))))
-         (add-before 'configure 'disable-directory-pre-creation
-           (lambda _
-             ;; Don't install empty directories like ‘/etc’ outside the store.
-             ;; This is needed even when using ‘make config_dir=... install’.
-             (substitute* "src/Makefile.in" (("\\$\\(INSTALL\\) -d") "true"))))
-         (add-after 'build 'build-info
-           (lambda* (#:key make-flags parallel-build? #:allow-other-keys)
-             (apply invoke "make" "info"
-                    `(,@(if parallel-build?
-                            `("-j" ,(number->string (parallel-job-count)))
-                            '())
-                      ,@make-flags))))
-         (replace 'install
-           (lambda* (#:key make-flags outputs parallel-build? #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (doc (string-append out "/share/doc/" ,name "-" ,version))
-                    (etc (string-append doc "/examples/etc")))
-               (apply invoke "make" "install"
-                      (string-append "config_dir=" etc)
-                      `(,@(if parallel-build?
-                              `("-j" ,(number->string (parallel-job-count)))
-                              '())
-                        ,@make-flags)))))
-         (add-after 'install 'install-info
-           (lambda* (#:key make-flags parallel-build? #:allow-other-keys)
-             (apply invoke "make" "install-info"
-                    `(,@(if parallel-build?
-                            `("-j" ,(number->string (parallel-job-count)))
-                            '())
-                      ,@make-flags))))
-         (add-after 'install 'break-circular-:lib->:out-reference
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((lib (assoc-ref outputs "lib")))
-               (for-each (lambda (file)
-                           (substitute* file
-                             (("(prefix=).*" _ assign)
-                              (string-append assign lib "\n"))))
-                         (find-files lib "\\.pc$")))))
-         (add-after 'install 'split-:tools
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out   (assoc-ref outputs "out"))
-                    (tools (assoc-ref outputs "tools")))
-               (mkdir-p (string-append tools "/share/man"))
-               (rename-file (string-append out   "/bin")
-                            (string-append tools "/bin"))
-               (rename-file (string-append out   "/share/man/man1")
-                            (string-append tools "/share/man/man1"))))))))
+     (list
+      #:configure-flags
+      #~(list (string-append "--docdir=" #$output:doc
+                             "/share/" #$name "-" #$version)
+              (string-append "--infodir=" #$output:doc "/share/info")
+              (string-append "--libdir=" #$output:lib "/lib")
+              "--sysconfdir=/etc"
+              "--localstatedir=/var"
+              "--disable-static"       ; static libraries are built by default
+              "--enable-dnstap"        ; let tools read/write capture files
+              "--enable-fastparser"    ; disabled by default when .git/ exists
+              "--enable-xdp=yes"
+              "--with-module-dnstap=yes") ; detailed query capturing & logging
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'link-missing-libbpf-dependency
+            ;; Linking against -lbpf later would fail to find -lz: libbpf.pc has
+            ;; zlib in its Requires.private (not Requires) field.  Add it here.
+            (lambda _
+              (substitute* "configure.ac"
+                (("enable_xdp=yes" match)
+                 (string-append match "\nlibbpf_LIBS=\"$libbpf_LIBS -lz\"")))))
+          (add-before 'bootstrap 'update-parser
+            (lambda _
+              (with-directory-excursion "src"
+                (invoke "sh" "../scripts/update-parser.sh"))))
+          (add-before 'configure 'disable-directory-pre-creation
+            (lambda _
+              ;; Don't install empty directories like ‘/etc’ outside the store.
+              ;; This is needed even when using ‘make config_dir=... install’.
+              (substitute* "src/Makefile.in" (("\\$\\(INSTALL\\) -d") "true"))))
+          (add-after 'build 'build-info
+            (lambda* (#:key make-flags parallel-build? #:allow-other-keys)
+              (apply invoke "make" "info"
+                     `(,@(if parallel-build?
+                             `("-j" ,(number->string (parallel-job-count)))
+                             '())
+                       ,@make-flags))))
+          (replace 'install
+            (lambda* (#:key make-flags parallel-build? #:allow-other-keys)
+              (let* ((doc (string-append #$output "/share/doc/"
+                                         #$name "-" #$version))
+                     (etc (string-append doc "/examples/etc")))
+                (apply invoke "make" "install"
+                       (string-append "config_dir=" etc)
+                       `(,@(if parallel-build?
+                               `("-j" ,(number->string (parallel-job-count)))
+                               '())
+                         ,@make-flags)))))
+          (add-after 'install 'install-info
+            (lambda* (#:key make-flags parallel-build? #:allow-other-keys)
+              (apply invoke "make" "install-info"
+                     `(,@(if parallel-build?
+                             `("-j" ,(number->string (parallel-job-count)))
+                             '())
+                       ,@make-flags))))
+          (add-after 'install 'break-circular-:lib->:out-reference
+            (lambda _
+              (for-each (lambda (file)
+                          (substitute* file
+                            (("(prefix=).*" _ assign)
+                             (string-append assign #$output:lib "\n"))))
+                        (find-files #$output:lib "\\.pc$"))))
+          (add-after 'install 'split:tools
+            (lambda _
+              (define (move source target file)
+                (mkdir-p (dirname (string-append target "/" file)))
+                (rename-file (string-append source "/" file)
+                             (string-append target "/" file)))
+              (move #$output #$output:tools "bin")
+              (move #$output #$output:tools "share/man/man1"))))))
     (native-inputs
      (list autoconf
            automake
@@ -1098,7 +1070,7 @@ LuaJIT, both a resolver library and a daemon.")
 (define-public ddclient
   (package
     (name "ddclient")
-    (version "3.9.1")
+    (version "3.10.0")
     (source
      (origin
        (method git-fetch)
@@ -1107,62 +1079,46 @@ LuaJIT, both a resolver library and a daemon.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0hf377g4j9r9sac75xp17nk2h58mazswz4vkg4g2gl2yyhvzq91w"))))
-    (build-system trivial-build-system) ; no Makefile.PL
+        (base32 "0l87d72apwrg6ipc9gix5gv64d4hr1ykxmss8x4r8d8mgj6j8rf1"))
+       (modules '((guix build utils)))
+       (snippet
+        ;; XXX: erroneous version value, this is fixed in master
+        #~(begin
+            (substitute* "configure.ac"
+              (("3.10.0_2") #$version))))
+       (patches (search-patches "ddclient-skip-test.patch"))))
+    (build-system gnu-build-system)
     (native-inputs
-     (list bash perl))
+     (list autoconf automake libtool
+           perl-test-warnings perl-test-mockmodule))
     (inputs
      (list inetutils ; logger
            net-tools
-           perl-data-validate-ip
+           bash-minimal                           ;for 'wrap-program'
+           perl
            perl-digest-sha1
-           perl-io-socket-ssl))
+           perl-io-socket-ssl
+           perl-io-socket-inet6  ;; XXX: this is likely to be removed in a future ddclient release
+                                 ;; https://github.com/ddclient/ddclient/issues/461
+           perl-json))
     (arguments
-     `(#:modules ((guix build utils))
-       #:builder
-       (begin
-         (use-modules (guix build utils)
-                      (ice-9 match)
-                      (srfi srfi-26))
-         (setenv "PATH" (string-append
-                         (assoc-ref %build-inputs "bash") "/bin" ":"
-                         (assoc-ref %build-inputs "perl") "/bin"))
-
-         ;; Copy the (read-only) source into the (writable) build directory.
-         (copy-recursively (assoc-ref %build-inputs "source") ".")
-
-         ;; Install.
-         (let* ((out (assoc-ref %outputs "out"))
-                (bin (string-append out "/bin")))
-           (let ((file "ddclient"))
-             (substitute* file
-               (("/usr/bin/perl") (which "perl"))
-               ;; Strictly use ‘/etc/ddclient/ddclient.conf’.
-               (("\\$\\{program\\}\\.conf") "/etc/ddclient/ddclient.conf")
-               (("\\$etc\\$program.conf") "/etc/ddclient/ddclient.conf")
-               ;; Strictly use ‘/var/cache/ddclient/ddclient.cache’
-               (("\\$cachedir\\$program\\.cache")
-                "/var/cache/ddclient/ddclient.cache"))
-             (install-file file bin)
-             (wrap-program (string-append bin "/" file)
-               `("PATH" ":" =
-                 ("$PATH"
-                  ,@(map (lambda (input)
-                           (match input
-                                  ((name . store)
-                                   (string-append store "/bin"))))
-                         %build-inputs)))
-               `("PERL5LIB" ":" =
-                 ,(delete
-                   ""
-                   (map (match-lambda
-                         (((? (cut string-prefix? "perl-" <>) name) . dir)
-                          (string-append dir "/lib/perl5/site_perl"))
-                         (_ ""))
-                        %build-inputs)))))
-           (for-each (cut install-file <> (string-append out
-                                                         "/share/ddclient"))
-                     (find-files "." "sample.*$"))))))
+     (list
+      #:configure-flags #~(list "--localstatedir=/var")
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'install
+            (lambda _
+              ;; XXX: Do not create /var
+              (invoke "make" "localstatedir=/tmp/discard" "install")))
+          (add-after 'wrap 'wrap-ddclient
+            (lambda* (#:key inputs #:allow-other-keys)
+              (wrap-program (string-append #$output "/bin/ddclient")
+                `("PERL5LIB" ":" prefix ,(string-split (getenv "PERL5LIB") #\:))
+                `("PATH" prefix ,(map (lambda (x)
+                                        (string-append (assoc-ref inputs x) "/bin"))
+                                      '("inetutils" "net-tools")))))))))
+    (native-search-paths
+     (list $SSL_CERT_DIR $SSL_CERT_FILE))
     (home-page "https://ddclient.net/")
     (synopsis "Address updating utility for dynamic DNS services")
     (description "This package provides a client to update dynamic IP
@@ -1254,10 +1210,10 @@ local networks.")
   ;; so its contents will change over time.  If you update this commit, please
   ;; make sure that the new commit refers to a list which is identical to the
   ;; officially published list available from the URL above.
-  (let ((commit "9375b697baddb0827a5995c81bd3c75877a0b35d"))
+  (let ((commit "d2d3e2e36a8f2b68c4f09e8c87f4f1d685cbf5e7"))
     (package
       (name "public-suffix-list")
-      (version (git-version "0" "1" commit))
+      (version (git-version "0" "2" commit))
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
@@ -1266,26 +1222,17 @@ local networks.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "1sm7pni01rnl4ldzi8z8nc4cbgq8nxda9gwc68v0s3ij7jd1jmik"))))
-      (build-system trivial-build-system)
+                  "1f6rydx4hdd6lja376f4sdp7iv64vqlmhmnlkg0rb17279dc9483"))))
+      (build-system copy-build-system)
       (arguments
-       `(#:modules ((guix build utils))
-         #:builder
-         (begin
-           (use-modules (guix build utils))
-           (let* ((out (assoc-ref %outputs "out"))
-                  ;; Install to /share because that is where "read-only
-                  ;; architecture-independent data files" should go (see:
-                  ;; (standards) Directory Variables).  Include the version in
-                  ;; the directory name so that if multiple versions are ever
-                  ;; installed in the same profile, they will not conflict.
-                  (destination (string-append
-                                out "/share/public-suffix-list-" ,version))
-                  (source (assoc-ref %build-inputs "source")))
-             (with-directory-excursion source
-             (install-file "public_suffix_list.dat" destination)
-             (install-file "LICENSE" destination))
-             #t))))
+       (list #:install-plan
+             ;; Install to /share because that is where "read-only
+             ;; architecture-independent data files" should go (see: (standards)
+             ;; Directory Variables).  Include the version in the directory name
+             ;; so that if multiple versions are ever installed in the same
+             ;; profile, they will not conflict.
+             #~'(("public_suffix_list.dat"
+                  #$(string-append "/share/public-suffix-list-" version "/")))))
       (home-page "https://publicsuffix.org/")
       (synopsis "Database of current and historical DNS suffixes")
       (description "This is the Public Suffix List maintained by Mozilla.  A
@@ -1389,3 +1336,39 @@ interface.  It then calls all the helper scripts it knows about so it can
 configure the real @file{/etc/resolv.conf} and optionally any local
 nameservers other than libc.")
     (license license:bsd-2)))
+
+(define-public smartdns
+  (package
+    (name "smartdns")
+    (version "42")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/pymumu/smartdns")
+                    (commit (string-append "Release" version))))
+              (file-name (git-file-name name version))
+              (modules '((guix build utils)))
+              (snippet '(substitute* "Makefile"
+                          ((".*SYSTEMDSYSTEMUNITDIR.*") "")))
+              (sha256
+               (base32
+                "17j0h5l7gig6rzk8b9180jwrx5khpnrylacjxvnnpgsi2725k8lq"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f                  ;no tests
+           #:make-flags
+           #~(list (string-append "CC=" #$(cc-for-target))
+                   (string-append "DESTDIR=" #$output)
+                   "PREFIX=''")
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure))))
+    (inputs (list openssl))
+    (home-page "https://github.com/pymumu/smartdns")
+    (synopsis "Local DNS server")
+    (description
+     "SmartDNS is a DNS server that accepts DNS query requests from local
+clients, obtains DNS query results from multiple upstream DNS servers, and
+returns the fastest access results to clients.")
+    (license license:gpl3+)))
+

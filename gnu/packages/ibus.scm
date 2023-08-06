@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2015-2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2016 Chris Marusich <cmmarusich@gmail.com>
 ;;; Copyright © 2017, 2018 Efraim Flashner <efraim@flashner.co.il>
@@ -10,7 +10,8 @@
 ;;; Copyright © 2021 Felix Gruber <felgru@posteo.net>
 ;;; Copyright © 2021 Songlin Jiang <hollowman@hollowman.ml>
 ;;; Copyright © 2021 Taiju HIGASHI <higashi@taiju.info>
-;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2023 Luis Felipe López Acevedo <luis.felipe.la@protonmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -36,6 +37,7 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
+  #:use-module (guix build-system meson)
   #:use-module (guix build-system python)
   #:use-module (guix utils)
   #:use-module (gnu packages)
@@ -54,20 +56,25 @@
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
+  #:use-module (gnu packages gstreamer)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages iso-codes)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages logging)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages serialization)
+  #:use-module (gnu packages speech)
   #:use-module (gnu packages sqlite)
   #:use-module (gnu packages textutils)
   #:use-module (gnu packages unicode)
   #:use-module (gnu packages xorg)
   #:use-module (gnu packages xdisorg)
+  #:use-module (gnu packages xml)
   #:use-module (srfi srfi-1))
 
 (define-public ibus-minimal
@@ -86,7 +93,7 @@
     (outputs '("out" "doc"))
     (arguments
      (list
-      #:configure-flags #~(list "--enable-python-library"
+      #:configure-flags #~(list "--disable-gtk2"
                                 "--enable-gtk-doc"
                                 "--enable-memconf"
                                 (string-append
@@ -120,13 +127,6 @@
                 (substitute* '("ibus-share.c" "ibus-compose.c"
                                "ibus-keypress.c")
                   (("[ \t]*return g_test_run \\(\\);") "")))))
-          (add-after 'unpack 'patch-docbook-xml
-            (lambda* (#:key inputs #:allow-other-keys)
-              (with-directory-excursion "docs/reference/ibus"
-                (substitute* "ibus-docs.sgml.in"
-                  (("http://www.oasis-open.org/docbook/xml/4.1.2/")
-                   (string-append #$(this-package-native-input "docbook-xml")
-                                  "/xml/dtd/docbook/"))))))
           (add-after 'unpack 'patch-python-target-directories
             (lambda _
               (let ((root (string-append #$output
@@ -181,10 +181,8 @@
                (string-append #$output:doc "/share/gtk-doc"))))
           (add-after 'wrap-program 'wrap-with-additional-paths
             (lambda* (#:key outputs #:allow-other-keys)
-              ;; Make sure 'ibus-setup' runs with the correct PYTHONPATH and
-              ;; GI_TYPELIB_PATH.
+              ;; Make sure 'ibus-setup' runs with the correct GI_TYPELIB_PATH.
               (wrap-program (search-input-file outputs "bin/ibus-setup")
-                `("GUIX_PYTHONPATH" ":" prefix (,(getenv "GUIX_PYTHONPATH")))
                 `("GI_TYPELIB_PATH" ":" prefix
                   (,(getenv "GI_TYPELIB_PATH")
                    ,(string-append #$output "/lib/girepository-1.0")))))))))
@@ -193,7 +191,6 @@
            dbus
            dconf
            glib
-           gtk+-2
            gtk+
            iso-codes
            json-glib
@@ -201,9 +198,6 @@
            libx11
            libxkbcommon
            libxtst
-           python-pygobject
-           python
-           python-dbus
            setxkbmap
            ucd
            unicode-cldr-common
@@ -239,17 +233,42 @@ may also simplify input method development.")
 
 (define-public ibus
   (package/inherit ibus-minimal
-    (arguments (substitute-keyword-arguments (package-arguments ibus-minimal)
-                 ((#:configure-flags flags)
-                  #~(cons* "--enable-gtk4" #$flags))))
+    (arguments
+     (substitute-keyword-arguments (package-arguments ibus-minimal)
+       ((#:configure-flags flags)
+        #~(cons* "--enable-gtk4"
+                 "--enable-python-library"
+                 #$flags))
+       ((#:phases phases '%standard-phases)
+        #~(modify-phases #$phases
+            (replace 'wrap-with-additional-paths
+              (lambda* (#:key outputs #:allow-other-keys)
+                ;; Make sure 'ibus-setup' and 'ibus-daemon' runs with the
+                ;; correct GUIX_PYTHONPATH and GI_TYPELIB_PATH.  Wrap
+                ;; 'ibus-daemon' is needed because engines spawned by
+                ;; the daemon need access to those libraries.
+                (for-each
+                  (lambda (prog)
+                    (wrap-program prog
+                      `("GUIX_PYTHONPATH" ":" prefix
+                        (,(getenv "GUIX_PYTHONPATH")))
+                      `("GI_TYPELIB_PATH" ":" prefix
+                        (,(getenv "GI_TYPELIB_PATH")
+                         ,(string-append #$output "/lib/girepository-1.0")))))
+                  (list (search-input-file outputs "bin/ibus-setup")
+                        (search-input-file outputs "bin/ibus-daemon")))))))))
     (inputs (modify-inputs (package-inputs ibus-minimal)
-              (prepend gtk pango-next)))
+              (prepend gtk
+                       pango
+                       python
+                       python-dbus
+                       python-pygobject)))
     (properties (alist-delete 'hidden? (package-properties ibus-minimal)))))
 
 (define-public ibus-libpinyin
   (package
     (name "ibus-libpinyin")
-    (version "1.12.0")
+    (version "1.15.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/libpinyin/ibus-libpinyin/"
@@ -257,40 +276,42 @@ may also simplify input method development.")
                                   "/ibus-libpinyin-" version ".tar.gz"))
               (sha256
                (base32
-                "0xl2lmffy42f6h6za05z4vpazpza1a9gsrva65giwyv3kpf652dd"))))
+                "01zsx3aw9iwjm70mksgpjlqjj5f5wi9l0pdixprw5lj5hxd8siyp"))))
     (build-system glib-or-gtk-build-system)
     (arguments
-     `(#:configure-flags
-       '("--enable-opencc")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'wrap-program 'wrap-with-additional-paths
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             ;; Make sure 'ibus-setup-libpinyin' runs with the correct
-             ;; PYTHONPATH and GI_TYPELIB_PATH.
-             (let ((out (assoc-ref outputs "out")))
-               (wrap-program (string-append out "/libexec/ibus-setup-libpinyin")
-                 `("GUIX_PYTHONPATH" ":" prefix
-                   (,(getenv "GUIX_PYTHONPATH")
-                    ,(string-append (assoc-ref inputs "ibus")
-                                    "/lib/girepository-1.0")
-                    ,(string-append (assoc-ref outputs "out")
-                                    "/share/ibus-libpinyin/setup/")))
-                 `("GI_TYPELIB_PATH" ":" prefix
-                   (,(string-append (assoc-ref inputs "ibus")
-                                    "/lib/girepository-1.0")
-                    ,(string-append (assoc-ref outputs "out")
-                                    "/share/ibus-libpinyin/setup/"))))
-               #t))))))
+     (list
+      #:configure-flags
+      '(list "--enable-opencc")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'wrap-program 'wrap-with-additional-paths
+            (lambda _
+              ;; Make sure 'ibus-setup-libpinyin' runs with the correct
+              ;; PYTHONPATH and GI_TYPELIB_PATH.
+              (wrap-program (string-append #$output "/libexec/ibus-setup-libpinyin")
+                `("GUIX_PYTHONPATH" ":" prefix
+                  (,(getenv "GUIX_PYTHONPATH")
+                   ,(string-append #$(this-package-input "ibus")
+                                   "/lib/girepository-1.0")
+                   ,(string-append #$output
+                                   "/share/ibus-libpinyin/setup/")))
+                `("GI_TYPELIB_PATH" ":" prefix
+                  (,(string-append #$(this-package-input "ibus")
+                                   "/lib/girepository-1.0")
+                   ,(string-append #$(this-package-input "gtk+")
+                                   "/lib/girepository-1.0")
+                   ,(string-append #$output
+                                   "/share/ibus-libpinyin/setup/")
+                   ,(getenv "GI_TYPELIB_PATH")))))))))
     (inputs
-     `(("ibus" ,ibus)
-       ("libpinyin" ,libpinyin)
-       ("bdb" ,bdb)
-       ("sqlite" ,sqlite)
-       ("opencc" ,opencc)
-       ("python" ,python)
-       ("pygobject2" ,python-pygobject)
-       ("gtk+" ,gtk+)))
+     (list ibus
+           libpinyin
+           bdb
+           sqlite
+           opencc
+           python
+           python-pygobject
+           gtk+))
     (native-inputs
      (list pkg-config intltool
            `(,glib "bin")))
@@ -304,7 +325,7 @@ ZhuYin (Bopomofo) input method based on libpinyin for IBus.")
 (define-public libpinyin
   (package
     (name "libpinyin")
-    (version "2.6.0")
+    (version "2.8.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/libpinyin/libpinyin/"
@@ -312,7 +333,7 @@ ZhuYin (Bopomofo) input method based on libpinyin for IBus.")
                                   "/libpinyin-" version ".tar.gz"))
               (sha256
                (base32
-                "10h5mjgv4ibhispvr3s1k36a4aclx4dcvcc2knd4sg1xibw0dp4w"))))
+                "0l4h1q2l5fql0fy9bmncyw0dpbfwn1yb5p3xnwvhgpbidpq58c9m"))))
     (build-system gnu-build-system)
     (inputs
      (list glib bdb))
@@ -336,18 +357,52 @@ Chinese pinyin input methods.")
                     version "/ibus-anthy-" version ".tar.gz"))
               (sha256
                (base32
-                "16vd0k8wm13s38869jqs3dnwmjvywgn0snnpyi41m28binhlssf8"))))
-    (build-system gnu-build-system)
+                "16vd0k8wm13s38869jqs3dnwmjvywgn0snnpyi41m28binhlssf8"))
+              (patches (search-patches "ibus-anthy-fix-tests.patch"))))
+    (build-system glib-or-gtk-build-system)
     (arguments
      (list
-      #:configure-flags
-      ;; Use absolute exec path in the anthy.xml.
-      #~(list (string-append "--libexecdir=" #$output "/libexec"))
-      ;; The test suite fails (see:
+      ;; The test suite hangs (see:
       ;; https://github.com/ibus/ibus-anthy/issues/28).
       #:tests? #f
+      #:configure-flags
+      ;; Use absolute exec path in the anthy.xml.
+      #~(list (string-append "--libexecdir=" #$output "/libexec")
+              (string-append
+               "--with-anthy-zipcode="
+               (assoc-ref %build-inputs "anthy") "/share/anthy/zipcode.t"))
+      ;; The test suite fails (see:
+      ;; https://github.com/ibus/ibus-anthy/issues/28).
       #:phases
       #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-check
+            (lambda _
+              (substitute* "data/Makefile.in"
+                ;; Use a year current at the time the release was made, to
+                ;; avoid the "This year ２０２３ is not included in era.y"
+                ;; error.
+                (("`date '\\+%Y'`")
+                 "2021"))))
+          (add-after 'unpack 'do-not-override-GI_TYPELIB_PATH
+            ;; Do not override the GI_TYPELIB_PATH to avoid the pygobject
+            ;; error: "ValueError: Namespace Gdk not available".
+            (lambda _
+              (substitute* "tests/test-build.sh"
+                (("GI_TYPELIB_PATH=\\$BUILDDIR/../gir" all)
+                 (string-append all ":$GI_TYPELIB_PATH")))))
+          (add-before 'configure 'pre-configure
+            (lambda _
+              ;; We need generate new _config.py with correct PKGDATADIR.
+              (delete-file "setup/python3/_config.py")
+              (delete-file "engine/python3/_config.py")))
+          (add-before 'check 'prepare-for-tests
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                ;; IBus requires write access to the HOME directory.
+                (setenv "HOME" "/tmp")
+                ;; The single test is skipped if no actual display is found.
+                (system "Xvfb :1 &")
+                (setenv "DISPLAY" ":1"))))
           (add-after 'install 'wrap-programs
             (lambda* (#:key inputs #:allow-other-keys)
               (for-each
@@ -364,7 +419,11 @@ Chinese pinyin input methods.")
            `(,glib "bin")
            intltool
            pkg-config
-           python))
+           procps                       ;for ps
+           python
+           python-pycotap
+           util-linux                   ;for getopt
+           xorg-server-for-tests))
     (inputs
      (list anthy
            gtk+
@@ -846,6 +905,171 @@ hanja dictionary and small hangul character classification.")
     (description
      "ibus-hangul is a Korean input method engine for IBus.")
     (license gpl2+)))
+
+(define-public ibus-table
+  (package
+    (name "ibus-table")
+    (version "1.17.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append
+             "https://github.com/mike-fabian/ibus-table/releases/download/"
+             version "/ibus-table-" version ".tar.gz"))
+       (sha256
+        (base32 "063ba4fwk04lh0naj8z9r9x15ikckp94pd3f8xn40z3lnwsjx2sj"))
+       (patches (search-patches "ibus-table-paths.patch"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'patch-paths
+                 (lambda _
+                   (substitute* "engine/tabcreatedb.py"
+                     (("/usr/share/ibus-table")
+                      (string-append #$output "/share/ibus-table")))
+                   (substitute* "engine/ibus_table_location.py"
+                     (("/usr/share/ibus-table")
+                      (string-append #$output "/share/ibus-table"))
+                     (("/usr/libexec")
+                      (string-append #$output "/libexec")))))
+               (add-before 'check 'pre-check
+                 (lambda _
+                   (setenv "HOME" (getcwd))))))) ; tests write to $HOME
+    (native-inputs (list (list glib "bin") pkg-config))
+    (inputs (list glib gtk+ ibus python python-pygobject))
+    (native-search-paths
+     (list (search-path-specification
+            (variable "IBUS_TABLE_LOCATION")
+            (files '("share/ibus-table"))
+            (separator #f))))
+    (home-page "https://mike-fabian.github.io/ibus-table")
+    (synopsis "Table based input framework for IBus")
+    (description
+     "@code{ibus-table} is a framework for table based input methods using
+IBus.")
+    (license lgpl2.1+)))
+
+(define-public ibus-table-others
+  (package
+    (name "ibus-table-others")
+    (version "1.3.16")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append
+             "https://github.com/moebiuscurve/ibus-table-others/releases/"
+             "download/" version "/ibus-table-others-" version ".tar.gz"))
+       (sha256
+        (base32 "0vllwrjlgcvdjhs7nrg45hfvnivnfhrc05r6rhw8m0c41layl9jg"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'build 'pre-build
+                 (lambda _
+                   (setenv "HOME" (getcwd))))))) ; db written in $HOME
+    (native-inputs (list pkg-config python))
+    (inputs (list ibus ibus-table))
+    (home-page "https://github.com/moebiuscurve/ibus-table-others")
+    (synopsis "Various table-based input methods for IBus")
+    (description
+     "@code{ibus-table-others} provides the following input methods on
+IBus-Table on IBus framework:
+
+@itemize
+@item CNS11643
+@item Compose
+@item Emoji
+@item IPA-X-SAMPA
+@item LaTex
+@item Mathwriter
+@item Mongol bichig
+@item RussianTraditional
+@item Telex
+@item Thai
+@item Translit
+@item Ua-Translit
+@item Viqr
+@item VNI
+@item Yawerty
+@end itemize")
+    ;; GPL-3.0-or-later: vni, ipa-x-sampa, telex
+    ;; WTFPL: mongol_bichig
+    ;; LGPL-2.1-or-later: others
+    (license (list lgpl2.1+ gpl3+ wtfpl2))))
+
+(define-public ibus-speech-to-text
+  (package
+    (name "ibus-speech-to-text")
+    (version "0.4.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/PhilippeRo/IBus-Speech-To-Text")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "00p7jfv815dblg20hahch6151rdbxhkdhfj51i0yvvmg3irvf7nm"))))
+    (build-system meson-build-system)
+    (arguments
+     (list
+      #:glib-or-gtk? #true
+      #:phases
+      '(modify-phases %standard-phases
+         (add-after 'unpack 'skip-update-desktop-database
+           (lambda* (#:key inputs #:allow-other-keys)
+             (substitute* "meson.build"
+               (("update_desktop_database: true")
+                "update_desktop_database: false"))))
+         (add-after 'set-paths 'add-install-to-pythonpath
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (ibus-stt-dir (string-append out "/share/ibus-stt")))
+               (setenv "GUIX_PYTHONPATH"
+                       (string-append ibus-stt-dir ":"
+                                      (getenv "GUIX_PYTHONPATH"))))))
+         (add-after 'install 'wrap-with-additional-paths
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             ;; Make sure 'ibus-{setup,engine}-stt' find the gst-vosk plugin
+             ;; and run with the correct GUIX_PYTHONPATH and GI_TYPELIB_PATH.
+             (let ((out (assoc-ref outputs "out")))
+               (for-each (lambda (prog)
+                           (wrap-program prog
+                             `("GST_PLUGIN_PATH" ":" prefix
+                               (,(string-append (assoc-ref inputs "gst-vosk")
+                                                "/lib/gstreamer-1.0")
+                                ,(getenv "GST_PLUGIN_SYSTEM_PATH")))
+                             `("GUIX_PYTHONPATH" =
+                               (,(getenv "GUIX_PYTHONPATH")))
+                             `("GI_TYPELIB_PATH" =
+                               (,(getenv "GI_TYPELIB_PATH")))))
+                         (list (string-append out "/libexec/ibus-engine-stt")
+                               (string-append out "/libexec/ibus-setup-stt")))))))))
+    (inputs
+     (list bash-minimal
+           gst-vosk
+           gstreamer
+           gtk
+           ibus
+           libadwaita
+           python
+           python-babel
+           python-pygobject))
+    (native-inputs
+     (list desktop-file-utils
+           gettext-minimal
+           (list glib "bin")
+           gobject-introspection
+           libxml2 pkg-config))
+    (home-page "https://github.com/PhilippeRo/IBus-Speech-To-Text")
+    (synopsis "Speech to text IBus engine using VOSK")
+    (description "This Input Method uses VOSK for voice recognition and allows
+to dictate text in several languages in any application that supports IBus.
+One of the main adavantages is that VOSK performs voice recognition locally
+and does not rely on an online service.")
+    (license gpl3+)))
 
 (define-public ibus-theme-tools
   (package

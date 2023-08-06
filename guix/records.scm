@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2018 Mark H Weaver <mhw@netris.org>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -20,9 +20,9 @@
 (define-module (guix records)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 regex)
   #:use-module (ice-9 rdelim)
   #:autoload (system base target) (target-most-positive-fixnum)
   #:export (define-record-type*
@@ -31,7 +31,8 @@
             alist->record
             object->fields
             recutils->alist
-            match-record))
+            match-record
+            match-record-lambda))
 
 ;;; Commentary:
 ;;;
@@ -103,6 +104,15 @@ error-reporting purposes."
                               #'duplicate))
            (()
             #t)))))))
+
+(define-syntax map-fields
+  (lambda (x)
+    (syntax-case x ()
+      ((_ type within)
+       (syntax-violation (syntax->datum #'within)
+                         "undefined record type"
+                         #'type))
+      (_ (syntax-violation 'map-fields "bad use of syntactic keyword" x x)))))
 
 (define-syntax-parameter this-record
   (lambda (s)
@@ -325,6 +335,15 @@ This expression returns a new object equal to 'x' except for its 'name'
 field and its 'loc' field---the latter is marked as \"innate\", so it is not
 inherited."
 
+    (define (rtd-identifier type)
+      ;; Return an identifier derived from TYPE to name its record type
+      ;; descriptor (RTD).
+      (let ((type-name (syntax->datum type)))
+        (datum->syntax
+         type
+         (string->symbol
+          (string-append "% " (symbol->string type-name) " rtd")))))
+
     (define (field-default-value s)
       (syntax-case s (default)
         ((field (default val) _ ...)
@@ -411,10 +430,19 @@ inherited."
               (defaults   (filter-map field-default-value
                                       #'((field properties ...) ...)))
               (sanitizers (filter-map field-sanitizer
-                                        #'((field properties ...) ...)))
+                                      #'((field properties ...) ...)))
               (cookie     (compute-abi-cookie field-spec)))
          (with-syntax (((field-spec* ...)
                         (map field-spec->srfi-9 field-spec))
+                       ((field-type ...)
+                        (map (match-lambda
+                               ((? thunked-field?)
+                                (datum->syntax s 'thunked))
+                               ((? delayed-field?)
+                                (datum->syntax s 'delayed))
+                               (else
+                                (datum->syntax s 'normal)))
+                             field-spec))
                        ((thunked-field-accessor ...)
                         (filter-map (lambda (field)
                                       (and (thunked-field? field)
@@ -428,10 +456,31 @@ inherited."
                                             field)))
                                     field-spec)))
            #`(begin
-               (define-record-type type
+               (define-record-type #,(rtd-identifier #'type)
                  (ctor field ...)
                  pred
                  field-spec* ...)
+
+               ;; Rectify the vtable type name...
+               (set-struct-vtable-name! #,(rtd-identifier #'type) 'type)
+               (cond-expand
+                (guile-3
+                 ;; ... and the record type name.
+                 (struct-set! #,(rtd-identifier #'type) vtable-offset-user
+                              'type))
+                (else #f))
+
+               (define-syntax type
+                 (lambda (s)
+                   "This macro lets us query record type info at
+macro-expansion time."
+                   (syntax-case s (map-fields)
+                     ((_ (map-fields _ _) macro)
+                      #'(macro ((field field-type) ...)))
+                     (id
+                      (identifier? #'id)
+                      #'#,(rtd-identifier #'type)))))
+
                (define #,(current-abi-identifier #'type)
                  #,cookie)
 
@@ -535,19 +584,75 @@ pairs.  Stop upon an empty line (after consuming it) or EOF."
               (else
                (error "unmatched line" line))))))))
 
+
+;;;
+;;; Pattern matching.
+;;;
+
+(define-syntax lookup-field+wrapper
+  (lambda (s)
+    "Look up FIELD in the given list and return both an expression that represents
+its offset in the record and a procedure that wraps it to return its \"true\" value
+(for instance, FORCE is returned in the case of a delayed field).  RECORD is passed
+to thunked values.  Raise a syntax violation when the field is not found."
+    (syntax-case s (normal delayed thunked)
+      ((_ record field offset ())
+       (syntax-violation 'match-record
+                         "unknown record type field"
+                         ;; Attach the local source data to the field.
+                         (datum->syntax #f (syntax->datum #'field) #:source s)))
+      ((_ record field offset ((head normal) tail ...))
+       (free-identifier=? #'field #'head)
+       #'(values offset identity))
+      ((_ record field offset ((head delayed) tail ...))
+       (free-identifier=? #'field #'head)
+       #'(values offset force))
+      ((_ record field offset ((head thunked) tail ...))
+       (free-identifier=? #'field #'head)
+       #'(values offset (cut <> record)))
+      ((_ record field offset (_ tail ...))
+       #'(lookup-field+wrapper record field
+                               (+ 1 offset) (tail ...))))))
+
+(define-syntax match-record-inner
+  (lambda (s)
+    (syntax-case s ()
+      ((_ record type ((field variable) rest ...) body ...)
+       #'(let-syntax ((field-offset+wrapper
+                       (syntax-rules ()
+			 ((_ f)
+                          (lookup-field+wrapper record field 0 f)))))
+           (let*-values (((offset wrap)
+                          (type (map-fields type match-record)
+                                field-offset+wrapper))
+                         ((variable)
+                          (wrap (struct-ref record offset))))
+             (match-record-inner record type (rest ...) body ...))))
+      ((_ record type (field rest ...) body ...)
+       ;; Redirect to the canonical form above.
+       #'(match-record-inner record type ((field field) rest ...) body ...))
+      ((_ record type () body ...)
+       #'(begin body ...)))))
+
 (define-syntax match-record
   (syntax-rules ()
     "Bind each FIELD of a RECORD of the given TYPE to it's FIELD name.
-The current implementation does not support thunked and delayed fields."
-    ((_ record type (field fields ...) body ...)
+The order in which fields appear does not matter.  A syntax error is raised if
+an unknown field is queried."
+    ((_ record type (fields ...) body ...)
      (if (eq? (struct-vtable record) type)
-         ;; TODO compute indices and report wrong-field-name errors at
-         ;;      expansion time
-         ;; TODO support thunked and delayed fields
-         (let ((field ((record-accessor type 'field) record)))
-           (match-record record type (fields ...) body ...))
-         (throw 'wrong-type-arg record)))
-    ((_ record type () body ...)
-     (begin body ...))))
+         (match-record-inner record type (fields ...) body ...)
+         (throw 'wrong-type-arg record)))))
+
+(define-syntax match-record-lambda
+  (syntax-rules ()
+    "Return a procedure accepting a single record of the given TYPE for which each
+FIELD will be bound to its FIELD name within the returned procedure.  A syntax error
+is raised if an unknown field is queried."
+    ((_ type (field ...) body ...)
+     (lambda (record)
+       (if (eq? (struct-vtable record) type)
+           (match-record-inner record type (field ...) body ...)
+           (throw 'wrong-type-arg record))))))
 
 ;;; records.scm ends here

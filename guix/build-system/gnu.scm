@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -22,13 +22,14 @@
   #:use-module (guix memoization)
   #:use-module (guix gexp)
   #:use-module (guix monads)
-  #:use-module (guix derivations)
   #:use-module (guix search-paths)
   #:use-module (guix build-system)
   #:use-module (guix packages)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
   #:export (%gnu-build-system-modules
+            %strip-flags
+            %strip-directories
             gnu-build
             gnu-build-system
             standard-packages
@@ -213,18 +214,16 @@ flags for VARIABLE, the associated value is augmented."
 (define* (static-package p #:key (strip-all? #t))
   "Return a statically-linked version of package P.  If STRIP-ALL? is true,
 use `--strip-all' as the arguments to `strip'."
-  (package (inherit p)
+  (package
+    (inherit p)
     (arguments
-     (let ((a (default-keyword-arguments (package-arguments p)
-                '(#:configure-flags '()
-                  #:strip-flags '("--strip-unneeded")))))
-       (substitute-keyword-arguments a
-         ((#:configure-flags flags)
-          `(cons* "--disable-shared" "LDFLAGS=-static" ,flags))
-         ((#:strip-flags flags)
-          (if strip-all?
-              ''("--strip-all")
-              flags)))))
+     (substitute-keyword-arguments (package-arguments p)
+       ((#:configure-flags flags #~'())
+        #~(cons* "--disable-shared" "LDFLAGS=-static" #$flags))
+       ((#:strip-flags flags #~'("--strip-unneeded"))
+        (if strip-all?
+            #~'("--strip-all")
+            flags))))
     (replacement (and=> (package-replacement p) static-package))))
 
 (define* (dist-package p source #:key (phases '%dist-phases))
@@ -267,13 +266,13 @@ listed in REFS."
       p))
 
 
-(define (standard-packages)
+(define* (standard-packages #:optional (system (%current-system)))
   "Return the list of (NAME PACKAGE OUTPUT) or (NAME PACKAGE) tuples of
 standard packages used as implicit inputs of the GNU build system."
 
   ;; Resolve (gnu packages commencement) lazily to hide circular dependency.
   (let ((distro (resolve-module '(gnu packages commencement))))
-    (module-ref distro '%final-inputs)))
+    ((module-ref distro '%final-inputs) system)))
 
 (define* (lower name
                 #:key source inputs native-inputs outputs target
@@ -304,7 +303,7 @@ standard packages used as implicit inputs of the GNU build system."
                           (standard-cross-packages target 'host)
                           '())
                     ,@(if implicit-inputs?
-                          (standard-packages)
+                          (standard-packages system)
                           '())))
     (host-inputs (if target inputs '()))
 

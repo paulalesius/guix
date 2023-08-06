@@ -2,7 +2,7 @@
 ;;; Copyright © 2013, 2014, 2015 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2014 Sree Harsha Totakura <sreeharsha@totakura.in>
 ;;; Copyright © 2015, 2017, 2018, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2015, 2017, 2019, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015, 2017, 2019-2021, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Nikita <nikita@n0.is>
@@ -12,6 +12,8 @@
 ;;; Copyright © 2020 Tanguy Le Carrour <tanguy@bioneland.org>
 ;;; Copyright © 2020 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
+;;; Copyright © 2023 Adam Faiz <adam.faiz@disroot.org>
+;;; Copyright © 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -30,6 +32,7 @@
 
 (define-module (gnu packages gnunet)
   #:use-module (gnu packages)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages file)
   #:use-module (gnu packages aidc)
   #:use-module (gnu packages autotools)
@@ -60,6 +63,7 @@
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages sphinx)
   #:use-module (gnu packages sqlite)
   #:use-module (gnu packages text-editors)
   #:use-module (gnu packages tls)
@@ -100,7 +104,7 @@
     `(("exiv2" ,exiv2)
       ("bzip2" ,bzip2)
       ("flac" ,flac)
-      ("ffmpeg" ,ffmpeg)
+      ("ffmpeg" ,ffmpeg-4)
       ("file" ,file)                           ;libmagic, for the MIME plug-in
       ("glib" ,glib)
       ("giflib" ,giflib)
@@ -163,14 +167,14 @@ tool to extract metadata from a file and print the results.")
 (define-public libmicrohttpd
   (package
    (name "libmicrohttpd")
-   (version "0.9.75")
+   (version "0.9.77")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnu/libmicrohttpd/libmicrohttpd-"
                                 version ".tar.gz"))
             (sha256
              (base32
-              "1fz3ljqfvfyfb5inzihy66bys22id9jgsi4nmcd3j6spdxx90y4j"))))
+              "185hfvdxs3njcja5rz5c9v73x4x97k0s8vkah396000ja6hj6w4y"))))
    (build-system gnu-build-system)
    (arguments
     (list #:configure-flags
@@ -257,69 +261,93 @@ supports HTTP, HTTPS and GnuTLS.")
 
 (define-public gnunet
   (package
-   (name "gnunet")
-   (version "0.16.3")
-   (source
-    (origin
-      (method url-fetch)
-      (uri (string-append "mirror://gnu/gnunet/gnunet-" version
-                          ".tar.gz"))
-      (sha256
-       (base32
-        "12n33r9nnkl5xwx8pwf571l2zvnvfllc8vm6mamrlyjk2cphaf9j"))))
-   (build-system gnu-build-system)
-   (inputs
-    (list bluez
-          glpk
-          gnurl
-          gnutls/dane
-          gstreamer
-          jansson
-          libextractor
-          libidn2
-          libgcrypt
-          libjpeg-turbo
-          libltdl
-          libmicrohttpd
-          libogg
-          libsodium
-          libunistring
-          miniupnpc
-          opus
-          pulseaudio
-          sqlite
-          zbar
-          zlib))
-   (native-inputs
-    (list curl openssl pkg-config python xxd
-          (@ (gnu packages base) which)))
-   (arguments
-    '(#:parallel-tests? #f ; Parallel tests aren't supported.
+    (name "gnunet")
+    (version "0.19.4")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "mirror://gnu/gnunet/gnunet-" version
+                           ".tar.gz"))
+       (sha256
+        (base32
+         "16q0mkkr9b33wlm307ignfgvv0kilzr42155m5dpz66m13s3v9h0"))
+       (modules '((guix build utils)))
+       (snippet
+        #~(begin
+            ;; This is fixed in the upstream repository but the fix
+            ;; has not been released.
+            (substitute* "src/gns/test_proxy.sh"
+              (("test_gnunet_proxy.conf") "test_gns_proxy.conf"))))))
+    (build-system gnu-build-system)
+    (inputs
+     (list bluez
+           glpk
+           curl
+           gnutls/dane
+           gstreamer
+           jansson
+           libextractor
+           libidn2
+           libgcrypt
+           libjpeg-turbo
+           libltdl
+           libmicrohttpd
+           libogg
+           libsodium
+           libunistring
+           miniupnpc
+           opus
+           pulseaudio
+           sqlite
+           zbar
+           zlib))
+    (native-inputs
+     (list curl
+           openssl
+           pkg-config
+           python
+           python-sphinx
+           python-sphinx-rtd-theme
+           xxd
+           which))
+    (arguments
+     (list
+      #:parallel-tests? #f              ;parallel tests aren't supported
       #:phases
-      (modify-phases %standard-phases
-        (add-before 'check 'set-env-var-for-tests
-          (lambda _
-            (setenv "LANG" "en_US.UTF-8")))
-        ;; Swap 'check and 'install phases and add installed binaries to $PATH.
-        (add-before 'check 'set-path-for-check
-          (lambda* (#:key outputs #:allow-other-keys)
-           (let ((out (assoc-ref outputs "out")))
-             (setenv "GNUNET_PREFIX" (string-append out "/lib"))
-             (setenv "PATH" (string-append (getenv "PATH") ":" out "/bin")))
-           #t))
-        (delete 'check)
-        (add-after 'install 'check
-          (assoc-ref %standard-phases 'check)))))
-   (synopsis "Secure, decentralized, peer-to-peer networking framework")
-   (description
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'disable-problematic-tests
+            (lambda _
+              (substitute* "src/cadet/Makefile.in"
+                ;; The speed_reliable tests appear to be unreliable (see:
+                ;; https://bugs.gnunet.org/view.php?id=7787).
+                (("test_cadet_[0-9]+_speed_reliable\\$\\(EXEEXT)")
+                 ""))
+              (substitute* "src/core/Makefile.in"
+                ;; The 'test_core_api' test fails non-deterministically (see:
+                ;; https://bugs.gnunet.org/view.php?id=7784).
+                (("test_core_api\\$\\(EXEEXT) ") ""))))
+          (add-before 'check 'set-env-var-for-tests
+            (lambda _
+              (setenv "LANG" "en_US.UTF-8")))
+          ;; Swap 'check and 'install phases and add installed binaries to $PATH.
+          (add-before 'check 'set-path-for-check
+            (lambda _
+              (setenv "GNUNET_PREFIX" (string-append #$output "/lib"))
+              (setenv "PATH" (string-append (getenv "PATH") ":"
+                                            #$output "/bin"))))
+          (delete 'check)
+          (add-after 'install 'check
+            (assoc-ref %standard-phases 'check)))))
+    (synopsis "Secure, decentralized, peer-to-peer networking framework")
+    (description
      "GNUnet is a framework for secure peer-to-peer networking.  The
 high-level goal is to provide a strong foundation of free software for a
 global, distributed network that provides security and privacy.  GNUnet in
 that sense aims to replace the current internet protocol stack.  Along with
 an application for secure publication of files, it has grown to include all
 kinds of basic applications for the foundation of a GNU internet.")
-   (license license:agpl3+)
-   (home-page "https://gnunet.org/en/")))
+    (license license:agpl3+)
+    (home-page "https://www.gnunet.org/en/")))
 
 (define-public guile-gnunet                       ;GSoC 2015!
   (let ((commit "d12167ab3c8d7d6caffd9c606e389ef043760602")
@@ -381,14 +409,14 @@ services.")
                       "faketime -m -f '1970-01-01 00:00:00' $(TEXMACS_CONVERT)")))))))
     (inputs (list guile-3.0)) ;for pkg-config
     (propagated-inputs (list guile-bytestructures guile-gcrypt guile-pfds
-                             guile-fibers-1.1))
+                             guile-fibers-1.3))
     (native-inputs (list guile-3.0 ;as a compiler
                          ;; for cross-compilation, the guile inputs need to be
                          ;; native-inputs as well.
                          guile-bytestructures
                          guile-gcrypt
                          guile-pfds
-                         guile-fibers-1.1
+                         guile-fibers-1.3
                          libfaketime
                          automake
                          autoconf
@@ -422,29 +450,30 @@ The following services are supported:
 (define-public gnunet-gtk
   (package (inherit gnunet)
     (name "gnunet-gtk")
-    (version "0.13.1")
+    (version "0.19.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/gnunet/gnunet-gtk-"
                                   version ".tar.gz"))
               (sha256
                (base32
-                "1zdzgq16h77w6ybwg3lqjsjr965np6iqvncqvkbj07glqd4wss0j"))))
+                "0z2731l69vnfsa0cdsw8wh8g1d08wz15y5n0a58qjpf7baric01k"))))
     (arguments
-     `(#:configure-flags
-       (list "--with-libunique"
-             "--with-qrencode"
-             (string-append "--with-gnunet="
-                            (assoc-ref %build-inputs "gnunet")))))
+     (list #:configure-flags
+           #~(list "--with-libunique"
+                   "--with-qrencode"
+                   (string-append "--with-gnunet="
+                                  #$(this-package-input "gnunet")))))
     (inputs
-     `(("glade3" ,glade3)
-       ("gnunet" ,gnunet)
-       ("gnutls" ,gnutls/dane)
-       ("gtk+" ,gtk+)
-       ("libextractor" ,libextractor)
-       ("libgcrypt" ,libgcrypt)
-       ("libunique" ,libunique)
-       ("qrencode" ,qrencode)))
+     (list glade3
+           gnunet
+           gnutls/dane
+           gtk+
+           libextractor
+           libgcrypt
+           libsodium
+           libunique
+           qrencode))
     (native-inputs
      (list pkg-config libglade))
     (synopsis "Graphical front-end tools for GNUnet")

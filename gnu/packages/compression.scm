@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012, 2013, 2014, 2015, 2017, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012, 2013, 2014, 2015, 2017, 2019, 2020, 2021, 2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2013 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2014, 2015, 2018 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015 Taylan Ulrich Bayırlı/Kammer <taylanbayirli@gmail.com>
@@ -7,13 +7,13 @@
 ;;; Copyright © 2015, 2016, 2017, 2018, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015, 2017, 2018 Leo Famulari <leo@famulari.name>
 ;;; Copyright © 2015 Jeff Mickey <j@codemac.net>
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Ben Woodcroft <donttrustben@gmail.com>
 ;;; Copyright © 2016 Danny Milosavljevic <dannym@scratchpost.org>
 ;;; Copyright © 2016–2022 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2016 David Craven <david@craven.ch>
 ;;; Copyright © 2016, 2019, 2020 Kei Kebreau <kkebreau@posteo.net>
-;;; Copyright © 2016, 2018, 2019, 2020, 2021 Marius Bakke <marius@gnu.org>
+;;; Copyright © 2016, 2018-2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2017 Nikita <nikita@n0.is>
 ;;; Copyright © 2017 Manolis Fragkiskos Ragkousis <manolis837@gmail.com>
 ;;; Copyright © 2017 Theodoros Foradis <theodoros@foradis.org>
@@ -24,7 +24,7 @@
 ;;; Copyright © 2018 Joshua Sierles, Nextjournal <joshua@nextjournal.com>
 ;;; Copyright © 2018, 2019 Pierre Neidhardt <mail@ambrevar.xyz>
 ;;; Copyright © 2019 Nicolas Goaziou <mail@nicolasgoaziou.fr>
-;;; Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Björn Höfling <bjoern.hoefling@bjoernhoefling.de>
 ;;; Copyright © 2020 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2020, 2021 Lars-Dominik Braun <lars@6xq.net>
@@ -35,7 +35,9 @@
 ;;; Copyright © 2021 Simon Tournier <zimon.toutoune@gmail.com>
 ;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Ahmad Jarara <git@ajarara.io>
+;;; Copyright © 2022 Greg Hogan <code@greghogan.com>
 ;;; Copyright © 2022 Zhu Zihao <all_but_last@163.com>
+;;; Copyright © 2021 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -103,53 +105,53 @@
 (define-public zlib
   (package
     (name "zlib")
-    (version "1.2.11")
+    (version "1.2.13")
     (source
      (origin
-      (method url-fetch)
-      (uri (list (string-append "http://zlib.net/zlib-"
+       (method url-fetch)
+       (uri (list (string-append "http://zlib.net/zlib-"
                                  version ".tar.gz")
-                 (string-append "mirror://sourceforge/libpng/zlib/"
-                                version "/zlib-" version ".tar.gz")))
-      (sha256
-       (base32
-        "18dighcs333gsvajvvgqp8l4cx7h1x7yx9gd5xacnk80spyykrf3"))))
+                  (string-append "mirror://sourceforge/libpng/zlib/"
+                                 version "/zlib-" version ".tar.gz")))
+       (sha256
+        (base32
+         "0c5b8vw40dy178xlpddw65q9gf1h2186jcc3p4swinwggbllv8mk"))))
     (build-system gnu-build-system)
     (outputs '("out" "static"))
     (arguments
-     `(#:make-flags
-       ,(if (target-mingw?)
-            `(list ,(string-append "PREFIX=" (%current-target-system) "-")
-                   "BINARY_PATH = $(prefix)/bin"
-                   "INCLUDE_PATH = $(prefix)/include"
-                   "LIBRARY_PATH = $(prefix)/lib"
-                   "SHARED_MODE = 1"
-                   (string-append "prefix = " (assoc-ref %outputs "out")))
-            ''())
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'configure
-           (lambda* (#:key outputs #:allow-other-keys)
-             ;; Zlib's home-made `configure' fails when passed
-             ;; extra flags like `--enable-fast-install', so we need to
-             ;; invoke it with just what it understand.
-             (let ((out (assoc-ref outputs "out")))
-               ;; 'configure' doesn't understand '--host'.
-               ,@(if (%current-target-system)
-                     `((setenv "CHOST" ,(%current-target-system)))
-                     '())
-               ,@(if (target-mingw?)
-                     `((rename-file "win32/Makefile.gcc" "Makefile"))
-                     `((invoke "./configure"
-                               (string-append "--prefix=" out)))))))
-         (add-after 'install 'move-static-library
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out"))
-                   (static (assoc-ref outputs "static")))
-               (with-directory-excursion (string-append out "/lib")
-                 (install-file "libz.a" (string-append static "/lib"))
-                 (delete-file "libz.a")
-                 #t)))))))
+     (list
+      #:make-flags
+      (if (target-mingw?)
+          #~(list #$(string-append "PREFIX=" (%current-target-system) "-")
+                  "BINARY_PATH = $(prefix)/bin"
+                  "INCLUDE_PATH = $(prefix)/include"
+                  "LIBRARY_PATH = $(prefix)/lib"
+                  "SHARED_MODE = 1"
+                  (string-append "prefix = " #$output))
+          #~'())
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'configure
+            (lambda _
+              ;; Zlib's home-made `configure' fails when passed
+              ;; extra flags like `--enable-fast-install', so we need to
+              ;; invoke it with just what it understand.
+              (setenv "CC" #$(cc-for-target))
+              ;; 'configure' doesn't understand '--host'.
+              #$@(if (%current-target-system)
+                     #~((setenv "CHOST" #$(%current-target-system)))
+                     #~())
+
+              #$@(if (target-mingw?)
+                     #~((rename-file "win32/Makefile.gcc" "Makefile"))
+                     #~((invoke "./configure"
+                                (string-append "--prefix=" #$output))))))
+          (add-after 'install 'move-static-library
+            (lambda _
+              (with-directory-excursion (string-append #$output "/lib")
+                (install-file "libz.a" (string-append #$output:static
+                                                      "/lib"))
+                (delete-file "libz.a")))))))
     (home-page "https://zlib.net/")
     (synopsis "Compression library")
     (description
@@ -248,43 +250,28 @@ adding and extracting files to/from a tar archive.")
 (define-public gzip
   (package
    (name "gzip")
-   (version "1.10")
+   (version "1.12")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnu/gzip/gzip-"
                                 version ".tar.xz"))
             (sha256
              (base32
-              "1h6p374d3j8d4cdfydzls021xa2yby8myc0h8d6m8bc7k6ncq9c4"))))
+              "0mhrx5wk9gazmxdw7vmbpg036yzqqhsww6h12kwf2dzn37jh6pnf"))))
    (build-system gnu-build-system)
    (synopsis "General file (de)compression (using lzw)")
    (arguments
     ;; FIXME: The test suite wants `less', and optionally Perl.
     '(#:tests? #f
+      #:configure-flags '("ac_cv_prog_LESS=\"less\"")
       #:phases
       (modify-phases %standard-phases
-        (add-after 'unpack 'patch-for-glibc-2.28
-          (lambda _
-            ;; Adjust the bundled gnulib to work with glibc 2.28.  See e.g.
-            ;; "m4-gnulib-libio.patch".  This is a phase rather than patch
-            ;; or snippet to work around <https://bugs.gnu.org/32347>.
-            (substitute* (find-files "lib" "\\.c$")
-              (("#if defined _IO_ftrylockfile")
-               "#if defined _IO_EOF_SEEN"))
-            (substitute* "lib/stdio-impl.h"
-              (("^/\\* BSD stdio derived implementations")
-               (string-append "#if !defined _IO_IN_BACKUP && defined _IO_EOF_SEEN\n"
-                              "# define _IO_IN_BACKUP 0x100\n"
-                              "#endif\n\n"
-                              "/* BSD stdio derived implementations")))
-            #t))
         (add-after 'unpack 'use-absolute-name-of-gzip
           (lambda* (#:key outputs #:allow-other-keys)
             (substitute* "gunzip.in"
-              (("exec gzip")
+              (("exec 'gzip'")
                (string-append "exec " (assoc-ref outputs "out")
-                              "/bin/gzip")))
-            #t)))))
+                              "/bin/gzip"))))))))
    (inputs
     `(,@(if (%current-target-system)
             `(("bash" ,bash-minimal))
@@ -310,93 +297,91 @@ file; as a result, it is often used in conjunction with \"tar\", resulting in
                 "0s92986cv0p692icqlw1j42y9nld8zd83qwhzbqd61p1dqbh6nmb"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:modules ((guix build gnu-build-system)
-                  (guix build utils)
-                  (ice-9 ftw)
-                  (srfi srfi-1))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'set-paths 'hide-input-bzip2
-           (lambda* (#:key inputs #:allow-other-keys)
-             (let ((bzip2 (assoc-ref inputs "bzip2")))
-               (if bzip2
-                   ;; Prevent the build system from retaining a reference to
-                   ;; BZIP2 from INPUTS.
-                   (begin
-                     (setenv "LIBRARY_PATH"
-                             (string-join (delete (string-append bzip2 "/lib")
-                                                  (string-split (getenv "LIBRARY_PATH")
-                                                                #\:))
-                                          ":"))
-                     (format #t "environment variable `LIBRARY_PATH' set to `~a'~%"
-                             (getenv "LIBRARY_PATH")))
-                   (format #t "no bzip2 found, nothing done~%"))
-               #t)))
-         (replace 'configure
-           (lambda* (#:key target #:allow-other-keys)
-             (when ,(%current-target-system)
-               ;; Cross-compilation: use the cross tools.
-               (substitute* (find-files "." "Makefile")
-                 (("CC=.*$")
-                  (string-append "CC = " target "-gcc\n"))
-                 (("AR=.*$")
-                  (string-append "AR = " target "-ar\n"))
-                 (("RANLIB=.*$")
-                  (string-append "RANLIB = " target "-ranlib\n"))
-                 (("^all:(.*)test" _ prerequisites)
-                  ;; Remove 'all' -> 'test' dependency.
-                  (string-append "all:" prerequisites "\n"))))
-             #t))
-         (add-before 'build 'build-shared-lib
-           (lambda* (#:key inputs #:allow-other-keys)
-             (patch-makefile-SHELL "Makefile-libbz2_so")
-             (invoke "make" "-f" "Makefile-libbz2_so")))
-         (add-after 'install 'install-shared-lib
-           (lambda* (#:key outputs #:allow-other-keys)
-             ;; The Makefile above does not have an 'install' target, nor does
-             ;; it create all the (un)versioned symlinks, so we handle it here.
-             (let* ((out    (assoc-ref outputs "out"))
-                    (libdir (string-append out "/lib"))
-                    (soname "libbz2.so")
-                    ;; Locate the built library (e.g. "libbz2.so.1.0.6").
-                    (lib (car (scandir "."
-                                       (lambda (file)
-                                         (and (string-prefix? soname file)
-                                              (eq? 'regular
-                                                   (stat:type (lstat file))))))))
-                    (soversion (string-drop lib (+ 1 (string-length soname)))))
-               (install-file lib libdir)
-               (with-directory-excursion libdir
-                 ;; Create symlinks libbz2.so.1 -> libbz2.so.1.0, etc.
-                 (let loop ((base soname)
-                            (numbers (string-split soversion #\.)))
-                   (unless (null? numbers)
-                     (let ((so-file (string-append base "." (car numbers))))
-                       (symlink so-file base)
-                       (loop so-file (cdr numbers))))))
-               #t)))
-         (add-after 'install-shared-lib 'move-static-lib
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out"))
-                   (static (assoc-ref outputs "static")))
-               (with-directory-excursion (string-append out "/lib")
-                 (install-file "libbz2.a" (string-append static "/lib"))
-                 (delete-file "libbz2.a")
-                 #t))))
-         (add-after 'install-shared-lib 'patch-scripts
-           (lambda* (#:key outputs inputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out")))
-               (substitute* (string-append out "/bin/bzdiff")
-                 (("/bin/rm") "rm")))
-             #t)))
+     (list #:modules '((guix build gnu-build-system)
+                       (guix build utils)
+                       (ice-9 ftw)
+                       (srfi srfi-1))
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'set-paths 'hide-input-bzip2
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   (let ((bzip2 (assoc-ref inputs "bzip2")))
+                     (if bzip2
+                         ;; Prevent the build system from retaining a reference to
+                         ;; BZIP2 from INPUTS.
+                         (begin
+                           (setenv "LIBRARY_PATH"
+                                   (string-join (delete (string-append bzip2 "/lib")
+                                                        (string-split (getenv "LIBRARY_PATH")
+                                                                      #\:))
+                                                ":"))
+                           (format #t "environment variable `LIBRARY_PATH' set to `~a'~%"
+                                   (getenv "LIBRARY_PATH")))
+                         (format #t "no bzip2 found, nothing done~%"))
+                     #t)))
+               (replace 'configure
+                 (lambda* (#:key target #:allow-other-keys)
+                   (when #$(%current-target-system)
+                     ;; Cross-compilation: use the cross tools.
+                     (substitute* (find-files "." "Makefile")
+                       (("CC=.*$")
+                        (string-append "CC = " target "-gcc\n"))
+                       (("AR=.*$")
+                        (string-append "AR = " target "-ar\n"))
+                       (("RANLIB=.*$")
+                        (string-append "RANLIB = " target "-ranlib\n"))
+                       (("^all:(.*)test" _ prerequisites)
+                        ;; Remove 'all' -> 'test' dependency.
+                        (string-append "all:" prerequisites "\n"))))
+                   #t))
+               (add-before 'build 'build-shared-lib
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   (patch-makefile-SHELL "Makefile-libbz2_so")
+                   (invoke "make" "-f" "Makefile-libbz2_so")))
+               (add-after 'install 'install-shared-lib
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   ;; The Makefile above does not have an 'install' target, nor does
+                   ;; it create all the (un)versioned symlinks, so we handle it here.
+                   (let* ((out    (assoc-ref outputs "out"))
+                          (libdir (string-append out "/lib"))
+                          (soname "libbz2.so")
+                          ;; Locate the built library (e.g. "libbz2.so.1.0.6").
+                          (lib (car (scandir "."
+                                             (lambda (file)
+                                               (and (string-prefix? soname file)
+                                                    (eq? 'regular
+                                                         (stat:type (lstat file))))))))
+                          (soversion (string-drop lib (+ 1 (string-length soname)))))
+                     (install-file lib libdir)
+                     (with-directory-excursion libdir
+                       ;; Create symlinks libbz2.so.1 -> libbz2.so.1.0, etc.
+                       (let loop ((base soname)
+                                  (numbers (string-split soversion #\.)))
+                         (unless (null? numbers)
+                           (let ((so-file (string-append base "." (car numbers))))
+                             (symlink so-file base)
+                             (loop so-file (cdr numbers))))))
+                     #t)))
+               (add-after 'install-shared-lib 'move-static-lib
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let ((out (assoc-ref outputs "out"))
+                         (static (assoc-ref outputs "static")))
+                     (with-directory-excursion (string-append out "/lib")
+                       (install-file "libbz2.a" (string-append static "/lib"))
+                       (delete-file "libbz2.a")
+                       #t))))
+               (add-after 'install-shared-lib 'patch-scripts
+                 (lambda* (#:key outputs inputs #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out")))
+                     (substitute* (string-append out "/bin/bzdiff")
+                       (("/bin/rm") "rm")))
+                   #t)))
 
-       #:make-flags (list (string-append "PREFIX="
-                                         (assoc-ref %outputs "out")))
+           #:make-flags #~(list (string-append "PREFIX="
+                                               (assoc-ref %outputs "out")))
 
-       ;; Don't attempt to run the tests when cross-compiling.
-       ,@(if (%current-target-system)
-             '(#:tests? #f)
-             '())))
+           ;; Don't attempt to run the tests when cross-compiling.
+           #:tests? (not (%current-target-system))))
     (inputs
      `(,@(if (%current-target-system)
              `(("bash" ,bash-minimal))
@@ -508,7 +493,7 @@ compressed with pbzip2 can be decompressed with bzip2).")
 (define-public xz
   (package
    (name "xz")
-   (version "5.2.5")
+   (version "5.2.8")
    (source (origin
             (method url-fetch)
             (uri (list (string-append "http://tukaani.org/xz/xz-" version
@@ -517,7 +502,7 @@ compressed with pbzip2 can be decompressed with bzip2).")
                                       version ".tar.gz")))
             (sha256
              (base32
-              "045s9agl3bpv3swlwydhgsqh7791957vmgw2plw8f1rks07r3x7n"))))
+              "0z9056ydsy76ib5cl1z60jkcqgr0x12d3lw1p2qnlcwi1fgxlp7c"))))
    (build-system gnu-build-system)
    (arguments
     `(#:phases
@@ -639,14 +624,14 @@ some compression ratio).")
 (define-public lzip
   (package
     (name "lzip")
-    (version "1.22")
+    (version "1.23")
     (source (origin
              (method url-fetch)
              (uri (string-append "mirror://savannah/lzip/lzip-"
                                  version ".tar.gz"))
              (sha256
               (base32
-               "0j59hx72258334rmkwn57ahr6s69nlrx0a5ip1jw2fbiwr12sd63"))))
+               "03985xc696210irdzv475mlvf30ylahni3msanfz4ppivm3w14j7"))))
     (build-system gnu-build-system)
     (arguments
      ;; The configure script doesn't recognise the --build or --host
@@ -824,13 +809,13 @@ sfArk file format to the uncompressed sf2 format.")
   (package
     (name "libmspack")
     (home-page "https://cabextract.org.uk/libmspack/")
-    (version "0.10.1")
+    (version "0.11")
     (source
      (origin
       (method url-fetch)
       (uri (string-append home-page name "-" version "alpha.tar.gz"))
       (sha256
-       (base32 "13janaqsvm7aqc4agjgd4819pbgqv50j88bh5kci1z70wvg65j5s"))))
+       (base32 "06x2xq73lchw5lcq386sx9wk05v21s2f38bi3dwkdk5fy2r1zpbh"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags '("--disable-static")))
@@ -855,11 +840,7 @@ decompression of some loosely related file formats used by Microsoft.")
     (build-system gnu-build-system)
     (outputs (list "out" "static"))
     (native-inputs
-     (append
-       (list python)    ;; For tests.
-       (if (member (%current-system) (package-supported-systems valgrind))
-         (list valgrind)
-         '())))
+     (list python)) ;; For tests.
     (arguments
      `(;; Not designed for parallel testing.
        ;; See https://github.com/lz4/lz4/issues/957#issuecomment-737419821
@@ -875,16 +856,14 @@ decompression of some loosely related file formats used by Microsoft.")
              (substitute* "tests/Makefile"
                ;; This fails when $prefix is not a single top-level directory.
                (("^test: (.*) test-install" _ targets)
-                (string-append "test: " targets)))
-             #t))
+                (string-append "test: " targets)))))
          (add-after 'install 'move-static-library
            (lambda* (#:key outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out"))
                    (static (assoc-ref outputs "static")))
                (mkdir-p (string-append static "/lib"))
                (rename-file (string-append out "/lib/liblz4.a")
-                            (string-append static "/lib/liblz4.a"))
-               #t))))))
+                            (string-append static "/lib/liblz4.a"))))))))
     (home-page "https://www.lz4.org")
     (synopsis "Compression algorithm focused on speed")
     (description "LZ4 is a lossless compression algorithm, providing
@@ -1084,13 +1063,13 @@ tarballs.")
  (package
    (name "cabextract")
    (home-page "https://cabextract.org.uk/")
-   (version "1.9.1")
+   (version "1.11")
    (source (origin
               (method url-fetch)
               (uri (string-append home-page "cabextract-" version ".tar.gz"))
               (sha256
                (base32
-                "19qwhl2r8ip95q4vxzxg2kp4p125hjmc9762sns1dwwf7ikm7hmg"))
+                "1iis7a19n26dax3gsnrw9kb0vwq46rbpicnlyf7p2k2y2nqnsm5m"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -1127,7 +1106,7 @@ tarballs.")
 (define-public libjcat
   (package
     (name "libjcat")
-    (version "0.1.11")
+    (version "0.1.12")
     (source
      (origin
        (method git-fetch)
@@ -1137,7 +1116,7 @@ tarballs.")
          (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "08zywwhm9q8m8v17w2mp23w3w93p40ir1w4x18zrlbhs10xnhiys"))))
+        (base32 "0fbcmnpc0y7s2ls3q829dv3ardhv0m5gxqqmbn0dnkzgkh42vv7p"))))
     (build-system meson-build-system)
     (native-inputs
      (list gobject-introspection help2man pkg-config))
@@ -1354,6 +1333,7 @@ for most inputs, but the resulting compressed files are anywhere from 20% to
                      "switch(static_cast<HRESULT>(errorCode)) {"))))
               (patches (search-patches "p7zip-CVE-2016-9296.patch"
                                        "p7zip-CVE-2017-17969.patch"
+                                       "p7zip-fix-build-with-gcc-11.patch"
                                        "p7zip-remove-unused-code.patch"))))
     (build-system gnu-build-system)
     (arguments
@@ -1383,7 +1363,7 @@ for most inputs, but the resulting compressed files are anywhere from 20% to
             ((target-x86-32?)
              (list nasm))
             (else '())))
-    (home-page "http://p7zip.sourceforge.net/")
+    (home-page "https://p7zip.sourceforge.net/")
     (synopsis "Command-line file archiver with high compression ratio")
     (description "p7zip is a command-line port of 7-Zip, a file archiver that
 handles the 7z format which features very high compression ratios.")
@@ -1618,28 +1598,21 @@ or junctions, and always follows hard links.")
 (define-public zstd
   (package
     (name "zstd")
-    (version "1.5.0")
+    (version "1.5.2")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/facebook/zstd/releases/download/"
                            "v" version "/zstd-" version ".tar.gz"))
        (sha256
-        (base32 "150y541303vnvfhd8wkbih00lfvvm98rd12yijwlbkqzg3xgp52i"))))
+        (base32 "1l1zm1imcc2ixayykyh4y421shdj3pzp7g2xm2k2js8jmipxahkw"))))
     (build-system gnu-build-system)
-    (outputs '("out"                    ;1.2MiB executables and documentation
+    (outputs '("out"                    ;1.5MiB executables and documentation
                "lib"                    ;1.2MiB shared library and headers
                "static"))               ;1.2MiB static library
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'remove-bogus-check
-           (lambda _
-             ;; lib/Makefile falsely claims that no .pc file can be created.
-             (substitute* "lib/Makefile"
-               (("error configured .*dir ")
-                "true "))
-             #t))
          (add-after 'unpack 'patch-command-file-names
            ;; Don't require hard requirements to be in $PATH.
            (lambda* (#:key outputs #:allow-other-keys)
@@ -1687,7 +1660,9 @@ or junctions, and always follows hard links.")
              "HAVE_LZMA=0"
              ;; Not currently detected, but be explicit & avoid surprises later.
              "HAVE_LZ4=0"
-             "HAVE_ZLIB=0")))
+             "HAVE_ZLIB=0")
+       #:tests? ,(not (or (target-hurd?)
+                          (%current-target-system)))))
     (home-page "https://facebook.github.io/zstd/")
     (synopsis "Zstandard real-time compression algorithm")
     (description "Zstandard (@command{zstd}) is a lossless compression algorithm
@@ -1703,6 +1678,20 @@ speed.")
                    license:expat         ; lib/dictBuilder/divsufsort.[ch]
                    license:public-domain ; zlibWrapper/examples/fitblk*
                    license:zlib))))      ; zlibWrapper/{gz*.c,gzguts.h}
+
+(define-public zstd-1.5.5
+  (package
+    (inherit zstd)
+    ;; Don't hide this package from the UI.
+    (properties '())
+    (version "1.5.5")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://github.com/facebook/zstd/releases/download/"
+                           "v" version "/zstd-" version ".tar.gz"))
+       (sha256
+        (base32 "1r1ydmj7ib3g5372yj3k40vl3b9ax0154qg2lqcy7ylwhb69chww"))))))
 
 (define-public pzstd
   (package/inherit zstd
@@ -1796,7 +1785,6 @@ Compression ratios of 2:1 to 3:1 are common for text files.")
   (package (inherit zip)
     (name "unzip")
     (version "6.0")
-    (replacement unzip/fixed)
     (source
      (origin
        (method url-fetch)
@@ -1842,7 +1830,9 @@ Compression ratios of 2:1 to 3:1 are common for text files.")
                                 "unzip-zipbomb-part3.patch"
 
                                 ;; https://github.com/madler/unzip/issues/2
-                                "unzip-32bit-zipbomb-fix.patch"))))
+                                "unzip-32bit-zipbomb-fix.patch"
+
+                                "unzip-CVE-2022-0529+CVE-2022-0530.patch"))))
     (build-system gnu-build-system)
     ;; no inputs; bzip2 is not supported, since not compiled with BZ_NO_STDIO
     (arguments
@@ -1886,15 +1876,6 @@ recreates the stored directory structure by default.")
     (properties `((lint-hidden-cve . ("CVE-2019-13232"))))
     (license (license:non-copyleft "file://LICENSE"
                                    "See LICENSE in the distribution."))))
-
-(define unzip/fixed
-  (package (inherit unzip)
-    (source
-     (origin
-       (inherit (package-source unzip))
-       (patches (append
-                  (origin-patches (package-source unzip))
-                  (search-patches "unzip-CVE-2022-0529+CVE-2022-0530.patch")))))))
 
 (define-public ziptime
   (let ((commit "2a5bc9dfbf7c6a80e5f7cb4dd05b4036741478bc")
@@ -2309,7 +2290,7 @@ decompression is a little bit slower.")
 (define-public upx
   (package
     (name "upx")
-    (version "4.0.0")
+    (version "4.0.1")
     (source
      (origin
        (method url-fetch)
@@ -2317,7 +2298,7 @@ decompression is a little bit slower.")
                            version "/upx-" version "-src.tar.xz"))
        (sha256
         (base32
-         "1sinky0rq40q2qqzly99c5hdd6ilz2bxlbqla9lg0rafhbw3iyga"))))
+         "1471nxzrbv8sw2pmxn817q5l40sr0l7v7bpvw829iai95s73q03p"))))
     (build-system cmake-build-system)
     (home-page "https://upx.github.io/")
     (synopsis "Compression tool for executables")
@@ -2368,7 +2349,7 @@ reading from and writing to ZIP archives.")
   (package
     (inherit quazip-0)
     (name "quazip")
-    (version "1.3")
+    (version "1.4")
     (source
      (origin
        (method git-fetch)
@@ -2377,12 +2358,12 @@ reading from and writing to ZIP archives.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0njgbdm3dm5p7xic5mhppbqsl36zn83zz0xfsfh624hlk0ff7n0a"))))))
+        (base32 "1jsw4xm5wyaqcj1pma5zzd8f5xbgd5lcjh18ah3kg36xz5i69yi4"))))))
 
 (define-public zchunk
   (package
     (name "zchunk")
-    (version "1.2.2")
+    (version "1.3.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2391,22 +2372,23 @@ reading from and writing to ZIP archives.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0q0avb0397xkmidl8rxasfywp0r7w3awk6271pa2d9xl9p1n82zy"))))
+                "19rw870150w1c730wzg2pn68ixmscq8cwa3vricqhwxs5l63r5wr"))))
     (build-system meson-build-system)
     (arguments
-     `(#:phases (modify-phases %standard-phases
-                  (add-after 'unpack 'patch-paths
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (substitute* "src/zck_gen_zdict.c"
-                        (("/usr/bin/zstd")
-                         (string-append (assoc-ref inputs "zstd")
-                                        "/bin/zstd"))))))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-file-name
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "src/zck_gen_zdict.c"
+                (("/usr/(bin/zstd)" _ file)
+                 (string-append (search-input-file inputs file)))))))))
     (native-inputs
      (list pkg-config))
     (inputs
      (list curl zstd))
     (propagated-inputs
-     `(("zstd:lib" ,zstd "lib")))       ;in Requires.private of zck.pc
+     (list `(,zstd "lib")))             ; in Requires.private of zck.pc
     (home-page "https://github.com/zchunk/zchunk")
     (synopsis "Compressed file format for efficient deltas")
     (description "The zchunk compressed file format allows splitting a file
@@ -2433,32 +2415,25 @@ To download a zchunk file.
 (define-public zutils
   (package
     (name "zutils")
-    (version "1.10")
+    (version "1.12")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "mirror://savannah/zutils/zutils-" version ".tar.lz"))
        (sha256
-        (base32 "15dimqp8zlqaaa2l46r22srp1py38mlmn69ph1j5fmrd54w43m0d"))))
+        (base32 "1vl8mhvsl0zlh34hwhc05vj33a2xfr0w7i978hcwaw8wn1w59bkq"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:configure-flags
-       (list "--sysconfdir=/etc")
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'check 'disable-failing-tests
-           ;; XXX https://lists.nongnu.org/archive/html/zutils-bug/2020-07/msg00005.html
-           (lambda _
-             (substitute* "testsuite/check.sh"
-               (("\"\\$\\{ZGREP\\}\" -N -L \"GNU\"") "true")
-               (("\"\\$\\{ZGREP\\}\" -N -L \"nx_pattern\"") "false"))
-             #t))
-         (replace 'install
-          (lambda* (#:key make-flags outputs #:allow-other-keys)
-            (apply invoke "make" "install"
-                   (string-append "sysconfdir=" (assoc-ref outputs "out")
-                                  "/etc")
-                   make-flags))))))
+     (list
+      #:configure-flags
+      #~(list "--sysconfdir=/etc")
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'install
+            (lambda* (#:key make-flags #:allow-other-keys)
+              (apply invoke "make" "install"
+                     (string-append "sysconfdir=" #$output "/etc")
+                     make-flags))))))
     (native-inputs
      ;; Needed to extract the source tarball and run the test suite.
      (list lzip))
@@ -2560,7 +2535,7 @@ file compression algorithm.")
 (define-public xarchiver
   (package
     (name "xarchiver")
-    (version "0.5.4.17")
+    (version "0.5.4.21")
     (source
      (origin
        (method git-fetch)
@@ -2569,7 +2544,7 @@ file compression algorithm.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "00adrjpxqlaccrwjf65w3vhxfswdj0as8aj263c6f9b85llypc5v"))))
+        (base32 "0m3vq1mh2vg5r7vhnwjkfhix6i2cm15z82xsi6zaqvc4zkswb2m5"))))
     (build-system glib-or-gtk-build-system)
     (native-inputs
      (list gettext-minimal intltool libxslt pkg-config))
@@ -2695,7 +2670,7 @@ to their original, binary CD format.")
 (define-public libdeflate
   (package
     (name "libdeflate")
-    (version "1.12")
+    (version "1.15")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2704,19 +2679,12 @@ to their original, binary CD format.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "16n9232zjavcp5wp17cx0gh2v7gipxpncsha05j3ybajfs7g88jv"))))
-    (build-system gnu-build-system)
+                "001l1xdc3k1dfjvl3ng480ydz0rnyvlhv54l5mshg2p9v4iz3v09"))))
+    (build-system cmake-build-system)
     (arguments
-     (list #:make-flags
-           #~(list (string-append "CC=" #$(cc-for-target))
-                   (string-append "PREFIX=" #$output))
-           #:phases
-           #~(modify-phases %standard-phases
-               (add-after 'unpack 'skip-static-library-installation
-                 (lambda _
-                   (substitute* "Makefile"
-                     (("install .*\\$\\(STATIC_LIB\\).*") ""))))
-               (delete 'configure))))   ; no configure script
+     (list #:configure-flags
+           #~(list "-DLIBDEFLATE_BUILD_STATIC_LIB=NO"
+                   "-DLIBDEFLATE_BUILD_TESTS=YES")))
     (inputs
      (list zlib))
     (home-page "https://github.com/ebiggers/libdeflate")
@@ -2793,6 +2761,27 @@ serializations such as ASN.1 and MessagePack.")
     (license license:expat)
     (home-page "https://github.com/PJK/libcbor")))
 
+(define-public lzfse
+  (package
+    (name "lzfse")
+    (version "1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/lzfse/lzfse")
+             (commit (string-append "lzfse-" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1mfh6y6vpvxsdwmqmfbkqkwvxc0pz2dqqc72c6fk9sbsrxxaghd5"))))
+    (build-system cmake-build-system)
+    (home-page "https://github.com/lzfse/lzfse")
+    (synopsis "LZFSE compression library and command line tool")
+    (description "LZFSE is a Lempel-Ziv style data compression algorithm using
+Finite State Entropy coding.  It targets similar compression rates at higher
+compression and decompression speed compared to Deflate using Zlib.")
+    (license license:bsd-3)))
+
 (define-public fcrackzip
   (package
     (name "fcrackzip")
@@ -2819,4 +2808,34 @@ serializations such as ASN.1 and MessagePack.")
     (home-page "http://oldhome.schmorp.de/marc/fcrackzip.html")
     (synopsis "Zip password cracker")
     (description "Fcrackzip is a Zip file password cracker.")
+    (license license:gpl2+)))
+
+(define-public unrar-free
+  (package
+    (name "unrar-free")
+    (version "0.1.3")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://gitlab.com/bgermann/unrar-free")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "12idmr5rjmw7dg2mi6250q599nywrirgc8553353a4swf5n1pmx4"))))
+    (build-system gnu-build-system)
+    (inputs
+     `(("libarchive" ,libarchive)))
+    (native-inputs
+     `(("autoconf" ,autoconf)
+       ("automake" ,automake)
+       ("pkg-config" ,pkg-config)))
+    (home-page "https://gitlab.com/bgermann/unrar-free")
+    (synopsis "Extract files from RAR archives")
+    (description
+     "@code{unrar-free} is a free software version of the non-free @code{unrar}
+utility.  This program is a simple command-line front-end to libarchive, and can
+list and extract not only RAR archives but also other formats supported by
+libarchive.  It does not rival the non-free @code{unrar} in terms of features,
+but special care has been taken to ensure it meets most user's needs.")
     (license license:gpl2+)))

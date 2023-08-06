@@ -1,8 +1,8 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012, 2013, 2018, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012, 2013, 2018, 2019, 2020, 2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2016 Jelle Licht <jlicht@fsfe.org>
 ;;; Copyright © 2016 David Craven <david@craven.ch>
-;;; Copyright © 2017, 2019, 2020, 2022 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2017, 2019, 2020, 2022, 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2018 Oleg Pykhalov <go.wigust@gmail.com>
 ;;; Copyright © 2019 Robert Vollmert <rob@vllmrt.net>
 ;;; Copyright © 2020 Helio Machado <0x2b3bfa0+guix@googlemail.com>
@@ -39,13 +39,13 @@
   #:use-module (guix packages)
   #:use-module (guix discovery)
   #:use-module (guix build-system)
-  #:use-module (guix gexp)
   #:use-module ((guix i18n) #:select (G_))
   #:use-module (guix store)
   #:use-module (guix download)
   #:use-module (guix sets)
   #:use-module ((guix ui) #:select (fill-paragraph))
   #:use-module (gnu packages)
+  #:autoload   (ice-9 control) (let/ec)
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
@@ -54,10 +54,12 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-71)
   #:export (factorize-uri
 
             flatten
+            false-if-networking-error
 
             url-fetch
             guix-hash-url
@@ -122,6 +124,34 @@ of the string VERSION is replaced by the symbol 'version."
      (cons elem memo)))
    '() lst))
 
+(define (call-with-networking-exception-handler thunk)
+  "Invoke THUNK, returning #f if one of the usual networking exception is
+thrown."
+  (let/ec return
+    (with-exception-handler
+        (lambda (exception)
+          (cond ((http-get-error? exception)
+                 (return #f))
+                (((exception-predicate &exception-with-kind-and-args) exception)
+                 ;; Return false and move on upon connection failures and bogus
+                 ;; HTTP servers.
+                 (if (memq (exception-kind exception)
+                           '(gnutls-error tls-certificate-error
+                                          system-error getaddrinfo-error
+                                          bad-header bad-header-component))
+                     (return #f)
+                     (raise-exception exception)))
+                (else
+                 (raise-exception exception))))
+      thunk
+
+      ;; Do not unwind to preserve meaningful backtraces.
+      #:unwind? #f)))
+
+(define-syntax-rule (false-if-networking-error exp)
+  "Evaluate EXP, returning #f if a networking-related exception is thrown."
+  (call-with-networking-exception-handler (lambda () exp)))
+
 (define (url-fetch url file-name)
   "Save the contents of URL to FILE-NAME.  Return #f on failure."
   (parameterize ((current-output-port (current-error-port)))
@@ -149,6 +179,7 @@ of the string VERSION is replaced by the symbol 'version."
     ("AGPL-3.0"                   . license:agpl3)
     ("AGPL-3.0-only"              . license:agpl3)
     ("AGPL-3.0-or-later"          . license:agpl3+)
+    ("Arphic-1999"                . license:arphic-1999)
     ("Apache-1.1"                 . license:asl1.1)
     ("Apache-2.0"                 . license:asl2.0)
     ("APSL-2.0"                   . license:apsl2)
@@ -176,6 +207,7 @@ of the string VERSION is replaced by the symbol 'version."
     ("CPL-1.0"                    . license:cpl1.0)
     ("EPL-1.0"                    . license:epl1.0)
     ("EPL-2.0"                    . license:epl2.0)
+    ("EUPL-1.1"                   . license:eupl1.1)
     ("EUPL-1.2"                   . license:eupl1.2)
     ("MIT"                        . license:expat)
     ("MIT-0"                      . license:expat-0)
@@ -222,6 +254,7 @@ of the string VERSION is replaced by the symbol 'version."
     ("LGPL-3.0-only"              . license:lgpl3)
     ("LGPL-3.0+"                  . license:lgpl3+)
     ("LGPL-3.0-or-later"          . license:lgpl3+)
+    ("LPL-1.02"                   . license:lpl1.02)
     ("LPPL-1.0"                   . license:lppl)
     ("LPPL-1.1"                   . license:lppl)
     ("LPPL-1.2"                   . license:lppl1.2)
@@ -303,14 +336,21 @@ LENGTH characters."
                    (cut string-trim-both <> #\')
                    ;; Escape single @ to prevent it from being understood as
                    ;; invalid Texinfo syntax.
-                   (cut regexp-substitute/global #f "@" <> 'pre "@@" 'post)))))
+                   (cut regexp-substitute/global #f "@" <> 'pre "@@" 'post)
+                   ;; Wrap camelCase or PascalCase words in @code{...}.
+                   (lambda (word)
+                     (let ((pattern (make-regexp "([A-Z][a-z]+[A-Z]|[a-z]+[A-Z])")))
+                       (match (list-matches pattern word)
+                         (() word)
+                         (_ (string-append "@code{" word "}")))))))))
          (words
           (string-tokenize (string-trim-both description)
                            (char-set-complement
                             (char-set #\space #\newline))))
          (new-words
           (match words
-            (((and (or "A" "Functions" "Methods") first) . rest)
+            (((and (or "A" "Classes" "Functions" "Methods" "Tools")
+                   first) . rest)
              (cons* "This" "package" "provides"
                     (string-downcase first) rest))
             (((and (or "Contains"
@@ -404,10 +444,7 @@ APPEND-VERSION?/string is a string, append this string."
   (match guix-package
     ((or
       ('package ('name name) ('version version) . rest)
-      ('package ('inherit ('simple-texlive-package name . _))
-                ('version version) . rest)
       ('let _ ('package ('name name) ('version version) . rest)))
-
      `(define-public ,(string->symbol
                        (cond
                         ((string? append-version?/string)
@@ -580,11 +617,11 @@ obtain a node's uniquely identifying \"key\"."
                    (set-insert (node-name head) visited))))))))
 
 (define* (recursive-import package-name
-                           #:key repo->guix-package guix-name version repo
-                           #:allow-other-keys)
+                           #:key repo->guix-package guix-name version
+                           #:allow-other-keys #:rest rest)
   "Return a list of package expressions for PACKAGE-NAME and all its
 dependencies, sorted in topological order.  For each package,
-call (REPO->GUIX-PACKAGE NAME :KEYS version repo), which should return a
+call (REPO->GUIX-PACKAGE NAME #:version V), which should return a
 package expression and a list of dependencies; call (GUIX-NAME PACKAGE-NAME)
 to obtain the Guix package name corresponding to the upstream name."
   (define-record-type <node>
@@ -599,9 +636,12 @@ to obtain the Guix package name corresponding to the upstream name."
     (not (null? (find-packages-by-name (guix-name name) version))))
 
   (define (lookup-node name version)
-    (let* ((package dependencies (repo->guix-package name
-                                                     #:version version
-                                                     #:repo repo))
+    (let* ((pre post (break (cut eq? #:version <>) rest))
+           (post* (match post
+                    ((#:version v . more) more)
+                    (_ post)))
+           (args (append pre (list #:version version) post*))
+           (package dependencies (apply repo->guix-package name args))
            (normalized-deps (map (match-lambda
                                    ((name version) (list name version))
                                    (name (list name #f))) dependencies)))

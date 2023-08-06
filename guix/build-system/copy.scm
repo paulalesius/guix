@@ -1,7 +1,8 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2019 Julien Lepiller <julien@lepiller.eu>
 ;;; Copyright © 2020 Pierre Neidhardt <mail@ambrevar.xyz>
-;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2021, 2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2023 Jonathan Brielmaier <jonathan.brielmaier@web.de>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -27,7 +28,6 @@
   #:use-module (guix build-system)
   #:use-module (guix build-system gnu)
   #:use-module (guix packages)
-  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:export (%copy-build-system-modules
             default-glibc
@@ -84,16 +84,17 @@
                      (install-plan ''(("." "./")))
                      (search-paths '())
                      (out-of-source? #t)
+                     (tests? #t)
                      (validate-runpath? #t)
                      (patch-shebangs? #t)
                      (strip-binaries? #t)
-                     (strip-flags ''("--strip-debug"))
-                     (strip-directories ''("lib" "lib64" "libexec"
-                                           "bin" "sbin"))
+                     (strip-flags %strip-flags)
+                     (strip-directories %strip-directories)
                      (phases '(@ (guix build copy-build-system)
                                  %standard-phases))
                      (system (%current-system))
                      (target #f)
+                     (substitutable? #t)
                      (imported-modules %copy-build-system-modules)
                      (modules '((guix build copy-build-system)
                                 (guix build utils))))
@@ -118,17 +119,20 @@
                                            (sexp->gexp phases)
                                            phases)
                             #:out-of-source? #$out-of-source?
+                            #:tests? #$tests?
                             #:validate-runpath? #$validate-runpath?
                             #:patch-shebangs? #$patch-shebangs?
                             #:strip-binaries? #$strip-binaries?
-                            #:strip-flags #$(sexp->gexp strip-flags)
-                            #:strip-directories #$(sexp->gexp strip-directories))))))
+                            #:strip-flags #$strip-flags
+                            #:strip-directories #$strip-directories)))))
 
   (mlet %store-monad ((guile (package->derivation (or guile (default-guile))
                                                   system #:graft? #f)))
     (gexp->derivation name builder
                       #:system system
                       #:target #f
+                      #:substitutable? substitutable?
+                      #:graft? #f
                       #:guile-for-build guile)))
 
 (define copy-build-system

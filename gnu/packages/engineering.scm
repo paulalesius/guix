@@ -1,7 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2015-2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015 Federico Beffa <beffa@fbengineering.ch>
-;;; Copyright © 2016, 2018, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016, 2018, 2020-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 David Thompson <davet@gnu.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2016, 2017, 2018 Theodoros Foradis <theodoros@foradis.org>
@@ -16,11 +16,11 @@
 ;;; Copyright © 2019 John Soo <jsoo1@asu.edu>
 ;;; Copyright © 2020 Brice Waegeneire <brice@waegenei.re>
 ;;; Copyright © 2020,2021 Vincent Legoll <vincent.legoll@gmail.com>
-;;; Copyright © 2020 Marius Bakke <mbakke@fastmail.com>
+;;; Copyright © 2020, 2023 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020, 2021 Ekaitz Zarraga <ekaitz@elenq.tech>
 ;;; Copyright © 2020 B. Wilson <elaexuotee@wilsonb.com>
-;;; Copyright © 2020, 2021, 2022 Vinicius Monego <monego@posteo.net>
-;;; Copyright © 2020, 2021 Morgan Smith <Morgan.J.Smith@outlook.com>
+;;; Copyright © 2020, 2021, 2022, 2023 Vinicius Monego <monego@posteo.net>
+;;; Copyright © 2020, 2021, 2023 Morgan Smith <Morgan.J.Smith@outlook.com>
 ;;; Copyright © 2021 qblade <qblade@protonmail.com>
 ;;; Copyright © 2021 Gerd Heber <gerd.heber@gmail.com>
 ;;; Copyright © 2021, 2022 Guillaume Le Vaillant <glv@posteo.net>
@@ -35,7 +35,8 @@
 ;;; Copyright © 2022 Greg Hogan <code@greghogan.com>
 ;;; Copyright © 2022 Artyom V. Poptsov <poptsov.artyom@gmail.com>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
-;;; Copyright © 2022 Felix Gruber <felgru@posteo.net>
+;;; Copyright © 2022, 2023 Felix Gruber <felgru@posteo.net>
+;;; Copyright © 2023 Theofilos Pechlivanis <theofilos.pechlivanis@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -68,6 +69,7 @@
   #:use-module (guix build-system emacs)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system meson)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (guix build-system qt)
   #:use-module (gnu packages)
@@ -81,10 +83,12 @@
   #:use-module (gnu packages c)
   #:use-module (gnu packages check)
   #:use-module (gnu packages cmake)
+  #:use-module (gnu packages code)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cpp)
   #:use-module (gnu packages curl)
+  #:use-module (gnu packages databases)
   #:use-module (gnu packages gawk)
   #:use-module (gnu packages dejagnu)
   #:use-module (gnu packages digest)
@@ -129,7 +133,9 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages pretty-print)
   #:use-module (gnu packages protobuf)
+  #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-science)
@@ -146,6 +152,8 @@
   #:use-module (gnu packages tcl)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages text-editors)
+  #:use-module (gnu packages time)
+  #:use-module (gnu packages tree-sitter)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages tex)
   #:use-module (gnu packages version-control)
@@ -242,13 +250,13 @@ plans and designs.")
                 "19688b0671imy2i3jphcnq1120b8ymhr4wz2psiqylr82ljanqp8"))))
     (build-system gnu-build-system)
     (arguments
-     '(#:phases
-       (modify-phases %standard-phases
+     (list
+      #:phases
+      '(modify-phases %standard-phases
          ;; tests require a writable HOME
          (add-before 'check 'set-home
            (lambda _
-             (setenv "HOME" (getenv "TMPDIR"))
-             #t))
+             (setenv "HOME" (getenv "TMPDIR"))))
          (add-after 'unpack 'disable-failing-tests
            (lambda _
              (substitute* "xorn/tests/Makefile.in"
@@ -256,23 +264,23 @@ plans and designs.")
              ;; This test returns its correct result in an unexpected order.
              (substitute* "libgeda/scheme/unit-tests/t0402-config.scm"
                (("\\(begin-config-test 'config-keys" m)
-                (string-append "#;" m)))
-             #t)))
-       #:configure-flags
-       (let ((pcb (assoc-ref %build-inputs "pcb")))
-         (list (string-append "--with-pcb-datadir=" pcb "/share")
-               (string-append "--with-pcb-lib-path="
-                              pcb "/share/pcb/pcblib-newlib:"
-                              pcb "/share/pcb/newlib")))))
+                (string-append "#;" m))))))
+      #:configure-flags
+      #~(let ((pcb #$(this-package-input "pcb")))
+          (list (string-append "--with-pcb-datadir=" pcb "/share")
+                (string-append "--with-pcb-lib-path="
+                               pcb "/share/pcb/pcblib-newlib:"
+                               pcb "/share/pcb/newlib")))))
     (inputs
-     `(("gamin" ,gamin)
-       ("glib" ,glib)
-       ("gtk" ,gtk+-2)
-       ("guile" ,guile-2.0)
-       ("shared-mime-info" ,shared-mime-info)
-       ("m4" ,m4)
-       ("pcb" ,pcb)
-       ("python" ,python-2))) ; for xorn
+     (list gamin
+           gdk-pixbuf
+           glib
+           gtk+-2
+           guile-2.0
+           shared-mime-info
+           m4
+           pcb
+           python-2)) ; for xorn
     (native-inputs
      (list groff pkg-config desktop-file-utils perl)) ; for tests
     (home-page "http://geda-project.org/")
@@ -294,116 +302,132 @@ utilities.")
   (package
     (inherit geda-gaf)
     (name "lepton-eda")
-    (version "1.9.14-20210407")
+    (version "1.9.18-20220529")
     (home-page "https://github.com/lepton-eda/lepton-eda")
     (source (origin
               (method git-fetch)
-              (uri (git-reference (url home-page) (commit version)))
+              (uri (git-reference
+                    (url home-page)
+                    (commit version)))
               (sha256
                (base32
-                "0kyq0g6271vlwraw98637fn8bq2l6q4rll6748nn8rwsmfz71d0m"))
+                "06plrcab3s2rpyf0qv2gzc1yp33627xi8105niasgixckk6glnc2"))
               (file-name (git-file-name name version))))
-    (native-inputs
-     `(("autoconf" ,autoconf)
-       ("automake" ,automake)
-       ("desktop-file-utils" ,desktop-file-utils)
-       ("libtool" ,libtool)
-       ("gettext" ,gettext-minimal)
-       ("texinfo" ,texinfo)
-       ("groff" ,groff)
-       ("which" ,which)
-       ,@(package-native-inputs geda-gaf)))
-    (inputs
-     `(("glib" ,glib)
-       ("gtk" ,gtk+)
-       ("gtksheet" ,gtksheet)
-       ("guile" ,guile-3.0)
-       ("shared-mime-info" ,shared-mime-info)
-       ("m4" ,m4)
-       ("pcb" ,pcb)))
     (arguments
-     `(#:configure-flags
-       (let ((pcb (assoc-ref %build-inputs "pcb")))
-         ;; When running "make", the POT files are built with the build time as
-         ;; their "POT-Creation-Date".  Later on, "make" notices that .pot
-         ;; files were updated and goes on to run "msgmerge"; as a result, the
-         ;; non-deterministic POT-Creation-Date finds its way into .po files,
-         ;; and then in .gmo files.  To avoid that, simply make sure 'msgmerge'
-         ;; never runs.  See <https://bugs.debian.org/792687>.
-         (list "ac_cv_path_MSGMERGE=true"
-               "--with-gtk3"
-               (string-append "--with-pcb-datadir=" pcb "/share")
-               (string-append "--with-pcb-lib-path="
-                              pcb "/share/pcb/pcblib-newlib:"
-                              pcb "/share/pcb/newlib")
-               "CFLAGS=-fcommon"))
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'fix-dynamic-link
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (substitute* "libleptongui/scheme/schematic/ffi.scm.in"
-               (("@LIBLEPTONGUI@")
-                (string-append (assoc-ref outputs "out")
-                               "/lib/libleptongui.so")))
-             (substitute* '("libleptongui/scheme/schematic/ffi/gtk.scm.in"
-                            "utils/attrib/lepton-attrib.scm")
-               (("@LIBGTK@")
-                (search-input-file inputs "/lib/libgtk-3.so")))
-             (substitute* '("libleptongui/scheme/schematic/ffi/gobject.scm.in")
-               (("@LIBGOBJECT@")
-                (search-input-file inputs "/lib/libgobject-2.0.so")))
-             (substitute* "liblepton/scheme/lepton/ffi.scm.in"
-               (("@LIBLEPTON@")
-                (string-append (assoc-ref outputs "out")
-                               "/lib/liblepton.so")))
-             (substitute* "utils/attrib/lepton-attrib.scm"
-               (("@LIBLEPTONATTRIB@")
-                (string-append (assoc-ref outputs "out")
-                               "/lib/libleptonattrib.so")))
-             (substitute* "liblepton/scheme/lepton/log.scm.in"
-               (("@LIBGLIB@")
-                (search-input-file inputs "/lib/libglib-2.0.so")))
+     (list
+      #:configure-flags
+      #~(let ((pcb #$(this-package-input "pcb")))
+          ;; When running "make", the POT files are built with the build time as
+          ;; their "POT-Creation-Date".  Later on, "make" notices that .pot
+          ;; files were updated and goes on to run "msgmerge"; as a result, the
+          ;; non-deterministic POT-Creation-Date finds its way into .po files,
+          ;; and then in .gmo files.  To avoid that, simply make sure 'msgmerge'
+          ;; never runs.  See <https://bugs.debian.org/792687>.
+          (list "ac_cv_path_MSGMERGE=true" "--with-gtk3"
+                (string-append "--with-pcb-datadir=" pcb
+                               "/share")
+                (string-append "--with-pcb-lib-path=" pcb
+                               "/share/pcb/pcblib-newlib:"
+                               pcb "/share/pcb/newlib")
+                "CFLAGS=-fcommon"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-tests
+            (lambda _
+              ;; For logs and auto-compilation
+              (setenv "HOME" "/tmp")
 
-             ;; For finding libraries when running tests before installation.
-             (setenv "LIBLEPTONGUI"
-                     (string-append (getcwd)
-                                    "/libleptongui/src/.libs/libleptongui.so"))
-             (setenv "LIBLEPTON"
-                     (string-append (getcwd)
-                                    "/libleptongui/src/.libs/liblepton.so"))
-             (setenv "LD_LIBRARY_PATH"
-                     (string-append (getcwd) "/libleptonattrib/src/.libs/:"
-                                    (getenv "LIBRARY_PATH")))
-             #t))
-         (add-before 'bootstrap 'prepare
-           (lambda _
-             ;; Some of the scripts there are invoked by autogen.sh.
-             (for-each patch-shebang (find-files "build-tools"))
+              ;; Ensure that readline is found by lepton-shell
+              (substitute* "script.in"
+                (("\\(eval-when \\(expand load eval\\)" m)
+                 (string-append "
+(add-to-load-path \"" #$(this-package-input "guile-readline")
+"/share/guile/site/3.0\")
+(set! %load-compiled-path (cons \""
+#$(this-package-input "guile-readline")
+"/lib/guile/3.0/site-ccache/"
+"\" %load-compiled-path))
+" m)))))
+          (add-before 'build 'fix-dynamic-link
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "liblepton/scheme/lepton/ffi/lib.scm"
+                (("\"liblepton\"")
+                 (string-append "\"" #$output "/lib/liblepton.so" "\""))
+                (("\"libleptonattrib\"")
+                 (string-append "\"" #$output "/lib/libleptonattrib.so" "\""))
+                (("\"libleptongui\"")
+                 (string-append "\"" #$output "/lib/libleptongui.so" "\""))
+                (("\"libglib-2.0\"")
+                 (string-append
+                  "\"" (search-input-file inputs "/lib/libglib-2.0.so") "\""))
+                (("\"libgobject-2.0\"")
+                 (string-append
+                  "\"" (search-input-file inputs "/lib/libgobject-2.0.so") "\""))
+                (("\"libgtk-3\"")
+                 (string-append
+                  "\"" (search-input-file inputs "/lib/libgtk-3.so") "\"")))
 
-             ;; Make sure 'msgmerge' can modify the PO files.
-             (for-each (lambda (po)
-                         (chmod po #o666))
-                       (find-files "." "\\.po$"))
+              ;; For finding libraries when running tests before installation.
+              (setenv "LIBLEPTONGUI"
+                      (string-append (getcwd)
+                                     "/libleptongui/src/.libs/libleptongui.so"))
+              (setenv "LIBLEPTON"
+                      (string-append (getcwd)
+                                     "/libleptongui/src/.libs/liblepton.so"))
+              (setenv "LD_LIBRARY_PATH"
+                      (string-append (getcwd)
+                                     "/libleptonattrib/src/.libs/:"
+                                     (getenv "LIBRARY_PATH")))))
+          (add-before 'bootstrap 'prepare
+            (lambda _
+              ;; Some of the scripts there are invoked by autogen.sh.
+              (for-each patch-shebang
+                        (find-files "build-tools"))
 
-             ;; This would normally be created by invoking 'git', but it
-             ;; doesn't work here.
-             (call-with-output-file "version.h"
-               (lambda (port)
-                 (format port "#define PACKAGE_DATE_VERSION \"~a\"~%"
-                         ,(string-drop version
-                                       (+ 1 (string-index version #\-))))
-                 (format port "#define PACKAGE_DOTTED_VERSION \"~a\"~%"
-                         ,(string-take version
-                                       (string-index version #\-)))
-                 (format port "#define PACKAGE_GIT_COMMIT \"cabbag3\"~%")))
-             #t))
-         (add-after 'install 'compile-scheme-files
-           (lambda* (#:key outputs #:allow-other-keys)
-             (unsetenv "LIBLEPTONGUI")
-             (unsetenv "LIBLEPTON")
-             (unsetenv "LD_LIBRARY_PATH")
-             (invoke "make" "precompile")
-             #t)))))
+              ;; Make sure 'msgmerge' can modify the PO files.
+              (for-each (lambda (po)
+                          (chmod po #o666))
+                        (find-files "." "\\.po$"))
+
+              ;; This would normally be created by invoking 'git', but it
+              ;; doesn't work here.
+              (call-with-output-file "version.h"
+                (lambda (port)
+                  (format port "#define PACKAGE_DATE_VERSION \"~a\"~%"
+                          #$(string-drop version
+                                         (+ 1
+                                            (string-index version #\-))))
+                  (format port
+                          "#define PACKAGE_DOTTED_VERSION \"~a\"~%"
+                          #$(string-take version
+                                         (string-index version #\-)))
+                  (format port
+                          "#define PACKAGE_GIT_COMMIT \"cabbag3\"~%")))))
+          (add-after 'install 'compile-scheme-files
+            (lambda _
+              (unsetenv "LIBLEPTONGUI")
+              (unsetenv "LIBLEPTON")
+              (unsetenv "LD_LIBRARY_PATH")
+              (invoke "make" "precompile"))))))
+    (native-inputs
+     (modify-inputs (package-native-inputs geda-gaf)
+       (prepend autoconf
+                automake
+                desktop-file-utils
+                libtool
+                gettext-minimal
+                texinfo
+                groff
+                which)))
+    (inputs
+     (list glib
+           gtk+
+           gtksheet
+           guile-3.0
+           guile-readline
+           shared-mime-info
+           m4
+           pcb))
     (description
      "Lepton EDA ia an @dfn{electronic design automation} (EDA) tool set
 forked from gEDA/gaf in late 2016.  EDA tools are used for electrical circuit
@@ -413,71 +437,85 @@ materials (BOM) generation, netlisting into over 20 netlist formats, analog
 and digital simulation, and printed circuit board (PCB) layout, and many other
 features.")))
 
+(define-public librnd
+  (package
+    (name "librnd")
+    (version "4.0.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "http://www.repo.hu/projects/librnd/releases/"
+                                  "librnd-" version ".tar.bz2"))
+              (sha256
+               (base32
+                "0z578x3sd8yjfbhivy1hz4hlgiy43qq6x7mnby872plpm08vgqxz"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #false                   ;no check target
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'cc-is-gcc
+            (lambda _ (setenv "CC" #$(cc-for-target))))
+          (replace 'configure
+            ;; The configure script doesn't tolerate most of our configure flags.
+            (lambda _
+              (invoke "sh" "configure"
+                      (string-append "--prefix=" #$output)))))))
+    (inputs
+     (list gd gtk glib glu))
+    (native-inputs
+     (list pkg-config))
+    (home-page "http://repo.hu/projects/librnd/")
+    (synopsis "Two-dimensional CAD engine")
+    (description "This is a flexible, modular two-dimensional CAD engine
+@itemize
+@item with transparent multiple GUI toolkit support;
+@item a flexible, dynamic menu system;
+@item a flexible, dynamic configuration system; and
+@item support for user scripting in a dozen languages.
+@end itemize")
+    (license license:gpl2+)))
+
 (define-public pcb
   (package
     (name "pcb")
-    (version "4.0.2")
+    (version "4.3.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/pcb/pcb/pcb-" version
                                   "/pcb-" version ".tar.gz"))
               (sha256
                (base32
-                "1a7rilp75faidny0r4fdwdxkflyrqp6svxv9lbg7h868293962iz"))))
+                "0ppv8cblw0h70laly4zp8gmbxkbzzhbbjgw13pssgaw4mx32z1df"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'use-wish8.6
-           (lambda _
-             (substitute* "configure"
-               (("wish85") "wish8.6"))
-             #t))
-         ;; It checks for "xhost", which we don't have.  This shouldn't
-         ;; matter, because the test is supposed to be skipped, but it causes
-         ;; "run_tests.sh" (and thus the "check" phase) to fail.
-         (add-after 'unpack 'fix-check-for-display
-           (lambda _
-             (substitute* "tests/run_tests.sh"
-               (("have_display=no") "have_display=yes"))
-             #t))
-         (add-after 'install 'wrap
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             ;; FIXME: Mesa tries to dlopen libudev.so.0 and fails.  Pending a
-             ;; fix of the mesa package we wrap the pcb executable such that
-             ;; Mesa can find libudev.so.0 through LD_LIBRARY_PATH.
-             (let* ((out (assoc-ref outputs "out"))
-                    (path (dirname
-                           (search-input-file inputs "/lib/libudev.so"))))
-               (wrap-program (string-append out "/bin/pcb")
-                 `("LD_LIBRARY_PATH" ":" prefix (,path))))
-             #t))
-         (add-before 'check 'pre-check
-           (lambda _
-             (system "Xvfb :1 &")
-             (setenv "DISPLAY" ":1")
-             #t)))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'check 'pre-check
+            (lambda _
+              (system "Xvfb :1 &")
+              (setenv "DISPLAY" ":1"))))))
     (inputs
-     `(("dbus" ,dbus)
-       ("mesa" ,mesa)
-       ("udev" ,eudev) ;FIXME: required by mesa
-       ("glu" ,glu)
-       ("gd" ,gd)
-       ("gtk" ,gtk+-2)
-       ("gtkglext" ,gtkglext)
-       ("shared-mime-info" ,shared-mime-info)
-       ("tk" ,tk)))
+     (list dbus
+           mesa
+           glu
+           gd
+           gtk+-2
+           gtkglext
+           shared-mime-info
+           tk))
     (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("intltool" ,intltool)
-       ("bison" ,bison)
-       ("desktop-file-utils" ,desktop-file-utils)
-       ("flex" ,flex)
-       ;; For tests
-       ("imagemagick" ,imagemagick)
-       ("gerbv" ,gerbv)
-       ("ghostscript" ,ghostscript)
-       ("xvfb" ,xorg-server-for-tests)))
+     (list bison
+           desktop-file-utils
+           flex
+           intltool
+           pkg-config
+           ;; For tests
+           imagemagick
+           gerbv
+           ghostscript
+           xorg-server-for-tests))
     (home-page "http://pcb.geda-project.org/")
     (synopsis "Design printed circuit board layouts")
     (description
@@ -490,26 +528,30 @@ optimizer; and it can produce photorealistic and design review images.")
 (define-public pcb-rnd
   (package (inherit pcb)
     (name "pcb-rnd")
-    (version "2.2.4")
+    (version "3.1.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://repo.hu/projects/pcb-rnd/releases/"
                                   "pcb-rnd-" version ".tar.gz"))
               (sha256
                (base32
-                "06ylc2rd4yvzp3krk62q9dbi13h0yq1x257fbjkh10vfjn0ga5c2"))))
+                "0szcsp2049wh3wslv7743wbjqllrmphi07yz0933sz4vf6f1c8dg"))))
     (arguments
-     `(#:tests? #f                      ; no check target
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'cc-is-gcc
-           (lambda _ (setenv "CC" "gcc") #t))
-         (replace 'configure
-           ;; The configure script doesn't tolerate most of our configure flags.
-           (lambda* (#:key outputs #:allow-other-keys)
-             (invoke "sh" "configure"
-                     (string-append "--prefix="
-                                    (assoc-ref outputs "out"))))))))
+     (list
+      #:tests? #false                   ;no check target
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'cc-is-gcc
+            (lambda _ (setenv "CC" #$(cc-for-target))))
+          (replace 'configure
+            ;; The configure script doesn't tolerate most of our configure flags.
+            (lambda _
+              (setenv "LIBRND_PREFIX" #$(this-package-input "librnd"))
+              (invoke "sh" "configure"
+                      (string-append "--prefix=" #$output)))))))
+    (inputs
+     (modify-inputs (package-inputs pcb)
+       (append librnd)))
     (home-page "http://repo.hu/projects/pcb-rnd/")
     (description "PCB RND is a fork of the GNU PCB circuit board editing tool
 featuring various improvements and bug fixes.")))
@@ -534,10 +576,11 @@ featuring various improvements and bug fixes.")))
                                        "fastcap-mulGlobal.patch"))))
     (build-system gnu-build-system)
     (native-inputs
-     ;; FIXME: with texlive-tiny citation references are rendered as question
-     ;; marks.  During the build warnings like these are printed:
-     ;; LaTeX Warning: Citation `nabors91' on page 2 undefined on input line 3.
-     `(("texlive" ,(texlive-updmap.cfg (list texlive-amsfonts)))
+     ;; FIXME: with (texlive-updmap.cfg) citation references are rendered as
+     ;; question marks.  During the build warnings like these are printed:
+     ;; LaTeX Warning: Citation `nabors91' on page 2 undefined on input line
+     ;; 3.
+     `(("texlive" ,(texlive-updmap.cfg))
        ("ghostscript" ,ghostscript)))
     (arguments
      `(#:make-flags '("CC=gcc" "RM=rm" "SHELL=sh" "all")
@@ -669,7 +712,7 @@ multipole-accelerated algorithm.")
 (define-public fritzing
   (package
     (name "fritzing")
-    (version "0.9.3b")
+    (version "0.9.6")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -678,7 +721,7 @@ multipole-accelerated algorithm.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0hpyc550xfhr6gmnc85nq60w00rm0ljm0y744dp0z88ikl04f4s3"))))
+                "083nz7vj7a334575smjry6257535h68gglh8a381xxa36dw96aqs"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
@@ -687,24 +730,18 @@ multipole-accelerated algorithm.")
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (copy-recursively (assoc-ref inputs "fritzing-parts-db")
                                "parts")
-             ;; Make compatible with libgit2 > 0.24
-             (substitute* "src/version/partschecker.cpp"
-               (("error = git_remote_connect\\(remote, GIT_DIRECTION_FETCH, &callbacks\\)")
-                "error = git_remote_connect(remote, GIT_DIRECTION_FETCH, &callbacks, NULL, NULL)"))
-
              ;; Use system libgit2 and boost.
              (substitute* "phoenix.pro"
-               (("^LIBGIT2INCLUDE =.*")
-                (string-append "LIBGIT2INCLUDE="
-                               (assoc-ref inputs "libgit2") "/include\n"))
-               (("^    LIBGIT2LIB =.*")
-                (string-append "    LIBGIT2LIB="
-                               (assoc-ref inputs "libgit2") "/lib\n")))
-             ;; This file checks for old versions of Boost, insisting on
-             ;; having us download the boost sources and placing them in the
-             ;; build directory.
-             (substitute* "pri/utils.pri"
-               (("error\\(") "message("))
+               (("^LIBGIT_STATIC.*")
+                (string-append "LIBGIT2INCLUDE=" (assoc-ref inputs "libgit2") "/include\n"
+                               "LIBGIT2LIB=" (assoc-ref inputs "libgit2") "/lib\n"
+                               "INCLUDEPATH += $$LIBGIT2INCLUDE\n"
+                               "LIBS += -L$$LIBGIT2LIB -lgit2\n"))
+               (("^.*pri/libgit2detect.pri.") ""))
+             ;; Trick the internal mechanism to load the parts
+             (substitute* "src/version/partschecker.cpp"
+               ((".*git_libgit2_init.*")
+                "return \"083nz7vj7a334575smjry6257535h68gglh8a381xxa36dw96aqs\";"))
 
              (let ((out (assoc-ref outputs "out")))
                (invoke "qmake"
@@ -723,11 +760,11 @@ multipole-accelerated algorithm.")
            (method git-fetch)
            (uri (git-reference
                  (url "https://github.com/fritzing/fritzing-parts")
-                 (commit version)))
+                 (commit (string-append "release_" version))))
            (file-name (git-file-name "fritzing-parts" version))
            (sha256
             (base32
-             "1d2v8k7p176j0lczx4vx9n9gbg3vw09n2c4b6w0wj5wqmifywhc1"))))))
+             "0wsvn57v6n0ygnhk2my94rrfzb962z1cj4d1xmp1farwck3811h6"))))))
     (home-page "https://fritzing.org")
     (synopsis "Electronic circuit design")
     (description
@@ -744,14 +781,14 @@ ready for production.")
 (define-public qelectrotech
   (package
     (name "qelectrotech")
-    (version "0.8.0")
+    (version "0.9.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://git.tuxfamily.org/qet/qet.git/"
                            "snapshot/qet-" version ".tar.gz"))
        (sha256
-        (base32 "0w70fqwhqqzga1kfp34v8z1xf9988nvvi3d5gwl2sg429p9mpsk2"))))
+        (base32 "1qkgagx2bk2jfzs3d91kki01y5bs5p85f4c8xjxn45hmw4rl512b"))))
     (build-system qt-build-system)
     (arguments
      ;; XXX: tests are built for the CMake build option but it seems to be
@@ -856,8 +893,8 @@ fonts to gEDA.")
       (license license:gpl2+))))
 
 (define-public libfive
-  (let ((commit "8ca1b8685ef3fac7b64e66b10459b8421a3020c6")
-        (revision "4"))
+  (let ((commit "b1ea998d8adb3884ab52798f7388f4354145f452")
+        (revision "5"))
     (package
       (name "libfive")
       (version (git-version "0" revision commit))
@@ -868,29 +905,94 @@ fonts to gEDA.")
                       (commit commit)))
                 (sha256
                  (base32
-                  "1c762cd70iv2b9av0l9lq0py9138y98wk3dirhdmil7jncdhvq98"))
+                  "0j91qq9d7949d2zs5wxyqd0ly644nb5690s8xnr6pchjl9z6pqxv"))
                 (file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (arguments
-       `(#:test-target "libfive-test"
-         #:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'remove-native-compilation
-             (lambda _
-               (substitute* "CMakeLists.txt" (("-march=native") ""))
-               #t)))))
+       (list
+        #:imported-modules `((guix build guile-build-system)
+                             ,@%cmake-build-system-modules)
+        #:modules '((guix build cmake-build-system)
+                    ((guix build guile-build-system) #:prefix guile:)
+                    (guix build utils))
+        #:test-target "libfive-test"
+        #:configure-flags #~(list
+                             (string-append
+                              "-DPYTHON_SITE_PACKAGES_DIR="
+                              #$output "/lib/python"
+                              #$(version-major+minor
+                                 (package-version
+                                  (this-package-input "python-wrapper")))
+                              "/site-packages"))
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'unpack 'remove-native-compilation
+              (lambda _
+                (substitute* "CMakeLists.txt" (("-march=native") ""))))
+            (add-after 'unpack 'remove-environment-variable-override
+              (lambda _
+                (substitute* "studio/src/guile/interpreter.cpp"
+                  (("qputenv\\(\"GUILE_LOAD_COMPILED_PATH\".*") ""))))
+            (add-after 'unpack 'fix-library-location
+              (lambda _
+                (substitute* "libfive/bind/guile/libfive/lib.scm"
+                  (("\\(get-environment-variable \"LIBFIVE_FRAMEWORK_DIR\"\\)" m)
+                   (string-append m "\n\"" #$output "/lib/\""))
+                  (("\\(get-environment-variable \"LIBFIVE_STDLIB_DIR\"\\)" m)
+                   (string-append m "\n\"" #$output "/lib/\"")))
+                (substitute* "libfive/bind/python/libfive/ffi.py"
+                  (("os.environ.get\\('LIBFIVE_FRAMEWORK_DIR'\\)" m)
+                   (string-append m " or \"" #$output "/lib/\"")))))
+            (add-before 'build 'generate-bindings
+              (lambda _
+                ;; These files already exist but we regenerate them from source
+                (with-directory-excursion "../source/libfive/stdlib"
+                  (substitute* '("gen_scm.py" "gen_c.py" "gen_py.py")
+                    (("datetime.now\\(\\)\\.strftime\\([^)]+)") "\"N/A\"")
+                    (("os\\.getlogin\\(\\)") "\"guix\""))
+                  (invoke "python" "gen_scm.py")
+                  (invoke "python" "gen_c.py")
+                  (invoke "python" "gen_py.py"))))
+            (add-after 'unpack 'do-not-build-guile-bindings
+              (lambda _
+                (delete-file "libfive/bind/guile/CMakeLists.txt")
+                (call-with-output-file
+                    "libfive/bind/guile/CMakeLists.txt"
+                  (lambda (port)
+                    (display "add_custom_target(libfive-guile)\n" port)))))
+            (add-after 'build 'guile-build
+              (lambda args
+                (apply (assoc-ref guile:%standard-phases 'build)
+                       #:source-directory "../source/libfive/bind/guile"
+                       args)))
+            (add-after 'install 'wrap-studio
+              (lambda _
+                (let* ((effective-version (guile:target-guile-effective-version))
+                       (scm (string-append #$output "/share/guile/site/"
+                                           effective-version))
+                       (go (string-append #$output "/lib/guile/"
+                                          effective-version "/site-ccache"))
+                       (py (string-append #$output "/lib/python"
+                                          #$(version-major+minor
+                                             (package-version
+                                              (this-package-input "python-wrapper")))
+                                          "/site-packages")))
+                  (wrap-program (string-append #$output "/bin/Studio")
+                    `("GUILE_LOAD_PATH" ":" prefix (,scm))
+                    `("GUILE_LOAD_COMPILED_PATH" ":" prefix (,go))
+                    `("GUIX_PYTHONPATH" ":" prefix (,py)))))))))
       (native-inputs
        (list pkg-config))
       (inputs
-       (list boost libpng qtbase-5 eigen guile-3.0))
+       (list bash-minimal boost eigen guile-3.0 libpng python-wrapper qtbase))
       (home-page "https://libfive.com")
       (synopsis "Tool for programmatic computer-aided design")
       (description
        "Libfive is a tool for programmatic computer-aided design (CAD).  In
-libfive, solid models are defined as Scheme scripts, and there are no opaque
-function calls into the geometry kernel: everything is visible to the user.
-Even fundamental, primitive shapes are represented as code in the user-level
-language.")
+libfive, solid models are defined as Scheme or Python scripts, and there are
+no opaque function calls into the geometry kernel: everything is visible to
+the user.  Even fundamental, primitive shapes are represented as code in the
+user-level language.")
       (license (list license:mpl2.0               ;library
                      license:gpl2+))              ;Guile bindings and GUI
 
@@ -913,24 +1015,23 @@ language.")
                  (base32
                   "0lan6930g5a9z4ack9jj0zdd0mb2s6q2xzpiwcjdc3pvl9b1nbw4"))
                 (modules '((guix build utils)))
+                ;; Allow builds with Guile 3.0.
                 (snippet
-                 '(begin
-                    ;; Allow builds with Guile 3.0.
-                    (substitute* "configure.ac"
-                      (("2\\.2") "3.0 2.2"))
-                    #t))))
+                 '(substitute* "configure.ac"
+                    (("2\\.2") "3.0 2.2")))))
       (build-system gnu-build-system)
       (arguments
-       `(#:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'patch-libfive-guile-location
-             (lambda* (#:key inputs #:allow-other-keys)
-               (substitute* "inspekt3d/library.scm"
-                 (("\"libfive-guile")
-                  (string-append "\""
-                                 (assoc-ref inputs "libfive")
-                                 "/lib/libfive-guile")))
-               #t)))))
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'unpack 'patch-libfive-guile-location
+              (lambda _
+                (substitute* "inspekt3d/library.scm"
+                  (("\\(load-extension \"libfive-guile\" \"scm_init_libfive_modules\"\\)") "#t")
+                  (("\"libfive-guile")
+                   (string-append "\""
+                                  #$(this-package-input "libfive")
+                                  "/lib/libfive-stdlib"))))))))
       (native-inputs
        (list autoconf automake pkg-config))
       (inputs
@@ -949,7 +1050,7 @@ Emacs).")
 (define-public kicad
   (package
     (name "kicad")
-    (version "6.0.9")
+    (version "7.0.6")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -957,7 +1058,7 @@ Emacs).")
                     (commit version)))
               (sha256
                (base32
-                "1fr02jcy09v14d3k8ril0zhwnzhcqcf77wfj5b3bkrh6r8xraqhs"))
+                "1bifg73id0grn37a4n5wpq440z9xz14q0fvkva5vajx0xfd34llv"))
               (file-name (git-file-name name version))))
     (build-system cmake-build-system)
     (arguments
@@ -970,6 +1071,7 @@ Emacs).")
                                #$(this-package-input "opencascade-occt")
                                "/include/opencascade")
                 "-DKICAD_SCRIPTING_WXPYTHON_PHOENIX=ON"
+                "-DKICAD_USE_EGL=ON"    ;because wxWidgets uses EGL
                 "-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE")
        #:phases
        (modify-phases %standard-phases
@@ -980,16 +1082,6 @@ Emacs).")
                 (string-append "NGSPICE_DLL_FILE=\""
                                (assoc-ref inputs "libngspice")
                                "/lib/libngspice.so\"")))))
-         (add-after 'unpack 'fix-python-detection
-           (lambda _
-             (substitute* "CMakeModules/FindPythonLibs.cmake"
-               (("_PYTHON3_VERSIONS 3\\.8 3\\.7")
-                "_PYTHON3_VERSIONS 3.9 3.8 3.7"))))
-         (add-after 'unpack 'add-missing-include
-           (lambda _
-             (substitute* "common/lib_tree_model.cpp"
-               (("#include <eda_pattern_match.h>" all)
-                (string-append "#include <algorithm>\n" all)))))
          (add-after 'install 'wrap-program
            ;; Ensure correct Python at runtime.
            (lambda* (#:key inputs outputs #:allow-other-keys)
@@ -1011,22 +1103,23 @@ Emacs).")
             (variable "KICAD") ;to find kicad-doc
             (files '("")))
            (search-path-specification
-            (variable "KICAD6_TEMPLATE_DIR")
+            (variable "KICAD7_TEMPLATE_DIR")
             (files '("share/kicad/template")))
            (search-path-specification
-            (variable "KICAD6_SYMBOL_DIR")
+            (variable "KICAD7_SYMBOL_DIR")
             (files '("share/kicad/symbols")))
            (search-path-specification
-            (variable "KICAD6_FOOTPRINT_DIR")
+            (variable "KICAD7_FOOTPRINT_DIR")
             (files '("share/kicad/footprints")))
            (search-path-specification
-            (variable "KICAD6_3DMODEL_DIR")
+            (variable "KICAD7_3DMODEL_DIR")
             (files '("share/kicad/3dmodels")))))
     (native-inputs (list boost
                          desktop-file-utils
                          gettext-minimal
                          pkg-config
                          swig
+                         unixodbc
                          zlib))
     (inputs (list bash-minimal
                   cairo
@@ -1065,7 +1158,7 @@ electrical diagrams), gerbview (viewing Gerber files) and others.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "04idpdzz2rfp8v1a37if01l5dfjnjg6jxp90gkgyadjzqkp6kcv3"))))
+                "0byvm25jw108h808g5zdjq14gx4xxd87pvlbczd07c3rx6nmzl08"))))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags (list "-DBUILD_FORMATS=html")
@@ -1099,7 +1192,7 @@ electrical diagrams), gerbview (viewing Gerber files) and others.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0y5mjjmmln37hkp9wmydinlfgrn8im8rn20145g9xgdpj8j38d48"))))
+                "0p60dvig7xx8svzsgp871r0aix2m95bmzg3snz372nmgnza2nnvf"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f))                    ; no tests exist
@@ -1128,7 +1221,7 @@ libraries.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "02j445i0kcf87fhj9y6pwfcwq3arppxbrv77lbizm8kcpkpcfldl"))))
+                "0fqnviaxsai0xwyq8xq5ks26j4vd390ns6h6lr0fx2ikv1ghaml5"))))
     (synopsis "Official KiCad footprint libraries")
     (description "This package contains the official KiCad footprint libraries.")))
 
@@ -1145,7 +1238,7 @@ libraries.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0cnrg7mr3khpglviid1adk2ihs1qwj0r7l32z2vqsl8aidzbg9kr"))))
+                "0dmssyhqd94d9wj8w7g7xjan560b2rwcs540sgl0rc77cw2jify8"))))
     (synopsis "Official KiCad 3D model libraries")
     (description "This package contains the official KiCad 3D model libraries.")))
 
@@ -1162,7 +1255,7 @@ libraries.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "08zxh83fbygh1x2jhca8nrp3f9kihf7kmg65qmyp95wvps4p5h8v"))))
+                "1qi20mrsfn4fxmr1fyphmil2i9p2nzmwk5rlfchc5aq2194nj3lq"))))
     (synopsis "Official KiCad project and worksheet templates")
     (description "This package contains the official KiCad project and
 worksheet templates.")))
@@ -1198,7 +1291,7 @@ with the kernel and various utilities such as per-cpu counters.")
 (define-public linsmith
   (package
     (name "linsmith")
-    (version "0.99.31")
+    (version "0.99.33")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -1206,14 +1299,14 @@ with the kernel and various utilities such as per-cpu counters.")
                     version "/linsmith-" version ".tar.gz"))
               (sha256
                (base32
-                "13qj7n9826qc9shkkgd1p6vcpj78v4h9d67wbg45prg7rbnzkzds"))))
+                "1629p29casy9pgy8hzva1bmgrvh923qk01ls3anik6zqn6swkjfn"))))
     (build-system gnu-build-system)
     (arguments
      '(#:configure-flags '("CFLAGS=-fcommon")))
     (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("gtk" ,gtk+-2)
-       ("libgnome" ,libgnomeui)))
+     (list pkg-config))
+    (inputs
+     (list gtk+-2 libgnomeui))
     (home-page "https://jcoppens.com/soft/linsmith/index.en.php")
     (synopsis "Smith Charting program")
     (description "LinSmith is a Smith Charting program, mainly designed for
@@ -1262,7 +1355,7 @@ WiFi signal strength maps.  It visualizes them using a Voronoi diagram.")
 (define-public volk
   (package
     (name "volk")
-    (version "2.4.1")
+    (version "3.0.0")
     (source
      (origin
        (method git-fetch)
@@ -1272,19 +1365,26 @@ WiFi signal strength maps.  It visualizes them using a Voronoi diagram.")
              (recursive? #t)))          ; for cpu_features git submodule
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1mkqiw0i2fbbsk46zvk8yv5swl7ifhq6y1dlfphq8dsmkvxckqby"))))
+        (base32 "0a59lnjh6hx2bmyn04f8r0ymwss1ss1iih2jwrl9jblkxsw0i3lh"))))
     (build-system cmake-build-system)
     (arguments
      `(#:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'disable-check-lgpl-test
+           ;; Disable the failing check-lgpl test that is supposed to be run
+           ;; only by upstream developers to check the authors and licenses
+           ;; of contributions in the git history.
+           (lambda _
+             (substitute* "scripts/licensing/count_contrib.sh"
+               (("#!/bin/bash" all)
+                (string-append all "\nexit 0")))))
          (add-after 'install 'remove-static-libraries
            ;; Remove libcpu_features.a (and any others that might appear).
            (lambda* (#:key outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
                     (lib (string-append out "/lib")))
                (for-each delete-file (find-files lib "\\.a$"
-                                                 #:fail-on-error? #t))
-               #t)))
+                                                 #:fail-on-error? #t)))))
          (add-after 'install 'wrap-pythonpath
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -1300,8 +1400,7 @@ WiFi signal strength maps.  It visualizes them using a Voronoi diagram.")
                (wrap-program file
                  `("GUIX_PYTHONPATH" ":" prefix (,path))
                  `("PATH" ":" prefix
-                   (,(string-append python "/bin:")))))
-             #t)))))
+                   (,(string-append python "/bin:"))))))))))
     (inputs
      `(("boost" ,boost)
        ("python" ,python-wrapper)
@@ -1313,7 +1412,8 @@ WiFi signal strength maps.  It visualizes them using a Voronoi diagram.")
 with machine-specific optimizations for mathematical functions.  It also
 provides a machine-independent interface to select the best such procedures to
 use on a given system.")
-    (license license:gpl3+)))
+    (license (list license:asl2.0 ; cpu_features
+                   license:lgpl3+))))
 
 (define-public libredwg
   (package
@@ -1595,6 +1695,49 @@ the API of spice simulators.  Based on transformations specified in XML
 language, ADMS transforms Verilog-AMS code into other target languages.")
     (license license:gpl3)))
 
+(define-public audmes
+  (package
+    (name "audmes")
+    (version "20220420")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "mirror://sourceforge/audmes/audmes%20sources/"
+                           "audmes-source-" version ".zip"))
+       (sha256
+        (base32 "0yxjq2p1ca2wy2idwrlxr3b4vbp0d9268jll90y7l55fbid8vkp2"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:tests? #false                   ;there are none
+      #:phases
+      '(modify-phases %standard-phases
+         (add-after 'unpack 'prepare-csv.h
+           (lambda* (#:key inputs #:allow-other-keys)
+             (mkdir "libfccp")
+             (install-file (search-input-file inputs "csv.h") "libfccp"))))))
+    (inputs
+     (list alsa-lib pulseaudio wxwidgets))
+    (native-inputs
+     (list unzip
+           (let ((commit "4ade42d5f8c454c6c57b3dce9c51c6dd02182a66"))
+             (origin
+               (method git-fetch)
+               (uri (git-reference
+                     (url "https://github.com/ben-strasser/fast-cpp-csv-parser")
+                     (commit commit)))
+               (file-name (git-file-name "csv.h" (git-version "0" "0" commit)))
+               (sha256
+                (base32
+                 "1y7ads97gkrjg1jc532n8gmjry0qhqxginw1gq7b4lk9s0pyl540"))))))
+    (home-page "https://sourceforge.net/projects/audmes/")
+    (synopsis "Oscilloscope and spectrum analyzer using sound card")
+    (description
+     "The audio measurement system is a system for audio measurement through
+sound card.  It contains: generator, oscilloscope, audio spectrum
+analyzer (FFT) and frequency sweep plot.")
+    (license license:gpl2+)))
+
 (define-public capstone
   (package
     (name "capstone")
@@ -1644,7 +1787,7 @@ bindings for Python, Java, OCaml and more.")
      `(#:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'chdir-and-fix-setup-py
-           (lambda _
+           (lambda* (#:key inputs #:allow-other-keys)
              (chdir "bindings/python")
              ;; Do not build the library again, because we already have it.
              (substitute* "setup.py" ((".*   build_libraries.*") ""))
@@ -1652,8 +1795,13 @@ bindings for Python, Java, OCaml and more.")
              ;; library.
              (substitute* "capstone/__init__.py"
                (("pkg_resources.resource_filename.*")
-                (string-append "'" (assoc-ref %build-inputs "capstone") "/lib',\n")))
-             #t)))))))
+                (string-append "'" (dirname (search-input-file
+                                             inputs "lib/libcapstone.so"))
+                               "',\n")))))
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (invoke "make" "check")))))))))
 
 
 (define-public python-esptool-3.0
@@ -1774,7 +1922,7 @@ it suitable for security research and analysis.")
      `(("mpi" ,openmpi)))
     (inputs
      (list coreutils-minimal))
-    (home-page "http://asco.sourceforge.net/")
+    (home-page "https://asco.sourceforge.net/")
     (synopsis "SPICE circuit optimizer")
     (description
      "ASCO brings circuit optimization capabilities to existing SPICE simulators using a
@@ -1787,7 +1935,7 @@ high-performance parallel differential evolution (DE) optimization algorithm.")
   ;; See <https://debbugs.gnu.org/cgi/bugreport.cgi?bug=27344#236>.
   (package
     (name "libngspice")
-    (version "38")
+    (version "40")
     (source
      (origin
        (method url-fetch)
@@ -1798,7 +1946,7 @@ high-performance parallel differential evolution (DE) optimization algorithm.")
                             "old-releases/" version
                             "/ngspice-" version ".tar.gz")))
        (sha256
-        (base32 "0mkw66d2isyyxssziwramd08amd7l1qm6dfg86r5s5kvqkv24gic"))))
+        (base32 "03c9irc44msdpqhbn2fhvb4g0sry8a2qgxl4mbbf557mq1xwl0z3"))))
     (build-system gnu-build-system)
     (arguments
      `(;; No tests for libngspice exist.
@@ -1829,7 +1977,7 @@ high-performance parallel differential evolution (DE) optimization algorithm.")
      (list bison flex))
     (inputs
      (list libxaw openmpi))
-    (home-page "http://ngspice.sourceforge.net/")
+    (home-page "https://ngspice.sourceforge.net/")
     (synopsis "Mixed-level/mixed-signal circuit simulator")
     (description
      "Ngspice is a mixed-level/mixed-signal circuit simulator.  It includes
@@ -2258,7 +2406,7 @@ simulation.")
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/radareorg/cutter")
+             (url "https://github.com/rizinorg/cutter")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
@@ -2288,7 +2436,7 @@ simulation.")
            ;; Depends on radare2 4.5.1 officially, builds and works fine with
            ;; radare2 5.0.0 but fails to build with radare2 5.1.1.
            radare2-for-cutter))
-    (home-page "https://github.com/radareorg/cutter")
+    (home-page "https://cutter.re")
     (synopsis "GUI for radare2 reverse engineering framework")
     (description "Cutter is a GUI for radare2 reverse engineering framework.
 Its goal is making an advanced andcustomizable reverse-engineering platform
@@ -2300,7 +2448,7 @@ engineers for reverse engineers.")
 (define-public lib3mf
   (package
     (name "lib3mf")
-    (version "2.1.1")
+    (version "2.2.0")
     (source
      (origin
       (method git-fetch)
@@ -2309,20 +2457,48 @@ engineers for reverse engineers.")
       (file-name (git-file-name name version))
       (sha256
        (base32
-        "1417xlxc1y5jnipixhbjfrrjgkrprbbraj8647sff9051m3hpxc3"))))
+        "05zqvnzmi7j8rhp2mrskvxf1bxl7kb4c72dfx4y86219i1hx7i2q"))
+      (modules '((guix build utils)))
+      (snippet
+       '(begin
+          ;; Delete pre-compiled ACT.
+          (delete-file-recursively "AutomaticComponentToolkit/bin")
+
+          ;; Remove bundled software.  Preserve cpp-base64 as it has been
+          ;; modified and cannot easily be unbundled.
+          (for-each delete-file-recursively
+                    '("Include/Libraries/libzip"
+                      "Include/Libraries/zlib"
+                      "Source/Libraries/libzip"
+                      "Source/Libraries/zlib"))
+
+          ;; Adjust header includes such that system headers are found.
+          (substitute* '("Include/Common/OPC/NMR_OpcPackageReader.h"
+                         "Include/Common/Platform/NMR_ImportStream_ZIP.h"
+                         "Include/Common/Platform/NMR_ExportStream_ZIP.h"
+                         "Include/Common/Platform/NMR_ImportStream_Compressed.h"
+                         "Include/Common/Platform/NMR_ExportStream_Compressed.h"
+                         "Source/Common/Platform/NMR_PortableZIPWriterEntry.cpp")
+            (("Libraries/libzip/") "")
+            (("Libraries/zlib/") ""))))))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags (list "-DUSE_INCLUDED_ZLIB=0"
                                "-DUSE_INCLUDED_LIBZIP=0"
                                "-DUSE_INCLUDED_GTEST=0"
-                               "-DUSE_INCLUDED_SSL=0")))
+                               "-DUSE_INCLUDED_SSL=0")
+       #:phases (modify-phases %standard-phases
+                  (add-after 'unpack 'provide-act
+                    (lambda* (#:key native-inputs inputs #:allow-other-keys)
+                      (let ((act (search-input-file (or native-inputs inputs)
+                                                    "bin/act"))
+                            (dir "AutomaticComponentToolkit/bin"))
+                        (mkdir-p dir)
+                        (symlink act (string-append dir "/act.linux"))))))))
     (native-inputs
-     (list googletest pkg-config))
+     (list automatic-component-toolkit googletest pkg-config))
     (inputs
-     `(("libuuid" ,util-linux "lib")
-       ("libzip" ,libzip)
-       ("libressl" ,libressl)
-       ("zlib" ,zlib)))
+     (list `(,util-linux "lib") libzip libressl zlib))
     (synopsis "Implementation of the 3D Manufacturing Format (3MF) file standard")
     (description
      "Lib3MF is a C++ implementation of the 3D Manufacturing Format (3MF) file
@@ -2331,6 +2507,74 @@ well as conversion and validation tools for input and output data.  The
 specification can be downloaded at @url{http://3mf.io/specification/}.")
     (home-page "https://3mf.io/")
     (license license:bsd-2)))
+
+(define-public python-pyvisa
+  (package
+    (name "python-pyvisa")
+    (version "1.13.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "PyVISA" version))
+              (sha256
+               (base32
+                "1iprr3h6d4w6v8ksgqpkgg545sai7i8hi5a5an394p26b25h1yl9"))
+              (modules '((guix build utils)))
+              (snippet '(begin
+                          ;; Delete bundled python-prettytable.
+                          (delete-file-recursively "pyvisa/thirdparty")))))
+    (build-system pyproject-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (add-after 'unpack 'use-system-prettytable
+                          (lambda _
+                            (substitute* "pyvisa/shell.py"
+                              (("from .thirdparty import prettytable")
+                               "import prettytable")))))))
+    (native-inputs (list python-pytest))
+    (propagated-inputs (list python-dataclasses python-prettytable
+                             python-typing-extensions))
+    (home-page "https://pyvisa.readthedocs.io/en/latest/")
+    (synopsis "Python binding for the VISA library")
+    (description "PyVISA is a Python package for support of the
+@acronym{VISA, Virtual Instrument Software Architecture}, in order to control
+measurement devices and test equipment via GPIB, RS232, Ethernet or USB.")
+    (license license:expat)))
+
+(define-public python-scikit-rf
+  (package
+    (name "python-scikit-rf")
+    (version "0.28.0")
+    (source (origin
+              (method git-fetch) ;PyPI misses some files required for tests
+              (uri (git-reference
+                    (url "https://github.com/scikit-rf/scikit-rf")
+                    (commit (string-append "v" version))))
+              (sha256
+               (base32
+                "11pxl8q356f6q4cvadasg52js3k446l87hwmc87b1n9cy8sxcfvi"))
+              (file-name (git-file-name name version))))
+    (build-system pyproject-build-system)
+    (propagated-inputs (list python-matplotlib
+                             python-networkx
+                             python-numpy
+                             python-openpyxl
+                             python-pandas
+                             python-pyqt
+                             python-pyqtgraph
+                             python-qtpy
+                             python-scipy))
+    (native-inputs (list python-coverage
+                         python-flake8
+                         python-nbval
+                         python-networkx
+                         python-pytest
+                         python-pytest-cov
+                         python-pyvisa))
+    (home-page "https://scikit-rf.org/")
+    (synopsis "Radio frequency and Microwave Engineering Scikit")
+    (description "Scikit-rf, or @code{skrf}, is a Python package for RF and
+Microwave engineering.")
+    (license license:bsd-3)))
 
 (define-public openscad
   (package
@@ -2443,7 +2687,7 @@ comments.")))
 (define-public freecad
   (package
     (name "freecad")
-    (version "0.20.1")
+    (version "0.21.0")
     (source
      (origin
        (method git-fetch)
@@ -2452,7 +2696,7 @@ comments.")))
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1pgkjlahisqjvi3dd7ywj1zwhsl3wn3p15sifbmrdfdmw9is3z2b"))))
+        (base32 "1i1wv3swnnimmn3kwphb2fcmsc64z96rcg7fhfsgqxcbyrygw6w7"))))
     (build-system qt-build-system)
     (native-inputs
      (list doxygen
@@ -2466,6 +2710,7 @@ comments.")))
            coin3D
            double-conversion
            eigen
+           fmt
            fontconfig
            freetype
            gl2ps
@@ -2675,7 +2920,7 @@ operations.")
     (inputs
      (list libx11))
     (arguments `(#:tests? #f))
-    (home-page "http://spacenav.sourceforge.net/")
+    (home-page "https://spacenav.sourceforge.net/")
     (synopsis
      "Library for communicating with spacenavd or 3dxsrv")
     (description
@@ -2748,7 +2993,7 @@ for compression of 3D triangle meshes.  The geometry is compressed to a
 fraction of comparable file formats (3DS, STL, COLLADA...), and the format is
 accessible through a simple API")
       (license license:zlib)
-      (home-page "http://openctm.sourceforge.net/"))))
+      (home-page "https://openctm.sourceforge.net/"))))
 
 (define-public lib3ds
   (package
@@ -2825,13 +3070,13 @@ program that can perform mesh processing tasks in batch mode, without a GUI.")
 (define-public poke
   (package
     (name "poke")
-    (version "2.4")
+    (version "3.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/poke/poke-" version
                                   ".tar.gz"))
               (sha256
-               (base32 "0ivfzslpdy0n9wcdjyascnqczppaxcq0x4x6hblqqwy62xcjh7l4"))
+               (base32 "15qd9z3wv7jrdlh6f9hwgni54ssdz8hzrn4lxiacwv1sslfmb3km"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -2882,7 +3127,11 @@ program that can perform mesh processing tasks in batch mode, without a GUI.")
     (arguments
      ;; To build the GUI, add the `--enable-gui' configure flag.
      ;; To enable the "hyperlink server", add the `--enable-hserver' flag.
-     `(#:configure-flags '("--enable-mi")))
+     `(#:configure-flags
+       '("--enable-mi"
+         "--disable-static"
+         ;; The emacs files are provided in emacs-poke.
+         "--with-lispdir=/tmp/share/emacs")))
     (home-page "https://www.gnu.org/software/poke/#documentation")
     (synopsis "Editing of arbitrary binary data")
     (description "GNU poke is an interactive, extensible editor for binary data.
@@ -2891,41 +3140,56 @@ full-fledged procedural, interactive programming language designed to describe
 data structures and to operate on them.")
     (license license:gpl3+)))
 
+(define-public emacs-poke
+  (package
+    (inherit poke)
+    (name "emacs-poke")
+    (build-system emacs-build-system)
+    (arguments
+     (list
+       #:phases
+       #~(modify-phases %standard-phases
+           (add-before 'expand-load-path 'change-working-directory
+             (lambda _ (chdir "etc"))))))
+    (inputs '())
+    (native-inputs '())
+    (synopsis "GNU Poke major modes for Emacs")
+    (description
+     "This package provides two Emacs major modes for working with GNU Poke:
+@code{Poke Ras mode} and @code{Poke Map mode}.")))
+
 (define-public pcb2gcode
-  ;; Take some additional commits after v2.4.0 to fix build against
-  ;; geos 3.10.1.
-  (let ((commit "ae41f9fe41e57ee5d0cced6c3b3c8aea9c3f5392"))
-    (package
-     (name "pcb2gcode")
-     (version (git-version "2.4.0" "1" commit))
-     (source
-      (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/pcb2gcode/pcb2gcode")
-             (commit commit)
-             (recursive? #t)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "1r1qmvpn5ffi2xpq2gigwsk8kn79s4s2ywfvicwf8i7rzwhkdf17"))))
-     (build-system gnu-build-system)
-     (inputs
-      (list boost
-            geos
-            gerbv
-            glibmm
-            gtkmm-2
-            librsvg))
-     (native-inputs
-      (list autoconf automake libtool pkg-config))
-     (home-page "https://github.com/pcb2gcode/pcb2gcode")
-     (synopsis "Generate G-code for milling PCBs")
-     (description "pcb2gcode is a command-line program for isolation routing
+  (package
+   (name "pcb2gcode")
+   (version "2.5.0")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+           (url "https://github.com/pcb2gcode/pcb2gcode")
+           (commit (string-append "v" version))
+           (recursive? #t)))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32
+       "01s41znkcq9x1rinsdqrrdj8p35isckrcxs14ajsi7wr39n1m5kk"))))
+   (build-system gnu-build-system)
+   (inputs
+    (list boost
+          geos
+          gerbv
+          glibmm
+          gtkmm-2
+          librsvg))
+   (native-inputs
+    (list autoconf automake libtool pkg-config))
+   (home-page "https://github.com/pcb2gcode/pcb2gcode")
+   (synopsis "Generate G-code for milling PCBs")
+   (description "pcb2gcode is a command-line program for isolation routing
 and drilling of PCBs.  It takes Gerber files as input and outputs G-code files
 for the milling of PCBs.  It also includes an autoleveller for the automatic
 dynamic calibration of the milling depth.")
-     (license license:gpl3+))))
+   (license license:gpl3+)))
 
 ;; libdxfrw has no readme, no version release, no tags.  Initial commit says
 ;; "libdxfrw-0.6.3 import", but it shares no git history with "upstream"
@@ -3257,6 +3521,7 @@ perform various useful functions such as:
        ("gmp" ,gmp)
        ("mesa" ,mesa)
        ("mpfr" ,mpfr)
+       ("tbb" ,tbb)
        ("tinyxml2" ,tinyxml2)
        ;; When updating this package, update commit fields below according to
        ;; the hashes listed in "cmake/LibiglDownloadExternal.cmake".
@@ -3310,7 +3575,7 @@ visualization, matrix manipulation.")
 (define-public prusa-slicer
   (package
     (name "prusa-slicer")
-    (version "2.5.0")
+    (version "2.5.2")
     (source
      (origin
        (method git-fetch)
@@ -3319,7 +3584,10 @@ visualization, matrix manipulation.")
          (url "https://github.com/prusa3d/PrusaSlicer")
          (commit (string-append "version_" version))))
        (file-name (git-file-name name version))
-       (sha256 (base32 "17ic92ww2ny0frxyv7ajwdwa0fq70ygq562ik8sh94jx67jvxdy0"))
+       (sha256 (base32 "02qcrw3fa0d8ldbp73hp14l1qxbp3f4608j4csc07ny00ra42151"))
+       (patches (search-patches "prusa-slicer-boost-fixes.patch"
+                                "prusa-slicer-fix-tests.patch"
+                                "prusa-slicer-with-cereal-1.3.1.patch"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -3355,7 +3623,7 @@ visualization, matrix manipulation.")
      (list pkg-config))
     (inputs
      (list boost
-           cereal-1.3.0
+           cereal
            cgal
            curl
            dbus
@@ -3378,7 +3646,9 @@ visualization, matrix manipulation.")
            pango
            tbb
            eudev
-           wxwidgets
+           ;; prusa-slicer 2.5 segfaults on startup with wxwidgets 3.2
+           ;; See https://github.com/prusa3d/PrusaSlicer/issues/8299
+           wxwidgets-3.0
            zlib))
     (home-page "https://www.prusa3d.com/prusaslicer/")
     (synopsis "G-code generator for 3D printers (RepRap, Makerbot, Ultimaker etc.)")
@@ -3901,7 +4171,7 @@ form, numpad.
 (define-public rizin
   (package
     (name "rizin")
-    (version "0.4.0")
+    (version "0.5.2")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -3909,7 +4179,7 @@ form, numpad.
                     version "/rizin-src-v" version ".tar.xz"))
               (sha256
                (base32
-                "0nkb6v9lks25w5sv5s6p2ghgqnnnsf39md8nlx1cy4z89xlaisq9"))))
+                "18zca3iwdif200wiivm065fs0a5g520q6380205cijca7ky81avi"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -3924,7 +4194,12 @@ form, numpad.
               "-Duse_sys_xxhash=enabled"
               "-Duse_sys_openssl=enabled"
               "-Duse_sys_tree_sitter=enabled"
-              "-Duse_sys_libuv=enabled"
+              "-Duse_sys_lzma=enabled"
+              "-Duse_sys_libmspack=enabled"
+              "-Duse_zlib=true"
+              "-Duse_lzma=true"
+              "-Dinstall_sigdb=false"
+              "-Duse_swift_demangler=true"
               "-Duse_gpl=true")
       #:phases
       #~(modify-phases %standard-phases
@@ -3935,10 +4210,15 @@ form, numpad.
               ;; And 2 of them are failing, reported upstream:
               ;; <https://github.com/rizinorg/rizin/issues/2905>.
               (substitute* "test/meson.build"
-                (("subdir\\('integration'\\)") "")))))))
+                (("subdir\\('integration'\\)") ""))
+              ;;; Skip failing tests.
+              (substitute* "test/unit/meson.build"
+                (("'analysis_var',\n") "")
+                (("'bin_mach0',\n") "")
+                (("'hash',\n") "")))))))
     (native-inputs (list pkg-config))
     (inputs
-     (list capstone file libuv libzip lz4 openssl tree-sitter xxhash zlib))
+     (list capstone file libuv libzip lz4 openssl tree-sitter xxhash zlib libmspack))
     (home-page "https://rizin.re")
     (synopsis "Disasm, debug, analyze and manipulate binary files")
     (description
@@ -3951,3 +4231,31 @@ more.")
     ;; GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-or-later, LGPL-2.0-or-later,
     ;; LGPL-2.1-only, LGPL-2.1-or-later, LGPL-3.0-only, MIT, NCSA.
     (license license:gpl3+)))
+
+(define-public python-asyncua
+  (package
+    (name "python-asyncua")
+    (version "1.0.3")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                     (url "https://github.com/FreeOpcUa/opcua-asyncio.git")
+                     (commit (string-append "v" version))
+                     (recursive? #t)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0bazk3k2dyzlrh7yxs4pc76m5ysm7riia3ncg7as3xr4y9dy29bx"))))
+    (build-system pyproject-build-system)
+    (native-inputs
+     (list python-pytest-asyncio python-pytest-runner python-asynctest
+           python-pytest-mock))
+    (propagated-inputs
+     (list python-aiofiles python-aiosqlite python-cryptography
+           python-importlib-metadata python-dateutil python-pytz
+           python-sortedcontainers))
+    (synopsis "OPC UA / IEC 62541 client and server library")
+    (description "This package provides an OPC UA / IEC 62541 client and
+server for Python and pypy3.")
+    (home-page "https://freeopcua.github.io/")
+    (license license:lgpl3+)))

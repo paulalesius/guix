@@ -39,8 +39,10 @@
 (define-module (guix licenses)
   #:use-module (srfi srfi-9)
   #:export (license? license-name license-uri license-comment
+            afl2.1
             agpl1 agpl3 agpl3+
             apsl2
+            arphic-1999
             asl1.1 asl2.0
             boost1.0
             bsd-0 bsd-1 bsd-2 bsd-3 bsd-4
@@ -57,6 +59,7 @@
             edl1.0
             epl1.0
             epl2.0
+            eupl1.1
             eupl1.2
             expat expat-0
             freetype
@@ -74,6 +77,7 @@
             knuth
             lal1.3
             lgpl2.0 lgpl2.0+ lgpl2.1 lgpl2.1+ lgpl3 lgpl3+ llgpl
+            lpl1.02
             lppl lppl1.0+ lppl1.1+ lppl1.2 lppl1.2+
             lppl1.3 lppl1.3+
             lppl1.3a lppl1.3a+
@@ -169,6 +173,11 @@ cases, reduces to #t at macro-expansion time."
 
 (begin-license-definitions license?
 
+(define afl2.1
+  (license "AFL 2.1"
+           "https://spdx.org/licenses/AFL-2.1.html"
+           "https://www.gnu.org/licenses/license-list#AcademicFreeLicense"))
+
 (define agpl1
   (license "AGPL 1"
            "https://gnu.org/licenses/agpl.html"
@@ -188,6 +197,14 @@ cases, reduces to #t at macro-expansion time."
   (license "APSL 2.0"
            "https://directory.fsf.org/wiki/License:APSL-2.0"
            "https://www.gnu.org/licenses/license-list.html#apsl2"))
+
+;; This is a copyleft free software license, incompatible with the GPL.  Its
+;; normal use is for fonts, and in that use, the incompatibility does not
+;; cause a problem.
+(define arphic-1999
+  (license "Arphic Public License"
+           "https://directory.fsf.org/wiki/License:Arphic-PL"
+           "https://www.gnu.org/licenses/license-list.html#Arphic"))
 
 (define asl1.1
   (license "ASL 1.1"
@@ -343,6 +360,11 @@ at URI, which may be a file:// URI pointing the package's tree."
   (license "EPL 2.0"
            "https://www.eclipse.org/legal/epl-2.0/"
            "https://www.gnu.org/licenses/license-list#EPL2"))
+
+(define eupl1.1
+  (license "EUPL 1.1"
+           "https://directory.fsf.org/wiki/License:EUPL-1.1"
+           "https://www.gnu.org/licenses/license-list#EUPL-1.1"))
 
 (define eupl1.2
   (license "EUPL 1.2"
@@ -510,6 +532,11 @@ at URI, which may be a file:// URI pointing the package's tree."
            "https://opensource.franz.com/preamble.html"
            "Lisp Lesser General Public License"))
 
+(define lpl1.02 ;Lucent
+  (license "LPL 1.02"
+           "https://directory.fsf.org/wiki/License:LPL-1.02"
+           "https://www.gnu.org/licenses/license-list.html#lucent102"))
+
 (define lppl
   (license "LPPL (any version)"
            "https://www.latex-project.org/lppl/lppl-1-0/"
@@ -607,7 +634,7 @@ at URI, which may be a file:// URI pointing the package's tree."
 
 (define nmap
   (license "Nmap license"
-           "https://svn.nmap.org/nmap/COPYING"
+           "https://svn.nmap.org/nmap/LICENSE"
            "https://fedoraproject.org/wiki/Licensing/Nmap"))
 
 (define ogl-psi1.0

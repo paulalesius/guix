@@ -3,8 +3,9 @@
 ;;; Copyright © 2016 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2018 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022 Brendan Tildesley <mail@brendan.scot>
+;;; Copyright © 2022 Marius Bakke <marius@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -32,14 +33,13 @@
   #:use-module (gnu packages)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages pkg-config)
-  #:use-module (gnu packages hurd)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages base))
 
 (define-public hwdata
   (package
     (name "hwdata")
-    (version "0.357")                   ;updated monthly
+    (version "0.365")                   ;updated monthly
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -48,7 +48,7 @@
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0kvxpdx14w2myqm3dikjvr2mr4j6767y4v5j8v7kffwvcv0ga9gv"))))
+                "00gqx24dyy9l98ygnvx8i087xq8pl9d2393h4d2cm4d5nnvr51d4"))))
     (build-system gnu-build-system)
     (outputs '("out" "iab" "oui" "pci" "pnp" "usb"))
     (arguments
@@ -80,20 +80,24 @@ Each database is contained in a specific package output, such as the
 (define-public pciutils
   (package
     (name "pciutils")
-    (version "3.7.0")
+    (version "3.8.0")
     (source (origin
               (method url-fetch)
               (uri (string-append
                     "mirror://kernel.org/software/utils/pciutils/pciutils-"
                     version ".tar.xz"))
-              (patches (search-patches "pciutils-hurd-configure.patch"))
               (sha256
                (base32
-                "1ss0rnfsx8gvqjxaji4mvbhf9xyih4cadmgadbwwv8mnx1xvjh4x"))))
+                "01aglgw9ds9qiswcbi2lx90lswncikrlyv8mmp4haix8542bvvci"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'unbundle-pci.ids
+           (lambda* (#:key native-inputs inputs #:allow-other-keys)
+             (copy-file (search-input-file (or native-inputs inputs)
+                                           "share/hwdata/pci.ids")
+                        "pci.ids")))
          (replace 'configure
            (lambda* (#:key outputs #:allow-other-keys)
              ;; There's no 'configure' script, just a raw makefile.
@@ -116,49 +120,49 @@ Each database is contained in a specific package output, such as the
                 (string-append "PREFIX := " (assoc-ref outputs "out")
                                "\n"))
                (("^MANDIR:=.*$")
-                 ;; By default the thing tries to automatically
-                 ;; determine whether to use $prefix/man or
-                 ;; $prefix/share/man, and wrongly so.
+                ;; By default the thing tries to automatically
+                ;; determine whether to use $prefix/man or
+                ;; $prefix/share/man, and wrongly so.
                 (string-append "MANDIR := " (assoc-ref outputs "out")
                                "/share/man\n"))
 
                (("^SHARED=.*$")
                 ;; Build libpciutils.so.
                 "SHARED := yes\n")
+
                (("^ZLIB=.*$")
                 ;; Ask for zlib support, for 'pci.ids.gz' decompression.
                 "ZLIB := yes\n")
 
                (("^IDSDIR=.*$")
                 ;; Installation directory of 'pci.ids.gz'.
-                "IDSDIR = $(SHAREDIR)/hwdata\n"))))
+                "IDSDIR = $(SHAREDIR)/hwdata\n")
+
+               ;; Do not install the update script nor its man page.
+               ((".*INSTALL.*update-pciids .*") "")
+               (("update-pciids update-pciids.8 ") "")
+               (("(.*INSTALL.*)update-pciids.8(.*)" _ head tail)
+                (string-append head tail)))))
          (replace 'install
            (lambda* (#:key outputs #:allow-other-keys)
              ;; Install the commands, library, and .pc files.
-             (invoke "make" "install" "install-lib")))
-
-         ,@(if (hurd-target?)
-               '((add-after 'unpack 'apply-hurd-patch
-                   (lambda* (#:key inputs #:allow-other-keys)
-                     (let ((patch (assoc-ref inputs "hurd-patch")))
-                       (invoke "patch" "-p1" "--batch" "-i"
-                               patch)))))
-               '()))
+             (invoke "make" "install" "install-lib"))))
 
        ;; Make sure programs have an RPATH so they can find libpciutils.so.
-       #:make-flags (list (string-append "LDFLAGS=-Wl,-rpath="
+       #:make-flags (list ,(string-append "CC="
+                                          (if (%current-target-system)
+                                              (cc-for-target)
+                                              "gcc"))
+                          (string-append "LDFLAGS=-Wl,-rpath="
                                          (assoc-ref %outputs "out") "/lib"))
 
        ;; No test suite.
        #:tests? #f))
     (native-inputs
-     (list which pkg-config))
+     (list `(,hwdata "pci") pkg-config which))
     (inputs
-     `(,@(if (not (hurd-target?))
+     `(,@(if (not (target-hurd?))
              `(("kmod" ,kmod))
-             '())
-       ,@(if (hurd-target?)
-             `(("hurd-patch" ,(search-patch "pciutils-hurd-fix.patch")))
              '())
        ("zlib" ,zlib)))
     (home-page "https://mj.ucw.cz/sw/pciutils/")

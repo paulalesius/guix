@@ -9,7 +9,7 @@
 ;;; Copyright © 2019 Evan Straw <evan.straw99@gmail.com>
 ;;; Copyright © 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2020 Lars-Dominik Braun <lars@6xq.net>
-;;; Copyright © 2020–2022 Simon Streit <simon@netpanic.org>
+;;; Copyright © 2020–2023 Simon Streit <simon@netpanic.org>
 ;;; Copyright © 2021 Noah Evans <noah@nevans.me>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -49,6 +49,7 @@
   #:use-module (gnu packages cdrom)
   #:use-module (gnu packages cmake) ;for MPD
   #:use-module (gnu packages cpp)
+  #:use-module (gnu packages file-systems)
   #:use-module (gnu packages freedesktop) ;elogind
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages gnome)
@@ -56,6 +57,7 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages icu4c)
   #:use-module (gnu packages libusb)
+  #:use-module (gnu packages lua)
   #:use-module (gnu packages readline)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
@@ -67,6 +69,7 @@
   #:use-module (gnu packages music)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages pcre)
+  #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages pretty-print)
   #:use-module (gnu packages python)
@@ -76,8 +79,11 @@
   #:use-module (gnu packages serialization)
   #:use-module (gnu packages sphinx)
   #:use-module (gnu packages sqlite)
+  #:use-module (gnu packages tls)
   #:use-module (gnu packages video)
-  #:use-module (gnu packages xiph))
+  #:use-module (gnu packages web)
+  #:use-module (gnu packages xiph)
+  #:use-module (gnu packages xml))
 
 (define-public libmpdclient
   (package
@@ -112,7 +118,7 @@ interfacing MPD in the C, C++ & Objective C languages.")
 (define-public mpd
   (package
     (name "mpd")
-    (version "0.23.10")
+    (version "0.23.13")
     (source (origin
               (method url-fetch)
               (uri
@@ -121,12 +127,13 @@ interfacing MPD in the C, C++ & Objective C languages.")
                               "/mpd-" version ".tar.xz"))
               (sha256
                (base32
-                "1a764k504nh9vqmsd92qh8sg03fwns19d7mypm618j6c8bmqqp30"))))
+                "06fmy68lfrsi5y03l53dnwcynqhwh5f5vhdpbsr8lzmvzgk02sx9"))))
     (build-system meson-build-system)
     (arguments
      (list
       #:configure-flags #~(list "-Ddocumentation=enabled"
-                                "-Dsystemd=enabled")
+                                "-Dsystemd=enabled"
+                                "-Dtest=true")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'enable-elogind
@@ -139,42 +146,65 @@ interfacing MPD in the C, C++ & Objective C languages.")
                 (("systemd_dep = declare_dependency" all)
                  (string-append "_" all)))
               (substitute* "meson.build"
-                (("systemd_dep,") "systemd_dep, _systemd_dep,")))))))
-    (inputs (list ao
-                  alsa-lib
-                  avahi
-                  boost
-                  curl
-                  elogind
-                  ffmpeg
-                  flac
-                  fmt
-                  glib
-                  icu4c
-                  ;; The LAME decoder comes from FFmpeg, but is added here so that
-                  ;; configure picks up the LAME encoder.
-                  lame
-                  libid3tag
-                  libmpdclient
-                  libsamplerate
-                  libsndfile
-                  libvorbis
-                  opus
-                  pipewire-0.3
-                  pulseaudio
-                  sqlite
-                  zlib))
-    (native-inputs (list cmake pkg-config python-sphinx))
+                (("systemd_dep,") "systemd_dep, _systemd_dep,"))))
+          (add-after 'install 'split-package
+            (lambda _
+              ;; The HTML manual accounts for over 40% of the disk
+              ;; space used by the package.
+              (let* ((old (string-append #$output "/share/doc"))
+                     (new (string-append #$output:doc "/share/doc")))
+                (mkdir-p (dirname new))
+                (rename-file old new)))))))
+    (inputs (append
+             (if (target-linux?) (list liburing) '())
+             (list ao
+                   alsa-lib
+                   avahi
+                   boost
+                   chromaprint
+                   curl
+                   elogind
+                   expat
+                   ffmpeg
+                   flac
+                   fmt
+                   glib
+                   icu4c
+                   ;; The LAME decoder comes from FFmpeg, but is added here so that
+                   ;; configure picks up the LAME encoder.
+                   lame
+                   libgme
+                   libid3tag
+                   libmpdclient
+                   libnfs
+                   libopenmpt
+                   libsamplerate
+                   libshout
+                   libsndfile
+                   libvorbis
+                   opus
+                   pcre2
+                   pipewire
+                   pulseaudio
+                   soxr
+                   sqlite
+                   yajl
+                   zlib
+                   zziplib)))
+    (native-inputs (list pkg-config python-sphinx googletest
+                         ;; See test/meson.build for information about these
+                         ;; additional dependencies.
+                         ;;
+                         ;; Used when zziplib feature is enabled.
+                         zip))
+    (outputs (list "out" "doc"))
     ;; Missing optional inputs:
-    ;;   libyajl
     ;;   libcdio_paranoia
     ;;   libmms
     ;;   libadplug
     ;;   libaudiofile
     ;;   faad2
     ;;   fluidsynth
-    ;;   libgme
-    ;;   libshout
     ;;   libmpg123
     ;;   libmodplug
     ;;   libmpcdec
@@ -231,7 +261,7 @@ player daemon.")
 (define-public ncmpc
   (package
     (name "ncmpc")
-    (version "0.47")
+    (version "0.49")
     (source (origin
               (method url-fetch)
               (uri
@@ -240,7 +270,7 @@ player daemon.")
                               "/ncmpc-" version ".tar.xz"))
               (sha256
                (base32
-                "1714saz8m6y2chby0c1qh3vgqc3srlr1jq98vhzmjykcpjqj7nk1"))))
+                "0afgcbqk4gqhc26wlw6vsnyv5gl5ciq0qyv4miicyswyvq7frfv5"))))
     (build-system meson-build-system)
     (inputs (list boost pcre libmpdclient ncurses))
     (native-inputs
@@ -429,27 +459,30 @@ other MPD frontends.")
     (build-system gnu-build-system)
     ;; Manually wrap the binary, because we’re not using python-build-system.
     (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'wrap-program
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((out         (assoc-ref outputs "out"))
-                   (python-path (getenv "GUIX_PYTHONPATH")))
-               (wrap-program (string-append out "/bin/mpDris2")
-                 `("GUIX_PYTHONPATH" ":" prefix (,python-path)))
-               #t))))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'wrap-program
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((python-path (getenv "GUIX_PYTHONPATH")))
+                (wrap-program (string-append #$output "/bin/mpDris2")
+                  `("GUIX_PYTHONPATH" ":" prefix (,python-path)))))))))
     (inputs
-     (list python-mpd2 python-dbus python-pygobject python))             ; Sets GUIX_PYTHONPATH.
-    ;; For bootstrapping.
+     (list bash-minimal
+           python
+           python-dbus
+           python-mpd2
+           python-mutagen
+           python-pygobject))
     (native-inputs
-     `(("autoconf" ,autoconf)
-       ("automake" ,automake)
-       ("gettext" ,gettext-minimal)
-       ("which" ,which)
-       ("intltool" ,intltool)))
+     (list autoconf
+           automake
+           gettext-minimal
+           intltool
+           which))
     (synopsis "MPRIS V2.1 support for MPD")
-    (description "Client for the Music Player Daemon providing MPRIS 2
-support")
+    (description "mpDris2 is a client for the Music Player Daemon providing
+MPRIS 2 support.")
     (home-page "https://github.com/eonpatapon/mpDris2")
     (license license:gpl3+)))
 
@@ -543,7 +576,7 @@ album-experience.")
 (define-public mpdevil
   (package
     (name "mpdevil")
-    (version "1.7.0")
+    (version "1.10.2")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -551,7 +584,7 @@ album-experience.")
                     (commit (string-append "v" version))))
               (file-name (git-file-name name version))
               (sha256
-               (base32 "1va8fqlz8qb68gvacnzmp4asnipi11316n1cv2wb41sml9d7v00j"))))
+               (base32 "0ghmw3xiz567qd1iv1ggkv6zl1jb5d40mz27npk2zvlpikmqpc6c"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -564,12 +597,44 @@ album-experience.")
                 (wrap-program prog
                   `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH")))
                   `("GI_TYPELIB_PATH" = (,(getenv "GI_TYPELIB_PATH"))))))))))
-    (inputs (list bash-minimal gtk+ python python-mpd2 python-pygobject))
-    (native-inputs (list `(,glib "bin")))
+    (inputs (list bash-minimal
+                  gtk+
+                  python
+                  python-mpd2
+                  python-pycairo
+                  python-pygobject))
+    (native-inputs (list gettext-minimal `(,glib "bin")))
     (home-page "https://github.com/SoongNoonien/mpdevil")
     (synopsis "Music browser for the MPD")
     (description "mpdevil is a music browser for the Music Player Daemon (MPD),
 which is focused on playing local music without the need of managing playlists.
 Instead of maintaining a client side database of your music library,
 mpdevil loads all tags and covers on demand.")
+    (license license:gpl3+)))
+
+(define-public mympd
+  (package
+    (name "mympd")
+    (version "10.3.3")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/jcorporation/myMPD")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1n8z3rscrw7k097q5z1d59mrryy7b8m0zdfhi767a1qpa121m8if"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:configure-flags
+      #~(list "-DMYMPD_STRIP_BINARY=OFF")  ; handled by 'strip phase
+      #:tests? #f)) ; no test target
+    (native-inputs (list jq perl pkg-config))
+    (inputs (list flac libid3tag lua openssl pcre2))
+    (home-page "https://jcorporation.github.io/")
+    (synopsis "Web-based MPD client")
+    (description "MyMPD is a mobile-friendly web client for the Music Player
+Daemon (MPD).")
     (license license:gpl3+)))

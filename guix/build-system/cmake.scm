@@ -24,12 +24,10 @@
   #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (guix monads)
-  #:use-module (guix derivations)
   #:use-module (guix search-paths)
   #:use-module (guix build-system)
   #:use-module (guix build-system gnu)
   #:use-module (guix packages)
-  #:use-module (ice-9 match)
   #:export (%cmake-build-system-modules
             cmake-build
             cmake-build-system))
@@ -110,15 +108,15 @@
                       (validate-runpath? #t)
                       (patch-shebangs? #t)
                       (strip-binaries? #t)
-                      (strip-flags ''("--strip-debug"))
-                      (strip-directories ''("lib" "lib64" "libexec"
-                                            "bin" "sbin"))
+                      (strip-flags %strip-flags)
+                      (strip-directories %strip-directories)
                       (phases '%standard-phases)
                       (system (%current-system))
                       (substitutable? #t)
                       (imported-modules %cmake-build-system-modules)
                       (modules '((guix build cmake-build-system)
-                                 (guix build utils))))
+                                 (guix build utils)))
+                      disallowed-references)
   "Build SOURCE using CMAKE, and with INPUTS. This assumes that SOURCE
 provides a 'CMakeLists.txt' file as its build system."
   (define build
@@ -150,8 +148,8 @@ provides a 'CMakeLists.txt' file as its build system."
                              #:validate-runpath? #$validate-runpath?
                              #:patch-shebangs? #$patch-shebangs?
                              #:strip-binaries? #$strip-binaries?
-                             #:strip-flags #$(sexp->gexp strip-flags)
-                             #:strip-directories #$(sexp->gexp strip-directories))))))
+                             #:strip-flags #$strip-flags
+                             #:strip-directories #$strip-directories)))))
 
   (mlet %store-monad ((guile (package->derivation (or guile (default-guile))
                                                   system #:graft? #f)))
@@ -160,6 +158,7 @@ provides a 'CMakeLists.txt' file as its build system."
                       #:target #f
                       #:graft? #f
                       #:substitutable? substitutable?
+                      #:disallowed-references disallowed-references
                       #:guile-for-build guile)))
 
 
@@ -185,17 +184,16 @@ provides a 'CMakeLists.txt' file as its build system."
                             (validate-runpath? #t)
                             (patch-shebangs? #t)
                             (strip-binaries? #t)
-                            (strip-flags ''("--strip-debug"
-                                            "--enable-deterministic-archives"))
-                            (strip-directories ''("lib" "lib64" "libexec"
-                                                  "bin" "sbin"))
+                            (strip-flags %strip-flags)
+                            (strip-directories %strip-directories)
                             (phases '%standard-phases)
                             (substitutable? #t)
                             (system (%current-system))
                             (build (nix-system->gnu-triplet system))
                             (imported-modules %cmake-build-system-modules)
                             (modules '((guix build cmake-build-system)
-                                       (guix build utils))))
+                                       (guix build utils)))
+                            disallowed-references)
   "Cross-build NAME using CMAKE for TARGET, where TARGET is a GNU triplet and
 with INPUTS.  This assumes that SOURCE provides a 'CMakeLists.txt' file as its
 build system."

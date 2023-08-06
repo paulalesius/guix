@@ -10,7 +10,7 @@
 ;;; Copyright © 2018, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019, 2020, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2019 Pierre-Moana Levesque <pierre.moana.levesque@gmail.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -31,6 +31,7 @@
 (define-module (gnu packages cmake)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
+  #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix utils)
@@ -45,7 +46,6 @@
   #:use-module (gnu packages crypto)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages file)
-  #:use-module (gnu packages hurd)
   #:use-module (gnu packages kde-frameworks)
   #:use-module (gnu packages libevent)
   #:use-module (gnu packages ncurses)
@@ -99,8 +99,7 @@ using the CMake build system.")
       (lambda _
         (delete-file "Auxiliary/cmake-mode.el")
         (substitute* "Auxiliary/CMakeLists.txt"
-          ((".*cmake-mode.el.*") ""))
-        #t))
+          ((".*cmake-mode.el.*") ""))))
     ,@(if (target-x86-32?)
           '((add-after 'unpack 'skip-cpack-txz-test
               (lambda _
@@ -124,8 +123,7 @@ using the CMake build system.")
               "Source/cmExecProgramCommand.cxx"
               "Tests/CMakeLists.txt"
               "Tests/RunCMake/File_Generate/RunCMakeTest.cmake")
-          (("/bin/sh") (which "sh")))
-        #t))))
+          (("/bin/sh") (which "sh")))))))
 
 (define %common-disabled-tests
   '(;; This test copies libgcc_s.so.1 from GCC and tries to modify its RPATH,
@@ -138,11 +136,26 @@ using the CMake build system.")
     ;; This test fails for unknown reason.
     "RunCMake.file-GET_RUNTIME_DEPENDENCIES"))
 
+(define %common-disabled-tests/hurd
+  '("CTestTestTimeout"
+    "CTestTestRerunFailed"
+    "RunCMake.CompilerChange"
+    "RunCMake.ctest_test"
+    "RunCMake.file"
+    "RunCMake.BundleUtilities"
+    "RunCMake.configure_file"
+    "RunCMake.CTestTimeout"
+    "RunCMake.CTestTimeoutAfterMatch"
+    "RunCMake.CommandLine"
+    "RunCMake.CTestCommandLine"))
+
 (define %preserved-third-party-files
   '(;; 'Source/cm_getdate.c' includes archive_getdate.c wholesale, so it must
     ;; be available along with the required headers.
     "Utilities/cmlibarchive/libarchive/archive_getdate.c"
     "Utilities/cmlibarchive/libarchive/archive_getdate.h"
+    ;; ELF headers.
+    "Utilities/cmelf"
     ;; CMake header wrappers.
     "Utilities/cm3p"))
 
@@ -151,7 +164,7 @@ using the CMake build system.")
 (define-public cmake-bootstrap
   (package
     (name "cmake-bootstrap")
-    (version "3.21.4")
+    (version "3.24.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://cmake.org/files/v"
@@ -159,71 +172,71 @@ using the CMake build system.")
                                   "/cmake-" version ".tar.gz"))
               (sha256
                (base32
-                "0y2rk316j9m1iqimgwah0z1ii3ggli65dw6hdn4ckx0mqaahlmyr"))
-              (patches (search-patches "cmake-curl-certificates.patch"))))
+                "1ny8y2dzc6fww9gzb1ml0vjpx4kclphjihkxagxigprxdzq2140d"))
+              (patches (search-patches "cmake-curl-certificates-3.24.patch"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:test-target "test"
-       #:configure-flags
-       (let ((out (assoc-ref %outputs "out"))
-             (parallel-job-count (number->string (parallel-job-count))))
-         (list "--verbose"
-               (string-append "--parallel=" parallel-job-count)
-               (string-append "--prefix=" out)
-               "--system-libs"
-               "--no-system-jsoncpp"
-               ;; By default, the man pages and other docs land
-               ;; in PREFIX/man and PREFIX/doc, but we want them
-               ;; in share/{man,doc}.  Note that unlike
-               ;; autoconf-generated configure scripts, cmake's
-               ;; configure prepends "PREFIX/" to what we pass
-               ;; to --mandir and --docdir.
-               "--mandir=share/man"
-               ,(string-append "--docdir=share/doc/cmake-"
-                               (version-major+minor version))
+     (list
+      #:test-target "test"
+      #:configure-flags
+      #~(let ((parallel-job-count (number->string (parallel-job-count))))
+          (list "--verbose"
+                (string-append "--parallel=" parallel-job-count)
+                (string-append "--prefix=" #$output)
+                "--system-libs"
+                ;; By default, the man pages and other docs land
+                ;; in PREFIX/man and PREFIX/doc, but we want them
+                ;; in share/{man,doc}.  Note that unlike
+                ;; autoconf-generated configure scripts, cmake's
+                ;; configure prepends "PREFIX/" to what we pass
+                ;; to --mandir and --docdir.
+                "--mandir=share/man"
+                (string-append "--docdir=share/doc/cmake-"
+                               #$(version-major+minor version))
 
-               ;; By default CMake is built without any optimizations.  Use
-               ;; the recommended Release target for a ~2.5x speedup.
-               "--" "-DCMAKE_BUILD_TYPE=Release"))
-       #:make-flags
-       (let ((skipped-tests
-              (list ,@%common-disabled-tests
-                    "CTestTestSubdir" ; This test fails to build 2 of the 3 tests.
-                    ;; This test fails when ARGS (below) is in use, see
-                    ;; <https://gitlab.kitware.com/cmake/cmake/issues/17165>.
-                    "CTestCoverageCollectGCOV")))
-         (list
-          (string-append
-           ;; These arguments apply for the tests only.
-           "ARGS=-j " (number->string (parallel-job-count))
-           " --output-on-failure"
-           " --exclude-regex ^\\(" (string-join skipped-tests "\\|") "\\)$")))
-       #:phases
-       (modify-phases %standard-phases
-         ,@(%common-build-phases)
-         (add-before 'configure 'set-paths
-           (lambda _
-             ;; Help cmake's bootstrap process to find system libraries
-             (begin
-               (setenv "CMAKE_LIBRARY_PATH" (getenv "LIBRARY_PATH"))
-               (setenv "CMAKE_INCLUDE_PATH" (or (getenv "CPATH")
-                                                (getenv "C_INCLUDE_PATH")))
-               #t)))
-         ;; CMake uses its own configure script.
-         (replace 'configure
-           (lambda* (#:key (configure-flags '()) #:allow-other-keys)
-             (apply invoke "./configure" configure-flags))))))
+                ;; By default CMake is built without any optimizations.  Use
+                ;; the recommended Release target for a ~2.5x speedup.
+                "--" "-DCMAKE_BUILD_TYPE=Release"))
+      #:make-flags
+      #~(let ((skipped-tests
+               (list #$@%common-disabled-tests
+                     "CTestTestSubdir" ; This test fails to build 2 of the 3 tests.
+                     ;; This test fails when ARGS (below) is in use, see
+                     ;; <https://gitlab.kitware.com/cmake/cmake/issues/17165>.
+                     "CTestCoverageCollectGCOV"
+                     #$@(if (target-hurd?)
+                            %common-disabled-tests/hurd
+                            #~()))))
+          (list
+           (string-append
+            ;; These arguments apply for the tests only.
+            "ARGS=-j " (number->string (parallel-job-count))
+            " --output-on-failure"
+            " --exclude-regex ^\\(" (string-join skipped-tests "\\|") "\\)$")))
+      #:phases
+      #~(modify-phases %standard-phases
+          #$@(%common-build-phases)
+          (add-before 'configure 'set-paths
+            (lambda _
+              ;; Help cmake's bootstrap process to find system libraries
+              (begin
+                (setenv "CMAKE_LIBRARY_PATH" (getenv "LIBRARY_PATH"))
+                (setenv "CMAKE_INCLUDE_PATH" (or (getenv "CPATH")
+                                                 (getenv "C_INCLUDE_PATH"))))))
+          ;; CMake uses its own configure script.
+          (replace 'configure
+            (lambda* (#:key (configure-flags '()) #:allow-other-keys)
+              (apply invoke "./configure" configure-flags)))
+          #$@(if (target-hurd?)
+                 #~((add-after 'unpack 'patch-hurd
+                      (lambda _
+                        ;; Version 3.25.0 has a similar fix.
+                        (substitute* "Utilities/cmlibuv/src/unix/udp.c"
+                          (("!defined\\(__QNX__\\)")
+                           "!defined(__GNU__)")))))
+                 #~()))))
     (inputs
-     `(("bzip2" ,bzip2)
-       ("curl" ,curl)
-       ("expat" ,expat)
-       ("file" ,file)
-       ("libarchive" ,libarchive)
-       ,@(if (hurd-target?)
-             '()
-             `(("libuv" ,libuv)))       ;not supported on the Hurd
-       ("rhash" ,rhash)
-       ("zlib" ,zlib)))
+     (list libuv bzip2 curl expat file jsoncpp libarchive rhash zlib))
     (native-search-paths
      (list (search-path-specification
             (variable "CMAKE_PREFIX_PATH")
@@ -284,56 +297,55 @@ and workspaces that can be used in the compiler environment of your choice.")
                                     "Utilities"
                                     lstat)
                   #t))))
-    (inputs
-     (modify-inputs (package-inputs cmake-bootstrap)
-       (prepend jsoncpp)))
     (build-system cmake-build-system)
     (arguments
-     `(#:configure-flags
-       (list "-DCMAKE_USE_SYSTEM_LIBRARIES=ON"
-             (string-append "-DCMAKE_DOC_DIR=share/doc/cmake-"
-                            ,(version-major+minor (package-version
-                                                   cmake-bootstrap))))
+     (list
+      #:configure-flags
+      #~(list "-DCMAKE_USE_SYSTEM_LIBRARIES=ON"
+              (string-append "-DCMAKE_DOC_DIR=share/doc/cmake-"
+                             #$(version-major+minor (package-version
+                                                     cmake-bootstrap))))
 
-       ;; This is the CMake used in cmake-build-system.  Ensure compiler
-       ;; optimizations are enabled to save size and CPU cycles.
-       #:build-type "Release"
-       #:phases
-       (modify-phases %standard-phases
-         ,@(%common-build-phases)
-         (add-after 'install 'delete-help-documentation
-           (lambda* (#:key outputs #:allow-other-keys)
-             (delete-file-recursively
-               (string-append (assoc-ref outputs "out")
+      ;; This is the CMake used in cmake-build-system.  Ensure compiler
+      ;; optimizations are enabled to save size and CPU cycles.
+      #:build-type "Release"
+      #:phases
+      #~(modify-phases %standard-phases
+          #$@(%common-build-phases)
+          (add-after 'install 'delete-help-documentation
+            (lambda _
+              (delete-file-recursively
+               (string-append #$output
                               "/share/cmake-"
-                              ,(version-major+minor
+                              #$(version-major+minor
                                  (package-version cmake-bootstrap))
-                              "/Help"))
-             #t))
-         (replace 'check
-           (lambda* (#:key tests? parallel-tests? #:allow-other-keys)
-             (let ((skipped-tests (list ,@%common-disabled-tests
-                                        ;; This test requires the bundled libuv.
-                                        "BootstrapTest")))
-               (if tests?
-                   (begin
-                     (invoke "ctest" "-j" (if parallel-tests?
-                                              (number->string (parallel-job-count))
-                                              "1")
-                             "--exclude-regex"
-                             (string-append "^(" (string-join skipped-tests "|") ")$")))
-                   (format #t "test suite not run~%"))
-               #t))))
-        ,@(if (%current-target-system)
-              '()
-              `(#:cmake ,cmake-bootstrap))))))
+                              "/Help"))))
+          (replace 'check
+            (lambda* (#:key tests? parallel-tests? #:allow-other-keys)
+              (let ((skipped-tests (list #$@%common-disabled-tests
+                                         ;; This test requires the bundled libuv.
+                                         "BootstrapTest"
+                                         #$@(if (system-hurd?)
+                                                %common-disabled-tests/hurd
+                                                #~()))))
+                (if tests?
+                    (begin
+                      (invoke "ctest" "-j" (if parallel-tests?
+                                               (number->string (parallel-job-count))
+                                               "1")
+                              "--exclude-regex"
+                              (string-append "^(" (string-join skipped-tests "|") ")$")))
+                    (format #t "test suite not run~%"))))))
+      #:cmake (if (%current-target-system)
+                  cmake-minimal-cross
+                  cmake-bootstrap)))))
 
 ;;; The "user-facing" CMake, now with manuals and HTML documentation.
 (define-public cmake
   (package
     (inherit cmake-minimal)
     (name "cmake")
-    (version "3.24.2")
+    (version "3.25.1")
     (source (origin
               (inherit (package-source cmake-minimal))
               (method url-fetch)
@@ -348,7 +360,7 @@ and workspaces that can be used in the compiler environment of your choice.")
                                   ,@rest))))
               (sha256
                (base32
-                "1ny8y2dzc6fww9gzb1ml0vjpx4kclphjihkxagxigprxdzq2140d"))
+                "1n4inb3fvk70sni5gmkljqw3cyllalyg3fnr9rlr7x3aa44isl8w"))
               (patches (search-patches "cmake-curl-certificates-3.24.patch"))))
     (outputs '("out" "doc"))
     (arguments
@@ -363,27 +375,25 @@ and workspaces that can be used in the compiler environment of your choice.")
        ((#:build-type _ #f) "RelWithDebInfo")
 
        ((#:configure-flags flags ''())
-        `(append (list "-DSPHINX_INFO=ON" "-DSPHINX_MAN=ON" "-DSPHINX_HTML=ON"
-                       (string-append "-DCMAKE_DOC_DIR=share/doc/cmake-"
-                                      ,(version-major+minor (package-version
-                                                             cmake-minimal)))
-                       "-DCMAKE_INFO_DIR=share/info"
-                       "-DCMAKE_MAN_DIR=share/man")
-                 ,flags))
+        #~(append (list "-DSPHINX_INFO=ON" "-DSPHINX_MAN=ON" "-DSPHINX_HTML=ON"
+                        (string-append "-DCMAKE_DOC_DIR=share/doc/cmake-"
+                                       #$(version-major+minor (package-version
+                                                               cmake-minimal)))
+                        "-DCMAKE_INFO_DIR=share/info"
+                        "-DCMAKE_MAN_DIR=share/man")
+                  #$flags))
        ((#:phases phases)
-        `(modify-phases ,phases
-           (delete 'delete-help-documentation)
-           (add-after 'install 'move-html-doc
-             (lambda* (#:key outputs #:allow-other-keys)
-               (let ((out (assoc-ref outputs "out"))
-                     (doc (assoc-ref outputs "doc"))
-                     (html (string-append "/share/doc/cmake-"
-                                          ,(version-major+minor
-                                            (package-version cmake-minimal))
-                                          "/html")))
-                 (copy-recursively (string-append out html)
-                                   (string-append doc html))
-                 (delete-file-recursively (string-append out html)))))))))
+        #~(modify-phases #$phases
+            (delete 'delete-help-documentation)
+            (add-after 'install 'move-html-doc
+              (lambda _
+                (let ((html (string-append "/share/doc/cmake-"
+                                           #$(version-major+minor
+                                              (package-version cmake-minimal))
+                                           "/html")))
+                  (copy-recursively (string-append #$output html)
+                                    (string-append #$output:doc html))
+                  (delete-file-recursively (string-append #$output html)))))))))
     (inputs
      (modify-inputs (package-inputs cmake-minimal)
        (prepend ncurses)))              ;required for ccmake
@@ -411,13 +421,12 @@ and workspaces that can be used in the compiler environment of your choice.")
     (outputs '("out"))
     (build-system emacs-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'chdir-elisp
-           ;; Elisp directory is not in root of the source.
-           (lambda _
-             (chdir "Auxiliary")
-             #t)))))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'chdir-elisp
+                 ;; Elisp directory is not in root of the source.
+                 (lambda _
+                   (chdir "Auxiliary"))))))
     (synopsis "Emacs major mode for editing Cmake expressions")
     (description "@code{cmakeos-mode} provides an Emacs major mode for editing
 Cmake files.  It supports syntax highlighting, indenting and refilling of

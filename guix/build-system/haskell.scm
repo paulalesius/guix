@@ -32,8 +32,8 @@
   #:use-module (guix build-system gnu)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
   #:export (hackage-uri
+            default-haskell
 
             %haskell-build-system-modules
             haskell-build
@@ -109,10 +109,7 @@ version REVISION."
                         ,@(standard-packages)))
          (build-inputs `(("haskell" ,haskell)
                          ,@native-inputs))
-         ;; XXX: this is a hack to get around issue #41569.
-         (outputs (match outputs
-                    (("out") (cons "static" outputs))
-                    (_ outputs)))
+         (outputs outputs)
          (build haskell-build)
          (arguments
           (substitute-keyword-arguments

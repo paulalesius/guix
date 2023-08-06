@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2014, 2015, 2016, 2021 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2016, 2017, 2018, 2020-2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016, 2017, 2018, 2020-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Sou Bunnbu <iyzsong@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2021 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2018, 2019, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
@@ -53,6 +53,7 @@
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages tcl)
+  #:use-module (gnu packages web)
   #:use-module (gnu packages xml))
 
 
@@ -239,7 +240,7 @@ and a Python library.")
 (define-public translate-shell
   (package
     (name "translate-shell")
-    (version "0.9.7")
+    (version "0.9.7.1")
     (source
       (origin
         (method git-fetch)
@@ -248,7 +249,7 @@ and a Python library.")
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "03p00v8g0y2xs3sza2r2kmhwiajaz9viab6xk9snw7chzw2cddiq"))))
+         (base32 "0jfrypcz963pfvwwaz2i0xvwp2909ldzp15v68mgd2mbqkqw9d90"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
@@ -391,7 +392,7 @@ intelligible and easily correctable.")
 (define-public sdcv
   (package
     (name "sdcv")
-    (version "0.5.3")
+    (version "0.5.5")
     (source
      (origin
        (method git-fetch)
@@ -400,8 +401,7 @@ intelligible and easily correctable.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32
-         "144qpl9b8r2php0zhi9b7vg6flpvdgjy6yfaipydwwhxi4wy9600"))))
+        (base32 "17jwcgc3jdp41rvxqi7zdsysfpjgzqq4z1l345qwffp1an6yaaqk"))))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags '("-DBUILD_TESTS=YES")
@@ -413,16 +413,13 @@ intelligible and easily correctable.")
          (add-before 'check 'pre-check
            (lambda _
              (setenv "HOME" (getcwd))
-             #t))
-         (add-after 'unpack 'remove-jq-requirement
-           (lambda _
-             ;; We don't want to bring in jq for one test.
-             (substitute* "tests/t_json"
-               (("jq") "echo"))
              #t)))))
     (native-inputs
      `(("gettext" ,gettext-minimal)
-       ("pkg-config" ,pkg-config)))
+       ("pkg-config" ,pkg-config)
+
+       ;; For tests.
+       ("jq" ,jq)))
     (inputs
      (list glib ncurses readline zlib))
     (home-page "https://dushistov.github.io/sdcv/")

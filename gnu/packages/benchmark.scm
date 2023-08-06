@@ -8,9 +8,10 @@
 ;;; Copyright © 2019, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2020 Vincent Legoll <vincent.legoll@gmail.com>
 ;;; Copyright © 2020 malte Frank Gerdes <malte.f.gerdes@gmail.com>
-;;; Copyright © 2020, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2020 Greg Hogan <code@greghogan.com>
 ;;; Copyright © 2021 Arun Isaac <arunisaac@systemreboot.net>
+;;; Copyright © 2022 Tomasz Jeneralczyk <tj@schwi.pl>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -36,6 +37,7 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system python)
+  #:use-module (guix build-system meson)
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
@@ -46,6 +48,9 @@
   #:use-module (gnu packages databases)
   #:use-module (gnu packages docbook)
   #:use-module (gnu packages kde-frameworks)
+  #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages gl)
+  #:use-module (gnu packages graphics)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages maths)
@@ -60,6 +65,8 @@
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages qt)
+  #:use-module (gnu packages vulkan)
+  #:use-module (gnu packages xorg)
   #:use-module (gnu packages xml)
   #:use-module (ice-9 match))
 
@@ -72,14 +79,14 @@
 (define-public fio
   (package
     (name "fio")
-    (version "3.32")
+    (version "3.35")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://brick.kernel.dk/snaps/"
                                   "fio-" version ".tar.bz2"))
               (sha256
                (base32
-                "0wlfzx6zwkp81fwqw0pqm9i7v0b89rpfbliwxdd8q4kp4mf3q2dv"))))
+                "0dvxv771hzb72zs995wsq3i1kryv8vfzkndd79i0w2v7ssxnldb3"))))
     (build-system gnu-build-system)
     (arguments
      (list #:modules
@@ -375,39 +382,55 @@ setup against another one.")
 (define-public python-locust
   (package
     (name "python-locust")
-    (version "2.8.6")
+    (version "2.15.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "locust" version))
        (sha256
         (base32
-         "1gn13j758j36knlcdyyyggn60rpw98iqdkvl3kjsz34brysic6q1"))))
+         "05cznfqda0yq2j351jjdssayvj5qc11xkbkwdvv81hcmz4xpyc56"))))
     (build-system python-build-system)
     (arguments
      '(#:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'relax-requirements
+         (add-before 'check 'increase-resource-limits
            (lambda _
-             (substitute* "setup.py"
-               (("setuptools_scm<=6.0.1")
-                "setuptools_scm")
-               (("Jinja2<3.1.0")
-                "Jinja2"))))
+             ;; XXX: Copied from ungoogled-chromium.
+             ;; Try increasing the soft resource limit of max open files to 2048,
+             ;; or equal to the hard limit, whichever is lower.
+             (call-with-values (lambda () (getrlimit 'nofile))
+               (lambda (soft hard)
+                 (when (and soft (< soft 2048))
+                   (if hard
+                       (setrlimit 'nofile (min hard 2048) hard)
+                       (setrlimit 'nofile 2048 #f))
+                   (format #t
+                           "increased maximum number of open files from ~d to ~d~%"
+                           soft (if hard (min hard 2048) 2048)))))))
          (replace 'check
            (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
                (invoke "python" "-m" "pytest" "locust"
                        "-k" (string-join
-                             '(;; These tests return "non-zero exit status 1".
+                             '( ;; These tests return "non-zero exit status 1".
                                "not test_default_headless_spawn_options"
                                "not test_default_headless_spawn_options_with_shape"
                                "not test_headless_spawn_options_wo_run_time"
+                               ;; These tests fail with a HTTP return code of
+                               ;; 500 instead of 200, for unknown reasons.
+                               "not test_autostart_mutliple_locustfiles_with_shape"
+                               "not test_autostart_w_load_shape"
+                               "not test_autostart_wo_run_time"
+                               "not test_percentile_parameter"
                                ;; These tests depend on networking.
                                "not test_html_report_option"
+                               "not test_json_schema"
                                "not test_web_options"
-                               ;; This test fails because of the warning "System open
-                               ;; file limit '1024' is below minimum setting '10000'".
+                               ;; These tests fail because of the warning
+                               ;; "System open file limit '1024' is below
+                               ;; minimum setting '10000'".
+                               "not test_autostart_w_run_time"
                                "not test_skip_logging"
                                ;; On some (slow?) machines, the following tests
                                ;; fail, with the processes returning exit code
@@ -426,7 +449,6 @@ setup against another one.")
            python-flask-cors
            python-gevent
            python-geventhttpclient
-           python-jinja2
            python-msgpack
            python-psutil
            python-pyzmq
@@ -451,7 +473,7 @@ test any system or protocol.
 
 Note: Locust will complain if the available open file descriptors limit for
 the user is too low.  To raise such limit on a Guix System, refer to
-@samp{info guix --index-search=pam-limits-service}.")
+@samp{info guix --index-search=pam-limits-service-type}.")
     (license license:expat)))
 
 (define-public interbench
@@ -590,13 +612,6 @@ its features are:
     (arguments
      (list
       #:configure-flags #~(list "--with-pgsql"
-                                ;; Explicitly specify the library directory of
-                                ;; MySQL, otherwise `mysql_config` gets
-                                ;; consulted and adds unnecessary link
-                                ;; directives.
-                                (string-append "--with-mysql-libs="
-                                               #$(this-package-input "mysql")
-                                               "/lib")
                                 "--with-system-luajit"
                                 "--with-system-ck"
                                 ;; If we let the build tool select the most
@@ -612,39 +627,19 @@ its features are:
                          ;; Do not attempt to invoke the cram command via
                          ;; Python, as on Guix it is a shell script (wrapper).
                          (("\\$\\(command -v cram\\)")
-                          "-m cram"))))
+                          "-m cram"))
+                       (substitute* "tests/t/opt_report_checkpoints.t"
+                         ;; egrep outputs a deprecation warning, which breaks
+                         ;; the test.
+                         (("egrep")
+                          "grep -E"))))
                    (add-after 'unpack 'disable-test-installation
                      (lambda _
                        (substitute* "tests/Makefile.am"
                          (("install-data-local")
                           "do-not-install-data-local")
                          (("^test_SCRIPTS.*")
-                          ""))))
-                   (add-after 'unpack 'fix-docbook
-                     (lambda* (#:key native-inputs inputs #:allow-other-keys)
-                       (substitute* "m4/ax_check_docbook.m4"
-                         (("DOCBOOK_ROOT=.*" all)
-                          (string-append
-                           all "XML_CATALOG="
-                           (search-input-file (or native-inputs inputs)
-                                              "xml/dtd/docbook/catalog.xml")
-                           "\n")))
-                       (substitute* "doc/xsl/xhtml.xsl"
-                         (("http://docbook.sourceforge.net/release/xsl\
-/current/xhtml/docbook.xsl")
-                          (search-input-file
-                           (or native-inputs inputs)
-                           (string-append "xml/xsl/docbook-xsl-"
-                                          #$(package-version docbook-xsl)
-                                          "/xhtml/docbook.xsl"))))
-                       (substitute* "doc/xsl/xhtml-chunk.xsl"
-                         (("http://docbook.sourceforge.net/release/xsl\
-/current/xhtml/chunk.xsl")
-                          (search-input-file
-                           (or native-inputs inputs)
-                           (string-append "xml/xsl/docbook-xsl-"
-                                          #$(package-version docbook-xsl)
-                                          "/xhtml/chunk.xsl")))))))))
+                          "")))))))
     (native-inputs (list autoconf
                          automake
                          libtool
@@ -657,7 +652,7 @@ its features are:
                          libxslt
                          docbook-xml
                          docbook-xsl))
-    (inputs (list ck libaio luajit mysql postgresql))
+    (inputs (list ck libaio luajit (list mariadb "dev") postgresql))
     (home-page "https://github.com/akopytov/sysbench/")
     (synopsis "Scriptable database and system performance benchmark")
     (description "@command{sysbench} is a scriptable multi-threaded benchmark
@@ -693,3 +688,46 @@ user-provided Lua scripts.
 @item
 @end itemize")
     (license license:gpl2+)))
+
+(define-public vkmark
+  ;; The only ever release is tagged "2017.08" and as its name suggests
+  ;; it was back in the august of 2017. That version no longer compiles
+  ;; due to changes in APIs of its libraries.
+  ;; Latest commit on the other hand seems to be fully working on xcb
+  ;; and wayland backends.
+  (let ((commit "30d2cd37f0566589d90914501fc7c51a4e51f559")
+        (revision "0"))
+    (package
+      (name "vkmark")
+      (version (git-version "2017.08" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/vkmark/vkmark")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0w0n080sb67s7dbxqi71h0vhm6dccs78rqjnxx9x524jp4jh9b7x"))))
+      (build-system meson-build-system)
+      (native-inputs (list pkg-config))
+      ;; The kms backend currently will not compile because of upstream issues.
+      ;; So I omitted this backend's dependiencies. A fix has been proposed
+      ;; on another branch, but it has not been merged yet.
+      ;; See https://github.com/vkmark/vkmark/issues/33
+      (inputs
+       (list vulkan-loader
+             vulkan-headers
+             glm
+             assimp
+             libxcb
+             xcb-util-wm
+             wayland-protocols
+             wayland))
+      (home-page "https://github.com/vkmark/vkmark")
+      (synopsis "Extensible benchmarking suite for Vulkan")
+      (description
+       "vkmark offers a suite of scenes that can be used to measure various
+aspects of Vulkan performance.  The way in which each scene is rendered is
+configurable through a set of options.")
+      (license license:lgpl2.1+))))

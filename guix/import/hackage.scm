@@ -7,6 +7,8 @@
 ;;; Copyright © 2021 Xinglu Chen <public@yoctocell.xyz>
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
 ;;; Copyright © 2019 Simon Tournier <zimon.toutoune@gmail.com>
+;;; Copyright © 2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
+;;; Copyright © 2023 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -30,10 +32,12 @@
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-1)
+  #:use-module (guix diagnostics)
   #:use-module ((guix download) #:select (download-to-store url-fetch))
   #:use-module ((guix utils) #:select (package-name->name+version
                                        canonical-newline-port))
   #:use-module (guix http-client)
+  #:use-module (guix i18n)
   #:use-module (guix import utils)
   #:use-module (guix import cabal)
   #:use-module (guix store)
@@ -49,12 +53,13 @@
             hackage-recursive-import
             %hackage-updater
 
-            guix-package->hackage-name
             hackage-name->package-name
             hackage-fetch
             hackage-source-url
             hackage-cabal-url
-            hackage-package?))
+            hackage-package?
+
+            cabal-package-inputs))
 
 (define ghc-standard-libraries
   ;; List of libraries distributed with ghc (as of 8.10.7).
@@ -73,6 +78,7 @@
     "exceptions"
     "filepath"
     "ghc"
+    "ghc-bignum"
     "ghc-boot"
     "ghc-boot-th"
     "ghc-compact"
@@ -122,17 +128,6 @@ version is returned."
   (if (string-prefix? package-name-prefix name)
       (string-downcase name)
       (string-append package-name-prefix (string-downcase name))))
-
-(define guix-package->hackage-name
-  (let ((uri-rx (make-regexp "(https?://hackage.haskell.org|mirror://hackage)/package/([^/]+)/.*"))
-        (name-rx (make-regexp "(.*)-[0-9\\.]+")))
-    (lambda (package)
-      "Given a Guix package name, return the corresponding Hackage name."
-      (let* ((source-url (and=> (package-source package) origin-uri))
-             (name (match:substring (regexp-exec uri-rx source-url) 2)))
-        (match (regexp-exec name-rx name)
-          (#f name)
-          (m (match:substring m 1)))))))
 
 (define (read-cabal-and-hash port)
   "Read a Cabal file from PORT and return it and its hash in nix-base32
@@ -232,27 +227,12 @@ references to itself."
     (filter (lambda (d) (not (member (string-downcase d) ignored-dependencies)))
             dependencies)))
 
-(define* (hackage-module->sexp cabal cabal-hash
-                               #:key (include-test-dependencies? #t))
-  "Return the `package' S-expression for a Cabal package.  CABAL is the
-representation of a Cabal file as produced by 'read-cabal'.  CABAL-HASH is
-the hash of the Cabal file."
-
-  (define name
-    (cabal-package-name cabal))
-
-  (define version
-    (cabal-package-version cabal))
-
-  (define revision
-    (cabal-package-revision cabal))
-  
-  (define source-url
-    (hackage-source-url name version))
-
-  (define own-names (cons (cabal-package-name cabal)
-                          (filter (lambda (x) (not (eqv? x #f)))
-                            (map cabal-library-name (cabal-package-library cabal)))))
+(define* (cabal-package-inputs cabal #:key (include-test-dependencies? #t))
+  "Return the list of <upstream-input> for CABAL representing its
+dependencies."
+  (define own-names
+    (cons (cabal-package-name cabal)
+          (filter-map cabal-library-name (cabal-package-library cabal))))
 
   (define hackage-dependencies
     (filter-dependencies (cabal-dependencies->names cabal) own-names))
@@ -269,22 +249,54 @@ the hash of the Cabal file."
      hackage-dependencies))
 
   (define dependencies
-    (map string->symbol
-         (map hackage-name->package-name
-              hackage-dependencies)))
+    (map (lambda (name)
+           (upstream-input
+            (name name)
+            (downstream-name (hackage-name->package-name name))
+            (type 'regular)))
+         hackage-dependencies))
 
   (define native-dependencies
-    (map string->symbol
-         (map hackage-name->package-name
-              hackage-native-dependencies)))
-  
+    (map (lambda (name)
+           (upstream-input
+            (name name)
+            (downstream-name (hackage-name->package-name name))
+            (type 'native)))
+         hackage-native-dependencies))
+
+  (append dependencies native-dependencies))
+
+(define* (hackage-module->sexp cabal cabal-hash
+                               #:key (include-test-dependencies? #t))
+  "Return the `package' S-expression for a Cabal package.  CABAL is the
+representation of a Cabal file as produced by 'read-cabal'.  CABAL-HASH is
+the hash of the Cabal file."
+  (define name
+    (cabal-package-name cabal))
+
+  (define version
+    (cabal-package-version cabal))
+
+  (define revision
+    (cabal-package-revision cabal))
+
+  (define source-url
+    (hackage-source-url name version))
+
+  (define inputs
+    (cabal-package-inputs cabal
+                          #:include-test-dependencies?
+                          include-test-dependencies?))
+
   (define (maybe-inputs input-type inputs)
     (match inputs
       (()
        '())
       ((inputs ...)
        (list (list input-type
-                   `(list ,@inputs))))))
+                   `(list ,@(map (compose string->symbol
+                                          upstream-input-downstream-name)
+                                 inputs)))))))
 
   (define (maybe-arguments)
     (match (append (if (not include-test-dependencies?)
@@ -311,19 +323,25 @@ the hash of the Cabal file."
                          (bytevector->nix-base32-string (file-sha256 tarball))
                          "failed to download tar archive")))))
         (build-system haskell-build-system)
-        ,@(maybe-inputs 'inputs dependencies)
-        ,@(maybe-inputs 'native-inputs native-dependencies)
+        (properties '((upstream-name . ,name)))
+        ,@(maybe-inputs 'inputs
+                        (filter (upstream-input-type-predicate 'regular)
+                                inputs))
+        ,@(maybe-inputs 'native-inputs
+                        (filter (upstream-input-type-predicate 'native)
+                                inputs))
         ,@(maybe-arguments)
         (home-page ,(cabal-package-home-page cabal))
         (synopsis ,(cabal-package-synopsis cabal))
         (description ,(beautify-description (cabal-package-description cabal)))
         (license ,(string->license (cabal-package-license cabal))))
-     (append hackage-dependencies hackage-native-dependencies))))
+     inputs)))
 
 (define* (hackage->guix-package package-name #:key
                                 (include-test-dependencies? #t)
                                 (port #f)
-                                (cabal-environment '()))
+                                (cabal-environment '())
+                                #:allow-other-keys)
   "Fetch the Cabal file for PACKAGE-NAME from hackage.haskell.org, or, if the
 called with keyword parameter PORT, from PORT.  Return the `package'
 S-expression corresponding to that package, or #f on failure.
@@ -350,7 +368,7 @@ respectively."
 
 (define* (hackage-recursive-import package-name . args)
   (recursive-import package-name
-                    #:repo->guix-package (lambda* (name #:key repo version)
+                    #:repo->guix-package (lambda* (name #:key version #:allow-other-keys)
                                            (apply hackage->guix-package/m
                                                   (cons name args)))
                     #:guix-name hackage-name->package-name))
@@ -359,9 +377,14 @@ respectively."
   (let ((hackage-rx (make-regexp "(https?://hackage.haskell.org|mirror://hackage/)")))
     (url-predicate (cut regexp-exec hackage-rx <>))))
 
-(define (latest-release package)
+(define* (latest-release package #:key (version #f))
   "Return an <upstream-source> for the latest release of PACKAGE."
-  (let* ((hackage-name (guix-package->hackage-name package))
+  (when version
+    (raise
+     (formatted-message
+      (G_ "~a updater doesn't support updating to a specific version, sorry.")
+      "hackage")))
+  (let* ((hackage-name (package-upstream-name* package))
          (cabal-meta (hackage-fetch hackage-name)))
     (match cabal-meta
       (#f
@@ -369,7 +392,10 @@ respectively."
                "warning: failed to parse ~a~%"
                (hackage-cabal-url hackage-name))
        #f)
-      ((_ *** ("version" (version)))
+      ;; Cabal files have no particular order and while usually the version
+      ;; as somewhere in the middle it can also be at the beginning,
+      ;; requiring two pattern.
+      ((or (_ *** ("version" (version))) (("version" (version)) _ ...))
        (let ((url (hackage-uri hackage-name version)))
          (upstream-source
           (package (package-name package))
@@ -381,6 +407,6 @@ respectively."
    (name 'hackage)
    (description "Updater for Hackage packages")
    (pred hackage-package?)
-   (latest latest-release)))
+   (import latest-release)))
 
 ;;; cabal.scm ends here

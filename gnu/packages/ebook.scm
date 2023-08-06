@@ -56,12 +56,13 @@
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gstreamer)
+  #:use-module (gnu packages hunspell)
   #:use-module (gnu packages icu4c)
   #:use-module (gnu packages image)
   #:use-module (gnu packages javascript)
   #:use-module (gnu packages language)
-  #:use-module (gnu packages libusb)
   #:use-module (gnu packages libreoffice)
+  #:use-module (gnu packages libusb)
   #:use-module (gnu packages music)
   #:use-module (gnu packages pantheon)
   #:use-module (gnu packages pdf)
@@ -124,7 +125,7 @@ with Microsoft Compiled HTML (CHM) files")
 (define-public calibre
   (package
     (name "calibre")
-    (version "5.36.0")
+    (version "5.44.0")
     (source
      (origin
        (method url-fetch)
@@ -133,7 +134,7 @@ with Microsoft Compiled HTML (CHM) files")
                            version ".tar.xz"))
        (sha256
         (base32
-         "1c036qmn7lxq0899c2xzzs6whz7z0557frnfqisbvfxa13b2sadk"))
+         "1v48mzmr9z9rs6s7r8fgaqs6vnxnin1hyzwmwmal78inzpma7ykg"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -197,8 +198,9 @@ with Microsoft Compiled HTML (CHM) files")
            python-psutil
            python-py7zr
            python-pychm
+           python-pycryptodome
            python-pygments
-           python-pyqt-without-qtwebkit
+           python-pyqt
            python-pyqtwebengine
            python-regex
            speech-dispatcher
@@ -243,9 +245,8 @@ tags = [\"WS_X11\"]")
                 (("\\[tool.sip.project\\]")
                  (string-append "[tool.sip.project]
 sip-include-dirs = [\""
-                                #$(this-package-input
-                                   "python-pyqt-without-qtwebkit")
-                                "/share/sip\"]")))
+                   #$(this-package-input "python-pyqt")
+                   "/lib/python3.10/site-packages/PyQt5/bindings\"]")))
               (substitute* "src/calibre/ebooks/pdf/pdftohtml.py"
                 (("PDFTOHTML = 'pdftohtml'")
                  (string-append "PDFTOHTML = \""
@@ -432,7 +433,7 @@ accessing and converting various ebook file formats.")
                (base32
                 "1f36dbq7nc77lln1by2n1yl050g9dc63viawhs3gc3169mavm36x"))))
     (build-system gnu-build-system)
-    (home-page "http://vimgadgets.sourceforge.net/liblinebreak/")
+    (home-page "https://vimgadgets.sourceforge.net/liblinebreak/")
     (synopsis "Library for detecting where linebreaks are allowed in text")
     (description "@code{liblinebreak} is an implementation of the line
 breaking algorithm as described in Unicode 6.0.0 Standard Annex 14,
@@ -620,7 +621,7 @@ Some of the current features:
 (define-public xchm
   (package
     (name "xchm")
-    (version "1.33")
+    (version "1.35")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/rzvncj/xCHM"
@@ -628,7 +629,7 @@ Some of the current features:
                                   version "/xchm-" version ".tar.gz"))
               (sha256
                (base32
-                "0an09shap2wj9gzj5fsw5sc2i6paq3kc3mc52fnwg2bb2dan5qxk"))))
+                "19w9cmdncqgy20bk8njbvcz5xld15pq5slf7m477vhnvws8a373i"))))
     (build-system gnu-build-system)
     (inputs
      (list wxwidgets chmlib))

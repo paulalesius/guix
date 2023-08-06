@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2016, 2017, 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2016, 2017, 2018, 2019, 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016, 2017 Theodoros Foradis <theodoros@foradis.org>
 ;;; Copyright © 2016 David Craven <david@craven.ch>
 ;;; Copyright © 2017, 2020 Efraim Flashner <efraim@flashner.co.il>
@@ -12,6 +12,7 @@
 ;;; Copyright © 2021 Morgan Smith <Morgan.J.Smith@outlook.com>
 ;;; Copyright © 2022 Mathieu Othacehe <othacehe@gnu.org>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -32,6 +33,7 @@
   #:use-module (guix utils)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix svn-download)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
@@ -61,12 +63,14 @@
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages readline)
   #:use-module (gnu packages swig)
   #:use-module (gnu packages texinfo)
+  #:use-module (gnu packages tls)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages xorg)
   #:use-module (srfi srfi-1))
@@ -96,12 +100,14 @@
           (base32
            "113r98kygy8rrjfv2pd3z6zlfzbj543pq7xyq8bgh72c608mmsbr"))
 
-         ;; Remove the one patch that doesn't apply to this 4.9 snapshot (the
-         ;; patch is for 4.9.4 and later but this svn snapshot is older).
-         (patches (remove (lambda (patch)
-                            (string=? (basename patch)
-                                      "gcc-arm-bug-71399.patch"))
-                          (origin-patches (package-source xgcc))))))
+         (patches (cons (search-patch "gcc-4.9-inline.patch")
+                        ;; Remove the one patch that doesn't apply to this 4.9
+                        ;; snapshot (the patch is for 4.9.4 and later but this
+                        ;; svn snapshot is older).
+                        (remove (lambda (patch)
+                                  (string=? (basename patch)
+                                            "gcc-arm-bug-71399.patch"))
+                                (origin-patches (package-source xgcc)))))))
       (native-inputs
        `(("flex" ,flex)
          ("gcc@5" ,gcc-5)
@@ -109,47 +115,45 @@
       (arguments
        (substitute-keyword-arguments (package-arguments xgcc)
          ((#:phases phases)
-          `(modify-phases ,phases
-             (add-after 'set-paths 'augment-CPLUS_INCLUDE_PATH
-               (lambda* (#:key inputs #:allow-other-keys)
-                 (let ((gcc (assoc-ref inputs  "gcc")))
-                   ;; Remove the default compiler from CPLUS_INCLUDE_PATH to
-                   ;; prevent header conflict with the GCC from native-inputs.
-                   (setenv "CPLUS_INCLUDE_PATH"
-                           (string-join
-                            (delete (string-append gcc "/include/c++")
-                                    (string-split (getenv "CPLUS_INCLUDE_PATH")
-                                                  #\:))
-                            ":"))
-                   (format #t
-                           "environment variable `CPLUS_INCLUDE_PATH' changed to ~a~%"
-                           (getenv "CPLUS_INCLUDE_PATH"))
-                   #t)))
-             (add-after 'unpack 'fix-genmultilib
-               (lambda _
-                 (substitute* "gcc/genmultilib"
-                   (("#!/bin/sh") (string-append "#!" (which "sh"))))
-                 #t))))
+          #~(modify-phases #$phases
+              (add-after 'set-paths 'augment-CPLUS_INCLUDE_PATH
+                (lambda* (#:key inputs #:allow-other-keys)
+                  (let ((gcc (assoc-ref inputs  "gcc")))
+                    ;; Remove the default compiler from CPLUS_INCLUDE_PATH to
+                    ;; prevent header conflict with the GCC from native-inputs.
+                    (setenv "CPLUS_INCLUDE_PATH"
+                            (string-join
+                             (delete (string-append gcc "/include/c++")
+                                     (string-split (getenv "CPLUS_INCLUDE_PATH")
+                                                   #\:))
+                             ":"))
+                    (format #t
+                            "environment variable `CPLUS_INCLUDE_PATH' changed to ~a~%"
+                            (getenv "CPLUS_INCLUDE_PATH")))))
+              (add-after 'unpack 'fix-genmultilib
+                (lambda _
+                  (substitute* "gcc/genmultilib"
+                    (("#!/bin/sh") (string-append "#!" (which "sh"))))))))
          ((#:configure-flags flags)
           ;; The configure flags are largely identical to the flags used by the
           ;; "GCC ARM embedded" project.
-          `(append (list "--enable-multilib"
-                         "--with-newlib"
-                         "--with-multilib-list=armv6-m,armv7-m,armv7e-m"
-                         "--with-host-libstdcxx=-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm"
-                         "--enable-plugins"
-                         "--disable-decimal-float"
-                         "--disable-libffi"
-                         "--disable-libgomp"
-                         "--disable-libmudflap"
-                         "--disable-libquadmath"
-                         "--disable-libssp"
-                         "--disable-libstdcxx-pch"
-                         "--disable-nls"
-                         "--disable-shared"
-                         "--disable-threads"
-                         "--disable-tls")
-                   (delete "--disable-multilib" ,flags)))))
+          #~(append (list "--enable-multilib"
+                          "--with-newlib"
+                          "--with-multilib-list=armv6-m,armv7-m,armv7e-m"
+                          "--with-host-libstdcxx=-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm"
+                          "--enable-plugins"
+                          "--disable-decimal-float"
+                          "--disable-libffi"
+                          "--disable-libgomp"
+                          "--disable-libmudflap"
+                          "--disable-libquadmath"
+                          "--disable-libssp"
+                          "--disable-libstdcxx-pch"
+                          "--disable-nls"
+                          "--disable-shared"
+                          "--disable-threads"
+                          "--disable-tls")
+                    (delete "--disable-multilib" #$flags)))))
       (native-search-paths
        (list (search-path-specification
               (variable "CROSS_C_INCLUDE_PATH")
@@ -308,54 +312,51 @@ usable on embedded products.")
       (arguments
        (substitute-keyword-arguments (package-arguments xgcc)
          ((#:phases phases)
-          `(modify-phases ,phases
-             (add-after 'unpack 'expand-version-string
-               (lambda _
-                 (make-file-writable "gcc/DEV-PHASE")
-                 (with-output-to-file "gcc/DEV-PHASE"
-                   (lambda ()
-                     (display "7-2018-q2-update")))
-                 #t))
-             (add-after 'unpack 'fix-genmultilib
-               (lambda _
-                 (substitute* "gcc/genmultilib"
-                   (("#!/bin/sh") (string-append "#!" (which "sh"))))
-                 #t))
-             (add-after 'set-paths 'augment-CPLUS_INCLUDE_PATH
-               (lambda* (#:key inputs #:allow-other-keys)
-                 (let ((gcc (assoc-ref inputs  "gcc")))
-                   ;; Remove the default compiler from CPLUS_INCLUDE_PATH to
-                   ;; prevent header conflict with the GCC from native-inputs.
-                   (setenv "CPLUS_INCLUDE_PATH"
-                           (string-join
-                            (delete (string-append gcc "/include/c++")
-                                    (string-split (getenv "CPLUS_INCLUDE_PATH")
-                                                  #\:))
-                            ":"))
-                   (format #t
-                           "environment variable `CPLUS_INCLUDE_PATH' changed to ~a~%"
-                           (getenv "CPLUS_INCLUDE_PATH"))
-                   #t)))))
+          #~(modify-phases #$phases
+              (add-after 'unpack 'expand-version-string
+                (lambda _
+                  (make-file-writable "gcc/DEV-PHASE")
+                  (with-output-to-file "gcc/DEV-PHASE"
+                    (lambda ()
+                      (display "7-2018-q2-update")))))
+              (add-after 'unpack 'fix-genmultilib
+                (lambda _
+                  (substitute* "gcc/genmultilib"
+                    (("#!/bin/sh") (string-append "#!" (which "sh"))))))
+              (add-after 'set-paths 'augment-CPLUS_INCLUDE_PATH
+                (lambda* (#:key inputs #:allow-other-keys)
+                  (let ((gcc (assoc-ref inputs  "gcc")))
+                    ;; Remove the default compiler from CPLUS_INCLUDE_PATH to
+                    ;; prevent header conflict with the GCC from native-inputs.
+                    (setenv "CPLUS_INCLUDE_PATH"
+                            (string-join
+                             (delete (string-append gcc "/include/c++")
+                                     (string-split (getenv "CPLUS_INCLUDE_PATH")
+                                                   #\:))
+                             ":"))
+                    (format #t
+                            "environment variable `CPLUS_INCLUDE_PATH' changed to ~a~%"
+                            (getenv "CPLUS_INCLUDE_PATH")))))))
          ((#:configure-flags flags)
           ;; The configure flags are largely identical to the flags used by the
           ;; "GCC ARM embedded" project.
-          `(append (list "--enable-multilib"
-                         "--with-newlib"
-                         "--with-multilib-list=rmprofile"
-                         "--with-host-libstdcxx=-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm"
-                         "--enable-plugins"
-                         "--disable-decimal-float"
-                         "--disable-libffi"
-                         "--disable-libgomp"
-                         "--disable-libmudflap"
-                         "--disable-libquadmath"
-                         "--disable-libssp"
-                         "--disable-libstdcxx-pch"
-                         "--disable-nls"
-                         "--disable-shared"
-                         "--disable-threads"
-                         "--disable-tls")
-                   (delete "--disable-multilib" ,flags)))))
+          #~(append (list "--enable-multilib"
+                          "--with-newlib"
+                          "--with-multilib-list=rmprofile"
+                          "--with-host-libstdcxx=-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm"
+                          "--enable-plugins"
+                          "--disable-decimal-float"
+                          "--disable-libffi"
+                          "--disable-libgomp"
+                          "--disable-libmudflap"
+                          "--disable-libquadmath"
+                          "--disable-libssp"
+                          "--disable-libstdcxx-pch"
+                          "--disable-nls"
+                          "--disable-shared"
+                          "--disable-threads"
+                          "--disable-tls")
+                    (delete "--disable-multilib" #$flags)))))
       (native-search-paths
        (list (search-path-specification
               (variable "CROSS_C_INCLUDE_PATH")
@@ -512,7 +513,7 @@ languages are C and C++.")
 (define-public libjaylink
   (package
     (name "libjaylink")
-    (version "0.2.0")
+    (version "0.3.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -521,7 +522,7 @@ languages are C and C++.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0ndyfh51hiqyv2yscpj6qd091w7myxxjid3a6rx8f6k233vy826q"))))
+                "1wps72ir2kwdr7dphx4vp6cy0d46dm3nkwbk0mpryn9la09l7lm1"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf automake libtool pkg-config))
@@ -536,7 +537,7 @@ SEGGER J-Link and compatible devices.")
 (define-public jimtcl
   (package
     (name "jimtcl")
-    (version "0.80")
+    (version "0.82")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -545,23 +546,27 @@ SEGGER J-Link and compatible devices.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "06rn60cx9sapc175vxvan87b8j5rkhh5gvvz7343xznzwlr0wcgk"))))
+                "01nxqzn41797ypph1vpwjfh3zqgks0l8ihh6932b4kb83apy6f08"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'configure
-         ;; This package doesn't use autoconf.
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (invoke "./configure"
-                       (string-append "--prefix=" out)))))
-         (add-before 'check 'delete-failing-tests
-           (lambda _
-             ;; XXX All but 1 TTY tests fail (Inappropriate ioctl for device).
-             (delete-file "tests/tty.test")
-             #t))
-         )))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (replace 'configure
+                 ;; This package doesn't use autoconf.
+                 (lambda _
+                   (invoke "./configure"
+                           (string-append "--prefix=" #$output))))
+               (add-before 'check 'delete-failing-tests
+                 (lambda _
+                   ;; XXX All but 1 SSL tests fail (tries connecting to Google
+                   ;; servers).
+                   (delete-file "tests/ssl.test")))
+               #$@(if (not (target-64bit?))
+                      #~((add-after 'unpack 'delete-failing-tests/32bit
+                           (lambda _
+                             (delete-file "tests/file.test"))))
+                      #~()))))
+    (inputs (list openssl))
     (native-inputs
      ;; For tests.
      (list inetutils))       ; for hostname
@@ -574,7 +579,7 @@ language.")
 (define-public openocd
   (package
     (name "openocd")
-    (version "0.11.0")
+    (version "0.12.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -583,7 +588,7 @@ language.")
               (file-name (string-append name "-" version "-checkout"))
               (sha256
                (base32
-                "0qi4sixwvw1i7c64sy221fsjs82qf3asmdk86g74ds2jjm3f8pzp"))))
+                "09wb11zlmrw6rx1bql3kafgi3ilzp9mhvb6j6rql216by06csing"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf
@@ -593,10 +598,10 @@ language.")
            pkg-config
            texinfo))
     (inputs
-     (list hidapi jimtcl libftdi libjaylink libusb-compat))
+     (list hidapi jimtcl libftdi libjaylink openssl))
     (arguments
      '(#:configure-flags
-       (append (list "LIBS=-lutil"
+       (append (list "LIBS=-lutil -lcrypto -lssl"
                      "--disable-werror"
                      "--enable-sysfsgpio"
                      "--disable-internal-jimtcl"
@@ -739,12 +744,12 @@ with a layered architecture of JTAG interface and TAP support.")
       (arguments
        (substitute-keyword-arguments (package-arguments propeller-gcc-6)
          ((#:phases phases)
-          `(modify-phases ,phases
+          #~(modify-phases #$phases
              (add-after 'unpack 'chdir
-               (lambda _ (chdir "gcc") #t))))))
+               (lambda _ (chdir "gcc")))))))
       (native-inputs
-       `(("gcc-4" ,gcc-4.9)
-         ,@(package-native-inputs propeller-gcc-6)))
+       (modify-inputs (package-native-inputs propeller-gcc-6)
+         (prepend gcc-4.9)))
       (home-page "https://github.com/parallaxinc/propgcc")
       (supported-systems (delete "aarch64-linux" %supported-systems)))))
 
@@ -1091,6 +1096,41 @@ the Raspberry Pi chip.")
       (synopsis "GCC for VC4")
       (description "This package provides @code{gcc} for VideoCore IV,
 the Raspberry Pi chip."))))
+
+(define-public imx-usb-loader
+  ;; There are no proper releases.
+  (let ((commit "30b43d69770cd69e84c045dc9dcabb1f3e9d975a")
+        (revision "0"))
+    (package
+      (name "imx-usb-loader")
+      ;; For the version string, see IMX_LOADER_VERSION in imx_loader.h.
+      (version (git-version "0.2pre" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/boundarydevices/imx_usb_loader")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1jdxbg63qascyl8x32njs9k9gzy86g209q7hc0jp74qyh0i6fwwc"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list #:test-target "tests"
+             #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                                  (string-append "prefix=" #$output))
+             #:phases #~(modify-phases %standard-phases
+                          (delete 'configure))))
+      (native-inputs (list pkg-config))
+      (inputs (list libusb))
+      (home-page "https://github.com/boundarydevices/imx_usb_loader")
+      (synopsis "USB and UART loader for i.MX5/6/7/8 series")
+      (description "This utility downloads and executes code on Freescale
+i.MX5/i.MX6/i.MX7 and Vybrid SoCs through the Serial Download Protocol (SDP).
+Depending on the board, there is usually some kind of recovery button to bring
+the SoC into serial download boot mode; check the documentation of your
+hardware.  The utility support USB and UART as serial link.")
+      (license license:lgpl2.1+))))
 
 (define-public python-libmpsse
   (package
@@ -1549,7 +1589,7 @@ plus many of their variants.")
                                "TARGETS += sdcc-misc\n"
                                "PKGS += $(SDCC_MISC)")))
              #t)))))
-    (home-page "http://sdcc.sourceforge.net")
+    (home-page "https://sdcc.sourceforge.net")
     (synopsis "C compiler suite for 8-bit microcontrollers")
     (description "SDCC is a retargetable, optimizing Standard C compiler suite
 that targets 8-bit microcontrollers in the Intel MCS-51 (8051); MOS Technology
@@ -1676,3 +1716,38 @@ provides command line tools for Mbed OS to detect Mbed enabled devices
 connected by USB, checkout Mbed projects and perform builds amongst other
 operations.")
     (license license:asl2.0)))
+
+(define-public ts4900-utils
+  ;; There are no proper release nor tag; use the latest commit.
+  (let ((revision "0")
+        (commit "e10a12f8050d1d1229e711c7cfab8a0d5d93ee58"))
+    (package
+      (name "ts4900-utils")
+      (version (git-version "0.0.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/embeddedTS/ts4900-utils")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1vr8i425qijbwgbc10av3wr35p3x11wy6y442w0ja0yny7si8wp8"))))
+      (build-system gnu-build-system)
+      (native-inputs (list autoconf automake))
+      (home-page "https://github.com/embeddedTS/ts4900-utils")
+      (synopsis "Utilities for the TS-4900 board family")
+      (description "This package contains utilities useful for boards of the
+TS-4900 family.  The included commands are:
+@itemize @code
+@item adc8390
+@item gpioctl
+@item isl12020rtc
+@item load_fpga
+@item nvramctl
+@item tshwctl
+@item tsmicroctl
+@item tsmicroupdate
+@item tssilomon
+@end itemize")
+      (license license:bsd-2))))

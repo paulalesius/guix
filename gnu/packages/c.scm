@@ -9,7 +9,7 @@
 ;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Katherine Cox-Buday <cox.katherine.e@gmail.com>
-;;; Copyright © 2020, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2020, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2020, 2021 Greg Hogan <code@greghogan.com>
 ;;; Copyright © 2021 David Dashyan <mail@davie.li>
 ;;; Copyright © 2021 Foo Chuan Wei <chuanwei.foo@hotmail.com>
@@ -17,6 +17,8 @@
 ;;; Copyright © 2022 Artyom V. Poptsov <poptsov.artyom@gmail.com>
 ;;; Copyright © 2022 Ekaitz Zarraga <ekaitz@elenq.tech>
 ;;; Copyright © 2022 ( <paren@disroot.org>
+;;; Copyright © 2023 zamfofex <zamfofex@twdb.moe>
+;;; Copyright © 2023 Foundation Devices, Inc. <hello@foundationdevices.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -44,10 +46,10 @@
   #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system python)
-  #:use-module (guix build-system trivial)
   #:use-module (guix store)
   #:use-module (gnu packages)
   #:use-module (gnu packages bash)
+  #:use-module (gnu packages bdw-gc)
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages check)
@@ -58,7 +60,9 @@
   #:use-module (gnu packages guile)
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages lua)
+  #:use-module (gnu packages m4)
   #:use-module (gnu packages multiprecision)
+  #:use-module (gnu packages ncurses)
   #:use-module (gnu packages pcre)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-xyz)
@@ -70,8 +74,8 @@
   #:use-module (gnu packages xml))
 
 (define-public c-intro-and-ref
-  (let ((revision "0")
-        (commit "f88559678feeb1391a0e9c7cf060c4429ef22ffc"))
+  (let ((revision "1")
+        (commit "47e5a234a7c036392e0f9e1e8e48ff3e6855840d"))
     (package
       (name "c-intro-and-ref")
       (version (git-version "0.0.0" revision commit))
@@ -83,7 +87,7 @@
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "0c08h8k7wkn5lw0jqnnaayx55d3vf1q11pgsixfw31i58rnwa5y2"))))
+                  "0aza4vvlg2w0ss6n5xp741ycvg16d041c1x87yh5hpnzcb6y0ii3"))))
       (build-system copy-build-system)
       (arguments
        (list #:phases #~(modify-phases %standard-phases
@@ -107,6 +111,30 @@ Compiler Collection (GCC) on the GNU/Linux system and other systems.  We refer
 to this dialect as GNU C.  If you already know C, you can use this as a
 reference manual.")
       (license license:fdl1.3+))))
+
+(define-public c-rrb
+  (let ((commit "d908617ff84515af90c454ff4d0f98675ae6b456")
+        (revision "0"))
+    (package
+     (name "c-rrb")
+     (version (git-version "0.1.0" revision commit))
+     (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/hypirion/c-rrb")
+                    (commit commit)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32 "0zmha3xi80vgdcwzb4vwdllf97dvggjpjfgahrpsb5f5qi3yshxa"))))
+     (build-system gnu-build-system)
+     (inputs (list libgc))
+     (native-inputs (list autoconf automake libtool))
+     (home-page "https://github.com/hypirion/c-rrb")
+     (synopsis "Relaxed Radix Balanced Trees")
+     (description "Relaxed Radix Balanced Trees are an immutable vector-like
+data structure with good performance characteristics for concatenation and
+slicing.")
+     (license license:boost1.0))))
 
 (define-public cproc
   (let ((commit "70fe9ef1810cc6c05bde9eb0970363c35fa7e802")
@@ -214,6 +242,47 @@ standard.")
       ;; (if ever) complete.  See the RELICENSING file for more information.
       (license license:lgpl2.1+))))
 
+(define-public tomlc99
+  (let ((revision "0")
+        (commit "52e9c039c5418a100605c2db1282590511fa891b"))
+    (package
+      (name "tomlc99")
+      (version (git-version "1.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/cktan/tomlc99")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1zrn5mmd1ysxma96jzrq50xqypbs3rhk6dwlj1wcjpjz1a4h9wgg"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list #:make-flags #~(list (string-append "CC="
+                                                 #$(cc-for-target))
+                                  (string-append "prefix="
+                                                 #$output))
+             #:phases #~(modify-phases %standard-phases
+                          (delete 'configure)
+                          (replace 'check
+                            (lambda* (#:key tests? make-flags
+                                      #:allow-other-keys)
+                              (when tests?
+                                (apply invoke
+                                       `("make" "-C" "unittest"
+                                         ,@make-flags))
+                                (invoke "./unittest/t1")))))))
+      (home-page "https://github.com/cktan/tomlc99")
+      (synopsis "TOML library for C")
+      (description
+       "This library is a C99 implementation to read
+@acronym{TOML, Tom's Obvious Minimal Language} text documents.
+
+This library is compatible with the @url{https://toml.io/en/v1.0.0,v1.0.0}
+specification of the language.")
+      (license license:expat))))
+
 (define-public pcc
   (package
     (name "pcc")
@@ -255,7 +324,7 @@ compiler while still keeping it small, simple, fast and understandable.")
 (define-public qbe
   (package
     (name "qbe")
-    (version "1.0")
+    (version "1.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -264,7 +333,7 @@ compiler while still keeping it small, simple, fast and understandable.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0qx4a3fjjrp2m4dsn19rpbjf89k9w7w7l09s96jx8vv15vzsdgis"))))
+                "07nl1kdgpz7hwfkng0yy4xihk0fmv1a2hq9bxzgvhy3vk9r7fmn8"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags
@@ -425,14 +494,14 @@ whose behaviour is inconsistent across *NIX flavours.")
 (define-public libhx
   (package
     (name "libhx")
-    (version "4.3")
+    (version "4.9")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://inai.de/files/libhx/"
                            "libHX-" version ".tar.xz"))
        (sha256
-        (base32 "06zkzaya6j3vaafz80qcgn5qcri047003bhmjisv5sbikcw97jqy"))))
+        (base32 "16rwp8b2j8l0m27rffvb7ma350r79l611sa135hzfywkdli2bqh2"))))
     (build-system gnu-build-system)
     (home-page "https://inai.de/projects/libhx/")
     (synopsis "C library with common data structures and functions")
@@ -760,7 +829,7 @@ portability.")
 (define-public byacc
   (package
     (name "byacc")
-    (version "20220128")
+    (version "20221106")
     (source (origin
              (method url-fetch)
              (uri (string-append
@@ -768,7 +837,7 @@ portability.")
                    version ".tgz"))
              (sha256
               (base32
-               "173l5pdzgqk2ld6lf0ablii0iiw07sry2vrjfrm4wc99qmf81ha2"))))
+               "04lxggjarbidfq8ba5q6kwgqys4lhidbnz8gf3vrrb5wgcibx6d8"))))
     (build-system gnu-build-system)
     (home-page "https://invisible-island.net/byacc/byacc.html")
     (synopsis "Berkeley Yacc LALR parser generator")
@@ -1128,7 +1197,7 @@ Telemetry Transport (MQTT) publish-subscribe messaging protocol.")
 (define-public mimalloc
   (package
     (name "mimalloc")
-    (version "2.0.7")
+    (version "2.0.9")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1137,7 +1206,7 @@ Telemetry Transport (MQTT) publish-subscribe messaging protocol.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0g54z9c4w7zjp3m1s70cgrjhxa5hr43pkhdbj61a2rb54z09lzw7"))))
+                "19w0i28p6knjd192rrcw1ayc3x0qp6rcm48cwkls4kwn8fng81fj"))))
     (build-system cmake-build-system)
     (arguments
      `(#:build-type "Release"))
@@ -1145,6 +1214,54 @@ Telemetry Transport (MQTT) publish-subscribe messaging protocol.")
     (description "@code{mimalloc} is a drop-in replacement for @code{malloc}.")
     (home-page "https://microsoft.github.io/mimalloc/")
     (license license:expat)))
+
+;;; The package is named orangeduck-mpc to differentiate it from GNU mpc.
+(define-public orangeduck-mpc
+  ;; The last release lacks an 'install' target.
+  (let ((commit "7c910e9303833c349f7432188ff77f2745254df2")
+        (revision "0"))
+    (package
+      (name "orangeduck-mpc")
+      (version (git-version "0.9.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/orangeduck/mpc")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "01a4vcxdnz0fbn90c9zc3jzklyqqvp9sfjpjwpq0f5r0l2pp37ad"))
+                (patches
+                 (search-patches "orangeduck-mpc-fix-pkg-config.patch"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                                  (string-append "PREFIX=" #$output))
+             #:phases #~(modify-phases %standard-phases
+                          (add-after 'unpack 'patch-Makefile
+                            (lambda _
+                              (substitute* "Makefile"
+                                ;; Do not attempt to alter the permissions,
+                                ;; otherwise 'install' would error with
+                                ;; "cannot stat [...] Permission denied"
+                                ;; errors.
+                                (("\\s\\-m[0-9]{3}\\s")
+                                 " "))))
+                          (delete 'configure))))
+      (home-page "https://github.com/orangeduck/mpc")
+      (synopsis "Parser Combinator library for C ")
+      (description "@code{mpc} is a lightweight Parser Combinator library for C.
+@code{mpc} can help with tasks such as:
+@itemize
+@item Building a new programming language
+@item Building a new data format
+@item Parsing an existing programming language
+@item Parsing an existing data format
+@item Embedding a Domain Specific Language
+@item Implementing Greenspun's Tenth Rule.
+@end itemize")
+      (license license:bsd-2))))
 
 ;;; Factored out of the ck package so that it can be adjusted and called on
 ;;; the host side easily, without impacting the package definition.
@@ -1318,20 +1435,21 @@ will take care of dispatching tasks to available cores.")
                   "0x9f7ivww8c7cigf4ck0hfx2bm79qgx6q4ccwzqbzkrmcrl9shfb"))))
       (build-system cmake-build-system)
       (arguments
-       `(#:phases
-         (modify-phases %standard-phases
-           (delete 'build)
-           (delete 'configure)
-           (replace 'check
-             (lambda* (#:key tests? #:allow-other-keys)
-               (when tests?
-                 (with-directory-excursion "test"
-                   (invoke "cmake" ".")
-                   (invoke "make")))))
-           (replace 'install
-             (lambda* (#:key outputs #:allow-other-keys)
-               (let ((out (assoc-ref outputs "out")))
-                 (install-file "utf8.h" (string-append out "/include"))))))))
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'build)
+            (delete 'configure)
+            (replace 'check
+              (lambda* (#:key tests? #:allow-other-keys)
+                (when tests?
+                  (with-directory-excursion "test"
+                    (invoke "cmake" ".")
+                    (invoke "make")))))
+            (replace 'install
+              (lambda* (#:key outputs #:allow-other-keys)
+                (install-file "utf8.h"
+                              (string-append #$output "/include/utf8")))))))
       (home-page "https://github.com/sheredom/utf8.h")
       (synopsis "Single header UTF-8 string functions for C and C++")
       (description "A simple one header solution to supporting UTF-8 strings in
@@ -1376,3 +1494,65 @@ string.h, but with a utf8* prefix instead of the str* prefix.")
       (description
        "This package provides a header-only unit testing library for C/C++.")
       (license license:unlicense))))
+
+(define-public ispc
+  (package
+    (name "ispc")
+    (version "1.19.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/ispc/ispc")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0yhcgyzjlrgs920lm0l6kygj2skanfb6qkxbdgm69r8c2xkzkaa3"))))
+    (inputs (list ncurses))
+    (native-inputs (list bison clang flex m4 python))
+    (build-system cmake-build-system)
+    (supported-systems
+     '("x86_64-linux" "i686-linux" "aarch64-linux" "armhf-linux"))
+    (arguments
+     `(#:tests? #f
+       #:configure-flags
+       `(,,(string-append "-DCMAKE_C_COMPILER=" (cc-for-target))
+         ,,(string-append "-DCMAKE_CXX_COMPILER=" (cxx-for-target))
+         ,(string-append "-DCLANG_EXECUTABLE="
+                         (assoc-ref %build-inputs "clang")
+                         "/bin/clang")
+         ,(string-append "-DCLANGPP_EXECUTABLE="
+                         (assoc-ref %build-inputs "clang")
+                         "/bin/clang++"))
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'configure 'patch-curses-requirement
+           (lambda _
+             (substitute* "CMakeLists.txt"
+               (("\\bCURSES_CURSES_LIBRARY\\b")
+                "CURSES_LIBRARY"))))
+         ;; Note: This works around the following issue:
+         ;; <https://github.com/ispc/ispc/issues/1865>
+         ;; Because GCC in Guix does not have multilib support.
+         (add-before 'configure 'patch-target-archs
+           (lambda _
+             (substitute* "cmake/GenerateBuiltins.cmake"
+               (("\\bforeach \\(bit 32 64\\)")
+                ,(if (target-64bit?)
+                     "foreach (bit 64)"
+                     "foreach (bit 32)"))
+               (("\\bforeach \\(arch .*?\\)")
+                ,(if (target-x86?)
+                     "foreach (arch \"x86\")"
+                     "foreach (arch \"arm\")"))
+               (("\\bforeach \\(os_name \"windows\" .*?\\)")
+                "foreach (os_name \"linux\")")))))))
+    (synopsis "Implicit SPMD Program Compiler")
+    (description
+     "ISPC is a compiler for a variant of the C programming language, with
+extensions for single program, multiple data programming.  Under the SPMD
+model, the programmer writes a program that generally appears to be a regular
+serial program, though the execution model is actually that a number of
+program instances execute in parallel on the hardware.")
+    (home-page "https://github.com/ispc/ispc")
+    (license license:bsd-3)))

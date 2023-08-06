@@ -91,8 +91,7 @@
        "ftp://ftp.gnupg.org/gcrypt/")
       (gnome
        "https://download.gnome.org/"
-       "http://ftp.gnome.org/pub/GNOME/"
-       "http://mirror.yandex.ru/mirrors/ftp.gnome.org/")
+       "http://ftp.gnome.org/pub/GNOME/")
       (hackage
        "http://hackage.haskell.org/")
       (savannah           ; http://download0.savannah.gnu.org/mirmon/savannah/
@@ -103,7 +102,6 @@
        "https://mirror.csclub.uwaterloo.ca/nongnu/"
        "https://nongnu.askapache.com/"
        "https://savannah.c3sl.ufpr.br/"
-       "http://download.savannah.gnu.org/releases-noredirect/"
        "https://download-mirror.savannah.gnu.org/releases/"
        "ftp://ftp.twaren.net/Unix/NonGNU/"
        "ftp://mirror.csclub.uwaterloo.ca/nongnu/"
@@ -112,22 +110,16 @@
       (sourceforge ; https://sourceforge.net/p/forge/documentation/Mirrors/
        "http://downloads.sourceforge.net/project/"
        "http://ufpr.dl.sourceforge.net/project/"
-       "http://heanet.dl.sourceforge.net/project/"
        "http://freefr.dl.sourceforge.net/project/"
        "http://internode.dl.sourceforge.net/project/"
        "http://jaist.dl.sourceforge.net/project/"
-       "http://kent.dl.sourceforge.net/project/"
        "http://liquidtelecom.dl.sourceforge.net/project/"
        ;; "http://nbtelecom.dl.sourceforge.net/project/"  ;never returns 404s
        "http://nchc.dl.sourceforge.net/project/"
-       "http://ncu.dl.sourceforge.net/project/"
        "http://netcologne.dl.sourceforge.net/project/"
        "http://netix.dl.sourceforge.net/project/"
        "http://pilotfiber.dl.sourceforge.net/project/"
-       "http://superb-sea2.dl.sourceforge.net/project/"
-       "http://tenet.dl.sourceforge.net/project/"
-       "http://vorboss.dl.sourceforge.net/project/"
-       "http://netassist.dl.sourceforge.net/project/")
+       "http://tenet.dl.sourceforge.net/project/")
       (netfilter.org ; https://www.netfilter.org/mirrors.html
        "http://ftp.netfilter.org/pub/"
        "ftp://ftp.es.netfilter.org/mirrors/netfilter/"
@@ -135,9 +127,7 @@
        "ftp://www.lt.netfilter.org/pub/")
       (kernel.org
        "http://linux-kernel.uio.no/pub/"
-       "http://kernel.osuosl.org/pub/"
        "http://ftp.be.debian.org/pub/"
-       "http://mirror.linux.org.au/"
        "https://mirrors.edge.kernel.org/pub/"
        "ftp://ftp.funet.fi/pub/mirrors/ftp.kernel.org/pub/")
       (apache             ; from http://www.apache.org/mirrors/dist.html
@@ -157,7 +147,6 @@
        "http://www.x.org/releases/" ; main mirrors
        "http://mirror.csclub.uwaterloo.ca/x.org/" ; North America
        "http://xorg.mirrors.pair.com/"
-       "http://mirror.us.leaseweb.net/xorg/"
        "ftp://mirror.csclub.uwaterloo.ca/x.org/"
        "ftp://xorg.mirrors.pair.com/"
        "ftp://artfiles.org/x.org/" ; Europe
@@ -174,8 +163,7 @@
        "ftp://mirror.switch.ch/mirror/X11/"
        "ftp://mirrors.ircam.fr/pub/x.org/"
        "ftp://x.mirrors.skynet.be/pub/ftp.x.org/"
-       "http://x.cs.pu.edu.tw/" ; East Asia
-       "ftp://ftp.cs.cuhk.edu.hk/pub/X11"
+       "ftp://ftp.cs.cuhk.edu.hk/pub/X11" ; East Asia
        "ftp://ftp.u-aizu.ac.jp/pub/x11/x.org/"
        "ftp://ftp.yz.yamagata-u.ac.jp/pub/X11/x.org/"
        "ftp://ftp.kaist.ac.kr/x.org/"
@@ -393,7 +381,11 @@
                         file "/" (symbol->string algo) "/"
                         (bytevector->nix-base32-string hash))))
 
-     (list (guix-publish "ci.guix.gnu.org")
+     (list (guix-publish
+            ;; bordeaux.guix.gnu.org uses the nar-herder rather than guix
+            ;; publish, but it supports the same style of requests
+            "bordeaux.guix.gnu.org")
+           (guix-publish "ci.guix.gnu.org")
            (lambda (file algo hash)
              ;; 'tarballs.nixos.org' supports several algorithms.
              (string-append "https://tarballs.nixos.org/"

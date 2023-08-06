@@ -1,7 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2014 John Darrington <jmd@gnu.org>
 ;;; Copyright © 2014, 2019 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2015, 2016, 2019, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015, 2016, 2019, 2021-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Kei Kebreau <kkebreau@posteo.net>
 ;;; Copyright © 2017 Eric Bavier <bavier@member.fsf.org>
 ;;; Copyright © 2018–2021 Tobias Geerinckx-Rice <me@tobias.gr>
@@ -38,7 +38,6 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu packages web-browsers)
-  #:use-module (guix build-system asdf)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (guix build-system gnu)
@@ -72,6 +71,7 @@
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages imagemagick)
   #:use-module (gnu packages libevent)
   #:use-module (gnu packages libidn)
   #:use-module (gnu packages libunistring)
@@ -159,14 +159,14 @@ management, extensions such as advertisement blocker and colorful tabs.")
 (define-public links
   (package
     (name "links")
-    (version "2.28")
+    (version "2.29")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://links.twibright.com/download/"
                                   "links-" version ".tar.bz2"))
               (sha256
                (base32
-                "1d2lyj9k2s6brk38k51qfpddwh2w96w6gh9jq5br9rfy2fdlkm9g"))))
+                "163rmng8zkwy0pv9wxcpc0j3gz27g8ba9myrgs7ny6lfng09dai2"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -213,65 +213,57 @@ features including, tables, builtin image display, bookmarks, SSL and more.")
 (define-public luakit
   (package
     (name "luakit")
-    (version "2.3")
+    (version "2.3.3")
     (source (origin
               (method git-fetch)
               (uri (git-reference
-                     (url "https://github.com/luakit/luakit")
-                     (commit version)))
+                    (url "https://github.com/luakit/luakit")
+                    (commit version)))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1khbn7dpizkznnwkw7rcfhf72dnd1nazk7dwb4rkh9i97b53mf1y"))))
-    (inputs
-     `(("lua-5.1" ,lua-5.1)
-       ("gtk+" ,gtk+)
-       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ("glib-networking" ,glib-networking)
-       ("lua5.1-filesystem" ,lua5.1-filesystem)
-       ("luajit" ,luajit)
-       ("webkitgtk" ,webkitgtk-with-libsoup2)
-       ("sqlite" ,sqlite)))
-    (native-inputs
-     (list pkg-config))
+                "19z6idmjz6y7xmjpqgw65mdfi65lyvy06819dj5bb7rad63v5542"))))
     (build-system glib-or-gtk-build-system)
     (arguments
-     `(#:make-flags
-       (let ((out (assoc-ref %outputs "out")))
-         (list
-          "CC=gcc"
-          "LUA_BIN_NAME=lua"
-          "DEVELOPMENT_PATHS=0"
-          (string-append "PREFIX=" out)
-          (string-append "XDGPREFIX=" out "/etc/xdg")))
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'lfs-workaround
-           (lambda _
-             (setenv "LUA_CPATH"
-                     (string-append
-                      (assoc-ref %build-inputs "lua5.1-filesystem")
-                      "/lib/lua/5.1/?.so;;"))
-             #t))
-         (add-before 'build 'set-version
-           (lambda _
-             (setenv "VERSION_FROM_GIT" ,(package-version this-package))
-             #t))
-         (delete 'configure)
-         (delete 'check)
-         (add-after 'install 'wrap
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((luakit (assoc-ref outputs "out"))
-                    (lua5.1-filesystem (assoc-ref inputs "lua5.1-filesystem") )
-                    (gtk (assoc-ref inputs "gtk+"))
-                    (gtk-share (string-append gtk "/share")))
-               (wrap-program (string-append luakit "/bin/luakit")
-                 `("LUA_CPATH" prefix
-                   (,(string-append lua5.1-filesystem
-                                    "/lib/lua/5.1/?.so;;")))
-                 `("XDG_CONFIG_DIRS" prefix
-                   (,(string-append luakit "/etc/xdg/"))))
-               #t))))))
+     (list
+      #:tests? #false                   ;require un-packaged "luassert"
+      #:test-target "run-tests"
+      #:make-flags
+      #~(list (string-append "CC=" #$(cc-for-target))
+              "LUA_BIN_NAME=lua"
+              "DEVELOPMENT_PATHS=0"
+              (string-append "PREFIX=" #$output)
+              (string-append "XDGPREFIX=" #$output "/etc/xdg"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'build 'lfs-workaround
+            (lambda _
+              (setenv "LUA_CPATH"
+                      (string-append #$(this-package-input "lua5.1-filesystem")
+                                     "/lib/lua/5.1/?.so;;"))))
+          (add-before 'build 'set-version
+            (lambda _
+              (setenv "VERSION_FROM_GIT" #$version)))
+          (delete 'configure)
+          (add-after 'install 'wrap
+            (lambda _
+              (wrap-program (string-append #$output "/bin/luakit")
+                `("LUA_CPATH" prefix
+                  (,(string-append #$(this-package-input "lua5.1-filesystem")
+                                   "/lib/lua/5.1/?.so;;")))
+                `("XDG_CONFIG_DIRS" prefix
+                  (,(string-append #$output "/etc/xdg/")))))))))
+    (native-inputs
+     (list pkg-config))
+    (inputs
+     (list glib-networking
+           gsettings-desktop-schemas
+           gtk+
+           lua-5.1
+           lua5.1-filesystem
+           luajit
+           sqlite
+           webkitgtk-with-libsoup2))
     (synopsis "Fast, lightweight, and simple browser based on WebKit")
     (description "Luakit is a fast, lightweight, and simple to use
 micro-browser framework extensible by Lua using the WebKit web content engine
@@ -282,7 +274,7 @@ and the GTK+ toolkit.")
 (define-public lynx
   (package
     (name "lynx")
-    (version "2.9.0dev.9")
+    (version "2.9.0dev.12")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -290,7 +282,7 @@ and the GTK+ toolkit.")
                     "/lynx" version ".tar.bz2"))
               (sha256
                (base32
-                "06jhv8ibfw1xkf8d8zrnkc2aw4d462s77hlp6f6xa6k8awzxvmkg"))))
+                "1rg8dqafq8ray37s0w855mahq7ywfb4qa4h5q676sxq0klamnid6"))))
     (build-system gnu-build-system)
     (native-inputs (list pkg-config perl))
     (inputs (list ncurses
@@ -302,41 +294,40 @@ and the GTK+ toolkit.")
                   gzip
                   bzip2))
     (arguments
-     `(#:configure-flags
-       (let ((openssl (assoc-ref %build-inputs "openssl")))
-         `("--with-pkg-config"
-           "--with-screen=ncurses"
-           "--with-zlib"
-           "--with-bzlib"
-           ,(string-append "--with-ssl=" openssl)
-           ;; "--with-socks5"    ; XXX TODO
-           "--enable-widec"
-           "--enable-ascii-ctypes"
-           "--enable-local-docs"
-           "--enable-htmlized-cfg"
-           "--enable-gzip-help"
-           "--enable-nls"
-           "--enable-ipv6"))
-       #:tests? #f  ; no check target
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'set-makefile-shell
-           (lambda _ (substitute* "po/makefile.inn"
-                       (("/bin/sh") (which "sh")))
-                     #t))
-         (replace 'install
-           (lambda* (#:key (make-flags '()) #:allow-other-keys)
-             (apply invoke "make" "install-full" make-flags)
-             #t)))))
+     (list #:configure-flags
+           #~(let ((openssl #$(this-package-input "openssl")))
+               (list "--with-pkg-config"
+                     "--with-screen=ncurses"
+                     "--with-zlib"
+                     "--with-bzlib"
+                     (string-append "--with-ssl=" openssl)
+                     ;; "--with-socks5"    ; XXX TODO
+                     "--enable-widec"
+                     "--enable-ascii-ctypes"
+                     "--enable-local-docs"
+                     "--enable-htmlized-cfg"
+                     "--enable-gzip-help"
+                     "--enable-nls"
+                     "--enable-ipv6"))
+           #:tests? #f                  ; no check target
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'configure 'set-makefile-shell
+                 (lambda _ (substitute* "po/makefile.inn"
+                        (("/bin/sh") (which "sh")))))
+               (replace 'install
+                 (lambda* (#:key (make-flags '()) #:allow-other-keys)
+                   (apply invoke "make" "install-full" make-flags))))))
     (synopsis "Text Web Browser")
     (description
-     "Lynx is a fully-featured World Wide Web (WWW) client for users running
-cursor-addressable, character-cell display devices.  It will display Hypertext
-Markup Language (HTML) documents containing links to files on the local
-system, as well as files on remote systems running http, gopher, ftp, wais,
-nntp, finger, or cso/ph/qi servers.  Lynx can be used to access information on
-the WWW, or to build information systems intended primarily for local
-access.")
+     "Lynx is a fully-featured @acronym{WWW, World Wide Web} client for users
+of cursor-addressable, character-cell display devices.  It will display
+@acronym{HTML, Hypertext Markup Language} documents containing links to files
+on the local system, as well as files on remote systems running http, gopher,
+ftp, wais, nntp, finger, or cso/ph/qi servers.
+
+Lynx can be used to access information on the WWW, or to build information
+systems intended primarily for local access.")
     (home-page "https://lynx.invisible-island.net/")
     ;; This was fixed in 2.8.9dev.10.
     (properties `((lint-hidden-cve . ("CVE-2016-9179"))))
@@ -468,7 +459,7 @@ interface.")
 (define-public qutebrowser
   (package
     (name "qutebrowser")
-    (version "2.5.2")
+    (version "2.5.4")
     (source
      (origin
        (method url-fetch)
@@ -476,7 +467,7 @@ interface.")
                            "qutebrowser/releases/download/v" version "/"
                            "qutebrowser-" version ".tar.gz"))
        (sha256
-        (base32 "0279fi4lx8sfxz3mx6ar0wz01kiiqa1zkv9fxc6xw0y4vlacxgx9"))))
+        (base32 "1c8skkc5vjbvbslz65hzrj9d05v4zbcjbli61ikjmr174lhb4q54"))))
     (build-system python-build-system)
     (native-inputs
      (list python-attrs))               ; for tests
@@ -487,11 +478,12 @@ interface.")
            python-markupsafe
            python-pygments
            python-pynacl
+           python-pypeg2
            python-pyyaml
            ;; FIXME: python-pyqtwebengine needs to come before python-pyqt so
            ;; that it's __init__.py is used first.
            python-pyqtwebengine
-           python-pyqt-without-qtwebkit
+           python-pyqt
            ;; While qtwebengine-5 is provided by python-pyqtwebengine, it's
            ;; included here so we can wrap QTWEBENGINEPROCESS_PATH.
            qtwebengine-5))
@@ -502,6 +494,11 @@ interface.")
        #:tests? #f
        #:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'patch-systemdir
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let ((out (assoc-ref outputs "out")))
+               (substitute* "qutebrowser/utils/standarddir.py"
+                 (("/usr/share") (string-append out "/share"))))))
          (add-after 'unpack 'find-userscripts
            (lambda* (#:key outputs #:allow-other-keys)
              (substitute* "qutebrowser/commands/userscripts.py"
@@ -589,7 +586,7 @@ driven and does not detract you from your daily work.")
 (define-public nyxt
   (package
     (name "nyxt")
-    (version "2.2.4")
+    (version "3.5.0")
     (source
      (origin
        (method git-fetch)
@@ -598,8 +595,13 @@ driven and does not detract you from your daily work.")
              (commit version)))
        (sha256
         (base32
-         "12l7ir3q29v06jx0zng5cvlbmap7p709ka3ik6x29lw334qshm9b"))
-       (file-name (git-file-name "nyxt" version))))
+         "13ldi191ccxyxr3hjxyhnjl2vw365v0fhb1pqia7rg1gl3id47gz"))
+       (file-name (git-file-name "nyxt" version))
+       (modules '((guix build utils)))
+       (snippet
+        `(begin
+           (delete-file-recursively "libraries/nasdf")
+           #t))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags (list "nyxt" "NYXT_SUBMODULES=false"
@@ -641,60 +643,76 @@ driven and does not detract you from your daily work.")
                  `("LD_LIBRARY_PATH" ":" prefix (,path))
                  `("XDG_DATA_DIRS" ":" prefix (,xdg-path)))
                #t))))))
-    (native-inputs
-     `(("prove" ,sbcl-prove)
-       ("sbcl" ,sbcl)))
-    (inputs
-     `(("alexandria" ,sbcl-alexandria)
-       ("bordeaux-threads" ,sbcl-bordeaux-threads)
-       ("cl-base64" ,sbcl-cl-base64)
-       ("cl-calispel" ,sbcl-calispel)
-       ("cl-containers" ,sbcl-cl-containers)
-       ("cl-css" ,sbcl-cl-css)
-       ("cl-custom-hash-table" ,sbcl-custom-hash-table)
-       ("cl-html-diff" ,sbcl-cl-html-diff)
-       ("cl-json" ,sbcl-cl-json)
-       ("cl-ppcre" ,sbcl-cl-ppcre)
-       ("cl-prevalence" ,sbcl-cl-prevalence)
-       ("cl-qrencode" ,sbcl-cl-qrencode)
-       ("closer-mop" ,sbcl-closer-mop)
-       ("cluffer" ,sbcl-cluffer)
-       ("dexador" ,sbcl-dexador)
-       ("enchant" ,sbcl-enchant)
-       ("flexi-streams" ,cl-flexi-streams)
-       ("fset" ,sbcl-fset)
-       ("hu.dwim.defclass-star" ,sbcl-hu.dwim.defclass-star)
-       ("iolib" ,sbcl-iolib)
-       ("local-time" ,sbcl-local-time)
-       ("log4cl" ,sbcl-log4cl)
-       ("lparallel" ,sbcl-lparallel)
-       ("mk-string-metrics" ,sbcl-mk-string-metrics)
-       ("moptilities" ,sbcl-moptilities)
-       ("named-readtables" ,sbcl-named-readtables)
-       ("parenscript" ,sbcl-parenscript)
-       ("plump" ,sbcl-plump)
-       ("clss" ,sbcl-clss)
-       ("quri" ,sbcl-quri)
-       ("serapeum" ,sbcl-serapeum)
-       ("spinneret" ,sbcl-spinneret)
-       ("str" ,sbcl-cl-str)
-       ("swank" ,sbcl-slime-swank)
-       ("trivia" ,sbcl-trivia)
-       ("trivial-clipboard" ,sbcl-trivial-clipboard)
-       ("trivial-features" ,sbcl-trivial-features)
-       ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
-       ("trivial-types" ,sbcl-trivial-types)
-       ("unix-opts" ,sbcl-unix-opts)
-       ;; WebKitGTK deps
-       ("cl-cffi-gtk" ,sbcl-cl-cffi-gtk)
-       ("cl-webkit" ,sbcl-cl-webkit)
-       ("glib-networking" ,glib-networking)
-       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
-       ;; GObjectIntrospection
-       ("cl-gobject-introspection" ,sbcl-cl-gobject-introspection)
-       ("gtk" ,gtk+)                    ; For the main loop.
-       ("webkitgtk" ,webkitgtk)         ; Required when we use its typelib.
-       ("gobject-introspection" ,gobject-introspection)))
+    (native-inputs (list cl-lisp-unit2 sbcl))
+    (inputs (list sbcl-alexandria
+                  sbcl-bordeaux-threads
+                  sbcl-calispel
+                  sbcl-cl-base64
+                  sbcl-cl-colors2
+                  sbcl-cl-containers
+                  sbcl-cl-gopher
+                  sbcl-cl-html-diff
+                  sbcl-cl-json
+                  sbcl-cl-ppcre
+                  sbcl-cl-prevalence
+                  sbcl-cl-qrencode
+                  sbcl-cl-str
+                  sbcl-cl-tld
+                  sbcl-closer-mop
+                  sbcl-clss
+                  sbcl-cluffer
+                  sbcl-custom-hash-table
+                  sbcl-dexador
+                  sbcl-dissect
+                  sbcl-enchant
+                  sbcl-flexi-streams
+                  sbcl-fset
+                  sbcl-history-tree
+                  sbcl-iolib
+                  sbcl-lass
+                  sbcl-local-time
+                  sbcl-log4cl
+                  sbcl-lparallel
+                  sbcl-mk-string-metrics
+                  sbcl-montezuma
+                  sbcl-moptilities
+                  sbcl-named-readtables
+                  sbcl-nasdf
+                  sbcl-nclasses
+                  sbcl-ndebug
+                  sbcl-nfiles
+                  sbcl-nhooks
+                  sbcl-njson
+                  sbcl-nkeymaps
+                  sbcl-nsymbols
+                  sbcl-parenscript
+                  sbcl-phos
+                  sbcl-plump
+                  sbcl-prompter
+                  sbcl-py-configparser
+                  sbcl-quri
+                  sbcl-serapeum
+                  sbcl-slime-swank
+                  sbcl-slynk
+                  sbcl-spinneret
+                  sbcl-trivia
+                  sbcl-trivial-clipboard
+                  sbcl-trivial-custom-debugger
+                  sbcl-trivial-features
+                  sbcl-trivial-garbage
+                  sbcl-trivial-package-local-nicknames
+                  sbcl-trivial-types
+                  sbcl-unix-opts
+                  ;; WebKitGTK deps
+                  sbcl-cl-cffi-gtk
+                  sbcl-cl-webkit
+                  glib-networking
+                  gsettings-desktop-schemas
+                  cl-gobject-introspection
+                  gtk+                  ; For the main loop
+                  webkitgtk             ; Required when we use its typelib
+                  gobject-introspection
+                  pkg-config))
     (synopsis "Extensible web-browser in Common Lisp")
     (home-page "https://nyxt.atlas.engineer")
     (description "Nyxt is a keyboard-oriented, extensible web-browser designed
@@ -705,7 +723,7 @@ is fully configurable and extensible in Common Lisp.")
 (define-public lagrange
   (package
     (name "lagrange")
-    (version "1.13.8")
+    (version "1.16.6")
     (source
      (origin
        (method url-fetch)
@@ -713,7 +731,7 @@ is fully configurable and extensible in Common Lisp.")
         (string-append "https://git.skyjake.fi/skyjake/lagrange/releases/"
                        "download/v" version "/lagrange-" version ".tar.gz"))
        (sha256
-        (base32 "1l6cfvmmw2g30qsxmn5jma17kxgmfknlgji4pbdj1flv8p73bvza"))
+        (base32 "05wqg78l6jwbsmy8rsz14cp2wl1wss02vwrzfzpyx8qhjxcw7v32"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -738,6 +756,10 @@ is fully configurable and extensible in Common Lisp.")
            pcre
            sdl2
            zlib))
+    (native-search-paths
+     (list (search-path-specification
+            (variable "XDG_DATA_DIRS")
+            (files '("share")))))
     (home-page "https://gmi.skyjake.fi/lagrange/")
     (synopsis "Graphical Gemini client")
     (description
@@ -829,7 +851,7 @@ http, and https via third-party applications.")
 (define-public tinmop
   (package
     (name "tinmop")
-    (version "0.9.9")
+    (version "0.9.9.141")
     (source
      (origin
        (method git-fetch)
@@ -838,12 +860,13 @@ http, and https via third-party applications.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0s73587wf29jzymlqrgcnci7w6wsfj1vcs7szxshsmaiszf0skwk"))))
+        (base32 "0hx52kaq0q9iccalkxk50q1v3mf9ypardjgv56d5sdrbhfqyashl"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf
            automake
            gnu-gettext
+           imagemagick
            mandoc
            nano
            openssl

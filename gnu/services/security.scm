@@ -1,5 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2022 muradm <mail@muradm.net>
+;;; Copyright © 2022 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -41,11 +42,11 @@
   (max-count integer "Cache size.")
   (max-time integer "Cache time."))
 
-(define serialize-fail2ban-ignore-cache-configuration
-  (match-lambda
-    (($ <fail2ban-ignore-cache-configuration> _ key max-count max-time)
-     (format #f "key=\"~a\", max-count=~d, max-time=~d"
-             key max-count max-time))))
+(define (serialize-fail2ban-ignore-cache-configuration config)
+  (match-record config <fail2ban-ignore-cache-configuration>
+    (key max-count max-time)
+    (format #f "key=\"~a\", max-count=~d, max-time=~d"
+            key max-count max-time)))
 
 (define-maybe/no-serialization string)
 
@@ -53,10 +54,10 @@
   (name string "Filter to use.")
   (mode maybe-string "Mode for filter."))
 
-(define serialize-fail2ban-jail-filter-configuration
-  (match-lambda
-    (($ <fail2ban-jail-filter-configuration> _ name mode)
-     (format #f "~a~@[[mode=~a]~]" name (maybe-value mode)))))
+(define (serialize-fail2ban-jail-filter-configuration config)
+  (match-record config <fail2ban-jail-filter-configuration>
+    (name mode)
+    (format #f "~a~@[[mode=~a]~]" name (maybe-value mode))))
 
 (define (argument? a)
   (and (pair? a)
@@ -85,17 +86,17 @@
             (format #f "~a=~a" (car e) (any-value (cdr e))))))
     (format #f "~a" (string-join (map key-value args) ","))))
 
-(define serialize-fail2ban-jail-action-configuration
-  (match-lambda
-    (($ <fail2ban-jail-action-configuration> _ name arguments)
-     (format
-      #f "~a~a"
-      name
-      (if (null? arguments) ""
-          (format
-           #f "[~a]"
-           (serialize-fail2ban-jail-action-configuration-arguments
-            arguments)))))))
+(define (serialize-fail2ban-jail-action-configuration config)
+  (match-record config <fail2ban-jail-action-configuration>
+    (name arguments)
+    (format
+     #f "~a~a"
+     name
+     (if (null? arguments) ""
+         (format
+          #f "[~a]"
+          (serialize-fail2ban-jail-action-configuration-arguments
+           arguments))))))
 
 (define fail2ban-backend->string
   (match-lambda
@@ -199,7 +200,7 @@
    "Backend to use to detect changes in the @code{log-path}.  The default is
 'auto.  To consult the defaults of the jail configuration, refer to the
 @file{/etc/fail2ban/jail.conf} file of the @code{fail2ban} package."
-   fail2ban-jail-configuration-serialize-backend)
+   (serializer fail2ban-jail-configuration-serialize-backend))
   (max-retry
    maybe-integer
    "The number of failures before a host get banned
@@ -268,7 +269,7 @@ names matching their filter name.")
    maybe-symbol
    "The encoding of the log files handled by the jail.
 Possible values are: @code{'ascii}, @code{'utf-8} and @code{'auto}."
-   fail2ban-jail-configuration-serialize-log-encoding)
+   (serializer fail2ban-jail-configuration-serialize-log-encoding))
   (log-path
    (list-of-strings '())
    "The file names of the log files to be monitored.")
@@ -279,7 +280,7 @@ Possible values are: @code{'ascii}, @code{'utf-8} and @code{'auto}."
    (text-config '())
    "Extra content for the jail configuration, provided as a list of file-like
 objects."
-   serialize-text-config)
+   (serializer serialize-text-config))
   (prefix fail2ban-jail-configuration-))
 
 (define list-of-fail2ban-jail-configurations?
@@ -351,28 +352,27 @@ provided as a list of file-like objects."))
   (match-record config <fail2ban-configuration>
     (fail2ban run-directory)
     (let* ((fail2ban-server (file-append fail2ban "/bin/fail2ban-server"))
+           (fail2ban-client (file-append fail2ban "/bin/fail2ban-client"))
            (pid-file (in-vicinity run-directory "fail2ban.pid"))
            (socket-file (in-vicinity run-directory "fail2ban.sock"))
            (config-dir (file-append (config->fail2ban-etc-directory config)
                                     "/etc/fail2ban"))
            (fail2ban-action (lambda args
-                              #~(lambda _
-                                  (invoke #$fail2ban-server
-                                          "-c" #$config-dir
-                                          "-p" #$pid-file
-                                          "-s" #$socket-file
-                                          "-b"
-                                          #$@args)))))
+                              #~(invoke #$fail2ban-client #$@args))))
 
-      ;; TODO: Add 'reload' action.
+      ;; TODO: Add 'reload' action (see 'fail2ban.service.in' in the source).
       (list (shepherd-service
              (provision '(fail2ban))
              (documentation "Run the fail2ban daemon.")
              (requirement '(user-processes))
-             (modules `((ice-9 match)
-                        ,@%default-modules))
-             (start (fail2ban-action "start"))
-             (stop (fail2ban-action "stop")))))))
+             (start #~(make-forkexec-constructor
+                       (list #$fail2ban-server
+                             "-c" #$config-dir "-s" #$socket-file
+                             "-p" #$pid-file "-xf" "start")
+                       #:pid-file #$pid-file))
+             (stop #~(lambda (_)
+                       #$(fail2ban-action "stop")
+                       #f)))))))                  ;successfully stopped
 
 (define fail2ban-service-type
   (service-type (name 'fail2ban)

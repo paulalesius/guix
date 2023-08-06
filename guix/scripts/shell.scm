@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2021-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2021-2023 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -20,7 +20,8 @@
   #:use-module (guix ui)
   #:use-module ((guix diagnostics) #:select (location))
   #:use-module (guix scripts environment)
-  #:autoload   (guix scripts build) (show-build-options-help)
+  #:autoload   (guix scripts build) (show-build-options-help
+                                     show-native-build-options-help)
   #:autoload   (guix transformations) (options->transformation
                                        transformation-option-key?
                                        show-transformation-options-help)
@@ -75,6 +76,8 @@ interactive shell in that environment.\n"))
   (show-environment-options-help)
   (newline)
   (show-build-options-help)
+  (newline)
+  (show-native-build-options-help)
   (newline)
   (show-transformation-options-help)
   (newline)
@@ -302,16 +305,16 @@ Return the modified OPTS."
                (report-error
                 (G_ "not loading '~a' because not authorized to do so~%")
                 file)
-               (display-hint (format #f (G_ "To allow automatic loading of
+               (display-hint (G_ "To allow automatic loading of
 @file{~a} when running @command{guix shell}, you must explicitly authorize its
 directory, like so:
 
 @example
 echo ~a >> ~a
 @end example\n")
-                                     file
-                                     (dirname file)
-                                     (authorized-directory-file)))
+                             file
+                             (dirname file)
+                             (authorized-directory-file))
                (exit 1)))))))
 
 
@@ -371,7 +374,9 @@ return #f and #f."
   (define (key->file key)
     (string-append (%profile-cache-directory) "/" key))
 
-  (let loop ((opts opts)
+  ;; A given key such as 'system might appear more than once in OPTS, so
+  ;; process it backwards so the last occurrence "wins".
+  (let loop ((opts (reverse opts))
              (system (%current-system))
              (file #f)
              (specs '()))
@@ -386,6 +391,8 @@ return #f and #f."
        (if (not file)
            (loop rest system file (cons spec specs))
            (values #f #f)))
+      ((('nesting? . #t) . rest)
+       (loop rest system file (append specs '("nested guix"))))
       ((('load . ('package candidate)) . rest)
        (if (and (not file) (null? specs))
            (loop rest system candidate specs)

@@ -1,10 +1,10 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2013, 2014 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2014, 2015, 2016 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015, 2016, 2018, 2019, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2019 Leo Famulari <leo@famulari.name>
-;;; Copyright © 2016, 2021 Nicolas Goaziou <mail@nicolasgoaziou.fr>
+;;; Copyright © 2016, 2021, 2023 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2016 Christine Lemmer-Webber <cwebber@dustycloud.org>
 ;;; Copyright © 2017–2021 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2017 Stefan Reichör <stefan@xsteve.at>
@@ -13,10 +13,11 @@
 ;;; Copyright © 2018 Manuel Graf <graf@init.at>
 ;;; Copyright © 2019 Gábor Boskovits <boskovits@gmail.com>
 ;;; Copyright © 2019, 2020 Mathieu Othacehe <m.othacehe@gmail.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Oleg Pykhalov <go.wigust@gmail.com>
 ;;; Copyright © 2020, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Brice Waegeneire <brice@waegenei.re>
+;;; Copyright © 2023 Simon Streit <simon@netpanic.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -34,6 +35,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu packages ssh)
+  #:use-module (guix gexp)
   #:use-module (gnu packages)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages autotools)
@@ -47,7 +49,6 @@
   #:use-module (gnu packages gperf)
   #:use-module (gnu packages groff)
   #:use-module (gnu packages guile)
-  #:use-module (gnu packages hurd)
   #:use-module (gnu packages libedit)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages logging)
@@ -61,6 +62,7 @@
   #:use-module (gnu packages popt)
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
@@ -130,7 +132,7 @@ file names.
 (define-public libssh
   (package
     (name "libssh")
-    (version "0.9.6")
+    (version "0.10.5")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://www.libssh.org/files/"
@@ -138,7 +140,16 @@ file names.
                                   "/libssh-" version ".tar.xz"))
               (sha256
                (base32
-                "16w2mc7pyv9mijjlgacbz8dgczc7ig2m6m70w1pld04vpn2zig46"))))
+                "0d22gq77ga24ijlgr3d1wvhfvprx61iklkb3npifxfb7ygvjy3mn"))
+              (modules '((guix build utils)))
+              (snippet
+               ;; 'PATH_MAX' is undefined on GNU/Hurd; work around it.
+               #~(substitute* (find-files "examples" "\\.c$")
+                   (("#include \"examples_common\\.h\"" all)
+                    (string-append all "\n"
+                                   "#ifndef PATH_MAX\n"
+                                   "# define PATH_MAX 4096\n"
+                                   "#endif\n"))))))
     (build-system cmake-build-system)
     (outputs '("out" "debug"))
     (arguments
@@ -159,7 +170,7 @@ applications.")
 (define-public libssh2
   (package
    (name "libssh2")
-   (version "1.9.0")
+   (version "1.10.0")
    (source (origin
             (method url-fetch)
             (uri (string-append
@@ -167,13 +178,14 @@ applications.")
                    version ".tar.gz"))
             (sha256
              (base32
-              "1zfsz9nldakfz61d2j70pk29zlmj7w2vv46s9l3x2prhcgaqpyym"))
-            (patches (search-patches "libssh2-CVE-2019-17498.patch"))))
+              "0l8xwhhscvss7q007vpbkbv7jh9s43579rx2sf8lnfgd7l7yjr1d"))))
    (build-system gnu-build-system)
    ;; The installed libssh2.pc file does not include paths to libgcrypt and
    ;; zlib libraries, so we need to propagate the inputs.
    (propagated-inputs (list libgcrypt zlib))
-   (arguments `(#:configure-flags `("--with-libgcrypt")))
+   (arguments
+    (list #:configure-flags #~'("--with-libgcrypt"
+                                "--disable-static")))
    (synopsis "Client-side C library implementing the SSH2 protocol")
    (description
     "libssh2 is a library intended to allow software developers access to
@@ -186,7 +198,7 @@ a server that supports the SSH-2 protocol.")
 (define-public openssh
   (package
    (name "openssh")
-   (version "9.1p1")
+   (version "9.3p2")
    (source (origin
              (method url-fetch)
              (uri (string-append "mirror://openbsd/OpenSSH/portable/"
@@ -195,91 +207,82 @@ a server that supports the SSH-2 protocol.")
                                       "openssh-trust-guix-store-directory.patch"))
              (sha256
               (base32
-               "126jzn5pxkf1dgzcb3lzpzab8airg0avnvr3y23kgqp3qw4m1y0r"))))
+               "1s3nqv57r3l7avsdkzwd575dvxra8h19xpqczl0z3cvcgwabw3i0"))))
    (build-system gnu-build-system)
-   (native-inputs (list groff pkg-config))
-   (inputs `(("libedit" ,libedit)
-             ("openssl" ,openssl)
-             ,@(if (hurd-target?)
-                   '()
-                   `(("pam" ,linux-pam)
-                     ("libfido2" ,libfido2)))     ;fails to build on GNU/Hurd
-             ("mit-krb5" ,mit-krb5)
-             ("zlib" ,zlib)
-             ("xauth" ,xauth)))        ; for 'ssh -X' and 'ssh -Y'
    (arguments
-    `(#:test-target "tests"
-      ;; Otherwise, the test scripts try to use a nonexistent directory and
-      ;; fail.
-      #:make-flags '("REGRESSTMP=\"$${BUILDDIR}/regress\"")
-      #:configure-flags  `("--sysconfdir=/etc/ssh"
-
-                           ;; Default value of 'PATH' used by sshd.
-                          "--with-default-path=/run/current-system/profile/bin"
-
-                          ;; configure needs to find krb5-config.
-                          ,(string-append "--with-kerberos5="
-                                          (assoc-ref %build-inputs "mit-krb5")
-                                          "/bin")
-
-                          ;; libedit is needed for sftp completion.
-                          "--with-libedit"
-
-                          ;; Enable PAM support in sshd.
-                          ,,@(if (hurd-target?)
-                               '()
-                               '("--with-pam"
-
-                                 ;; Support creation and use of ecdsa-sk,
-                                 ;; ed25519-sk keys.
-                                 "--with-security-key-builtin"))
-
-
-
-                          ;; "make install" runs "install -s" by default,
-                          ;; which doesn't work for cross-compiled binaries
-                          ;; because it invokes 'strip' instead of
-                          ;; 'TRIPLET-strip'.  Work around this.
-                          ,,@(if (%current-target-system)
-                                 '("--disable-strip")
-                                 '()))
-
-      #:phases
-      (modify-phases %standard-phases
-        (add-after 'configure 'reset-/var/empty
-         (lambda* (#:key outputs #:allow-other-keys)
-           (let ((out (assoc-ref outputs "out")))
+    (list
+     #:test-target "tests"
+     ;; Otherwise, the test scripts try to use a nonexistent directory and fail.
+     #:make-flags
+     #~(list "REGRESSTMP=\"$${BUILDDIR}/regress\"")
+     #:configure-flags
+     #~(append
+        (list "--sysconfdir=/etc/ssh"
+              ;; Default value of 'PATH' used by sshd.
+              "--with-default-path=/run/current-system/profile/bin"
+              ;; configure needs to find krb5-config.
+              (string-append "--with-kerberos5="
+                             #$(this-package-input "mit-krb5")
+                             "/bin")
+              ;; libedit is needed for sftp completion.
+              "--with-libedit")
+        ;; Enable PAM support in sshd.
+        (if #$(target-hurd?)
+            '()
+            (list "--with-pam"
+                  ;; Support creation and use of ecdsa-sk, ed25519-sk keys.
+                  "--with-security-key-builtin"))
+        ;; "make install" runs "install -s" by default, which doesn't work for
+        ;; cross-compiled binaries because it invokes 'strip' instead of
+        ;; 'TRIPLET-strip'.  Work around this.
+        (if #$(%current-target-system)
+            (list "--disable-strip")
+            '()))
+     #:phases
+     #~(modify-phases %standard-phases
+         (add-after 'configure 'reset-/var/empty
+           (lambda _
              (substitute* "Makefile"
                (("PRIVSEP_PATH=/var/empty")
-                (string-append "PRIVSEP_PATH=" out "/var/empty"))))))
-        (add-after 'configure 'set-store-location
-          (lambda* _
-            (substitute* "misc.c"
-              (("@STORE_DIRECTORY@")
-               (string-append "\"" (%store-directory) "\"")))))
-        (add-before 'check 'patch-tests
-         (lambda _
-           (substitute* "regress/test-exec.sh"
-             (("/bin/sh") (which "sh")))
+                (string-append "PRIVSEP_PATH=" #$output "/var/empty")))))
+         (add-after 'configure 'set-store-location
+           (lambda _
+             (substitute* "misc.c"
+               (("@STORE_DIRECTORY@")
+                (string-append "\"" (%store-directory) "\"")))))
+         (add-before 'check 'patch-tests
+           (lambda _
+             (substitute* "regress/test-exec.sh"
+               (("/bin/sh") (which "sh")))
 
-           ;; Remove 't-exec' regress target which requires user 'sshd'.
-           (substitute* (list "Makefile"
-                              "regress/Makefile")
-             (("^(tests:.*) t-exec(.*)" all pre post)
-              (string-append pre post)))))
-        (replace 'install
-          (lambda* (#:key outputs (make-flags '()) #:allow-other-keys)
-            (let ((out (assoc-ref outputs "out")))
-              ;; Install without host keys and system configuration files.
-              ;; This will install /var/empty to the store, which is needed
-              ;; by the system openssh-service-type.
-              (apply invoke "make" "install-nosysconf" make-flags)
-              (with-directory-excursion "contrib"
-                (chmod "ssh-copy-id" #o555)
-                (install-file "ssh-copy-id"
-                              (string-append out "/bin/"))
-                (install-file "ssh-copy-id.1"
-                              (string-append out "/share/man/man1/")))))))))
+             ;; Remove 't-exec' regress target which requires user 'sshd'.
+             (substitute* (list "Makefile"
+                                "regress/Makefile")
+               (("^(tests:.*) t-exec(.*)" all pre post)
+                (string-append pre post)))))
+         (replace 'install
+           (lambda* (#:key (make-flags '()) #:allow-other-keys)
+             ;; Install without host keys and system configuration files.  This
+             ;; will install /var/empty to the store, which is needed by the
+             ;; system openssh-service-type.
+             (apply invoke "make" "install-nosysconf" make-flags)
+             (with-directory-excursion "contrib"
+               (chmod "ssh-copy-id" #o555)
+               (install-file "ssh-copy-id"
+                             (string-append #$output "/bin/"))
+               (install-file "ssh-copy-id.1"
+                             (string-append #$output "/share/man/man1/"))))))))
+   (native-inputs (list groff pkg-config))
+   (inputs
+    (cons* libedit
+           openssl
+           mit-krb5
+           zlib
+           xauth                        ; for 'ssh -X' and 'ssh -Y'
+           (if (target-hurd?)
+               '()
+               (list linux-pam
+                     libfido2))))       ; fails to build on GNU/Hurd
    (synopsis "Client and server for the secure shell (ssh) protocol")
    (description
     "The SSH2 protocol implemented in OpenSSH is standardised by the
@@ -312,13 +315,14 @@ Additionally, various channel-specific options can be negotiated.")
   (package
     (inherit openssh)
     (name "openssh-sans-x")
-    (inputs (alist-delete "xauth" (package-inputs openssh)))
+    (inputs (modify-inputs (package-inputs openssh)
+              (delete "xauth")))
     (synopsis "OpenSSH client and server without X11 support")))
 
 (define-public guile-ssh
   (package
     (name "guile-ssh")
-    (version "0.15.1")
+    (version "0.16.3")
     (home-page "https://github.com/artyom-poptsov/guile-ssh")
     (source (origin
               (method git-fetch)
@@ -328,7 +332,7 @@ Additionally, various channel-specific options can be negotiated.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0zzn5hsf97b35gixyg4z14sspl15qwnp52y4h89wra4y31l7467q"))))
+                "0b03aizjdj3g15xfkspgvy8k5jl8bgv4q7gwjwr3l2ibqkrm8vrz"))))
     (build-system gnu-build-system)
     (outputs '("out" "debug"))
     (arguments
@@ -695,14 +699,14 @@ manipulating key files.")
 (define-public sshpass
   (package
     (name "sshpass")
-    (version "1.09")
+    (version "1.10")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "mirror://sourceforge/sshpass/sshpass/"
                            version "/sshpass-" version ".tar.gz"))
        (sha256
-        (base32 "1dwzqknpswa8vjlbwsx9rcq1j2a7px9h9i2anh09pzkz0mg6wx3i"))))
+        (base32 "1npfvxxqs77qg6l4s6cn8q3b98zwr9n8rb9vra2n3dfb0g10c4dd"))))
     (build-system gnu-build-system)
     (home-page "https://sourceforge.net/projects/sshpass/")
     (synopsis "Non-interactive password authentication with SSH")
@@ -794,14 +798,14 @@ shell services and remote host selection.")
 (define-public python-asyncssh
   (package
     (name "python-asyncssh")
-    (version "2.11.0")
+    (version "2.13.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "asyncssh" version))
        (sha256
         (base32
-         "0mkvyv2fmbdfnfdh7g2im0gxnp8hwxv5g1xdazfsipd9ggknrhsr"))))
+         "11zq9ywzgyljzihdygawzad0ydly0l32zvz11liwyi8bbk087fzb"))))
     (build-system python-build-system)
     (propagated-inputs
      (list python-cryptography python-pyopenssl python-gssapi
@@ -940,3 +944,62 @@ Ed25519 keys.
 @item Modern browsers are supported.
 @end itemize")
     (license license:expat)))
+
+(define-public x11-ssh-askpass
+  (package
+    (name "x11-ssh-askpass")
+    (version "1.2.4.1")
+    (source
+     (origin
+       (method url-fetch)
+       ;; The project home page seams to be offline.
+       (uri (string-append "https://pkgs.fedoraproject.org/repo/pkgs/openssh/"
+                           name "-" version ".tar.gz"
+                           "/8f2e41f3f7eaa8543a2440454637f3c3/"
+                           name "-" version ".tar.gz"))
+       (sha256
+        (base32 "124c1frwvdmg4nv8xqv435ibjhj2y8xc1bmfr6i8a8g75b1y63b2"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #f                       ;no tests
+      #:make-flags
+      #~(list (string-append "BINDIR=" #$output "/libexec")
+              (string-append "MANDIR=" #$output "/share/man"))
+      #:configure-flags
+      #~(list (string-append "--mandir="
+                             "/usr/share/man/test")
+              (string-append "--libexecdir="
+                             "/usr/lib/ssh/test")
+              (string-append "--with-app-defaults-dir="
+                             "/usr/share/X11/app-defaults/test"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'configure 'xmkmf
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((imake #$(this-package-native-input "imake")))
+                (invoke "xmkmf")
+                (substitute* "Makefile"
+                  ;; These imake variables somehow remain undefined
+                  (("DefaultGcc2[[:graph:]]*Opt") "-O2")
+                  ;; Reset a few variable defaults that are set in imake
+                  ;; templates.
+                  ((imake) #$output)
+                  (("(MANPATH = )[[:graph:]]*" _ front)
+                   (string-append front #$output "/share/man"))))))
+          (add-after 'xmkmf 'make-includes
+            (lambda _
+              (invoke "make" "includes")))
+          (add-after 'install 'install/doc
+            (lambda _
+              (lambda _
+                (invoke "make"
+                        (string-append "MANDIR=" #$output "/share/man")
+                        "install.man")))))))
+    (native-inputs (list imake))
+    (inputs (list libxt))
+    (home-page "http://www.jmknoble.net/software/x11-ssh-askpass/")
+    (synopsis "Lightweight passphrase dialog for SSH")
+    (description "code{x11-ssh-askpass} is an X11-based pass-phrase dialog for
+use with OpenSSH.")
+    (license license:gpl2+)))

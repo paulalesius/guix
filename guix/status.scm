@@ -1,6 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2017-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -22,11 +23,11 @@
   #:use-module (guix i18n)
   #:use-module (guix colors)
   #:use-module (guix progress)
+  #:autoload   (guix ui) (display-hint)
   #:autoload   (guix build syscalls) (terminal-columns)
   #:autoload   (guix build download) (nar-uri-abbreviation)
   #:use-module (guix store)
   #:use-module (guix derivations)
-  #:use-module (guix memoization)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
@@ -190,9 +191,17 @@ a completion indication."
         ((regexp-exec %fraction-line-rx line)
          =>
          (lambda (match)
-           (let ((done  (string->number (match:substring match 1)))
-                 (total (string->number (match:substring match 3))))
-             (update (* 100. (/ done total))))))
+           (let* ((done  (string->number (match:substring match 1)))
+                  (total (string->number (match:substring match 3)))
+                  ;; It's possible that both done and total are 0 (see:
+                  ;; https://issues.guix.gnu.org/62766).  Special case this
+                  ;; pathological case as a null progress (0).
+                  (progress (catch 'numerical-overflow
+                              (lambda ()
+                                (/ done total))
+                              (lambda _
+                                0))))
+             (update (* 100. progress)))))
         ((regexp-exec %phase-start-rx line)
          =>
          (lambda (match)
@@ -526,6 +535,21 @@ substitutes being downloaded."
      (erase-current-line*)                      ;erase spinner or progress bar
      (format port (failure (G_ "build of ~a failed")) drv)
      (newline port)
+     (let ((properties (and=> (false-if-exception
+                               (read-derivation-from-file drv))
+                              derivation-properties)))
+       (when (and (pair? properties)
+                  (eq? (assq-ref properties 'type) 'profile-hook)
+                  (eq? (assq-ref properties 'hook) 'package-cache))
+         (display-hint (G_ "This usually indicates a bug in one of
+the channels you are pulling from, or some incompatibility among them.  You
+can check the build log and report the issue to the channel developers.
+
+The channels you are pulling from are: ~a.")
+                       (string-join
+                        (map symbol->string
+                             (or (assq-ref properties 'channels)
+                                 '(guix)))))))
      (match (derivation-log-file drv)
        (#f
         (format port (failure (G_ "Could not find build log for '~a'."))

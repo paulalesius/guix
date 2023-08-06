@@ -1,6 +1,8 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2016-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2016-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2021 Marius Bakke <marius@gnu.org>
+;;; Copyright © 2023 Sarthak Shah <shahsarthakw@gmail.com>
+;;; Copyright © 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -31,7 +33,9 @@
   #:autoload   (guix upstream) (package-latest-release
                                 upstream-source-version
                                 upstream-source-signature-urls)
-  #:autoload   (guix cpu) (current-cpu cpu->gcc-architecture)
+  #:autoload   (guix cpu) (current-cpu
+                           cpu->gcc-architecture
+                           gcc-architecture->micro-architecture-level)
   #:use-module (guix utils)
   #:use-module (guix memoization)
   #:use-module (guix gexp)
@@ -437,6 +441,9 @@ actual compiler."
       #~(begin
           (use-modules (ice-9 match))
 
+          (define psabi #$(gcc-architecture->micro-architecture-level
+                            micro-architecture))
+
           (define* (search-next command
                                 #:optional
                                 (path (string-split (getenv "PATH")
@@ -465,10 +472,25 @@ actual compiler."
              (match (search-next (basename command))
                (#f (exit 127))
                (next
-                (apply execl next
+                 (if (and (search-next "go")
+                          (string=? next (search-next "go")))
+                   (cond
+                     ((string-prefix? "arm" psabi)
+                      (setenv "GOARM" (string-take-right psabi 1)))
+                     ((string-prefix? "powerpc" psabi)
+                      (setenv "GOPPC64" psabi))
+                     ((string-prefix? "x86_64" psabi)
+                      (setenv "GOAMD" (string-take-right psabi 2)))
+                     (else #t))
+                   '())
+                (apply
+                  execl next
                        (append (cons next arguments)
+                         (if (and (search-next "go")
+                                  (string=? next (search-next "go")))
+                           '()
                            (list (string-append "-march="
-                                                #$micro-architecture))))))))))
+                                                #$micro-architecture)))))))))))
 
     (define program
       (program-file (string-append "tuning-compiler-wrapper-" micro-architecture)
@@ -485,7 +507,8 @@ actual compiler."
                          (for-each (lambda (program)
                                      (symlink #$program
                                               (string-append bin "/" program)))
-                                   '("cc" "gcc" "clang" "g++" "c++" "clang++")))))))
+                                   '("cc" "gcc" "clang" "g++" "c++" "clang++"
+                                     "go")))))))
 
 (define (build-system-with-tuning-compiler bs micro-architecture)
   "Return a variant of BS, a build system, that ensures that the compiler that
@@ -515,7 +538,9 @@ system that builds code for MICRO-ARCHITECTURE; otherwise raise an error."
                                                  'compiler-cpu-architectures)
                                       p))
                                 (_ #f))
-                              (bag-build-inputs lowered))))
+                              (bag-build-inputs lowered)))
+           (psabi        (gcc-architecture->micro-architecture-level
+                           micro-architecture)))
       (unless compiler
         (raise (formatted-message
                 (G_ "failed to determine which compiler is used"))))
@@ -527,8 +552,11 @@ system that builds code for MICRO-ARCHITECTURE; otherwise raise an error."
                   (G_ "failed to determine whether ~a supports ~a")
                   (package-full-name compiler)
                   micro-architecture)))
-        (unless (member micro-architecture
-                        (or (assoc-ref lst architecture) '()))
+        (unless (or (member micro-architecture
+                            (or (assoc-ref lst architecture) '()))
+                    (and (string=? (package-name compiler) "go")
+                         (member psabi
+                                 (or (assoc-ref lst architecture) '()))))
           (raise
            (make-compound-condition
             (formatted-message
@@ -676,6 +704,46 @@ to the same package but with #:strip-binaries? #f in its 'arguments' field."
         (rewrite obj)
         obj)))
 
+(define (transform-package-configure-flag specs)
+  "Return a procedure that, when passed a package and a flag, adds the flag to
+#:configure-flags in the package's 'arguments' field."
+  (define (package-with-configure-flag p extra-flag)
+    (package/inherit p
+      (arguments
+       (substitute-keyword-arguments (package-arguments p)
+         ((#:configure-flags flags #~'())
+          ;; Add EXTRA-FLAG to the end so it can potentially override FLAGS.
+          #~(append #$flags '(#$extra-flag)))))))
+
+  (define configure-flags
+    ;; Spec/flag alist.
+    (map (lambda (spec)
+           ;; Split SPEC on the first equal sign (the configure flag might
+           ;; contain equal signs, as in '-DINTSIZE=32').
+           (let ((equal (string-index spec #\=)))
+             (match (and equal
+                         (list (string-take spec equal)
+                               (string-drop spec (+ 1 equal))))
+               ((spec flag)
+                (cons spec flag))
+               (_
+                (raise (formatted-message
+                        (G_ "~a: invalid package configure flag specification")
+                        spec))))))
+         specs))
+
+  (define rewrite
+    (package-input-rewriting/spec
+     (map (match-lambda
+            ((spec . flags)
+             (cons spec (cut package-with-configure-flag <> flags))))
+          configure-flags)))
+
+  (lambda (obj)
+    (if (package? obj)
+        (rewrite obj)
+        obj)))
+
 (define (patched-source name source patches)
   "Return a file-like object with the given NAME that applies PATCHES to
 SOURCE.  SOURCE must itself be a file-like object of any type, including
@@ -757,35 +825,72 @@ additional patches."
         (rewrite obj)
         obj)))
 
+(define* (package-with-upstream-version p #:optional version)
+  "Return package P changed to use the given upstream VERSION or, if VERSION
+is #f, the latest known upstream version."
+  (let ((source (package-latest-release p #:version version)))
+    (cond ((not source)
+           (if version
+               (warning
+                (G_ "could not find version ~a of '~a' upstream~%")
+                version (package-name p))
+               (warning
+                (G_ "could not determine latest upstream release of '~a'~%")
+                (package-name p)))
+           p)
+          ((string=? (upstream-source-version source)
+                     (package-version p))
+           (unless version
+             (info (G_ "~a is already the latest version of '~a'~%")
+                   (package-version p) (package-name p)))
+           p)
+          (else
+           (when (version>? (package-version p)
+                            (upstream-source-version source))
+             (warning (G_ "using ~a ~a, which is older than the packaged \
+version (~a)~%")
+                      (package-name p)
+                      (upstream-source-version source)
+                      (package-version p)))
+
+           (unless (pair? (upstream-source-signature-urls source))
+             (warning (G_ "cannot authenticate source of '~a', version ~a~%")
+                      (package-name p)
+                      (upstream-source-version source)))
+
+           ;; TODO: Take 'upstream-source-input-changes' into account.
+           (package
+             (inherit p)
+             (version (upstream-source-version source))
+             (source source))))))
+
 (define (transform-package-latest specs)
   "Return a procedure that rewrites package graphs such that those in SPECS
 are replaced by their latest upstream version."
-  (define (package-with-latest-upstream p)
-    (let ((source (package-latest-release p)))
-      (cond ((not source)
-             (warning
-              (G_ "could not determine latest upstream release of '~a'~%")
-              (package-name p))
-             p)
-            ((string=? (upstream-source-version source)
-                       (package-version p))
-             p)
-            (else
-             (unless (pair? (upstream-source-signature-urls source))
-               (warning (G_ "cannot authenticate source of '~a', version ~a~%")
-                        (package-name p)
-                        (upstream-source-version source)))
-
-             ;; TODO: Take 'upstream-source-input-changes' into account.
-             (package
-               (inherit p)
-               (version (upstream-source-version source))
-               (source source))))))
-
   (define rewrite
     (package-input-rewriting/spec
      (map (lambda (spec)
-            (cons spec package-with-latest-upstream))
+            (cons spec package-with-upstream-version))
+          specs)))
+
+  (lambda (obj)
+    (if (package? obj)
+        (rewrite obj)
+        obj)))
+
+(define (transform-package-version specs)
+  "Return a procedure that rewrites package graphs such that those in SPECS
+are replaced by the specified upstream version."
+  (define rewrite
+    (package-input-rewriting/spec
+     (map (lambda (spec)
+            (match (string-tokenize spec %not-equal)
+              ((spec version)
+               (cons spec (cut package-with-upstream-version <> version)))
+              (_
+               (raise (formatted-message
+                       (G_ "~a: invalid upstream version specification")
+                       spec)))))
           specs)))
 
   (lambda (obj)
@@ -808,8 +913,10 @@ are replaced by their latest upstream version."
     (tune . ,transform-package-tuning)
     (with-debug-info . ,transform-package-with-debug-info)
     (without-tests . ,transform-package-tests)
+    (with-configure-flag . ,transform-package-configure-flag)
     (with-patch  . ,transform-package-patches)
-    (with-latest . ,transform-package-latest)))
+    (with-latest . ,transform-package-latest)
+    (with-version . ,transform-package-version)))
 
 (define (transformation-procedure key)
   "Return the transformation procedure associated with KEY, a symbol such as
@@ -877,10 +984,14 @@ building for ~a instead of ~a, so tuning cannot be guessed~%")
                   (parser 'with-debug-info))
           (option '("without-tests") #t #f
                   (parser 'without-tests))
+          (option '("with-configure-flag") #t #f
+                  (parser 'with-configure-flag))
           (option '("with-patch") #t #f
                   (parser 'with-patch))
           (option '("with-latest") #t #f
                   (parser 'with-latest))
+          (option '("with-version") #t #f
+                  (parser 'with-version))
 
           (option '("help-transform") #f #f
                   (lambda _
@@ -913,8 +1024,16 @@ building for ~a instead of ~a, so tuning cannot be guessed~%")
       --with-patch=PACKAGE=FILE
                          add FILE to the list of patches of PACKAGE"))
   (display (G_ "
+      --tune[=CPU]       tune relevant packages for CPU--e.g., \"skylake\""))
+  (display (G_ "
+      --with-configure-flag=PACKAGE=FLAG
+                         append FLAG to the configure flags of PACKAGE"))
+  (display (G_ "
       --with-latest=PACKAGE
                          use the latest upstream release of PACKAGE"))
+  (display (G_ "
+      --with-version=PACKAGE=VERSION
+                         use the given upstream VERSION of PACKAGE"))
   (display (G_ "
       --with-c-toolchain=PACKAGE=TOOLCHAIN
                          build PACKAGE and its dependents with TOOLCHAIN"))

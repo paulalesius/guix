@@ -4,6 +4,7 @@
 ;;; Copyright © 2020 Jakub Kądziołka <kuba@kadziolka.net>
 ;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Brendan Tildesley <mail@brendan.scot>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -87,9 +88,7 @@
       "/applications" "/cursors" "/fonts" "/icons" "/glib-2.0/schemas"
       "/mime" "/sounds" "/themes" "/wallpapers")
     '("XDG_CONFIG_DIRS" suffix directory "/etc/xdg")
-    ;; We wrap exactly to avoid potentially mixing Qt5/Qt6 components, which
-    ;; would cause warnings, perhaps problems.
-    `("QT_PLUGIN_PATH" = directory
+    `("QT_PLUGIN_PATH" prefix directory
       ,(format #f "/lib/qt~a/plugins" qt-major-version))
     `("QML2_IMPORT_PATH" = directory
       ,(format #f "/lib/qt~a/qml" qt-major-version))
@@ -98,7 +97,7 @@
     `("QTWEBENGINEPROCESS_PATH" = regular
       ,(format #f "/lib/qt~a/libexec/QtWebEngineProcess" qt-major-version)))))
 
-(define* (wrap-qt-program* program #:key inputs output-dir
+(define* (wrap-qt-program* program #:key sh inputs output-dir
                            qt-wrap-excluded-inputs
                            (qt-major-version %default-qt-major-version))
 
@@ -115,9 +114,9 @@
                        output-dir
                        #:qt-major-version qt-major-version)))
     (when (not (null? vars-to-wrap))
-      (apply wrap-program program vars-to-wrap))))
+      (apply wrap-program program #:sh sh vars-to-wrap))))
 
-(define* (wrap-qt-program program-name #:key inputs output
+(define* (wrap-qt-program program-name #:key (sh (which "bash")) inputs output
                           (qt-wrap-excluded-inputs %qt-wrap-excluded-inputs)
                           (qt-major-version %default-qt-major-version))
   "Wrap the specified program (which must reside in the OUTPUT's \"/bin\"
@@ -126,11 +125,12 @@ directory) with suitably set environment variables.
 This is like qt-build-systems's phase \"qt-wrap\", but only the named program
 is wrapped."
   (wrap-qt-program* (string-append output "/bin/" program-name)
+                    #:sh sh
                     #:output-dir output #:inputs inputs
                     #:qt-wrap-excluded-inputs qt-wrap-excluded-inputs
                     #:qt-major-version qt-major-version))
 
-(define* (wrap-all-qt-programs #:key inputs outputs
+(define* (wrap-all-qt-programs #:key (sh (which "bash")) inputs outputs
                                qtbase
                                (qt-wrap-excluded-outputs '())
                                (qt-wrap-excluded-inputs %qt-wrap-excluded-inputs)
@@ -169,6 +169,7 @@ add a dependency of that output on Qt."
      ((output . output-dir)
       (unless (member output qt-wrap-excluded-outputs)
         (for-each (cut wrap-qt-program* <>
+                       #:sh sh
                        #:output-dir output-dir #:inputs inputs
                        #:qt-wrap-excluded-inputs qt-wrap-excluded-inputs
                        #:qt-major-version qt-major-version)

@@ -5,7 +5,7 @@
 ;;; Copyright © 2018 Julien Lepiller <julien@lepiller.eu>
 ;;; Copyright © 2018, 2019 Rutger Helling <rhelling@mykolab.com>
 ;;; Copyright © 2019 Vagrant Cascadian <vagrant@reproducible-builds.org>
-;;; Copyright © 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2022, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -35,7 +35,6 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cpio)
   #:use-module (gnu packages dbm)
-  #:use-module (gnu packages file)      ;for 'file-next'
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages gnome)
@@ -75,7 +74,7 @@
 (define-public diffoscope
   (package
     (name "diffoscope")
-    (version "224")
+    (version "247")
     (source
      (origin
        (method git-fetch)
@@ -84,151 +83,150 @@
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1qdivsf4yygg2az5018pw0q4169zas3hfqjydd0q3bhdrfpl0q4q"))
-       (patches
-        (search-patches "diffoscope-fix-llvm-test.patch"))))
+        (base32 "0c81pvdq0bz47sk3gcgpm2l3g5hxdi2s1jz05krv1cr2bd0sfq4j"))))
     (build-system python-build-system)
     (arguments
-     `(#:phases (modify-phases %standard-phases
-                  ;; These tests are broken because our `file` package has a
-                  ;; bug in berkeley-db and wasm file type detection.
-                  (add-after 'unpack 'remove-broken-file-type-detection-test
-                    (lambda _
-                      (delete-file "tests/comparators/test_berkeley_db.py")
-                      (delete-file "tests/comparators/test_wasm.py")))
-                  (add-after 'unpack 'embed-tool-references
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (substitute* "diffoscope/comparators/utils/compare.py"
-                        (("\\[\"xxd\",")
-                         (string-append "[\"" (which "xxd") "\",")))
-                      (substitute* "diffoscope/diff.py"
-                        (("@tool_required\\(\"diff\"\\)") "")
-                        (("get_tool_name\\(\"diff\"\\)")
-                         (string-append "get_tool_name(\"" (which "diff") "\")")))
-                      (substitute* "diffoscope/comparators/directory.py"
-                        (("@tool_required\\(\"stat\"\\)") "")
-                        (("@tool_required\\(\"getfacl\"\\)") "")
-                        (("\\[\"stat\",")
-                         (string-append "[\"" (which "stat") "\","))
-                        (("\\[\"getfacl\",")
-                         (string-append "[\"" (which "getfacl") "\",")))))
-                  (add-after 'build 'build-man-page
-                    (lambda* (#:key (make-flags '()) #:allow-other-keys)
-                      (apply invoke "make" "-C" "doc" make-flags)))
-                  (add-before 'check 'writable-test-data
-                    (lambda _
-                      ;; Tests may need write access to tests directory.
-                      (for-each make-file-writable (find-files "tests"))))
-                  (add-before 'check 'fix-failing-test
-                    (lambda _
-                      ;; There is no user name mapping in the build environment.
-                      ;; Pytest made it so much harder than should be necessary,
-                      ;; so I'm leaving… this here in case I ever need it again:
-                      ;; (substitute* "tests/comparators/test_squashfs.py"
-                      ;;   (("^def test_symlink_root.*" match)     ; no, I don't
-                      ;;    (string-append                         ; know Python
-                      ;;     match "\n    raise ValueError("       ; why do you
-                      ;;     "differences_root[1].unified_diff)\n"))) ; ask
-                      (substitute* "tests/data/squashfs_root_expected_diff"
-                        (("root/root")
-                         '"0/0      "))))
-                  (add-before 'check 'delete-failing-test
-                    ;; Please add new tests to fix-failing-test and not here ;-)
-                    (lambda _
-                      ;; This requires /sbin to be in $PATH.
-                      (delete-file "tests/test_tools.py")))
-                  (add-after 'install 'install-man-page
-                    (lambda* (#:key outputs #:allow-other-keys)
-                      (let* ((out (assoc-ref outputs "out"))
-                             (man (string-append out "/share/man/man1")))
-                        (install-file "doc/diffoscope.1" man)))))))
-    (inputs (list rpm ;for rpm-python
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; These tests are broken because our `file` package has a
+          ;; bug in berkeley-db and wasm file type detection.
+          (add-after 'unpack 'remove-broken-file-type-detection-test
+            (lambda _
+              (delete-file "tests/comparators/test_berkeley_db.py")
+              (delete-file "tests/comparators/test_wasm.py")))
+          (add-after 'unpack 'embed-tool-references
+            (lambda* (#:key inputs #:allow-other-keys)
+              (define (bin command)
+                (search-input-file inputs (string-append "bin/" command)))
+              (substitute* "diffoscope/comparators/utils/compare.py"
+                (("\\[\"(xxd)\"," _ command)
+                 (string-append "[\"" (bin command) "\",")))
+              (substitute* "diffoscope/diff.py"
+                (("@tool_required\\(\"diff\"\\)") "")
+                (("get_tool_name\\(\"(diff)\"\\)" _ command)
+                 (string-append "get_tool_name(\"" (bin command) "\")")))
+              (substitute* "diffoscope/comparators/directory.py"
+                (("@tool_required\\(\"stat\"\\)") "")
+                (("@tool_required\\(\"getfacl\"\\)") "")
+                (("\\[\"(stat)\"," _ command)
+                 (string-append "[\"" (bin command) "\","))
+                (("\\[\"(getfacl)\"," _ command)
+                 (string-append "[\"" (bin command) "\",")))))
+          (add-after 'build 'build-man-page
+            (lambda _
+              (invoke "make" "-C" "doc")))
+          (add-before 'check 'writable-test-data
+            (lambda _
+              ;; Tests may need write access to tests directory.
+              (for-each make-file-writable (find-files "tests"))))
+          (add-before 'check 'fix-failing-test
+            (lambda _
+              ;; There is no user name mapping in the build environment.
+              ;; Pytest made it so much harder than should be necessary,
+              ;; so I'm leaving… this here in case I ever need it again:
+              ;; (substitute* "tests/comparators/test_squashfs.py"
+              ;;   (("^def test_symlink_root.*" match)     ; no, I don't
+              ;;    (string-append                         ; know Python
+              ;;     match "\n    raise ValueError("       ; why do you
+              ;;     "differences_root[1].unified_diff)\n"))) ; ask
+              (substitute* "tests/data/squashfs_root_expected_diff"
+                (("root/root")
+                 '"0/0      "))))
+          (add-before 'check 'delete-failing-test
+            ;; Please add new tests to fix-failing-test and not here ;-)
+            (lambda _
+              ;; This requires /sbin to be in $PATH.
+              (delete-file "tests/test_tools.py")))
+          (add-after 'install 'install-man-page
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (man (string-append out "/share/man/man1")))
+                (install-file "doc/diffoscope.1" man)))))))
+    (inputs (list rpm                   ;for rpm-python
                   python-debian
                   python-libarchive-c
                   python-magic
                   python-tlsh
-                  acl ;for getfacl
-                  coreutils ;for stat
-                  diffutils ;for diff
+                  acl                   ;for getfacl
+                  coreutils             ;for stat
+                  diffutils             ;for diff
                   xxd))
     (native-inputs
      (append
-       (list help2man
+      (list help2man
 
-             ;; Below are packages used for tests.
-             binwalk
-             python-pytest
-             python-chardet
-             python-h5py
-             python-pypdf2
-             python-progressbar33
+            ;; Below are packages used for tests.
+            binwalk
+            python-pytest
+            python-chardet
+            python-h5py
+            python-pypdf
+            python-progressbar33
 
-             abootimg
-             bdb
-             binutils
-             bzip2
-             cdrtools
-             colord
-             cpio
-             docx2txt
-             dtc
-             e2fsprogs
-             ffmpeg
+            abootimg
+            bdb
+            binutils
+            bzip2
+            cdrkit-libre
+            colord
+            cpio
+            docx2txt
+            dtc
+            e2fsprogs
+            ffmpeg)
 
-             ;; XXX: Must be the same version as python-magic uses;
-             ;; remove when 'file' is updated.
-             file-next)
+      (match (%current-system)
+        ;; fpc is only available on x86 currently.
+        ((or "x86_64-linux" "i686-linux")
+         (list fpc))
+        (_ '()))
 
-       (match (%current-system)
-              ;; fpc is only available on x86 currently.
-              ((or "x86_64-linux" "i686-linux")
-               (list fpc))
-              (_ '()))
+      (list gettext-minimal
+            ghostscript
+            `(,giflib "bin")
+            gnumeric
+            gnupg
+            hdf5
+            imagemagick
+            libarchive
+            llvm
+            lz4
+            lzip
+            ocaml
+            odt2txt
+            openssh
+            openssl
+            pgpdump
+            poppler
+            python-jsbeautifier
+            r-minimal
+            rpm
+            sng
+            sqlite
+            squashfs-tools
+            tcpdump
+            unzip
+            wabt
+            xxd
+            xz
+            zip
+            zstd)
 
-       (list gettext-minimal
-             ghostscript
-             `(,giflib "bin")
-             gnumeric
-             gnupg
-             hdf5
-             imagemagick
-             libarchive
-             llvm-9
-             lz4
-             ocaml
-             odt2txt
-             openssh
-             openssl
-             pgpdump
-             poppler
-             python-jsbeautifier
-             r-minimal
-             rpm
-             sng
-             sqlite
-             squashfs-tools
-             tcpdump
-             unzip
-             wabt
-             xxd
-             xz
-             zip
-             zstd)
-
-       ;; Also for tests.  The test suite skips tests when these are missing.
-       (match (%current-system)
-         ;; ghc is only available on x86 currently.
-         ((or "x86_64-linux" "i686-linux")
-          (list ghc))
-         (_ '()))
-       (match (%current-system)
-         ;; openjdk and dependent packages are only
-         ;; available on x86_64 currently.
-         ((or "x86_64-linux")
-          (list enjarify)
-          ;; No unversioned openjdk available.
-          (list `(,openjdk12 "jdk")))
-         (_ '()))))
+      ;; Also for tests.  The test suite skips tests when these are missing.
+      (match (%current-system)
+        ;; ghc is only available on x86 currently.
+        ((or "x86_64-linux" "i686-linux")
+         (list ghc))
+        (_ '()))
+      (match (%current-system)
+        ;; openjdk and dependent packages are only
+        ;; available on x86_64 currently.
+        ((or "x86_64-linux")
+         (list enjarify)
+         ;; No unversioned openjdk available.
+         (list `(,openjdk12 "jdk")))
+        (_ '()))))
     (home-page "https://diffoscope.org/")
     (synopsis "Compare files, archives, and directories in depth")
     (description
@@ -245,7 +243,7 @@ install.")
 (define-public reprotest
   (package
     (name "reprotest")
-    (version "0.7.21")
+    (version "0.7.26")
     (source
      (origin
        (method git-fetch)
@@ -254,8 +252,7 @@ install.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32
-         "1jmnp6dwd91w00vfvph89cvgxwk0nvij8his9az5b72265jf9bxz"))))
+        (base32 "1992wlkil07fmj64lw3i7l16dgkkzphz0f932hbkkj9rlcamdwxd"))))
     (inputs
      (list python-debian python-distro python-libarchive-c python-rstr))
     (native-inputs
@@ -279,9 +276,7 @@ install.")
          (add-after 'unpack 'adjust-locales
            (lambda _
              (substitute* "reprotest/build.py"
-               (("'C.UTF-8'") "'en_US.UTF-8'")
-               (("'ru_RU.CP1251'") "'ru_RU.KOI8-R'")
-               (("'kk_KZ.RK1048'") "'kk_KZ'"))
+               (("'C.UTF-8'") "'en_US.UTF-8'"))
              (substitute* "reprotest/lib/adt_testbed.py"
                (("export LANG=C.UTF-8") "export LANG=en_US.UTF-8"))
              #t))
@@ -296,8 +291,7 @@ install.")
                (install-file "doc/reprotest.1" mandir1)
                (mkdir-p docdir)
                (install-file "./README.rst" docdir)
-               (install-file "./README-dev.rst" docdir))
-             #t)))))
+               (install-file "./README-dev.rst" docdir)))))))
     (home-page "https://salsa.debian.org/reproducible-builds/reprotest")
     (synopsis "Build software and check it for reproducibility")
     (description "Reprotest builds the same source code twice in different

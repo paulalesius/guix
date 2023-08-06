@@ -30,6 +30,7 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
+  #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
   #:use-module (guix build-system python)
@@ -267,3 +268,121 @@ following features:
 @item Generate command lines from standard input (Pipe mode).
 @end itemize")
     (license license:expat)))
+
+(define-public tmux-plugin-resurrect
+  (let ((commit "a2ddfb96b94bb64a7a2e3f5fa2a7c57dce8ad579")
+        (revision "0"))
+    (package
+      (name "tmux-plugin-resurrect")
+      (version (git-version "0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/tmux-plugins/tmux-resurrect/")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1gc8z99na1d4scn2kq4alwyn43h3r7ykz9bkhcypjh8iri6dsl0c"))))
+      (build-system trivial-build-system)
+      (arguments
+       `(#:modules ((guix build utils))
+         #:builder (begin
+                     (use-modules (guix build utils))
+                     (let ((out (string-append %output
+                                               "/share/tmux-plugins/resurrect/")))
+                       (mkdir-p out)
+                       (copy-recursively (assoc-ref %build-inputs "source") out)))))
+      (synopsis "Restore tmux environment after system restart")
+      (description
+       "This plugin goes to great lengths to save and restore all the details
+from your tmux environment.  Here's what's been taken care of:
+
+@itemize
+@item all sessions, windows, panes and their order
+@item current working directory for each pane
+@item exact pane layouts within windows (even when zoomed)
+@item active and alternative session
+@item active and alternative window for each session
+@item windows with focus
+@item active pane for each window
+@item \"grouped sessions\" (useful feature when using tmux with multiple monitors)
+@item programs running within a pane! More details in the restoring programs doc.
+@end itemize
+
+Optional:
+
+@itemize
+@item restoring vim and neovim sessions
+@item restoring pane contents
+@end itemize")
+      (home-page "https://github.com/tmux-plugins/tmux-resurrect/")
+      (license license:expat))))
+
+(define-public tmux-plugin-continuum
+  (let ((commit "3e4bc35da41f956c873aea716c97555bf1afce5d")
+        (revision "0"))
+    (package
+      (name "tmux-plugin-continuum")
+      (version (git-version "0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/tmux-plugins/tmux-continuum/")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1py8qfs2f93hkxhk039m813bjgcs5k54si662gx05g3czqy06pb7"))))
+      (build-system trivial-build-system)
+      (arguments
+       `(#:modules ((guix build utils))
+         #:builder (begin
+                     (use-modules (guix build utils))
+                     (let ((out (string-append %output
+                                 "/share/tmux-plugins/continuum/")))
+                       (mkdir-p out)
+                       (copy-recursively (assoc-ref %build-inputs "source")
+                                         out)))))
+      (synopsis "Continuous saving of tmux environment")
+      (description
+       "Features:
+
+@itemize
+@item continuous saving of tmux environment
+@item automatic tmux start when computer/server is turned on
+@item automatic restore when tmux is started
+@end itemize
+
+Together, these features enable uninterrupted tmux usage.  No matter the
+computer or server restarts, if the machine is on, tmux will be there how you
+left it off the last time it was used.")
+      (home-page "https://github.com/tmux-plugins/tmux-continuum/")
+      (license license:expat))))
+
+(define-public tmux-plugin-mem-cpu-load
+  (package
+    (name "tmux-plugin-mem-cpu-load")
+    (version "3.7.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/thewtex/tmux-mem-cpu-load")
+                    (commit (string-append "v" version))))
+              (sha256
+               (base32
+                "03bax7g9jlsci44ccs50drh617ya3fzvlplwyvxfyb7mgmh85r72"))
+              (file-name (git-file-name name version))))
+    (build-system cmake-build-system)
+    (synopsis "CPU, RAM, and load monitor for use with tmux")
+    (description "This package provides a lightweight program for system
+monitoring in the status line of tmux.
+
+The memory monitor displays the used and available memory.
+
+The CPU usage monitor outputs a percent CPU usage over all processors.  It
+also displays a textual bar graph of the current percent usage.
+
+The system load average is also displayed.")
+    (home-page "https://github.com/thewtex/tmux-mem-cpu-load")
+    (license license:asl2.0)))

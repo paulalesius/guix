@@ -11,10 +11,10 @@
 ;;; Copyright © 2020 Liliana Marie Prikler <liliana.prikler@gmail.com>
 ;;; Copyright © 2020 Yuval Kogman <nothingmuch@woobling.org>
 ;;; Copyright © 2020 Jakub Kądziołka <kuba@kadziolka.net>
-;;; Copyright © 2020 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2020, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2021 qblade <qblade@protonmail.com>
-;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
-;;; Copyright © 2022 Juliana Sims <jtsims@protonmail.com>
+;;; Copyright © 2021, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022, 2023 Juliana Sims <jtsims@protonmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -32,6 +32,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu packages build-tools)
+  #:use-module (ice-9 optargs)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix utils)
   #:use-module (guix packages)
@@ -39,20 +40,28 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix build-system cmake)
+  #:use-module (guix build-system copy)
+  #:use-module (guix modules)
   #:use-module (gnu packages)
   #:use-module (gnu packages adns)
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages code)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cpp)
+  #:use-module (gnu packages cppi)
   #:use-module (gnu packages elf)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages lisp)
   #:use-module (gnu packages logging)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages ninja)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages pcre)
+  #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages pretty-print)
   #:use-module (gnu packages protobuf)
@@ -65,8 +74,10 @@
   #:use-module (gnu packages rpc)
   #:use-module (gnu packages sqlite)
   #:use-module (gnu packages tls)
+  #:use-module (gnu packages unicode)
   #:use-module (gnu packages version-control)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python))
 
 (define-public bam
@@ -107,7 +118,7 @@ makes a few sacrifices to acquire fast full and incremental build times.")
 (define-public bear
   (package
     (name "bear")
-    (version "3.0.20")
+    (version "3.1.2")
     (source
      (origin
        (method git-fetch)
@@ -116,7 +127,7 @@ makes a few sacrifices to acquire fast full and incremental build times.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0k89ccp9vz3x71w3r2wfpng9b8s0rxp4qr0ch9q32wq6y1ik847j"))))
+        (base32 "1iq0ciw3x2awpli4k9mhx80c442xbs70y4g6qpwrirbjw15q33n7"))))
     (build-system cmake-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
@@ -137,13 +148,13 @@ makes a few sacrifices to acquire fast full and incremental build times.")
      `(("c-ares" ,c-ares)
        ("fmt" ,fmt-8)
        ("grpc" ,grpc)
-       ("json-modern-cxx" ,json-modern-cxx)
+       ("nlohmann-json" ,nlohmann-json)
        ("protobuf" ,protobuf)
        ("python" ,python-wrapper)
        ("re2" ,re2)
        ("spdlog" ,spdlog-1.10)))
     (native-inputs
-     `(("abseil-cpp" ,abseil-cpp)
+     `(("abseil-cpp" ,abseil-cpp-cxxstd11)
        ("googletest" ,googletest)
        ("openssl" ,openssl)
        ("pkg-config" ,pkg-config)
@@ -160,41 +171,47 @@ generate such a compilation database.")
 (define-public bmake
   (package
     (name "bmake")
-    (version "20211212")
+    (version "20230723")
     (source
      (origin
        (method url-fetch)
        (uri (string-append
              "http://www.crufty.net/ftp/pub/sjg/bmake-" version ".tar.gz"))
        (sha256
-        (base32 "17lywks7fy5538vwyyvbvxcq5mgnd5si7f2qgw85sgqj7mdr4xdd"))))
+        (base32 "012rzgjmncdla1l43f9wl8v13h7d46zgn28k6djpcgx23fahsan4"))))
     (build-system gnu-build-system)
     (inputs
      (list bash-minimal))
     (native-inputs
      (list coreutils))
     (arguments
-     `(#:tests? #f                      ; test during build
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'configure 'fix-test ; fix from nixpkgs
-           (lambda _
-             (substitute* "unit-tests/unexport-env.mk"
-               (("PATH=\t/bin:/usr/bin:/sbin:/usr/sbin")
-                "PATH := ${PATH}"))))
-         (add-after 'configure 'remove-fail-tests
-           (lambda _
-             (substitute* "unit-tests/Makefile"
-               (("cmd-interrupt") "")
-               (("varmod-localtime") "")))))
-       #:configure-flags
-       (list
-        (string-append
-         "--with-defshell=" (assoc-ref %build-inputs "bash") "/bin/bash")
-        (string-append
-         "--with-default-sys-path=" (assoc-ref %outputs "out") "/share/mk"))
-       #:make-flags
-       (list "INSTALL=install"))) ;; use coreutils install
+     (list
+      #:tests? #f                       ; test during build
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'configure 'fix-test ; fix from nixpkgs
+            (lambda* (#:key inputs native-inputs #:allow-other-keys)
+              (substitute* "unit-tests/unexport-env.mk"
+                (("PATH=\t/bin:/usr/bin:/sbin:/usr/sbin")
+                 "PATH := ${PATH}"))
+              (substitute* '("unit-tests/opt-keep-going-indirect.mk"
+                             "unit-tests/opt-keep-going-indirect.exp")
+                (("false")
+                 (search-input-file (or native-inputs inputs) "/bin/false")))))
+          (add-after 'configure 'remove-fail-tests
+            (lambda _
+              (substitute* "unit-tests/Makefile"
+                (("cmd-interrupt") "")
+                (("deptgt-interrupt") "")
+                (("varmod-localtime") "")))))
+      #:configure-flags
+      #~(list
+         (string-append
+          "--with-defshell=" #$(this-package-input "bash-minimal") "/bin/bash")
+         (string-append
+          "--with-default-sys-path=" #$output "/share/mk"))
+      #:make-flags
+      #~(list "INSTALL=install")))      ; use coreutils' install
     (home-page "http://www.crufty.net/help/sjg/bmake.htm")
     (synopsis "BSD's make")
     (description
@@ -204,8 +221,8 @@ programs and other files depend.")
     (license license:bsd-3)))
 
 (define-public gn
-  (let ((commit "e327ffdc503815916db2543ec000226a8df45163")
-        (revision "1819"))            ;as returned by `git describe`, used below
+  (let ((commit "1c4151ff5c1d6fbf7fa800b8d4bb34d3abc03a41")
+        (revision "2072"))            ;as returned by `git describe`, used below
     (package
       (name "gn")
       (version (git-version "0.0" revision commit))
@@ -215,49 +232,56 @@ programs and other files depend.")
                 (uri (git-reference (url home-page) (commit commit)))
                 (sha256
                  (base32
-                  "0kvlfj3www84zp1vmxh76x8fdjm9hyk8lkh2vdsidafpmm75fphr"))
+                  "02621c9nqpr4pwcapy31x36l5kbyd0vdgd0wdaxj5p8hrxk67d6b"))
                 (file-name (git-file-name name version))))
       (build-system gnu-build-system)
       (arguments
-       `(#:phases (modify-phases %standard-phases
-                    (add-before 'configure 'set-build-environment
-                      (lambda _
-                        (setenv "CC" "gcc") (setenv "CXX" "g++")
-                        (setenv "AR" "ar")))
-                    (replace 'configure
-                      (lambda _
-                        (invoke "python" "build/gen.py"
-                                "--no-last-commit-position")))
-                    (add-after 'configure 'create-last-commit-position
-                      (lambda _
-                        ;; Create "last_commit_position.h" to avoid a dependency
-                        ;; on 'git' (and the checkout..).
-                        (call-with-output-file "out/last_commit_position.h"
-                          (lambda (port)
-                            (format port
-                                    (string-append
-                                     "#define LAST_COMMIT_POSITION_NUM ~a\n"
-                                     "#define LAST_COMMIT_POSITION \"~a (~a)\"\n")
-                                    ,revision ,revision ,(string-take commit 8))))))
-                    (replace 'build
-                      (lambda _
-                        (invoke "ninja" "-C" "out" "gn"
-                                "-j" (number->string (parallel-job-count)))))
-                    (replace 'check
-                      (lambda* (#:key tests? #:allow-other-keys)
-                        (if tests?
-                            (begin
-                              (invoke "ninja" "-C" "out" "gn_unittests"
-                                      "-j" (number->string (parallel-job-count)))
-                              (invoke "./out/gn_unittests"))
-                            (format #t "test suite not run~%"))))
-                    (replace 'install
-                      (lambda* (#:key outputs #:allow-other-keys)
-                        (let ((out (assoc-ref outputs "out")))
-                          (install-file "out/gn" (string-append out "/bin"))))))))
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 (add-before 'configure 'set-build-environment
+                   (lambda _
+                     (setenv "CC" "gcc")
+                     (setenv "CXX" "g++")
+                     (setenv "AR" "ar")))
+                 (replace 'configure
+                   (lambda _
+                     (invoke "python" "build/gen.py"
+                             "--no-last-commit-position")))
+                 (add-after 'configure 'create-last-commit-position
+                   (lambda _
+                     ;; Mimic GenerateLastCommitPosition from gen.py.
+                     (call-with-output-file "out/last_commit_position.h"
+                       (lambda (port)
+                         (format port
+                                 "// Generated by Guix.
+
+#ifndef OUT_LAST_COMMIT_POSITION_H_
+#define OUT_LAST_COMMIT_POSITION_H_
+
+#define LAST_COMMIT_POSITION_NUM ~a
+#define LAST_COMMIT_POSITION \"~a (~a)\"
+
+#endif  // OUT_LAST_COMMIT_POSITION_H_
+"
+                                 #$revision #$revision
+                                 #$(string-take commit 12))))))
+                 (replace 'build
+                   (lambda _
+                     (invoke "ninja" "-C" "out" "gn"
+                             "-j" (number->string (parallel-job-count)))))
+                 (replace 'check
+                   (lambda* (#:key tests? #:allow-other-keys)
+                     (if tests?
+                         (begin
+                           (invoke "ninja" "-C" "out" "gn_unittests"
+                                   "-j" (number->string (parallel-job-count)))
+                           (invoke "./out/gn_unittests"))
+                         (format #t "test suite not run~%"))))
+                 (replace 'install
+                   (lambda _
+                     (install-file "out/gn" (string-append #$output "/bin")))))))
       (native-inputs
-       `(("ninja" ,ninja)
-         ("python" ,python-wrapper)))
+       (list ninja python-wrapper))
       (synopsis "Generate Ninja build files")
       (description
        "GN is a tool that collects information about a project from @file{.gn}
@@ -266,10 +290,11 @@ files and generates build instructions for the Ninja build system.")
       ;; X11 license.
       (license (list license:bsd-3 license:x11)))))
 
-(define-public meson-0.63
+(define-public meson
   (package
     (name "meson")
-    (version "0.63.2")
+    (replacement meson/newer)
+    (version "1.1.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/mesonbuild/meson/"
@@ -277,28 +302,23 @@ files and generates build instructions for the Ninja build system.")
                                   version ".tar.gz"))
               (sha256
                (base32
-                "1gwba75z47m2hv3w08gw8sgqgbknjr7rj1qwr510bgknxwbjy8hn"))))
+                "17w2zymmvrffhfpqsaj7qcbjwgv9iaawcpzhz2gnhlvcrm26qqfr"))))
     (build-system python-build-system)
     (arguments
-     `(;; FIXME: Tests require many additional inputs and patching many
-       ;; hard-coded file system locations in "run_unittests.py".
-       #:tests? #f
-       #:phases (modify-phases %standard-phases
-                  ;; Meson calls the various executables in out/bin through the
-                  ;; Python interpreter, so we cannot use the shell wrapper.
-                  (replace 'wrap
-                    (lambda* (#:key outputs inputs #:allow-other-keys)
-                      (let ((python-version
-                             (python-version (assoc-ref inputs "python")))
-                            (output (assoc-ref outputs "out")))
-                        (substitute* (string-append output "/bin/meson")
-                          (("# EASY-INSTALL-ENTRY-SCRIPT")
-                           (format #f "\
+     (list #:tests? #f                  ;disabled to avoid extra dependencies
+           #:phases
+           #~(modify-phases %standard-phases
+               ;; Meson calls the various executables in out/bin through the
+               ;; Python interpreter, so we cannot use the shell wrapper.
+               (replace 'wrap
+                 (lambda* (#:key inputs outputs #:allow-other-keys)
+                   (substitute* (search-input-file outputs "bin/meson")
+                     (("# EASY-INSTALL-ENTRY-SCRIPT")
+                      (format #f "\
 import sys
-sys.path.insert(0, '~a/lib/python~a/site-packages')
-# EASY-INSTALL-ENTRY-SCRIPT"
-                                   output python-version)))))))))
-    (inputs (list python-wrapper ninja))
+sys.path.insert(0, '~a')
+# EASY-INSTALL-ENTRY-SCRIPT" (site-packages inputs outputs)))))))))
+    (inputs (list python ninja))
     (home-page "https://mesonbuild.com/")
     (synopsis "Build system designed to be fast and user-friendly")
     (description
@@ -310,10 +330,10 @@ files}, are written in a custom domain-specific language (@dfn{DSL}) that
 resembles Python.")
     (license license:asl2.0)))
 
-(define-public meson-0.60
+(define-public meson/newer
   (package
-    (inherit meson-0.63)
-    (version "0.60.3")
+    (inherit meson)
+    (version "1.1.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/mesonbuild/meson/"
@@ -321,86 +341,30 @@ resembles Python.")
                                   version ".tar.gz"))
               (sha256
                (base32
-                "13mrrizg4vl6n5k7fz6amyafnn3i097dcarr552qc0ca6nlmzjl7"))
-              (patches (search-patches
-                        "meson-allow-dirs-outside-of-prefix.patch"))))))
-
-;;; This older Meson variant is kept for now for gtkmm and others that may
-;;; have problems with 0.60.
-(define-public meson-0.59
-  (package
-    (inherit meson-0.60)
-    (version "0.59.4")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://github.com/mesonbuild/meson/"
-                                  "releases/download/" version  "/meson-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "117cm8794h291lca1wljz1pwnzidgbvrpg3mw3np6ksma368hyd7"))
-              (patches (search-patches
-                        "meson-allow-dirs-outside-of-prefix.patch"))))))
-
-;; TODO: Bump this in the next rebuild cycle.
-(define-public meson meson-0.60)
+                "073vf8059nzs6p5aaqr5wva4pgl81540szdb5yw9yhyajwgm8jyh"))))))
 
 (define-public meson-python
   (package
     (name "meson-python")
-    (version "0.8.1")
+    (version "0.12.1")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "meson_python" version))
               (sha256
                (base32
-                "0k2yn0iws1n184sdznzmfw4xgbqgq5cn02hpc7m0xdaxryj1ybs4"))))
-    (build-system python-build-system)
+                "1hpjw9qj6ff8ixjs0pz7qysc8v57jxgaf5n1p6bqm9bh3mc3wnrx"))))
+    (build-system pyproject-build-system)
     (arguments
-     (list #:phases
-           #~(modify-phases %standard-phases
-               (add-after 'unpack 'avoid-ninja-dependency
-                 (lambda _
-                   ;; Avoid dependency on the "ninja" PyPI distribution,
-                   ;; which is a meta-package that simply downloads and
-                   ;; installs ninja from the web ...
-                   (substitute* "pyproject.toml"
-                     (("'ninja',")
-                      ""))))
-               (replace 'build
-                 (lambda _
-                   ;; ZIP does not support timestamps before 1980.
-                   (setenv "SOURCE_DATE_EPOCH" "315532800")
-                   (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
-               (replace 'install
-                 (lambda _
-                   (let ((whl (car (find-files "dist" "\\.whl$"))))
-                     (invoke "pip" "--no-cache-dir" "--no-input"
-                             "install" "--no-deps" "--prefix" #$output whl))))
-               (replace 'check
-                 (lambda* (#:key tests? #:allow-other-keys)
-                   (when tests?
-                     (invoke "pytest" "-vv" "tests" "-k"
-                             (string-append
-                              "not "
-                              ;; These tests require a git checkout.
-                              (string-join '("test_contents_unstaged"
-                                             "test_no_pep621"
-                                             "test_pep621"
-                                             "test_dynamic_version"
-                                             "test_contents"
-                                             "test_contents_subdirs")
-                                           " and not ")))))))))
+     ;; The project is configured to use itself to build ('mesonpy') and fails;
+     ;; use another PEP 517 build system.
+     (list #:build-backend "setuptools.build_meta"
+           #:test-flags #~(list "tests"
+                                ;; The test_pep518 tries to install
+                                ;; dependencies from the network using pip.
+                                "-k" "not test_pep518")))
     (propagated-inputs
-     (list meson-0.63                   ;>=0.62 required
+     (list meson
            ninja
-           ;; XXX: python-meson forcefully sets the RUNPATH of binaries
-           ;; for vendoring purposes, and uses PatchELF for that(!).  This
-           ;; functionality is not useful in Guix, but removing this
-           ;; dependency is tricky.  There is discussion upstream about making
-           ;; it optional, but for now we'll just carry it:
-           ;; https://github.com/FFY00/meson-python/issues/125
-           patchelf
            python-colorama
            python-pyproject-metadata
            python-tomli
@@ -410,14 +374,16 @@ resembles Python.")
            python-wheel
 
            ;; For tests.
+           git-minimal/pinned
+           patchelf
            pkg-config
+           python-cython
            python-gitpython
            python-pytest
            python-pytest-mock))
-    (home-page "https://github.com/FFY00/mesonpy")
+    (home-page "https://github.com/mesonbuild/meson-python")
     (synopsis "Meson-based build backend for Python")
-    (description
-     "meson-python is a PEP 517 build backend for Meson projects.")
+    (description "Meson-python is a PEP 517 build backend for Meson projects.")
     (license license:expat)))
 
 (define-public premake4
@@ -583,14 +549,14 @@ software.")
 (define-public tup
   (package
     (name "tup")
-    (version "0.7.9")
+    (version "0.7.11")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://gittup.org/tup/releases/tup-v"
                                   version ".tar.gz"))
               (sha256
                (base32
-                "0gnd2598xqgwihdkfkx7qn0q6p4n7npam1fy83mp7s04zwj99syc"))
+                "1157qfnhjakm3h07y7h38lrjw5650gkif34k30bnrsypmwl5xyzb"))
               (patches (search-patches "tup-unbundle-dependencies.patch"))
               (modules '((guix build utils)))
               (snippet
@@ -644,7 +610,7 @@ software.")
            sqlite))
     (native-inputs
      (list pkg-config))
-    (home-page "http://gittup.org/tup/")
+    (home-page "https://gittup.org/tup/")
     (synopsis "Fast build system that's hard to get wrong")
     (description "Tup is a generic build system based on a directed acyclic
 graphs of commands to be executed.  Tup instruments your build to detect the
@@ -766,11 +732,11 @@ Build has features such as:
     (license license:gpl2+)))
 
 (define-public genie
-  (let ((commit "b139103697bbb62db895e4cc7bfe202bcff4ff25")
+  (let ((commit "22cc907a4351db46c55f73e6aa901f1b2f0c52ad")
         (revision "0"))
     (package
       (name "genie")
-      (version (git-version "1167" revision commit))
+      (version (git-version "1170" revision commit))
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
@@ -779,7 +745,7 @@ Build has features such as:
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "16plshzkyjjzpfcxnwjskrs7i4gg0qn92h2k0rbfl4a79fgmwvwv"))))
+                  "1wxhbdnr52qa2xr1i83577mwr25fxr5vby4r7m5brp9z5a08fwry"))))
       (build-system gnu-build-system)
       (arguments
        (list #:phases #~(modify-phases %standard-phases
@@ -796,3 +762,244 @@ Build has features such as:
 same settings to multiple projects.  It supports generating projects using GNU
 Makefiles, JSON Compilation Database, and experimentally Ninja.")
       (license license:bsd-3))))
+
+(define*-public (gnulib-checkout #:key
+                                 version
+                                 (revision "1")
+                                 commit
+                                 hash)
+  "Return as a package the exact gnulib checkout."
+  (package
+    (name "gnulib")
+    (version (git-version version revision commit))
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.savannah.gnu.org/git/gnulib.git/")
+             (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256 hash)
+       (snippet
+        (with-imported-modules (source-module-closure '((guix build utils)))
+          #~(begin
+              (use-modules (guix build utils)
+                           (ice-9 ftw)
+                           (ice-9 rdelim))
+              ;; .c, .h and .gperf files whose first line is /* DO NOT EDIT!
+              ;; GENERATED AUTOMATICALLY! */ are generated automatically based
+              ;; on the unicode database. Since we replace the unicode
+              ;; database with our own, we need to regenerate them. So, they
+              ;; are removed from the source. They are sprinkled all over the
+              ;; place unfortunately, so we can’t exclude whole directories.
+              (let ((generated-automatically?
+                     (lambda (filename . unused)
+                       (and (or (string-suffix? ".c" filename)
+                                (string-suffix? ".h" filename)
+                                (string-suffix? ".gperf" filename))
+                            (call-with-input-file filename
+                              (lambda (port)
+                                (let ((first-line (read-line port)))
+                                  (equal?
+                                   first-line
+                                   "/* DO NOT EDIT! GENERATED AUTOMATICALLY! */"))))))))
+                (for-each delete-file (find-files (getcwd) generated-automatically?)))
+              ;; Other files are copied from UCD.
+              (for-each delete-file
+                        '("tests/unigbrk/GraphemeBreakTest.txt"
+                          "tests/uninorm/NormalizationTest.txt"
+                          "tests/uniname/UnicodeData.txt"
+                          "tests/uniname/NameAliases.txt"
+                          ;; FIXME: tests/uniname/HangulSyllableNames.txt
+                          ;; seems like a UCD file but it is not distributed
+                          ;; with UCD.
+                          "tests/uniwbrk/WordBreakTest.txt")))))))
+    (build-system copy-build-system)
+    (arguments
+     (list
+      #:install-plan
+      #~'(("./gnulib-tool" "bin/")
+          ("." "src/gnulib" #:exclude-regexp ("\\.git.*")))
+      #:modules '((ice-9 match)
+                  (guix build utils)
+                  (guix build copy-build-system)
+                  ((guix build gnu-build-system) #:prefix gnu:))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'install 'check
+            (assoc-ref gnu:%standard-phases 'check))
+          (add-before 'check 'fix-tests
+            (lambda _
+              (substitute* "Makefile"
+                (("-f maint.mk syntax-check")
+                 "_gl-Makefile=yes -f maint.mk syntax-check"))
+              (invoke "git" "init")
+              (invoke "git" "config" "user.name" "Guix")
+              (invoke "git" "config" "user.email" "guix@localhost")
+              (invoke "git" "add" ".")
+              ;; Syntax checks are only run against committed files.
+              (invoke "git" "commit" "-m" "Prepare for tests.")))
+          (add-before 'check 'disable-failing-tests
+            (lambda _
+              (substitute* "cfg.mk"
+                (("local-checks-to-skip =")
+                 ;; sc_copyright_check fails because the fake commit date may
+                 ;; be later than the copyright year.
+                 "local-checks-to-skip = \\
+  sc_Wundef_boolean \\
+  sc_copyright_check \\
+  sc_file_system \\
+  sc_indent \\
+  sc_keep_gnulib_texi_files_mostly_ascii \\
+  sc_prohibit_assert_without_use \\
+  sc_prohibit_close_stream_without_use \\
+  sc_prohibit_defined_have_decl_tests \\
+  sc_prohibit_doubled_word \\
+  sc_prohibit_empty_lines_at_EOF \\
+  sc_prohibit_intprops_without_use \\
+  sc_prohibit_openat_without_use \\
+  sc_prohibit_test_minus_ao \\
+  sc_unportable_grep_q"))
+              (substitute* "Makefile"
+                (("sc_check_(sym_list|copyright)" rule)
+                 (string-append "disabled_check_" rule))
+                (("sc_cpp_indent_check")
+                 "disabled_cpp_indent_check")
+                (("sc_prefer_ac_check_funcs_once")
+                 "disabled_prefer_ac_check_funcs_once")
+                (("sc_prohibit_(AC_LIBOBJ_in_m4|leading_TABs)" rule)
+                 (string-append "disabled_prohibit_" rule)))))
+          (add-before 'check 'regenerate-unicode
+            (lambda* (#:key inputs #:allow-other-keys)
+              (define (find-ucd-file name)
+                (search-input-file inputs (string-append "share/ucd/" name)))
+              (define (find-ucd-files . names)
+                (map find-ucd-file names))
+              (with-directory-excursion "lib"
+                ;; See the compile-command buffer-local variable in
+                ;; lib/gen-uni-tables.c
+                (invoke "gcc" "-O" "-Wall" "gen-uni-tables.c"
+                        "-Iunictype" "-o" "gen-uni-tables")
+                (apply invoke
+                       "./gen-uni-tables"
+                       (append
+                        (find-ucd-files "UnicodeData.txt"
+                                        "PropList.txt"
+                                        "DerivedCoreProperties.txt"
+                                        "emoji/emoji-data.txt"
+                                        "ArabicShaping.txt"
+                                        "Scripts.txt"
+                                        "Blocks.txt")
+                        (list
+                         #$(origin
+                             (method url-fetch)
+                             (uri (string-append
+                                   "https://www.unicode.org/Public/"
+                                   "3.0-Update1/PropList-3.0.1.txt"))
+                             (sha256
+                              (base32
+                               "0k6wyijyzdl5g3nibcwfm898kfydx1pqaz28v7fdvnzdvd5fz7lh"))))
+                        (find-ucd-files "EastAsianWidth.txt"
+                                        "LineBreak.txt"
+                                        "auxiliary/WordBreakProperty.txt"
+                                        "auxiliary/GraphemeBreakProperty.txt"
+                                        "CompositionExclusions.txt"
+                                        "SpecialCasing.txt"
+                                        "CaseFolding.txt")
+                         (list #$(package-version (this-package-native-input "ucd")))))
+                (invoke "clisp" "-C" "uniname/gen-uninames.lisp"
+                        (find-ucd-file "UnicodeData.txt")
+                        "uniname/uninames.h"
+                        (find-ucd-file "NameAliases.txt"))
+                (for-each
+                 (match-lambda
+                  ((ucd-file . directory)
+                   (copy-file (find-ucd-file ucd-file)
+                              (string-append "../tests/" directory "/"
+                                             (basename ucd-file)))))
+                 '(("NameAliases.txt" . "uniname")
+                   ("UnicodeData.txt" . "uniname")
+                   ("NormalizationTest.txt" . "uninorm")
+                   ("auxiliary/GraphemeBreakTest.txt" . "unigbrk")
+                   ("auxiliary/WordBreakTest.txt" . "uniwbrk")))
+                (delete-file "gen-uni-tables"))))
+          (add-after 'install 'restore-shebangs
+            (lambda _
+              (substitute* (find-files
+                            (string-append #$output "/src/gnulib")
+                            (lambda (fname stat)
+                              (and (not (string-suffix? "/lib/javaversion.class" fname))
+                                   (not (string-suffix? ".mo" fname)))))
+                (("^#! ?(.*)/bin/sh" _ prefix)
+                 "#!/bin/sh")
+                (("^#! ?(.*)/bin/python3" _ prefix)
+                 "#!/usr/bin/env python3")
+                (("^#! ?(.*)/bin/([a-zA-Z0-9-]+)" _ prefix program)
+                 (string-append "#!/usr/bin/" program))))))))
+    (inputs
+     (list bash-minimal))                         ;shebang for gnulib-tool
+    (native-inputs
+     (list
+      bash-minimal python perl clisp
+      ;; Unicode data:
+      ucd
+      ;; Programs for the tests:
+      cppi indent git-minimal/pinned autoconf))
+    (home-page "https://www.gnu.org/software/gnulib/")
+    (synopsis "Source files to share among distributions")
+    (description
+     "Gnulib is a central location for common infrastructure needed by GNU
+packages.  It provides a wide variety of functionality, e.g., portability
+across many systems, working with Unicode strings, cryptographic computation,
+and much more.  The code is intended to be shared at the level of source
+files, rather than being a standalone library that is distributed, built, and
+installed.  The included @command{gnulib-tool} script helps with using Gnulib
+code in other packages.  Gnulib also includes copies of licensing and
+maintenance-related files, for convenience.")
+    (native-search-paths
+     (list (search-path-specification
+            (variable "GNULIB_SRCDIR")
+            (files (list "src/gnulib"))
+            (separator #f))))
+    (license (list license:lgpl2.0+ license:gpl3+))))
+
+(define-public gnulib
+  (gnulib-checkout
+   #:version "2022-12-31"
+   #:commit "875461ffdf58ac04677957b4ae4160465b83b940"
+   #:hash (base32 "0bf7a6wdns9c5wwv60qfcn9llg0j6jz5ryd2qgsqqx2i6xkmp77c")))
+
+(define-public pdpmake
+  (package
+    (name "pdpmake")
+    (version "1.4.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/rmyorston/pdpmake")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0fjx5imd7s0h0yy8h2qc4vkdq7kxqcljnrw6h8n88720xha5z3cb"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:test-target "test"
+      #:parallel-tests? #f
+      #:make-flags
+      #~(list "DESTDIR=\"\""
+              (string-append "CC=" #$(cc-for-target))
+              (string-append "PREFIX=" #$output))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure))))
+    (home-page "https://frippery.org/make/")
+    (synopsis "POSIX make")
+    (description
+     "This package contains an implementation of POSIX make.  The default
+configuration enables extensions.  Generally these extensions are compatible
+with GNU make.")
+    ;; pdpmake is distributed under the public domain, but the sources include
+    ;; tests under the GPL license version 2.
+    (license (list license:gpl2 license:public-domain))))

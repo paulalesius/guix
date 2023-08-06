@@ -17,12 +17,13 @@
 ;;; Copyright © 2020 Brett Gilio <brettg@gnu.org>
 ;;; Copyright © 2020, 2022 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2020 Raghav Gururajan <raghavgururajan@disroot.org>
-;;; Copyright © 2020, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2020 Vincent Legoll <vincent.legoll@gmail.com>
 ;;; Copyright © 2021 LibreMiami <packaging-guix@libremiami.org>
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
 ;;; Copyright © 2021 Demis Balbach <db@minikn.xyz>
 ;;; Copyright © 2022 Thomas Albers Raviola <thomas@thomaslabs.org>
+;;; Copyright © 2023 Ivan Gankevich <igankevich@capybaramail.xyz>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -40,6 +41,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu packages telephony)
+  #:use-module (guix gexp)
   #:use-module (gnu packages)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages aidc)
@@ -67,8 +69,10 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages image)
   #:use-module (gnu packages libcanberra)
+  #:use-module (gnu packages libusb)
   #:use-module (gnu packages linphone)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages maths)
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages netpbm)
@@ -79,6 +83,8 @@
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
   #:use-module (gnu packages qt)
+  #:use-module (gnu packages samba)
+  #:use-module (gnu packages security-token)
   #:use-module (gnu packages serialization)
   #:use-module (gnu packages speech)
   #:use-module (gnu packages tls)
@@ -294,6 +300,9 @@ reimplementation.")
             (sha256 (base32
                      "1mv080rvrhyxyhgqiqr8r9jdqhg3xhfawjvfj5zgj47h59nggjba"))))
    (build-system gnu-build-system)
+   (arguments
+    ;; Does not work with std=c++17, which is the default in modern GCC versions.
+    `(#:configure-flags '("CXXFLAGS=-std=c++14")))
    (inputs (list gnutls))
    (synopsis "Common C++ framework for threaded applications")
    (description "GNU uCommon C++ is meant as a very light-weight C++ library
@@ -558,7 +567,7 @@ address of one of the participants.")
 (define-public mumble
   (package
     (name "mumble")
-    (version "1.4.274")
+    (version "1.4.287")
     (source (origin
               (method url-fetch)
               (uri
@@ -567,7 +576,7 @@ address of one of the participants.")
                 version "/" name "-" version ".tar.gz"))
               (sha256
                (base32
-                "12rv61mmpgvcc1svq2y66r29sl47y9lfi9if0r09x4nqrkf7vj3y"))
+                "0iq54011jgrc5ipk16x05n3sj54j8mzhcidnzcdsb2x5pzan33ip"))
               (modules '((guix build utils)
                          (ice-9 ftw)
                          (srfi srfi-1)))
@@ -643,7 +652,7 @@ address of one of the participants.")
            libsndfile
            libxi
            mesa ; avoid bundled
-           openssl
+           openssl-1.1 ; 1.5.x works with openssl-3.x
            opus ; avoid bundled
            poco
            protobuf
@@ -726,7 +735,7 @@ your calls and messages.")
 (define-public pjproject
   (package
     (name "pjproject")
-    (version "2.12.1")
+    (version "2.13")
     (source
      (origin
        (method git-fetch)
@@ -736,7 +745,7 @@ your calls and messages.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0xrj4sznbaip22y9hclff6y81l285bzkkj1smzifskpk3kiwp00w"))
+         "0ld0adp9y2ydnz2ldwdzig3hpk4ayx1va6aqc3nja8zfdnd36fyb"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -817,7 +826,10 @@ your calls and messages.")
                  "#define INCLUDE_TCP_TEST 0\n")
                 ;; The TSX tests takes a very long time to run; skip them.
                 (("#define INCLUDE_TSX_GROUP.*")
-                 "#define INCLUDE_TSX_GROUP 0\n"))
+                 "#define INCLUDE_TSX_GROUP 0\n")
+                ;; The resolve test requires a working domain name resolver.
+                (("#define INCLUDE_RESOLVE_TEST.*")
+                 "#define INCLUDE_RESOLVE_TEST 0\n"))
               (substitute* "pjsip/src/test/dns_test.c"
                 ;; The round_robin_test fails non-deterministically (depending
                 ;; on load); skip it (see:
@@ -901,7 +913,7 @@ telephony functionality into custom Telegram clients.")
 (define-public coturn
   (package
     (name "coturn")
-    (version "4.6.0")
+    (version "4.6.1")
     (source
      (origin
        (method git-fetch)
@@ -910,7 +922,7 @@ telephony functionality into custom Telegram clients.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "152v2lnjj9b3w61d8aak7hmi9riw9cjs5g54g1gfpzlyk4c2jw21"))))
+        (base32 "04d3c2lxc496zxx3nzqr9fskm2w57kqijdfq3wsa0yp2dp28yjkj"))))
     (inputs
      (list openssl
            sqlite
@@ -926,3 +938,165 @@ gateway.  It implements the STUN (Session Traversal Utilities for NAT) and
 TURN (Traversal Using Relays around NAT) server protocols.")
     (home-page "https://github.com/coturn/coturn")
     (license license:bsd-3)))
+
+(define-public libosmocore
+  (package
+    (name "libosmocore")
+    (version "1.7.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitea.osmocom.org/osmocom/libosmocore.git")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "147ld3xwb9k6vb56hk8q8jkcb5ahxl66v87vdhazb6rxj3frsjqf"))))
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (add-after 'unpack 'patch-bin-sh
+                          (lambda _
+                            (substitute* '("git-version-gen" "src/exec.c")
+                              (("/bin/sh")
+                               (which "sh"))))))))
+    (inputs (list gnutls
+                  libmnl
+                  libusb
+                  lksctp-tools
+                  pcsc-lite
+                  talloc))
+    (native-inputs (list autoconf
+                         automake
+                         coreutils
+                         doxygen
+                         libtool
+                         pkg-config
+                         python))
+    (build-system gnu-build-system)
+    (synopsis "Libraries for sharing common code between osmocom projects")
+    (description
+     "Libosmocore includes several libraries:
+@itemize
+@item libosmocore: general-purpose functions
+@item libosmovty: interactive VTY command-line interface
+@item libosmogsm: definitions and helper code related to GSM protocols
+@item libosmoctrl: shared implementation of the Osmocom control interface
+@item libosmogb: implementation of the Gb interface with its NS/BSSGP protocols
+@item libosmocodec: implementation of GSM voice codecs
+@item libosmocoding: implementation of GSM 05.03 burst transcoding functions
+@item libosmosim: infrastructure to interface with SIM/UICC/USIM cards
+@end itemize")
+    (home-page "https://osmocom.org/projects/libosmocore/wiki/Libosmocore")
+    (license license:gpl2+)))
+
+(define-public xgoldmon
+  ;; There are no releases nor tags.
+  (let ((revision "1")
+        (commit "f2d5372acee4e492f31f6ba8b850cfb48fbbe478"))
+    (package
+      (name "xgoldmon")
+      (version (git-version "1.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/2b-as/xgoldmon")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0dvgagqsbwq1sd5qjzk0hd9rxnv2vnmhazvv5mz4pj7v467amgdz"))))
+      (arguments
+       (list #:tests? #f ;no tests
+             #:make-flags #~(list (string-append "CC="
+                                                 #$(cc-for-target)))
+             #:phases #~(modify-phases %standard-phases
+                          (delete 'configure)
+                          (replace 'install
+                            (lambda _
+                              (let ((bin (string-append #$output "/bin"))
+                                    (doc (string-append #$output "/share/doc")))
+                                (install-file "xgoldmon" bin)
+                                (install-file "README" doc)
+                                (install-file
+                                 "screenshot-mtsms-while-in-a-call.png" doc)))))))
+      (inputs (list libosmocore lksctp-tools talloc))
+      (native-inputs (list pkg-config))
+      (build-system gnu-build-system)
+      (synopsis "Displays cellular network protocol traces in Wireshark")
+      (description
+       "xgoldmon is an utility that converts the USB logging mode
+messages that various Intel/Infineon XGold modems send to the USB port to
+gsmtap.  It then then sends them to a given IP address to enable users
+to view cellular network protocol traces in Wireshark.
+
+It supports the following smartphones:
+@itemize
+@item Samsung Galaxy S4, GT-I9500 variant
+@item Samsung Galaxy SIII, GT-I9300 variant
+@item Samsung Galaxy Nexus, GT-I9250 variant
+@item Samsung Galaxy SII, GT-I9100 variant
+@item Samsung Galaxy Note II, GT-N7100 variant
+@end itemize")
+      (home-page "https://github.com/2b-as/xgoldmon")
+      (license license:gpl2+))))
+
+(define-public sipp
+  (package
+    (name "sipp")
+    (version "3.7.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/SIPp/sipp")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256 (base32 "0vplccia9zdva1wwny2xgs0b6rzmq4abxvw8lyz61wfw7jjmvin0"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:configure-flags
+      #~(list "-DUSE_GSL=1" "-DUSE_PCAP=1" "-DUSE_SSL=1" "-DUSE_SCTP=1")
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; Modify build instructions to use external GTEST and GMOCK.
+          (add-before 'configure 'unbundle-gtest
+            (lambda _
+              (rmdir "gtest")
+              (symlink (assoc-ref %build-inputs "googletest") "gtest")
+              (substitute* "CMakeLists.txt"
+                ((".*gtest-all.*") "")
+                ((".*gmock-all.*") "")
+                (("target_compile_features\\(sipp_unittest" all)
+                 (string-append "target_link_libraries(sipp_unittest gtest gmock)\n"
+                                all)))))
+          ;; Generate version.h without GIT.
+          (add-before 'configure 'fix-version
+            (lambda _
+              (copy-file "include/version.h.in" "include/version.h")
+              (substitute* "include/version.h" (("@VERSION@") #$version))
+              (substitute* "CMakeLists.txt" (("find_package\\(Git\\)") ""))))
+          (add-after 'build 'build-tests
+            (lambda* (#:key parallel-build? #:allow-other-keys)
+              (invoke "make"
+                      (string-append
+                       "-j" (if parallel-build?
+                                (number->string (parallel-job-count))
+                                "1"))
+                      "sipp_unittest")))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "./sipp_unittest")))))))
+    (inputs
+     (list gsl libpcap lksctp-tools ncurses/tinfo openssl))
+    (native-inputs
+     (list googletest pkg-config))
+    (synopsis "Performance testing tool for the SIP protocol")
+    (description "SIPp can be used to test many real SIP equipements like SIP
+proxies, B2BUAs, SIP media servers, SIP/x gateways, and SIP PBXes.  It is also
+very useful to emulate thousands of user agents calling your SIP system.")
+    (home-page "https://sipp.readthedocs.io/")
+    (license (list license:gpl2+        ; sipp's main license
+                   license:bsd-3        ; send_packets.c, send_packets.h
+                   license:zlib)))) ; md5.c, md5.h

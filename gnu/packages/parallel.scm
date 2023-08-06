@@ -1,10 +1,10 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2013, 2014, 2020 Eric Bavier <bavier@posteo.net>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2015, 2016, 2017, 2018, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015-2018, 2020-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Pjotr Prins <pjotr.guix@thebird.nl>
 ;;; Copyright © 2016 Andreas Enge <andreas@enge.fr>
-;;; Copyright © 2016, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2016, 2020, 2021, 2022, 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016 Ben Woodcroft <donttrustben@gmail.com>
 ;;; Copyright © 2017, 2018 Rutger Helling <rhelling@mykolab.com>
 ;;; Copyright © 2018–2022 Tobias Geerinckx-Rice <me@tobias.gr>
@@ -45,6 +45,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages documentation)
   #:use-module (gnu packages flex)
   #:use-module (gnu packages freeipmi)
   #:use-module (gnu packages linux)
@@ -63,20 +64,25 @@
 (define-public parallel
   (package
     (name "parallel")
-    (version "20221022")
+    (version "20230622")
     (source
      (origin
       (method url-fetch)
       (uri (string-append "mirror://gnu/parallel/parallel-"
                           version ".tar.bz2"))
       (sha256
-       (base32 "1glrgk79nvw8p7aq70x14mgw2py9zphzlsnwl41l9rzx781yfc3m"))
+       (base32 "13i3himpq1gzhn3b0hl8vp34kz950ql9pssw251ad611f2nj8fny"))
       (snippet
        '(begin
           (use-modules (guix build utils))
           ;; Delete pre-generated manpages and documents.
-          ;; TODO: Add pod2pdf for pdfs, generate rst files.
-          (for-each delete-file (find-files "src" "\\.(1|7|html)$"))))))
+          ;; TODO: generate rst files.
+          ;; parallel_cheat_bw.pdf uses libreoffice to be generated.
+          (rename-file "src/parallel_cheat_bw.pdf"
+                       "src/parallel_cheat_bw.pdf-keep")
+          (for-each delete-file (find-files "src" "\\.(1|7|html|pdf)$"))
+          (rename-file "src/parallel_cheat_bw.pdf-keep"
+                       "src/parallel_cheat_bw.pdf")))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
@@ -111,7 +117,7 @@
                      "echo"
                      ":::" "1" "2" "3"))))))
     (native-inputs
-     (list perl))
+     (list perl pod2pdf))
     (inputs
      (list bash-minimal perl procps))
     (home-page "https://www.gnu.org/software/parallel/")
@@ -166,7 +172,7 @@ execution is also possible.")
     (arguments `(#:tests? #f)) ;; No tests
     (native-inputs
      (list flex which))
-    (home-page "http://www.maier-komor.de/xjobs.html")
+    (home-page "https://www.maier-komor.de/xjobs.html")
     (properties `((release-monitoring-url . ,home-page)))
     (synopsis
      "Parallel execution of jobs with several useful options")
@@ -459,8 +465,8 @@ features.")
 (define-public cpuinfo
   ;; There's currently no tag on this repo.
   (let ((version "0.0")
-        (revision "1")
-        (commit "866ae6e5ffe93a1f63be738078da94cf3005cce2"))
+        (revision "2")
+        (commit "53298db833c5c5a1598639e9b47cc1a602bbac26"))
     (package
       (name "cpuinfo")
       (version (git-version version revision commit))
@@ -471,10 +477,20 @@ features.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "1lmsf4bpkm19a31i40qwcjn46qf7prggziv4pbsi695bkx5as71p"))
+                  "01kfgxya2w32dz9bd3qm3i2d6nffw0qfyql11rxl7d3g830brj5k"))
                 (patches (search-patches "cpuinfo-system-libraries.patch"))))
       (build-system cmake-build-system)
-      (arguments '(#:configure-flags '("-DBUILD_SHARED_LIBS=ON")))
+      (arguments
+       (list
+        #:configure-flags '(list "-DBUILD_SHARED_LIBS=ON")
+        #:phases
+        '(modify-phases %standard-phases
+           (add-after 'unpack 'skip-bad-test
+             (lambda _
+               (substitute* "test/init.cc"
+                 (("TEST\\(CORE, known_uarch\\) \\{" m)
+                  (string-append m "\
+GTEST_SKIP() << \"See https://github.com/pytorch/cpuinfo/issues/132\";"))))))))
       (inputs
        (list googletest googlebenchmark))
       (synopsis "C/C++ library to obtain information about the CPU")
@@ -483,6 +499,35 @@ features.")
 obtain information about the CPU being used: supported instruction set,
 processor name, cache information, and topology information.")
       (license license:bsd-2))))
+
+(define-public clog
+  (package
+    (inherit cpuinfo) ;distributed with cpuinfo but not built by it
+    (name "clog")
+    (source (origin
+              (inherit (package-source cpuinfo))
+              (patches (search-patches "clog-fix-shared-build.patch"))))
+    (arguments
+     (list #:configure-flags #~(list "-DBUILD_SHARED_LIBS=ON")
+           #:phases #~(modify-phases %standard-phases
+                        (add-after 'unpack 'chdir
+                          (lambda _
+                            (chdir "deps/clog"))))))
+    (native-inputs (list googletest))
+    (inputs '())
+    (synopsis "C-style logging library based on printf")
+    (description
+     "This package provides a C-style library for logging errors,
+warnings, information notes, and debug information.  Its features are:
+@itemize
+@item printf-style interface for formatting variadic parameters.
+@item Separate functions for logging errors, warnings, information notes, and
+debug information.
+@item Independent logging settings for different modules.
+@item Logging to logcat on Android and stderr/stdout on other platforms.
+@item Compatible with C99 and C++.
+@item Covered with unit tests.
+@end itemize")))
 
 (define-public psimd
   ;; There is currently no tag in this repo.

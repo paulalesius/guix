@@ -19,6 +19,10 @@
 ;;; Copyright © 2021 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;; Copyright © 2022 Morgan Smith <Morgan.J.Smith@outlook.com>
 ;;; Copyright © 2022 jgart <jgart@dismail.de>
+;;; Copyright © 2022 Robby Zambito <contact@robbyzambito.me>
+;;; Copyright © 2023 Andrew Whatson <whatson@tailcall.au>
+;;; Copyright © 2023 Juliana Sims <jtsims@protonmail.com>
+;;; Copyright © 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -40,48 +44,50 @@
   #:use-module ((guix licenses)
                 #:select (gpl2+ lgpl2.0+ lgpl2.1 lgpl2.1+ lgpl3+ asl2.0 bsd-3
                           cc-by-sa4.0 non-copyleft expat public-domain))
+  #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix utils)
   #:use-module (guix build-system asdf)
+  #:use-module (guix build-system copy)
+  #:use-module (guix build-system emacs)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
   #:use-module (gnu packages autotools)
-  #:use-module (gnu packages bdw-gc)
+  #:use-module (gnu packages avahi)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
+  #:use-module (gnu packages bdw-gc)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages databases)
+  #:use-module (gnu packages emacs)
+  #:use-module (gnu packages fontutils)
+  #:use-module (gnu packages gcc)
+  #:use-module (gnu packages ghostscript)
+  #:use-module (gnu packages gl)
+  #:use-module (gnu packages glib)
+  #:use-module (gnu packages gtk)
+  #:use-module (gnu packages image)
+  #:use-module (gnu packages libedit)
   #:use-module (gnu packages libevent)
+  #:use-module (gnu packages libffi)
+  #:use-module (gnu packages libphidget)
   #:use-module (gnu packages libunistring)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages lisp-check)
   #:use-module (gnu packages lisp-xyz)
   #:use-module (gnu packages m4)
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages ncurses)
-  #:use-module (gnu packages pcre)
-  #:use-module (gnu packages emacs)
-  #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages netpbm)
-  #:use-module (gnu packages texinfo)
-  #:use-module (gnu packages tex)
-  #:use-module (gnu packages base)
-  #:use-module (gnu packages compression)
+  #:use-module (gnu packages pcre)
   #:use-module (gnu packages pkg-config)
-  #:use-module (gnu packages avahi)
-  #:use-module (gnu packages libphidget)
-  #:use-module (gnu packages gcc)
-  #:use-module (gnu packages glib)
-  #:use-module (gnu packages gtk)
-  #:use-module (gnu packages libffi)
-  #:use-module (gnu packages fontutils)
-  #:use-module (gnu packages image)
-  #:use-module (gnu packages xorg)
   #:use-module (gnu packages sqlite)
+  #:use-module (gnu packages tex)
+  #:use-module (gnu packages texinfo)
   #:use-module (gnu packages tls)
-  #:use-module (gnu packages gl)
-  #:use-module (gnu packages libedit)
-  #:use-module (gnu packages linux)
+  #:use-module (gnu packages xorg)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match))
 
@@ -132,6 +138,12 @@
                (("\\./configure")
                 (string-append (which "sh") " configure")))
              #t))
+         ;; disable array-parameter warnings that become errors while
+         ;; compiling microcode target
+         (add-before 'configure 'set-flags
+           (lambda* (#:key inputs #:allow-other-keys)
+             (setenv "CFLAGS" "-Wno-array-parameter")
+             (setenv "CPPFLAGS" "-Wno-array-parameter")))
          (replace 'build
            (lambda* (#:key system outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out")))
@@ -179,8 +191,9 @@
        ("autoconf" ,autoconf)
        ("automake" ,automake)
        ("libtool" ,libtool)
-       ("texlive" ,(texlive-updmap.cfg (list texlive-tex-texinfo
-                                             texlive-epsf)))
+       ("texlive" ,(texlive-updmap.cfg
+                    (list texlive-epsf
+                          texlive-texinfo)))
        ("texinfo" ,texinfo)
        ("ghostscript" ,ghostscript)
        ("m4" ,m4)))
@@ -392,14 +405,14 @@ mashups, office (web agendas, mail clients, ...), etc.")
     (version "1.9.2")
     (source (origin
              (method url-fetch)
-             (uri (string-append "http://s48.org/" version
+             (uri (string-append "https://s48.org/" version
                                  "/scheme48-" version ".tgz"))
              (sha256
               (base32
                "1x4xfm3lyz2piqcw1h01vbs1iq89zq7wrsfjgh3fxnlm1slj2jcw"))
              (patches (search-patches "scheme48-tests.patch"))))
     (build-system gnu-build-system)
-    (home-page "http://s48.org/")
+    (home-page "https://s48.org/")
     (synopsis "Scheme implementation using a bytecode interpreter")
     (description
      "Scheme 48 is an implementation of Scheme based on a byte-code
@@ -409,27 +422,157 @@ implementation techniques and as an expository tool.")
     ;; Most files are BSD-3; see COPYING for the few exceptions.
     (license bsd-3)))
 
+(define-public scheme48-prescheme
+  (package
+    (inherit scheme48)
+    (name "scheme48-prescheme")
+    (arguments
+     (list
+      #:tests? #f ; tests only cover scheme48
+      #:modules '((guix build gnu-build-system)
+                  (guix build utils)
+                  (ice-9 popen)
+                  (srfi srfi-1))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'configure 'patch-prescheme-version
+            (lambda _
+              ;; Ensure the Pre-Scheme version matches the package version
+              (call-with-output-file "ps-compiler/minor-version-number"
+                (lambda (port)
+                  (let* ((version #$(package-version this-package))
+                         (vparts (string-split version #\.))
+                         (vminor (string-join (drop vparts 1) ".")))
+                    (write vminor port))))))
+          (add-after 'configure 'patch-prescheme-headers
+            (lambda _
+              ;; Rename "io.h" to play nicely with others
+              (copy-file "c/io.h" "c/prescheme-io.h")
+              (substitute* "c/prescheme.h"
+                (("^#include \"io\\.h\"")
+                 "#include \"prescheme-io.h\""))))
+          (add-after 'configure 'generate-pkg-config
+            (lambda _
+              ;; Generate a pkg-config file
+              (call-with-output-file "prescheme.pc"
+                (lambda (port)
+                  (let ((s48-version #$(package-version scheme48))
+                        (version #$(package-version this-package)))
+                    (format port (string-join
+                                  '("prefix=~a"
+                                    "exec_prefix=${prefix}"
+                                    "libdir=${prefix}/lib/scheme48-~a"
+                                    "includedir=${prefix}/include"
+                                    ""
+                                    "Name: Pre-Scheme (Scheme 48)"
+                                    "Description: Pre-Scheme C runtime"
+                                    "Version: ~a"
+                                    "Libs: -L${libdir} -lprescheme"
+                                    "Cflags: -I${includedir}")
+                                  "\n" 'suffix)
+                            #$output s48-version version))))))
+          (add-after 'configure 'generate-prescheme-wrapper
+            (lambda _
+              ;; Generate a wrapper to load and run ps-compiler.image
+              (call-with-output-file "prescheme"
+                (lambda (port)
+                  (let ((s48-version #$(package-version scheme48)))
+                    (format port (string-join
+                                  '("#!/bin/sh"
+                                    "scheme48=~a/lib/scheme48-~a/scheme48vm"
+                                    "prescheme=~a/lib/scheme48-~a/prescheme.image"
+                                    "exec ${scheme48} -i ${prescheme} \"$@\"")
+                                  "\n" 'suffix)
+                            #$scheme48 s48-version #$output s48-version))))
+              (chmod "prescheme" #o755)))
+          (replace 'build
+            (lambda _
+              ;; Build a minimal static library for linking Pre-Scheme code
+              (let ((lib "c/libprescheme.a")
+                    (objs '("c/unix/io.o"
+                            "c/unix/misc.o")))
+                (apply invoke "make" objs)
+                (apply invoke "ar" "rcs" lib objs))
+              ;; Dump a Scheme 48 image with both the Pre-Scheme compatibility
+              ;; library and compiler pre-loaded, courtesy of Taylor Campbell's
+              ;; Pre-Scheme Manual:
+              ;; https://groups.scheme.org/prescheme/1.3/#Invoking-the-Pre_002dScheme-compiler
+              (with-directory-excursion "ps-compiler"
+                (let ((version #$(package-version this-package))
+                      (port (open-pipe* OPEN_WRITE "scheme48")))
+                  (format port (string-join
+                                '(",batch"
+                                  ",config ,load ../scheme/prescheme/interface.scm"
+                                  ",config ,load ../scheme/prescheme/package-defs.scm"
+                                  ",exec ,load load-ps-compiler.scm"
+                                  ",in prescheme-compiler prescheme-compiler"
+                                  ",user (define prescheme-compiler ##)"
+                                  ",dump ../prescheme.image \"(Pre-Scheme ~a)\""
+                                  ",exit")
+                                "\n" 'suffix)
+                          version)
+                  (close-pipe port)))))
+          (replace 'install
+            (lambda _
+              (let* ((s48-version #$(package-version scheme48))
+                     (bin-dir     (string-append #$output "/bin"))
+                     (lib-dir     (string-append #$output "/lib/scheme48-" s48-version))
+                     (pkgconf-dir (string-append #$output "/lib/pkgconfig"))
+                     (share-dir   (string-append #$output "/share/scheme48-" s48-version))
+                     (include-dir (string-append #$output "/include")))
+                ;; Install Pre-Scheme compiler image
+                (install-file "prescheme" bin-dir)
+                (install-file "prescheme.image" lib-dir)
+                ;; Install Pre-Scheme config, headers, and lib
+                (install-file "prescheme.pc" pkgconf-dir)
+                (install-file "c/prescheme.h" include-dir)
+                (install-file "c/prescheme-io.h" include-dir)
+                (install-file "c/libprescheme.a" lib-dir)
+                ;; Install Pre-Scheme sources
+                (copy-recursively "scheme/prescheme"
+                                  (string-append share-dir "/prescheme"))
+                (copy-recursively "ps-compiler"
+                                  (string-append share-dir "/ps-compiler"))
+                ;; Remove files specific to building the Scheme 48 VM
+                (for-each (lambda (file)
+                            (delete-file (string-append share-dir "/" file)))
+                          '("ps-compiler/compile-bibop-gc-32.scm"
+                            "ps-compiler/compile-bibop-gc-64.scm"
+                            "ps-compiler/compile-gc.scm"
+                            "ps-compiler/compile-twospace-gc-32.scm"
+                            "ps-compiler/compile-twospace-gc-64.scm"
+                            "ps-compiler/compile-vm-no-gc-32.scm"
+                            "ps-compiler/compile-vm-no-gc-64.scm"))))))))
+    (propagated-inputs (list scheme48))
+    (home-page "http://s48.org/")
+    (synopsis "Pre-Scheme compiler from Scheme 48")
+    (description
+     "Pre-Scheme is a statically compilable dialect of Scheme, used to implement the
+Scheme 48 virtual machine.  Scheme 48 ships with a Pre-Scheme to C compiler written
+in Scheme, and a runtime library which allows Pre-Scheme code to run as Scheme.")
+    (license bsd-3)))
+
 (define-public gambit-c
   (package
     (name "gambit-c")
-    (version "4.9.3")
+    (version "4.9.4")
     (source
      (origin
        (method url-fetch)
        (uri (string-append
-             "http://www.iro.umontreal.ca/~gambit/download/gambit/v"
-             (version-major+minor version) "/source/gambit-v"
+             "http://www.gambitscheme.org/"
+             version "/gambit-v"
              (string-map (lambda (c) (if (char=? c #\.) #\_ c)) version)
              ".tgz"))
        (sha256
-        (base32 "1p6172vhcrlpjgia6hsks1w4fl8rdyjf9xjh14wxfkv7dnx8a5hk"))))
+        (base32 "025x8zi9176qwww4d3pk8aj9ab1fpqyxqz26q3v394k6bfk49yqr"))))
     (build-system gnu-build-system)
     (arguments
      '(#:configure-flags
        ;; According to the ./configure script, this makes the build slower and
        ;; use >= 1 GB memory, but makes Gambit much faster.
        '("--enable-single-host")))
-    (home-page "http://dynamo.iro.umontreal.ca/wiki/index.php/Main_Page")
+    (home-page "http://www.gambitscheme.org/")
     (synopsis "Efficient Scheme interpreter and compiler")
     (description
      "Gambit consists of two main programs: gsi, the Gambit Scheme
@@ -475,7 +618,7 @@ threads.")
 
 (define-public sicp
   (let ((commit "bda03f79d6e2e8899ac2b5ca6a3732210e290a79")
-        (revision "2"))
+        (revision "3"))
     (package
       (name "sicp")
       (version (git-version "20180718" revision commit))
@@ -488,30 +631,24 @@ threads.")
                  (base32
                   "0mng7qrj2dvssyffr9ycnf4a5k0kadp4dslq7mc5bhzq1qxyjs2w"))
                 (file-name (git-file-name name version))))
-      (build-system trivial-build-system)
-      (native-inputs `(("gzip" ,gzip)
-                       ("source" ,source)
-                       ("texinfo" ,texinfo)))
+      (build-system copy-build-system)
+      (native-inputs (list gzip texinfo))
       (arguments
-       `(#:modules ((guix build utils))
-         #:builder
-         (begin
-           (use-modules (guix build utils)
-                        (srfi srfi-26))
-           (let ((gzip (assoc-ref %build-inputs "gzip"))
-                 (source (assoc-ref %build-inputs "source"))
-                 (texinfo (assoc-ref %build-inputs "texinfo"))
-                 (html-dir (string-append %output "/share/doc/" ,name "/html"))
-                 (info-dir (string-append %output "/share/info")))
-             (copy-recursively (string-append source "/html") html-dir)
-             (setenv "PATH" (string-append gzip "/bin"
-                                           ":" texinfo "/bin"))
-             (mkdir-p info-dir)
-             (invoke "makeinfo" "--output"
-                     (string-append info-dir "/sicp.info")
-                     (string-append source "/sicp-pocket.texi"))
-             (for-each (cut invoke "gzip" "-9n" <>)
-                       (find-files info-dir))))))
+       (list #:install-plan ''(("html" "share/doc/sicp/")
+                               ("sicp.info" "share/info/"))
+             #:phases #~(modify-phases %standard-phases
+                          (add-after 'unpack 'remove-obsolete-commands
+                            (lambda _
+                              ;; Reported upstream:
+                              ;; https://github.com/sarabander/sicp/issues/46.
+                              (substitute* "sicp-pocket.texi"
+                                (("@setshortcontentsaftertitlepage")
+                                 ""))))
+                          (add-before 'install 'build
+                            (lambda _
+                              (invoke "makeinfo" "--no-split"
+                                      "--output=sicp.info"
+                                      "sicp-pocket.texi"))))))
       (home-page "https://sarabander.github.io/sicp")
       (synopsis "Structure and Interpretation of Computer Programs")
       (description "Structure and Interpretation of Computer Programs (SICP) is
@@ -701,7 +838,7 @@ linked with a SCM executable.")
                (install-file "init.scm" scm)
                #t))))
        #:tests? #f))                    ; no tests
-    (home-page "http://tinyscheme.sourceforge.net/")
+    (home-page "https://tinyscheme.sourceforge.net/")
     (synopsis "Light-weight interpreter for the Scheme programming language")
     (description
      "TinyScheme is a light-weight Scheme interpreter that implements as large a
@@ -888,21 +1025,17 @@ The core is 12 builtin special forms and 33 builtin functions.")
 (define-public gauche
   (package
     (name "gauche")
-    (version "0.9.10")
+    (version "0.9.12")
     (home-page "https://practical-scheme.net/gauche/index.html")
     (source
      (origin
        (method url-fetch)
        (uri (string-append
-             "mirror://sourceforge/gauche/Gauche/Gauche-"
-             version ".tgz"))
+             "https://github.com/shirok/Gauche/releases/download/release"
+             (string-replace-substring version "." "_")
+             "/Gauche-" version ".tgz"))
        (sha256
-        (base32 "0ci57ak5cp3lkmfy3nh50hifh8nbg58hh6r18asq0rn5mqfxyf8g"))
-       (modules '((guix build utils)))
-       (snippet '(begin
-                   ;; Remove libatomic-ops.
-                   (delete-file-recursively "gc/libatomic_ops")
-                   #t))))
+        (base32 "05xnym1phg8i14bacip5d0d3v0gc1nn5mgayd5hnda873f969bml"))))
     (build-system gnu-build-system)
     (inputs
      (list libatomic-ops slib zlib))
@@ -933,8 +1066,8 @@ The core is 12 builtin special forms and 33 builtin functions.")
          (add-before 'check 'patch-network-tests
            ;; Remove net checks.
            (lambda _
-             (delete-file "ext/net/test.scm")
-             (invoke "touch" "ext/net/test.scm")
+             (delete-file "test/net.scm")
+             (invoke "touch" "test/net.scm")
              #t))
          (add-after 'install 'install-docs
            (lambda _
@@ -985,94 +1118,100 @@ a Common Lisp environment.")
 (define-public gerbil
   (package
     (name "gerbil")
-    (version "0.16")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/vyzo/gerbil")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "0vng0kxpnwsg8jbjdpyn4sdww36jz7zfpfbzayg9sdpz6bjxjy0f"))))
+    (version "0.17.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/vyzo/gerbil")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0c0nspm659ybgmqlppdv7sxzll4hwkvcp9qmcsip6d0kz0p8r9c3"))))
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (delete 'bootstrap)
-         (add-before 'configure 'chdir
-           (lambda _
-             (chdir "src")
-             #t))
-         (replace 'configure
-           (lambda* (#:key outputs inputs #:allow-other-keys)
-             (invoke "chmod" "755" "-R" ".")
-             ;; Otherwise fails when editing an r--r--r-- file.
-             (invoke "gsi-script" "configure"
-                     "--prefix" (assoc-ref outputs "out")
-                     "--with-gambit" (assoc-ref inputs "gambit-c"))))
-         (add-before 'patch-generated-file-shebangs 'fix-gxi-shebangs
-           (lambda _
-             ;; Some .ss files refer to gxi using /usr/bin/env gxi
-             ;; and 'patch-generated-file-shebangs can't fix that
-             ;; because gxi has not been compiled yet.
-             ;; We know where gxi is going to end up so we
-             ;; Doctor Who our fix here before the problem
-             ;; happens towards the end of the build.sh script.
-             (let ((abs-srcdir (getcwd)))
-               (for-each
-                (lambda (f)
-                   (substitute* f
-                     (("#!/usr/bin/env gxi")
-                      (string-append "#!" abs-srcdir "/../bin/gxi"))))
-                 '("./gerbil/gxc"
-                   "./lang/build.ss"
-                   "./misc/http-perf/build.ss"
-                   "./misc/rpc-perf/build.ss"
-                   "./misc/scripts/docsnarf.ss"
-                   "./misc/scripts/docstub.ss"
-                   "./misc/scripts/docsyms.ss"
-                   "./r7rs-large/build.ss"
-                   "./release.ss"
-                   "./std/build.ss"
-                   "./std/run-tests.ss"
-                   "./std/web/fastcgi-test.ss"
-                   "./std/web/rack-test.ss"
-                   "./tools/build.ss"
-                   "./tutorial/httpd/build.ss"
-                   "./tutorial/kvstore/build.ss"
-                   "./tutorial/lang/build.ss"
-                   "./tutorial/proxy/build-static.ss"
-                   "./tutorial/proxy/build.ss")))
-             #t))
-         (replace
-          'build
-          (lambda*
-           (#:key inputs #:allow-other-keys)
-           (setenv "HOME" (getcwd))
-             (invoke
-              ;; The build script needs a tty or it'll crash on an ioctl
-              ;; trying to find the width of the terminal it's running on.
-              ;; Calling in script prevents that.
-              "script"
-              "-qefc"
-              "./build.sh")))
-         (delete 'check)
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (bin (string-append out "/bin"))
-                    (lib (string-append out "/lib")))
-               (mkdir-p bin)
-               (mkdir-p lib)
-               (copy-recursively "../bin" bin)
-               (copy-recursively "../lib" lib)))))))
-    (native-inputs
-     (list coreutils util-linux))
-    (propagated-inputs
-     (list gambit-c zlib openssl sqlite))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'bootstrap)
+               (add-before 'configure 'chdir
+                 (lambda _
+                   (chdir "src")))
+               (replace 'configure
+                 (lambda _
+                   (invoke "chmod" "755" "-R" ".")
+                   ;; Otherwise fails when editing an r--r--r-- file.
+                   (invoke "gsi-script"
+                           "configure"
+                           "--prefix"
+                           #$output
+                           "--with-gambit"
+                           #$gambit-c)))
+               (add-before 'patch-generated-file-shebangs 'fix-gxi-shebangs
+                 (lambda _
+                   ;; Some .ss files refer to gxi using /usr/bin/env gxi
+                   ;; and 'patch-generated-file-shebangs can't fix that
+                   ;; because gxi has not been compiled yet.
+                   ;; We know where gxi is going to end up so we
+                   ;; Doctor Who our fix here before the problem
+                   ;; happens towards the end of the build.sh script.
+                   (let ((abs-srcdir (getcwd)))
+                     (for-each (lambda (f)
+                                 (substitute* f
+                                   (("#!/usr/bin/env gxi")
+                                    (string-append "#!" abs-srcdir
+                                                   "/../bin/gxi"))))
+                               '("./gerbil/gxc" "./lang/build.ss"
+                                 "./misc/http-perf/build.ss"
+                                 "./misc/rpc-perf/build.ss"
+                                 "./misc/scripts/docsnarf.ss"
+                                 "./misc/scripts/docstub.ss"
+                                 "./misc/scripts/docsyms.ss"
+                                 "./r7rs-large/build.ss"
+                                 "./release.ss"
+                                 "./std/build.ss"
+                                 "./std/run-tests.ss"
+                                 "./std/web/fastcgi-test.ss"
+                                 "./std/web/rack-test.ss"
+                                 "./tools/build.ss"
+                                 "./tutorial/httpd/build.ss"
+                                 "./tutorial/kvstore/build.ss"
+                                 "./tutorial/lang/build.ss"
+                                 "./tutorial/proxy/build-static.ss"
+                                 "./tutorial/proxy/build.ss")))))
+               (add-after 'configure 'create-gx-version.scm
+                 (lambda _
+                   (with-output-to-file (string-append (getcwd)
+                                                       "/gerbil/runtime/gx-version.scm")
+                     (lambda _
+                       (write `(define (gerbil-version-string)
+                                 ,(string-append "v"
+                                                 #$(version-major+minor
+                                                    version))))))))
+               (replace 'build
+                 (lambda _
+                   (setenv "HOME"
+                           (getcwd))
+                   (invoke
+                    ;; The build script needs a tty or it'll crash on an ioctl
+                    ;; trying to find the width of the terminal it's running on.
+                    ;; Calling in script prevents that.
+                    "script"
+                    "-qefc"
+                    "./build.sh")))
+               (replace 'install
+                 (lambda _
+                   (let* ((bin (string-append #$output "/bin"))
+                          (lib (string-append #$output "/lib")))
+                     (mkdir-p bin)
+                     (mkdir-p lib)
+                     (copy-recursively "../bin" bin)
+                     (copy-recursively "../lib" lib)))))
+           #:tests? #f))
+    (native-inputs (list coreutils gambit-c util-linux))
+    (propagated-inputs (list gambit-c openssl sqlite zlib))
     (build-system gnu-build-system)
     (synopsis "Meta-dialect of Scheme with post-modern features")
-    (description "Gerbil is an opinionated dialect of Scheme designed for Systems
+    (description
+     "Gerbil is an opinionated dialect of Scheme designed for Systems
 Programming, with a state of the art macro and module system on top of the Gambit
 runtime.  The macro system is based on quote-syntax, and provides the full meta-syntactic
 tower with a native implementation of syntax-case.  It also provides a full-blown module
@@ -1081,3 +1220,19 @@ is that Gerbil modules are single instantiation, supporting high performance ahe
 time compilation and compiled macros.")
     (home-page "https://cons.io")
     (license `(,lgpl2.1 ,asl2.0))))
+
+(define-public emacs-gerbil-mode
+  (package
+    (inherit gerbil)
+    (name "emacs-gerbil-mode")
+    (version "1.0")
+    (build-system emacs-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (add-before 'install 'change-directory
+                          (lambda _
+                            (chdir "etc"))))))
+    (synopsis "Emacs major-mode for editing Gerbil code")
+    (description
+     "Gerbil mode provides font-lock, indentation, navigation, and REPL for
+Gerbil code within Emacs.")))

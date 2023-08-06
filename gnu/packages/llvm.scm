@@ -7,7 +7,7 @@
 ;;; Copyright © 2017 Roel Janssen <roel@gnu.org>
 ;;; Copyright © 2018–2022 Marius Bakke <mbakke@fastmail.com>
 ;;; Copyright © 2018, 2019 Tobias Geerinckx-Rice <me@tobias.gr>
-;;; Copyright © 2018, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2018, 2021-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2018 Tim Gesthuizen <tim.gesthuizen@yahoo.de>
 ;;; Copyright © 2018 Pierre Neidhardt <mail@ambrevar.xyz>
 ;;; Copyright © 2019 Rutger Helling <rhelling@mykolab.com>
@@ -50,7 +50,6 @@
   #:use-module (guix git-download)
   #:use-module (guix memoization)
   #:use-module (guix utils)
-  #:use-module (guix build-system gnu)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system emacs)
   #:use-module (guix build-system python)
@@ -62,7 +61,6 @@
   #:use-module (gnu packages bootstrap)           ;glibc-dynamic-linker
   #:use-module (gnu packages check)               ;python-lit
   #:use-module (gnu packages compression)
-  #:use-module (gnu packages julia)               ;julia-patch
   #:use-module (gnu packages libedit)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages lua)
@@ -504,7 +502,7 @@ code analysis tools.")
               "znver3")
             '())))))
 
-(define (make-clang-toolchain clang libomp)
+(define-public (make-clang-toolchain clang libomp)
   (package
     (name (string-append (package-name clang) "-toolchain"))
     (version (package-version clang))
@@ -563,11 +561,11 @@ output), and Binutils.")
 
 (define %llvm-monorepo-hashes
   '(("14.0.6" . "14f8nlvnmdkp9a9a79wv67jbmafvabczhah8rwnqrgd5g3hfxxxx")
-    ("15.0.5" . "1z2szqlanksdmj91590wnxqav5z437mpasg00ghb610xkam2v34m")))
+    ("15.0.7" . "12sggw15sxq1krh1mfk3c1f07h895jlxbcifpwk3pznh4m1rjfy2")))
 
 (define %llvm-patches
   '(("14.0.6" . ("clang-14.0-libc-search-path.patch"))
-    ("15.0.5" . ("clang-15.0-libc-search-path.patch"))))
+    ("15.0.7" . ("clang-15.0-libc-search-path.patch"))))
 
 (define (llvm-monorepo version)
   (origin
@@ -583,7 +581,7 @@ output), and Binutils.")
 (define-public llvm-15
   (package
     (name "llvm")
-    (version "15.0.5")
+    (version "15.0.7")
     (source (llvm-monorepo version))
     (build-system cmake-build-system)
     (outputs '("out" "opt-viewer"))
@@ -668,7 +666,7 @@ of programming tools as well as libraries with equivalent functionality.")
          "-DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE"
          "-DBUILD_SHARED_LIBS:BOOL=TRUE"
          "-DLLVM_ENABLE_FFI:BOOL=TRUE"
-         "-DLLVM_REQUIRES_RTTI=1"       ;for some third-party utilities
+         "-DLLVM_ENABLE_RTTI:BOOL=TRUE" ;for some third-party utilities
          "-DLLVM_INSTALL_UTILS=ON")     ;needed for rustc
       ;; Don't use '-g' during the build, to save space.
       #:build-type "Release"
@@ -701,12 +699,7 @@ of programming tools as well as libraries with equivalent functionality.")
           #~(modify-phases #$phases
               (add-after 'unpack 'change-directory
                 (lambda _
-                  (chdir "compiler-rt")))
-              (add-after 'install 'delete-static-libraries
-                ;; Reduce size from 33 MiB to 7.4 MiB.
-                (lambda _
-                  (for-each delete-file
-                            (find-files #$output "\\.a(\\.syms)?$"))))))))
+                  (chdir "compiler-rt")))))))
       (native-inputs
        (modify-inputs (package-native-inputs template)
          (prepend gcc-12)))             ;libfuzzer fails to build with GCC 11
@@ -724,11 +717,7 @@ of programming tools as well as libraries with equivalent functionality.")
           #~(modify-phases #$phases
               (add-after 'unpack 'change-directory
                 (lambda _
-                  (chdir "compiler-rt")))))))
-      (native-inputs
-       `(;; FIXME: libfuzzer fails to build with GCC 10.
-         ("gcc" ,gcc-11)
-         ,@(package-native-inputs template))))))
+                  (chdir "compiler-rt"))))))))))
 
 (define-public clang-15
   (clang-from-llvm
@@ -740,7 +729,7 @@ of programming tools as well as libraries with equivalent functionality.")
                     (package-version llvm-15)))
      (sha256
       (base32
-       "0sa6si9v7ddsa9vmg6s3918xx969rvck2v1a0g7hb0fp9jk9j4r1")))))
+       "1lagnspm5limxh1cp5jlixnzlhf09905d4rqra1kpgj6dps2x6l0")))))
 
 (define-public clang-14
   (clang-from-llvm
@@ -920,7 +909,7 @@ Library.")
             "-DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE"
             "-DBUILD_SHARED_LIBS:BOOL=TRUE"
             "-DLLVM_ENABLE_FFI:BOOL=TRUE"
-            "-DLLVM_REQUIRES_RTTI=1" ; For some third-party utilities
+            "-DLLVM_ENABLE_RTTI:BOOL=TRUE" ; For some third-party utilities
             "-DLLVM_INSTALL_UTILS=ON")) ; Needed for rustc.
        ;; Don't use '-g' during the build, to save space.
        #:build-type "Release"
@@ -1000,23 +989,24 @@ Library.")
 (define-public llvm-11
   (package
     (inherit llvm-12)
-    (version "11.0.0")
+    (version "11.1.0")
     (source
      (origin
       (method url-fetch)
       (uri (llvm-uri "llvm" version))
+      (patches (search-patches "llvm-8-missing-include.patch"))
       (sha256
        (base32
-        "0s94lwil98w7zb7cjrbnxli0z7gklb312pkw74xs1d6zk346hgwi"))))))
+        "199yq3a214avcbi4kk2q0ajriifkvsr0l2dkx3a666m033ihi1ff"))))))
 
 (define-public clang-runtime-11
   (clang-runtime-from-llvm
    llvm-11
-   "0d5j5l8phwqjjscmk8rmqn0i2i0abl537gdbkagl8fjpzy1gyjip"))
+   "0x1j8ngf1zj63wlnns9vlibafq48qcm72p4jpaxkmkb4qw0grwfy"))
 
 (define-public clang-11
   (clang-from-llvm llvm-11 clang-runtime-11
-                   "02ajkij85966vd150iy246mv16dsaph1kfi0y8wnncp8w6nar5hg"
+                   "12sm91qx2m79cvj75a9aazf2x8xybjbd593dv6v7rxficpq8i0ha"
                    #:legacy-build-shared-libs? #t
                    #:patches '("clang-11.0-libc-search-path.patch")
                    #:tools-extra
@@ -1026,7 +1016,7 @@ Library.")
                                     (package-version llvm-11)))
                      (sha256
                       (base32
-                       "02bcwwn54661madhq4nxc069s7p7pj5gpqi8ww50w3anbpviilzy")))))
+                       "18n1w1hkv931xzq02b34wglbv6zd6sd0r5kb8piwvag7klj7qw3n")))))
 
 (define-public libomp-11
   (package
@@ -1037,7 +1027,7 @@ Library.")
               (uri (llvm-uri "openmp" version))
               (sha256
                (base32
-                "0k389d0g9zlfyzh1kpb3i5jdawzpn0hrdxzbjinpvdv7rbw4sw1d"))
+                "0bh5cswgpc79awlq8j5i7hp355adaac7s6zaz0zwp6mkflxli1yi"))
               (file-name (string-append "libomp-" version ".tar.xz"))))
     (native-inputs
      (modify-inputs (package-native-inputs libomp-12)
@@ -1055,6 +1045,7 @@ Library.")
      (origin
       (method url-fetch)
       (uri (llvm-uri "llvm" version))
+      (patches (search-patches "llvm-8-missing-include.patch"))
       (sha256
        (base32
         "1wydhbp9kyjp5y0rc627imxgkgqiv3dfirbqil9dgpnbaw5y7n65"))))
@@ -1116,6 +1107,7 @@ Library.")
         (base32
          "16hwp3qa54c3a3v7h8nlw0fh5criqh0hlr1skybyk0cz70gyx880"))
        (patches (search-patches
+                 "llvm-8-missing-include.patch"
                  "llvm-9-fix-bitcast-miscompilation.patch"
                  "llvm-9-fix-scev-miscompilation.patch"
                  "llvm-9-fix-lpad-miscompilation.patch"))))
@@ -1176,7 +1168,8 @@ Library.")
               (sha256
                (base32
                 "1rvm5gqp5v8hfn17kqws3zhk94w4kxndal12bqa0y57p09nply24"))
-              (patches (search-patches "llvm-8-fix-build-with-gcc-10.patch"))))
+              (patches (search-patches "llvm-8-fix-build-with-gcc-10.patch"
+                                       "llvm-8-missing-include.patch"))))
     (license license:ncsa)))
 
 (define-public clang-runtime-8
@@ -1464,7 +1457,7 @@ Library.")
     ;; Based on LLVM 14 as of v5.0.0
     (inherit llvm-14)
     (name "llvm-for-rocm")
-    (version "5.1.3")                         ;this must match '%rocm-version'
+    (version "5.6.0")                         ;this must match '%rocm-version'
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1473,10 +1466,7 @@ Library.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0j6ydfkwrxwskgnhxc3cmry42n5faqbnwf2747qgf7lz5id8h8g5"))
-              (patches
-               (search-patches "llvm-roc-5.0.0-linkdl.patch"
-                               "llvm-roc-4.0.0-remove-isystem-usr-include.patch"))))
+                "1kg6q6aqijjrwaznj0gr3nd01gykrnqqnk8vz8wyfifr18l9jrgx"))))
     (arguments
      (substitute-keyword-arguments (package-arguments llvm-14)
        ((#:configure-flags flags)
@@ -1585,6 +1575,19 @@ components which highly leverage existing libraries in the larger LLVM Project."
                 "0qg3fgc7wj34hdkqn21y03zcmsdd01szhhm1hfki63iifrm3y2v9"))))
     (inputs (modify-inputs (package-inputs lld)
               (replace "llvm" llvm-12)))))
+
+(define-public lld-11
+  (package
+    (inherit lld-12)
+    (version "11.0.0")
+    (source (origin
+              (method url-fetch)
+              (uri (llvm-uri "lld" version))
+              (sha256
+               (base32
+                "077xyh7sij6mhp4dc4kdcmp9whrpz332fa12rwxnzp3wgd5bxrzg"))))
+    (inputs (modify-inputs (package-inputs lld)
+              (replace "llvm" llvm-11)))))
 
 (define-public lld lld-14)
 
@@ -1880,38 +1883,18 @@ requirements according to version 1.1 of the OpenCL specification.")
 (define-public python-llvmlite
   (package
     (name "python-llvmlite")
-    (version "0.38.0")
+    (version "0.39.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "llvmlite" version))
        (sha256
         (base32
-         "0p4nyic9rm7s2fm3m3wpkh568594p9q9nfyjkqxny49vrxn1d7d9"))))
+         "0wnm0l0301sj8xp6skg3ci1gii56x5dk6l2x88f2c1g8h9ybsfml"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'patch-reference-to-llvmlite.so
-           ;; ctypes.CDLL uses dlopen to load libllvmlite.so, which
-           ;; fails, so locate it by its absolute path.  Change it in
-           ;; ffi.py, not utils.py, because setup.py relies on the
-           ;; output of get_library_name for proper installation.
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (libllvmlite.so (string-append out "/lib/python"
-                                                   ,(version-major+minor
-                                                     (package-version python))
-                                                   "/site-packages/llvmlite/"
-                                                   "binding/libllvmlite.so")))
-               (substitute* "llvmlite/binding/ffi.py"
-                 (("_lib_name = get_library_name\\(\\)")
-                  (format #f "_lib_name = ~s" libllvmlite.so))))))
-         (add-after 'unpack 'skip-failing-tests
-           (lambda _
-             (substitute* "llvmlite/tests/test_binding.py"
-               (("    def test_libm\\(self\\).*" all)
-                (string-append "    @unittest.skip('Fails on Guix')\n" all)))))
          (add-before 'build 'set-compiler/linker-flags
            (lambda* (#:key inputs #:allow-other-keys)
              (let ((llvm (assoc-ref inputs "llvm")))
@@ -2058,6 +2041,52 @@ using @code{clang-rename}.")))
 ;;; LLVM variants.
 ;;;
 
+(define-public llvm-for-mesa
+  ;; Note: update the 'clang' input of mesa-opencl when bumping this.
+  (let ((base-llvm llvm-15))
+    (package
+      (inherit base-llvm)
+      (name "llvm-for-mesa")
+      (arguments
+       (substitute-keyword-arguments (package-arguments base-llvm)
+         ((#:modules modules '((guix build cmake-build-system)
+                               (guix build utils)))
+          `((ice-9 regex)
+            (srfi srfi-1)
+            (srfi srfi-26)
+            ,@modules))
+         ((#:configure-flags cf ''())
+          #~(cons*
+              ;; AMDGPU is needed by the vulkan drivers.
+              #$(string-append "-DLLVM_TARGETS_TO_BUILD="
+                               (system->llvm-target) ";AMDGPU")
+              ;; Skipping tools and utils decreases the output by ~100 MiB.
+              "-DLLVM_BUILD_TOOLS=NO"
+              (remove (cut string-match
+                           "-DLLVM_(TARGETS_TO_BUILD|INSTALL_UTILS).*" <>)
+                      #$cf)))
+         ((#:phases phases '%standard-phases)
+          #~(modify-phases #$phases
+              (add-after 'install 'delete-static-libraries
+                ;; If these are just relocated then llvm-config can't find them.
+                (lambda* (#:key outputs #:allow-other-keys)
+                  (for-each delete-file
+                            (find-files (string-append
+                                          (assoc-ref outputs "out") "/lib")
+                                        "\\.a$"))))
+              ;; llvm-config is how mesa and others find the various
+              ;; libraries and headers they use.
+              (add-after 'install 'build-and-install-llvm-config
+                (lambda* (#:key outputs #:allow-other-keys)
+                  (let ((out (assoc-ref outputs "out")))
+                    (substitute*
+                      "tools/llvm-config/CMakeFiles/llvm-config.dir/link.txt"
+                      (((string-append (getcwd) "/build/lib"))
+                       (string-append out "/lib")))
+                    (invoke "make" "llvm-config")
+                    (install-file "bin/llvm-config"
+                                  (string-append out "/bin"))))))))))))
+
 (define make-ocaml-llvm
   ;; Make it a memoizing procedure so its callers below don't end up defining
   ;; two equal-but-not-eq "ocaml-llvm" packages for the default LLVM.
@@ -2100,126 +2129,20 @@ LLVM."))))
 
 (define-public llvm-julia
   (package
-    (inherit llvm-11)
-    (name "llvm-julia")
-    (properties `((hidden? . #t)
-                  ,@(package-properties llvm-11)))
-    (source (origin
-              (inherit (package-source llvm-11))
-              ;; Those patches are inside the Julia source repo.
-              ;; They are _not_ Julia specific (https://github.com/julialang/julia#llvm)
-              ;; but they are required to build Julia.
-              ;; Discussion: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=919628
-              (patches
-               (map (match-lambda
-                      ((name hash)
-                       (julia-patch name hash)))
-                    (list
-                     '("llvm-D27629-AArch64-large_model_6.0.1"
-                       "1qrshmlqvnasdyc158vfn3hnbigqph3lsq7acb9w8lwkpnnm2j4z")
-                     '("llvm8-D34078-vectorize-fdiv"
-                       "19spqc3xsazn1xs9gpcgv9ldadfkv49rmc5khl7sf1dlmhgi4602")
-                     '("llvm-7.0-D44650"
-                       "1h55kkmkiisfj6sk956if2bcj9s0v6n5czn8dxb870vp5nccj3ir")
-                     '("llvm7-symver-jlprefix"
-                       "00ng32x6xhm9czczirn5r1q1mc1myad44fqhi061hwh1vb46dwgm")
-                     '("llvm-6.0-DISABLE_ABI_CHECKS"
-                       "014fawd1ba7yckalypfld22zgic87x9nx3cim42zrwygywd36pyg")
-                     '("llvm9-D50010-VNCoercion-ni"
-                       "1s1d3sjsiq4vxg7ncy5cz56zgy5vcq6ls3iqaiqkvr23wyryqmdx")
-                     '("llvm7-revert-D44485"
-                       "0f59kq3p3mpwsbmskypbi4zn01l6ig0x7v2rjp08k2r8z8m6fa8n")
-                     '("llvm-11-D75072-SCEV-add-type"
-                       "176xi1lnbnv2rcs05ywhyb7pd0xgmibayvwzksksg44wg2dh8mbx")
-                     '("llvm-julia-tsan-custom-as"
-                       "0awh40kf6lm4wn1nsjd1bmhfwq7rqj811szanp2xkpspykw9hg9s")
-                     '("llvm-D80101"
-                       "1gsdwmgmpbignvqyxcnlprj899259p3dvdznlncd84ss445qgq3j")
-                     '("llvm-D84031"
-                       "0nks9sbk7p0r5gyr0idrmm93a5fmdai8kihz9532dx4zhcvvqbjc")
-                     '("llvm-10-D85553"
-                       "1zjq7j9q2qp56hwkc8yc8f0z7kvam3j7hj8sb7qyd77r255ff78l")
-                     '("llvm-10-unique_function_clang-sa"
-                       "1jys9w2zqk3dasnxqh0qz5ij7rxi6mkgq9pqjsclmamr5169zyan")
-                     ;'("llvm-D88630-clang-cmake"
-                     ;  "0rs6s71nqnjkny7i69gqazhqj5jqfdr0bkxs2v5a55sfx8fa1k54")
-                     '("llvm-11-D85313-debuginfo-empty-arange"
-                       "1f672d5385xpgb8yrim8d3b7wg2z1l81agnshm1q61kdvjixqx32")
-                     '("llvm-11-D90722-rtdyld-absolute-relocs"
-                       "0kmnai229yyxkmpk9lxd180mcnhk2i8d87k2sg89gc8as18w10r6")
-                     '("llvm-invalid-addrspacecast-sink"
-                       "1n1b7j4s80vj7x5377aj9vyphmxx1q6bm0chhkxp6zsy3mx3g2ry")
-                     '("llvm-11-D92906-ppc-setjmp"
-                       "0cmd4dsblp7a8m03j16dqxws0ijh55zf4jzzxmj341qxa1gamdp9")
-                     '("llvm-11-PR48458-X86ISelDAGToDAG"
-                       "0vwzvlhsdazhxg4gj8g2f00a4f8qc5cgac23w575xk3pgba1jh6y")
-                     '("llvm-11-D93092-ppc-knownbits"
-                       "1748bypsc7c9lbs3fnkv0kwvch6bn85kj98j4jdaz254ig0wa6xj")
-                     '("llvm-11-D93154-globalisel-as"
-                       "1k5wd4z3pa7zj0gyjkif7viqj906dhqlbb7dc95gig40nbxv6zpj")
-                     '("llvm-11-ppc-half-ctr"
-                       "0piywisfz6cmw3133kz7vzhiqflq2y7igakqxlym0gi8pqylv7w9")
-                     '("llvm-11-ppc-sp-from-bp"
-                       "1wmg3485cx5f9pbykyl3jibk1wwv4w1x30hl4jyfndzr2yh8azf9")
-                     '("llvm-rGb498303066a6-gcc11-header-fix"
-                       "0hkd4rwhvh8g2yh13g29wiwnjpv2yd1hdyiv1ryw8izl25bz9c67")
-                     '("llvm-11-D94813-mergeicmps"
-                       "0cmy0ywkgyrdcvr9bd6pd912lyd4gcsrib4z0v05dwgcdxhk7y29")
-                     '("llvm-11-D94980-CTR-half"
-                       "1yf8cxib3z8hz7zi9n6v2g2c6vpfr4slq9hpx8m8yq8f1jbyw3fw")
-                     '("llvm-11-D94058-sext-atomic-ops"
-                       "1x6p6k6q651z5jcqxx8vj17cxnv196mka7mwn7dpp6c23lwgfdpb")
-                     '("llvm-11-D96283-dagcombine-half"
-                       "0lv4iq2f8qrcz1xyxfic3bcr5p0aqam3a7c6pp6fnw3riixm096k"))))
-              (patch-flags '("-p1"))))
+    (inherit llvm-13)
     (arguments
-     (substitute-keyword-arguments (package-arguments llvm-11)
-       ((#:phases phases)
-        `(modify-phases ,phases
-           (add-after 'unpack 'patch-round-two
-             ;; We have to do the patching in two rounds because we can't
-             ;; pass '-p1' and '-p2' in the source field.
-             (lambda* (#:key inputs #:allow-other-keys)
-               (map (lambda (patchname)
-                      (invoke "patch" patchname "-p2"))
-                    (list "llvm-11-AArch64-FastIsel-bug"
-                          "llvm-11-D97435-AArch64-movaddrreg"
-                          "llvm-11-D97571-AArch64-loh"
-                          "llvm-11-aarch64-addrspace"))))))
-       ((#:build-type _) "Release")
-       ((#:configure-flags flags)
-        `(list
-           ;; Build a native compiler and the NVPTX backend (NVIDIA) since
-           ;; Julia insists on it, nothing more.  This reduces build times and
-           ;; disk usage.
-           ,(string-append "-DLLVM_TARGETS_TO_BUILD=" (system->llvm-target))
-           "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=NVPTX"
-
-           "-DLLVM_INSTALL_UTILS=ON"
-           "-DLLVM_BUILD_TESTS=ON"
-           "-DLLVM_ENABLE_FFI=ON"
-           "-DLLVM_ENABLE_RTTI=ON"
-           ;; "-DLLVM_HOST_TRIPLE=${stdenv.hostPlatform.config}"
-           ;; "-DLLVM_DEFAULT_TARGET_TRIPLE=${stdenv.hostPlatform.config}"
-           ;; "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly"
-           "-DLLVM_ENABLE_DUMP=ON"
-           "-DLLVM_LINK_LLVM_DYLIB=ON"
-           "-DLLVM_VERSION_SUFFIX:STRING=jl"))))
-    (inputs
-     (append
-       (package-inputs llvm-11)
-       `(("llvm-11-AArch64-FastIsel-bug"
-          ,(julia-patch "llvm-11-AArch64-FastIsel-bug"
-                        "1m2vddj1mw4kbij8hbrx82piyy6bvr2x7wwdnlxfaqcm72ipzyh9"))
-         ("llvm-11-D97435-AArch64-movaddrreg"
-          ,(julia-patch "llvm-11-D97435-AArch64-movaddrreg"
-                        "10jnavq9ljkj7j2gqj2zd1pwqpqb5zs3zp9h96pmz0djbmxwa86y"))
-         ("llvm-11-D97571-AArch64-loh"
-          ,(julia-patch "llvm-11-D97571-AArch64-loh"
-                        "128zcbg1w1j7hngsf7z1a7alc6lig6l2rqgjp6i8nk3k3f842v6n"))
-         ("llvm-11-aarch64-addrspace"
-          ,(julia-patch "llvm-11-aarch64-addrspace"
-                        "0ckbzgfirxrf2d5bpinpngp7gnilbjrk0cbdfyl3h6f5v6i6xj6m")))))))
+     (substitute-keyword-arguments (package-arguments llvm-13)
+       ((#:configure-flags flags ''())
+        #~(cons* "-DLLVM_BUILD_LLVM_DYLIB=ON"
+                 "-DLLVM_LINK_LLVM_DYLIB=ON"
+                 ;; "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=NVPTX"
+                 "-DLLVM_VERSION_SUFFIX:STRING=jl"  ; Perhaps not needed.
+                 #$(string-append "-DLLVM_TARGETS_TO_BUILD="
+                                  (system->llvm-target))
+                 (delete "-DBUILD_SHARED_LIBS:BOOL=TRUE" #$flags)))
+       ((#:build-type _) "Release")))
+    (properties `((hidden? . #t)
+                  ,@(package-properties llvm-13)))))
 
 (define %cling-version "0.9")
 
@@ -2352,7 +2275,7 @@ LLVM."))))
             (add-after 'unpack 'patch-paths
               (lambda* (#:key inputs #:allow-other-keys)
                 (substitute* "lib/Interpreter/CIFactory.cpp"
-                  (("\bsed\b")
+                  (("\\bsed\\b")
                    (which "sed"))
                   ;; This ensures that the default C++ library used by Cling is
                   ;; that of the compiler that was used to build it, rather

@@ -10,6 +10,9 @@
 ;;; Copyright © 2021 Felix Gruber <felgru@posteo.net>
 ;;; Copyright © 2021 Foo Chuan Wei <chuanwei.foo@hotmail.com>
 ;;; Copyright © 2022 Michael Rohleder <mike@rohleder.de>
+;;; Copyright © 2022 Matthew James Kraai <kraai@ftbfs.org>
+;;; Copyright © 2023 Andy Tai <atai@atai.org>
+;;; Copyright © 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -34,6 +37,8 @@
   #:use-module (guix utils)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system cmake)
+  #:use-module (guix build-system go)
+  #:use-module (guix gexp)
   #:use-module (gnu packages)
   #:use-module (gnu packages attr)
   #:use-module (gnu packages autotools)
@@ -50,6 +55,7 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages golang)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages lesstif)
   #:use-module (gnu packages libusb)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages llvm)
@@ -67,6 +73,7 @@
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages virtualization)
   #:use-module (gnu packages xdisorg)
+  #:use-module (gnu packages xorg)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1))
 
@@ -79,10 +86,7 @@
       (method url-fetch)
       (uri (list
             (string-append "mirror://debian/pool/main/d/delta/"
-                           "delta_" version ".orig.tar.gz")
-            ;; This uri seems to send guix download into an infinite loop
-            (string-append "http://delta.tigris.org/files/documents/3103/"
-                           "33566/delta-" version ".tar.gz")))
+                           "delta_" version ".orig.tar.gz")))
       (sha256
        (base32
         "184wh35pf2ddx97319s6sgkzpz48xxkbwzcjpycv009bm53lh61q"))))
@@ -107,7 +111,8 @@
                            `("delta" "multidelta" "topformflat"))))
              #t))
          (delete 'configure))))         ; no configure script
-    (home-page "http://delta.tigris.org/")
+    (home-page
+     "https://web.archive.org/web/20200701152100/http://delta.tigris.org/")
     (synopsis "Heuristical file minimizer")
     (description
      "Delta assists you in minimizing \"interesting\" files subject to a test
@@ -614,7 +619,7 @@ the position of the variable and allows you to modify its value.")
     (inputs
      (modify-inputs (package-inputs gnu-make)
        (prepend readline)))
-    (home-page "http://bashdb.sourceforge.net/remake/")
+    (home-page "https://bashdb.sourceforge.net/remake/")
     (description "Remake is an enhanced version of GNU Make that adds improved
 error reporting, better tracing, profiling, and a debugger.")
     (license license:gpl3+)))
@@ -671,7 +676,7 @@ error reporting, better tracing, profiling, and a debugger.")
     (inputs
      (list gdb capnproto python python-pexpect zlib))
     (home-page "https://rr-project.org/")
-    (synopsis "Record and reply debugging framework")
+    (synopsis "Record and replay debugging framework")
     (description
      "rr is a lightweight tool for recording, replaying and debugging
 execution of applications (trees of processes and threads).  Debugging extends
@@ -682,8 +687,8 @@ fun.")
 
 (define-public libbacktrace
   ;; There are no releases nor tags.
-  (let ((revision "1")
-        (commit "5009c113981431ae1843ebd29d6ad24eb32fc1b2"))
+  (let ((revision "2")
+        (commit "cdb64b688dda93bbbacbc2b1ccf50ce9329d4748"))
     (package
       (name "libbacktrace")
       (version (git-version "1.0" revision commit))
@@ -695,10 +700,11 @@ fun.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "0663zjpfpnsyv9h3pbp7cgmg9gz79n68bqpdl97y6i0jsx93v1zg"))))
+                  "0iwd41pgr2nxlmghqdfwfwxac27jbqxwxp07jihhq85a8s3igjgr"))))
       (build-system gnu-build-system)
       (arguments
-       `(#:make-flags '("CFLAGS=-fPIC")))
+       `(#:parallel-tests? #f ;spurious failures when testing in parallel
+         #:make-flags '("CFLAGS=-fPIC")))
       (home-page "https://github.com/ianlancetaylor/libbacktrace")
       (synopsis "C library for producing symbolic backtraces")
       (description "The @code{libbacktrace} library can be linked into a C/C++
@@ -708,7 +714,7 @@ program to produce symbolic backtraces.")
 (define-public libleak
   (package
     (name "libleak")
-    (version "0.3.5")
+    (version "0.3.6")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -717,7 +723,7 @@ program to produce symbolic backtraces.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1p8mb0hcfp8hdv1klv6rrpkn2zlhjxgkxbbjsk8kszxv7ijln87d"))))
+                "1p6x20mm0dym2qn10d6cvwmh71m93xwcd319g94zkv88hj5q17n6"))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f                      ;no test suite
@@ -831,7 +837,7 @@ engineering.")
 (define-public seer-gdb
   (package
     (name "seer-gdb")
-    (version "1.11")
+    (version "1.16")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -840,7 +846,7 @@ engineering.")
               (file-name (string-append name "-" version "-checkout"))
               (sha256
                (base32
-                "0778573rixhdanmzp4slghpwgv7pm08n7cpa24rm3wrvs77ic3kb"))))
+                "0jdvyg2jab1pvf36pvkyrfsg2wyy8zp1qx0v2ksclgrnr1hja6k6"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f ; Those are strangely manual
@@ -856,3 +862,59 @@ engineering.")
     (home-page "https://github.com/epasveer/seer")
     ;; Note: Some icons in src/resources are creative commons 3.0 and/or 4.0.
     (license license:gpl3+)))
+
+(define-public ddd
+  (package
+    (name "ddd")
+    (version "3.4.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnu/ddd/ddd-" version ".tar.gz"))
+              (sha256
+               (base32
+                "03sqsfiri5p130cmmzh2wikg0gisql496rvdhr1qaidh1f5bqk2x"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f                  ;tests require manual intervention
+           ;; Avoid "friend declaration specifies default arguments and isn’t
+           ;; a definition" errors.
+           #:configure-flags #~(list "CXXFLAGS=-fpermissive")))
+    (native-inputs
+     (list pkg-config))
+    (inputs
+     (list motif ncurses gdb))
+    (synopsis "Graphical front-end for GDB and other debuggers")
+    (description "GNU DDD, the Data Display Debugger, is a graphical front-end
+for command-line debuggers.  Many back-end debuggers are supported, notably
+the GNU debugger, GDB.  In addition to usual debugging features such as
+viewing the source files, DDD has additional graphical, interactive features
+to aid in debugging.")
+    (home-page "https://www.gnu.org/software/ddd/")
+    (license license:gpl3+)))
+
+
+(define-public delve
+  (package
+    (name "delve")
+    (version "1.9.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/go-delve/delve")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "07jch3yd1pgqviyy18amn23gazbzi7l51f210c3vmc707v3vbbqr"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:import-path "github.com/go-delve/delve/cmd/dlv"
+           #:unpack-path "github.com/go-delve/delve"
+           #:install-source? #f
+           #:phases #~(modify-phases %standard-phases (delete 'check))))
+    (propagated-inputs (list go))
+    (home-page "https://github.com/go-delve/delve")
+    (synopsis "Debugger for the Go programming language")
+    (description "Delve is a debugger for the Go programming language.")
+    (license license:expat)))

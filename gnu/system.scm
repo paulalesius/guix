@@ -10,10 +10,11 @@
 ;;; Copyright © 2020, 2021 Brice Waegeneire <brice@waegenei.re>
 ;;; Copyright © 2020 Florian Pelz <pelzflorian@pelzflorian.de>
 ;;; Copyright © 2020, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <jannek@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <jannek@gnu.org>
 ;;; Copyright © 2020, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2021 raid5atemyhomework <raid5atemyhomework@protonmail.com>
+;;; Copyright © 2023 Bruno Victal <mirai@makinata.eu>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -38,6 +39,7 @@
   #:use-module (guix gexp)
   #:use-module (guix records)
   #:use-module (guix packages)
+  #:use-module (guix deprecation)
   #:use-module (guix derivations)
   #:use-module (guix profiles)
   #:use-module ((guix utils) #:select (substitute-keyword-arguments))
@@ -49,9 +51,6 @@
   #:use-module (gnu packages bash)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cross-base)
-  #:use-module (gnu packages cryptsetup)
-  #:use-module (gnu packages disk)
-  #:use-module (gnu packages file-systems)
   #:use-module (gnu packages firmware)
   #:use-module (gnu packages gawk)
   #:use-module (gnu packages guile)
@@ -99,7 +98,7 @@
             operating-system-user-services
             operating-system-packages
             operating-system-host-name
-            operating-system-hosts-file
+            operating-system-hosts-file ;deprecated
             operating-system-hurd
             operating-system-kernel
             operating-system-kernel-file
@@ -171,7 +170,7 @@
             read-boot-parameters-file
             boot-parameters->menu-entry
 
-            local-host-aliases
+            local-host-aliases                    ;deprecated
             %root-account
             %setuid-programs
             %sudoers-specification
@@ -210,6 +209,15 @@ VERSION is the target version of the boot-parameters record."
                          #$system "/boot")))
 
 ;; System-wide configuration.
+
+(define-with-syntax-properties (warn-hosts-file-field-deprecation
+                                (value properties))
+  (when value
+    (warning (source-properties->location properties)
+             (G_ "the 'hosts-file' field is deprecated, please use \
+'hosts-service-type' instead~%")))
+  value)
+
 ;; TODO: Add per-field docstrings/stexi.
 (define-record-type* <operating-system> operating-system
   make-operating-system
@@ -241,8 +249,9 @@ VERSION is the target version of the boot-parameters record."
             (default %base-firmware))
 
   (host-name operating-system-host-name)          ; string
-  (hosts-file operating-system-hosts-file         ; file-like | #f
-              (default #f))
+  (hosts-file %operating-system-hosts-file         ; deprecated
+              (default #f)
+              (sanitize warn-hosts-file-field-deprecation))
 
   (mapped-devices operating-system-mapped-devices ; list of <mapped-device>
                   (default '()))
@@ -297,6 +306,10 @@ VERSION is the target version of the boot-parameters record."
             (default (and=> (current-source-location)
                             source-properties->location))
             (innate)))
+
+(define-deprecated (operating-system-hosts-file os)
+  hosts-service-type
+  (%operating-system-hosts-file os))
 
 (define* (operating-system-kernel-arguments
           os root-device #:key (version %boot-parameters-version))
@@ -735,7 +748,8 @@ bookkeeping."
          (non-boot-fs  (non-boot-file-system-service os))
          (swaps        (swap-services os))
          (procs        (service user-processes-service-type))
-         (host-name    (host-name-service (operating-system-host-name os)))
+         (host-name    (operating-system-host-name os))
+         (hosts-file   (%operating-system-hosts-file os))
          (entries      (operating-system-directory-base-entries os)))
     (cons* (service system-service-type entries)
            (service linux-builder-service-type
@@ -757,12 +771,19 @@ bookkeeping."
                                     (operating-system-groups os))
                             (operating-system-skeletons os))
            (operating-system-etc-service os)
+           ;; XXX: hosts-file is deprecated
+           (if hosts-file
+               (simple-service 'deprecated-hosts-file etc-service-type
+                               (list `("hosts" ,hosts-file)))
+               (service hosts-service-type
+                        (local-host-entries host-name)))
            (service fstab-service-type
                     (filter file-system-needed-for-boot?
                             (operating-system-file-systems os)))
            (session-environment-service
             (operating-system-environment-variables os))
-           host-name procs root-fs
+           (service host-name-service-type host-name)
+           procs root-fs
            (service setuid-program-service-type
                     (operating-system-setuid-programs os))
            (service profile-service-type
@@ -776,7 +797,9 @@ bookkeeping."
                                   (operating-system-firmware os)))))))
 
 (define (hurd-default-essential-services os)
-  (let ((entries (operating-system-directory-base-entries os)))
+  (let ((host-name    (operating-system-host-name os))
+        (hosts-file   (%operating-system-hosts-file os))
+        (entries      (operating-system-directory-base-entries os)))
     (list (service system-service-type entries)
           %boot-service
           %hurd-startup-service
@@ -796,6 +819,12 @@ bookkeeping."
                            (operating-system-file-systems os)))
           (pam-root-service (operating-system-pam-services os))
           (operating-system-etc-service os)
+          ;; XXX: hosts-file is deprecated
+          (if hosts-file
+              (simple-service 'deprecated-hosts-file etc-service-type
+                              (list `("hosts" ,hosts-file)))
+              (service hosts-service-type
+                       (local-host-entries host-name)))
           (service setuid-program-service-type
                    (operating-system-setuid-programs os))
           (service profile-service-type (operating-system-packages os)))))
@@ -856,7 +885,9 @@ of PROVENANCE-SERVICE-TYPE to its services."
 (define %base-packages-utils
   ;; Default set of  utilities packages.
  (cons* procps psmisc which
-        (@ (gnu packages admin) shadow-with-man-pages) ;for 'passwd'
+        shadow                          ;for 'passwd'
+
+        e2fsprogs                 ;for lsattr, chattr, etc.
 
         guile-3.0-latest
 
@@ -896,20 +927,7 @@ of PROVENANCE-SERVICE-TYPE to its services."
         ;; many people are familiar with, so keep it around.
         iw wireless-tools))
 
-(define %base-packages-disk-utilities
-  ;; A well-rounded set of packages for interacting with disks,
-  ;; partitions and filesystems, included with the Guix installation
-  ;; image.
-  (list parted gptfdisk ddrescue
-        ;; We used to provide fdisk from GNU fdisk, but as of version 2.0.0a
-        ;; it pulls Guile 1.8, which takes unreasonable space; furthermore
-        ;; util-linux's fdisk is already available, in %base-packages-linux.
-        cryptsetup mdadm
-        dosfstools
-        btrfs-progs
-        f2fs-tools
-        jfsutils
-        xfsprogs))
+(define-deprecated %base-packages-disk-utilities #f '())
 
 (define %base-packages
   ;; Default set of packages globally visible.  It should include anything
@@ -925,14 +943,17 @@ of PROVENANCE-SERVICE-TYPE to its services."
   "
 This is the GNU system.  Welcome.\n")
 
-(define (local-host-aliases host-name)
+(define-deprecated (local-host-aliases host-name)
+  local-host-entries
   "Return aliases for HOST-NAME, to be used in /etc/hosts."
   (string-append "127.0.0.1 localhost " host-name "\n"
                  "::1       localhost " host-name "\n"))
 
-(define (default-/etc/hosts host-name)
-  "Return the default /etc/hosts file."
-  (plain-file "hosts" (local-host-aliases host-name)))
+(define (local-host-entries host-name)
+  "Return <host> records for @var{host-name}."
+  (map (lambda (address)
+         (host address "localhost" (list host-name)))
+       '("127.0.0.1" "::1")))
 
 (define (validated-sudoers-file file)
   "Return a copy of FILE, a sudoers file, after checking that it is
@@ -946,9 +967,8 @@ syntactically correct."
                                "--check" "--file" #$file)
                        (copy-file #$file #$output)))))
 
-(define (os-release)
-  (plain-file "os-release"
-              "\
+(define os-release
+  (plain-file "os-release" "\
 NAME=\"Guix System\"
 ID=guix
 PRETTY_NAME=\"Guix System\"
@@ -980,10 +1000,9 @@ the /etc directory."
 
          (hurd       (operating-system-hurd os))
          (issue      (plain-file "issue" (operating-system-issue os)))
-         (nsswitch   (operating-system-name-service-switch os))
-         (nsswitch   (and nsswitch
-                          (plain-file "nsswitch.conf"
-                                      (name-service-switch->string nsswitch))))
+         (nsswitch   (and=> (operating-system-name-service-switch os)
+                            (compose (cut plain-file "nsswitch.conf" <>)
+                                     name-service-switch->string)))
          (sudoers    (operating-system-sudoers-file os))
 
         ;; Startup file for POSIX-compliant login shells, which set system-wide
@@ -1060,6 +1079,9 @@ fi
         (bashrc    (plain-file "bashrc" "\
 # Bash-specific initialization.
 
+# Provide a default prompt.  The user's ~/.bashrc can override it.
+PS1='\\u@\\h \\w${GUIX_ENVIRONMENT:+ [env]}\\$ '
+
 # The 'bash-completion' package.
 if [ -f /run/current-system/profile/etc/profile.d/bash_completion.sh ]
 then
@@ -1068,18 +1090,16 @@ then
   # as those in ~/.guix-profile and /run/current-system/profile.
   source /run/current-system/profile/etc/profile.d/bash_completion.sh
 fi\n")))
-    (etc-service
-     `(("os-release" ,#~#$(os-release))
+    (service etc-service-type
+     `(("os-release" ,os-release)
        ("services" ,(file-append net-base "/etc/services"))
        ("protocols" ,(file-append net-base "/etc/protocols"))
        ("rpc" ,(file-append net-base "/etc/rpc"))
-       ("login.defs" ,#~#$login.defs)
-       ("issue" ,#~#$issue)
-       ,@(if nsswitch `(("nsswitch.conf" ,#~#$nsswitch)) '())
-       ("profile" ,#~#$profile)
-       ("bashrc" ,#~#$bashrc)
-       ("hosts" ,#~#$(or (operating-system-hosts-file os)
-                         (default-/etc/hosts (operating-system-host-name os))))
+       ("login.defs" ,login.defs)
+       ("issue" ,issue)
+       ,@(if nsswitch `(("nsswitch.conf" ,nsswitch)) '())
+       ("profile" ,profile)
+       ("bashrc" ,bashrc)
        ;; Write the operating-system-host-name to /etc/hostname to prevent
        ;; NetworkManager from changing the system's hostname when connecting
        ;; to certain networks.  Some discussion at
@@ -1181,15 +1201,7 @@ use 'plain-file' instead~%")
 
     ;; By default, applications that use D-Bus, such as Emacs, abort at startup
     ;; when /etc/machine-id is missing.  Make sure these warnings are non-fatal.
-    ("DBUS_FATAL_WARNINGS" . "0")
-
-    ;; XXX: Normally we wouldn't need to do this, but our glibc@2.23 package
-    ;; used to look things up in 'PREFIX/lib/locale' instead of
-    ;; '/run/current-system/locale' as was intended.  Keep this hack around so
-    ;; that people who still have glibc@2.23-using packages in their profiles
-    ;; can use them correctly.
-    ;; TODO: Remove when glibc@2.23 is long gone.
-    ("GUIX_LOCPATH" . "/run/current-system/locale")))
+    ("DBUS_FATAL_WARNINGS" . "0")))
 
 ;; Ensure LST is a list of <setuid-program> records and warn otherwise.
 (define-with-syntax-properties (ensure-setuid-program-list (lst properties))
@@ -1231,8 +1243,8 @@ deprecated; use 'setuid-program' instead~%"))
                (file-append inetutils "/bin/ping6")
                (file-append sudo "/bin/sudo")
                (file-append sudo "/bin/sudoedit")
-               (file-append fuse "/bin/fusermount")
-               (file-append fuse-3 "/bin/fusermount3")
+               (file-append fuse-2 "/bin/fusermount")
+               (file-append fuse "/bin/fusermount3")
 
                ;; To allow mounts with the "user" option, "mount" and "umount" must
                ;; be setuid-root.
@@ -1474,16 +1486,28 @@ a list of <menu-entry>, to populate the \"old entries\" menu."
 
 (define (hurd-multiboot-modules os)
   (let* ((hurd (operating-system-hurd os))
+         (pci-arbiter-command
+          (list (file-append hurd "/hurd/pci-arbiter.static")
+                "pci-arbiter"
+                "--host-priv-port='${host-port}'"
+                "--device-master-port='${device-port}'"
+                "--next-task='${disk-task}'"
+                "'$(pci-task=task-create)'"
+                "'$(task-resume)'"))
+         (rumpdisk-command
+          (list (file-append hurd "/hurd/rumpdisk.static")
+                "rumpdisk"
+                "--next-task='${fs-task}'"
+                "'$(disk-task=task-create)'"))
          (root-file-system-command
           (list (file-append hurd "/hurd/ext2fs.static")
                 "ext2fs"
                 "--multiboot-command-line='${kernel-command-line}'"
-                "--host-priv-port='${host-port}'"
-                "--device-master-port='${device-port}'"
                 "--exec-server-task='${exec-task}'"
                 "--store-type=typed"
                 "--x-xattr-translator-records"
-                "'${root}'" "'$(task-create)'" "'$(task-resume)'"))
+                "'${root}'"
+                "'$(fs-task=task-create)'"))
          (target (%current-target-system))
          (libc (if target
                    (with-parameters ((%current-target-system #f))
@@ -1493,14 +1517,17 @@ a list of <menu-entry>, to populate the \"old entries\" menu."
                    glibc))
          (exec-server-command
           ;; XXX: Run the statically-linked 'exec' to work around
-          ;; <https://issues.guix.gnu.org/58631>, which manifests on some
+          ;; <https://issues.guix.gnu.org/58320>, which manifests on some
           ;; machines.
 
           ;; (list (file-append libc "/lib/ld.so.1") "exec"
           ;;       (file-append hurd "/hurd/exec") "'$(exec-task=task-create)'")
           (list (file-append hurd "/hurd/exec.static") "exec"
                 "'$(exec-task=task-create)'")))
-    (list root-file-system-command exec-server-command)))
+    (list pci-arbiter-command
+          rumpdisk-command
+          root-file-system-command
+          exec-server-command)))
 
 (define* (operating-system-boot-parameters os root-device
                                            #:key system-kernel-arguments?)

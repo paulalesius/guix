@@ -2,15 +2,17 @@
 ;;; Copyright © 2012 Nikita Karetnikov <nikita@karetnikov.org>
 ;;; Copyright © 2014 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2015, 2017 Ricardo Wurmus <rekado@elephly.net>
-;;; Copyright © 2016, 2019 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016, 2019, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Alex Kost <alezost@gmail.com>
 ;;; Copyright © 2017, 2019, 2020 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2017 Eric Bavier <bavier@member.fsf.org>
 ;;; Copyright © 2018, 2019, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019 Miguel <rosen644835@gmail.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 EuAndreh <eu@euandre.org>
+;;; Copyright © 2022 gemmaro <gemmaro.dev@gmail.com>
+;;; Copyright © 2023 Maxim Cournoyer maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -36,10 +38,10 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system perl)
   #:use-module (guix build-system python)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages check)
   #:use-module (gnu packages docbook)
   #:use-module (gnu packages emacs)
-  #:use-module (gnu packages hurd)
   #:use-module (gnu packages libunistring)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages perl)
@@ -60,7 +62,8 @@
                                   version ".tar.gz"))
               (sha256
                (base32
-                "04kbg1sx0ncfrsbr85ggjslqkzzb243fcw9nyh3rrv1a22ihszf7"))))
+                "04kbg1sx0ncfrsbr85ggjslqkzzb243fcw9nyh3rrv1a22ihszf7"))
+              (patches (search-patches "gettext-libunicode-update.patch"))))
     (build-system gnu-build-system)
     (outputs '("out"
                "doc"))                            ;9 MiB of HTML
@@ -120,7 +123,7 @@
                                                "coreutils-gnulib-tests.patch")))))
                               '())
 
-                       #$@(if (hurd-target?)
+                       #$@(if (target-hurd?)
                               #~((substitute*
                                      "gettext-tools/gnulib-tests/Makefile.in"
                                    ;; See 'coreutils' for the rationale.
@@ -130,10 +133,7 @@
                        #t)))))
 
        ;; When tests fail, we want to know the details.
-       #:make-flags #~'("VERBOSE=yes"
-                        #$@(if (hurd-target?)
-                               '("XFAIL_TESTS=test-perror2")
-                               '()))))
+       #:make-flags #~'("VERBOSE=yes")))
     (home-page "https://www.gnu.org/software/gettext/")
     (synopsis
      "Tools and documentation for translation (used to build other packages)")
@@ -166,9 +166,8 @@ translated messages from the catalogs.  Nearly all GNU packages use Gettext.")
                 (with-directory-excursion
                     (string-append (assoc-ref outputs "out")
                                    "/share/emacs/site-lisp")
-                  (symlink "start-po.el" "gettext-autoloads.el")
-                  #t)))))))
-    (native-inputs `(("emacs" ,emacs-minimal)))   ; for Emacs tools
+                  (symlink "start-po.el" "gettext-autoloads.el"))))))))
+    (native-inputs (list emacs-minimal))          ;for Emacs tools
     (synopsis "Tools and documentation for translation")))
 
 (define-public libtextstyle
@@ -219,7 +218,6 @@ color, font attributes (weight, posture), or underlining.")
            python-flake8-implicit-str-concat
            python-flake8-print
            python-isort
-           python-pre-commit
            python-pytest
            python-pytest-cov
            python-sphinx
@@ -239,71 +237,77 @@ from Markdown files.")
 (define-public po4a
   (package
     (name "po4a")
-    (version "0.63")
+    (version "0.69")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/mquinson/po4a/releases/download/v"
                                   version "/po4a-" version ".tar.gz"))
               (sha256
                (base32
-                "1kmlfpdl1i1wrcdn0k1frh44fq10sfwswi3azvibli2lakpf66z2"))))
+                "15llrfdp4ilbrxy65hmmxka86xj0mrbqfiyzv715wrk16vqszm3w"))))
     (build-system perl-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'wrap-programs
-          (lambda* (#:key inputs outputs #:allow-other-keys)
-            ;; Make sure all executables in "bin" find the Perl modules
-            ;; required by this package at runtime.
-            (let* ((out  (assoc-ref outputs "out"))
-                   (bin  (string-append out "/bin/"))
-                   (Pod::Parser (assoc-ref inputs "perl-pod-parser"))
-                   (path (string-append out "/lib/perl5/site_perl:"
-                                        Pod::Parser "/lib/perl5/site_perl")))
-              (for-each (lambda (file)
-                          (wrap-program file
-                            `("PERL5LIB" ":" prefix (,path))))
-                        (find-files bin "\\.*$"))
-              #t)))
-         (add-after 'unpack 'patch-docbook-xml
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* (find-files "." ".*\\.xml(-good)?")
-               (("http://www.oasis-open.org/docbook/xml/4.1.2/")
-                (string-append (assoc-ref inputs "docbook-xml")
-                               "/xml/dtd/docbook/")))
-             #t))
-         (add-before 'build 'do-not-override-PERL5LIB
-           (lambda _
-             ;; Don't hard-code PERL5LIB to include just the build directory
-             ;; so that the build script finds modules from inputs.
-             (substitute* "Po4aBuilder.pm"
-               (("PERL5LIB=lib") ""))
-             (setenv "PERL5LIB" (string-append (getenv "PERL5LIB") ":lib"))))
-         (add-before 'check 'disable-failing-tests
-           (lambda _
-             ;; FIXME: these tests require SGMLS.pm.
-             (delete-file "t/01-classes.t")
-
-             (delete-file "t/add.t")
-             (delete-file "t/core-porefs.t")
-             (delete-file "t/fmt-asciidoc.t")
-             (delete-file "t/fmt-sgml.t")
-
-             #t)))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'wrap-programs
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              ;; Make sure all executables in "bin" find the Perl modules
+              ;; required by this package at runtime.
+              (let* ((out  #$output)
+                     (bin  (string-append out "/bin/"))
+                     (path (string-append
+                            out "/lib/perl5/site_perl:"
+                            (string-join
+                             (map (lambda (name)
+                                    (string-append (assoc-ref inputs name)
+                                                   "/lib/perl5/site_perl"))
+                                  (list "perl-gettext"
+                                        "perl-pod-parser"
+                                        "perl-sgmls"
+                                        "perl-syntax-keyword-try"
+                                        "perl-xs-parse-keyword"
+                                        "perl-term-readkey"
+                                        "perl-text-wrapi18n"
+                                        "perl-unicode-linebreak"
+                                        "perl-yaml-tiny"))
+                             ":"))))
+                (for-each (lambda (file)
+                            (wrap-program file
+                              `("PERL5LIB" ":" prefix (,path))))
+                          (find-files bin "\\.*$")))))
+          (add-before 'check 'disable-failing-tests
+            (lambda _
+              ;; FIXME: fails despite of importing SGMLS
+              (delete-file "t/fmt-sgml.t")))
+          #$@(if (system-hurd?)
+                 #~((add-after 'unpack 'skip-tests/hurd
+                      (lambda _
+                        (delete-file "t/cfg-multi.t")
+                        (delete-file "t/cfg-single.t")
+                        (delete-file "t/cfg-split.t"))))
+                 #~()))))
     (native-inputs
-     `(("gettext" ,gettext-minimal)
-       ("perl-module-build" ,perl-module-build)
-       ("docbook-xsl" ,docbook-xsl)
-       ("libxml2" ,libxml2)
-       ("xsltproc" ,libxslt)
-
-       ;; For tests.
-       ("docbook-xml" ,docbook-xml-4.1.2)
-       ("perl-test-pod" ,perl-test-pod)
-       ("perl-yaml-tiny" ,perl-yaml-tiny)
-       ("texlive" ,texlive-tiny)))
+     (list gettext-minimal
+           perl-module-build
+           docbook-xsl
+           libxml2
+           libxslt
+           ;; For tests.
+           docbook-xml-4.1.2
+           perl-test-pod
+           (texlive-updmap.cfg)))
     (inputs
-     (list perl-pod-parser))
+     (list bash-minimal
+           perl-gettext
+           perl-pod-parser
+           perl-sgmls
+           perl-syntax-keyword-try
+           perl-xs-parse-keyword
+           perl-term-readkey
+           perl-text-wrapi18n
+           perl-unicode-linebreak
+           perl-yaml-tiny))
     (home-page "https://po4a.org/")
     (synopsis "Scripts to ease maintenance of translations")
     (description

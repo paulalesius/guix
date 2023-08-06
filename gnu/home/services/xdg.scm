@@ -1,6 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2021 Andrew Tropin <andrew@trop.in>
+;;; Copyright © 2021, 2022 Andrew Tropin <andrew@trop.in>
 ;;; Copyright © 2021 Xinglu Chen <public@yoctocell.xyz>
+;;; Copyright © 2023 Bruno Victal <mirai@makinata.eu>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -22,6 +23,7 @@
   #:use-module (gnu home services)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu home services utils)
+  #:use-module (guix deprecation)
   #:use-module (guix gexp)
   #:use-module (guix modules)
   #:use-module (guix records)
@@ -35,10 +37,24 @@
   #:export (home-xdg-base-directories-service-type
             home-xdg-base-directories-configuration
             home-xdg-base-directories-configuration?
+            home-xdg-base-directories-configuration-cache-home
+            home-xdg-base-directories-configuration-config-home
+            home-xdg-base-directories-configuration-data-home
+            home-xdg-base-directories-configuration-state-home
+            home-xdg-base-directories-configuration-log-home  ; deprecated
+            home-xdg-base-directories-configuration-runtime-dir
 
             home-xdg-user-directories-service-type
             home-xdg-user-directories-configuration
             home-xdg-user-directories-configuration?
+            home-xdg-user-directories-configuration-desktop
+            home-xdg-user-directories-configuration-documents
+            home-xdg-user-directories-configuration-download
+            home-xdg-user-directories-configuration-music
+            home-xdg-user-directories-configuration-pictures
+            home-xdg-user-directories-configuration-publicshare
+            home-xdg-user-directories-configuration-templates
+            home-xdg-user-directories-configuration-videos
 
             xdg-desktop-action
             xdg-desktop-entry
@@ -63,6 +79,7 @@
 
 (define (serialize-path field-name val) "")
 (define path? string?)
+(define-maybe path)
 
 (define-configuration home-xdg-base-directories-configuration
   (cache-home
@@ -83,18 +100,23 @@ read-only shared data, analogus to @file{/usr/share}, but for user.")
    (path "${XDG_RUNTIME_DIR:-/run/user/$UID}")
    "Base directory for programs to store user-specific runtime files,
 like sockets.")
+  ;; TODO: deprecated field, use $XDG_STATE_HOME(/log) instead.
   (log-home
-   (path "$HOME/.local/var/log")
+   maybe-path
    "Base directory for programs to store log files, analogus to
 @file{/var/log}, but for user.  It is not a part of XDG Base Directory
 Specification, but helps to make implementation of home services more
-consistent.")
+consistent."
+   (lambda (field-name val)
+     (when (maybe-value-set? val)
+       (warn-about-deprecation field-name #f #:replacement 'state-home))
+     (serialize-path field-name val)))
   (state-home
-   (path "$HOME/.local/var/lib")
-   "Base directory for programs to store state files, like databases,
-analogus to @file{/var/lib}, but for user.  It is not a part of XDG
-Base Directory Specification, but helps to make implementation of home
-services more consistent."))
+   (path "$HOME/.local/state")
+   "Base directory for programs to store state data that should persist
+between (application) restarts, such as logs, but are not important or
+portable enough to the user to warrant storing them in
+@env{XDG_DATA_HOME}."))
 
 (define (home-xdg-base-directories-environment-variables-service config)
   (map
@@ -103,25 +125,41 @@ services more consistent."))
             #f "XDG_~a"
             (object->snake-case-string (configuration-field-name field) 'upper))
            ((configuration-field-getter field) config)))
-   home-xdg-base-directories-configuration-fields))
+   ;; XXX: deprecated field, remove later
+   (if (maybe-value-set?
+        (home-xdg-base-directories-configuration-log-home config))
+       home-xdg-base-directories-configuration-fields
+       (filter-configuration-fields
+        home-xdg-base-directories-configuration-fields
+        '(log-home) #t))))
 
 (define (ensure-xdg-base-dirs-on-activation config)
-  #~(map (lambda (xdg-base-dir-variable)
-           ((@ (guix build utils) mkdir-p)
-            (getenv
-             xdg-base-dir-variable)))
-         '#$(filter-map
-             (lambda (field)
-               (let ((variable
-                      (string-append
-                       "XDG_"
-                       (object->snake-case-string
-                        (configuration-field-name field) 'upper))))
-                 ;; XDG_RUNTIME_DIR shouldn't be created during activation
-                 ;; and will be provided by elogind or other service.
-                 (and (not (string=? "XDG_RUNTIME_DIR" variable))
-                      variable)))
-             home-xdg-base-directories-configuration-fields)))
+  (with-imported-modules '((guix build utils))
+    #~(begin
+        (use-modules (guix build utils))
+        (map (lambda (xdg-base-dir-variable)
+               (mkdir-p
+                (getenv
+                 xdg-base-dir-variable)))
+             '#$(filter-map
+                 (lambda (field)
+                   (let ((variable
+                          (string-append
+                           "XDG_"
+                           (object->snake-case-string
+                            (configuration-field-name field) 'upper))))
+                     ;; XDG_RUNTIME_DIR shouldn't be created during activation
+                     ;; and will be provided by elogind or other service.
+                     (and (not (string=? "XDG_RUNTIME_DIR" variable))
+                          variable)))
+                 ;; XXX: deprecated field, remove later
+                 (if (maybe-value-set?
+                      (home-xdg-base-directories-configuration-log-home
+                       config))
+                     home-xdg-base-directories-configuration-fields
+                     (filter-configuration-fields
+                      home-xdg-base-directories-configuration-fields
+                      '(log-home) #t)))))))
 
 (define (last-extension-or-cfg config extensions)
   "Picks configuration value from last provided extension.  If there
@@ -140,13 +178,10 @@ are no extensions use configuration instead."
                 (default-value (home-xdg-base-directories-configuration))
                 (compose identity)
                 (extend last-extension-or-cfg)
-                (description "Configure XDG base directories.  This
-service introduces two additional variables @env{XDG_STATE_HOME},
-@env{XDG_LOG_HOME}.  They are not a part of XDG specification, at
-least yet, but are convenient to have, it improves the consistency
-between different home services.  The services of this service-type is
-instantiated by default, to provide non-default value, extend the
-service-type (using @code{simple-service} for example).")))
+                (description "Configure XDG base directories.  The
+services of this service-type is instantiated by default, to provide
+non-default value, extend the service-type (using @code{simple-service}
+for example).")))
 
 (define (generate-home-xdg-base-directories-documentation)
   (generate-documentation
@@ -231,6 +266,8 @@ pre-populated content.")
                         home-activation-service-type
                         home-xdg-user-directories-activation-service)))
                 (default-value (home-xdg-user-directories-configuration))
+                (compose identity)
+                (extend last-extension-or-cfg)
                 (description "Configure XDG user directories.  To
 disable a directory, point it to the $HOME.")))
 
@@ -383,25 +420,25 @@ configuration."
   (define (serialize-alist config)
     (generic-serialize-alist append format-config config))
 
-  (define (serialize-xdg-desktop-action action)
-    (match action
-      (($ <xdg-desktop-action> action name config)
-       `(,(format #f "[Desktop Action ~a]\n"
-                  (string-capitalize (maybe-object->string action)))
-         ,(format #f "Name=~a\n" name)
-         ,@(serialize-alist config)))))
+  (define (serialize-xdg-desktop-action desktop-action)
+    (match-record desktop-action <xdg-desktop-action>
+      (action name config)
+      `(,(format #f "[Desktop Action ~a]\n"
+                 (string-capitalize (maybe-object->string action)))
+        ,(format #f "Name=~a\n" name)
+        ,@(serialize-alist config))))
 
-  (match entry
-    (($ <xdg-desktop-entry> file name type config actions)
-     (list (if (string-suffix? file ".desktop")
-               file
-               (string-append file ".desktop"))
-           `("[Desktop Entry]\n"
-             ,(format #f "Name=~a\n" name)
-             ,(format #f "Type=~a\n"
-                      (string-capitalize (symbol->string type)))
-             ,@(serialize-alist config)
-             ,@(append-map serialize-xdg-desktop-action actions))))))
+  (match-record entry <xdg-desktop-entry>
+    (file name type config actions)
+    (list (if (string-suffix? file ".desktop")
+              file
+              (string-append file ".desktop"))
+          `("[Desktop Entry]\n"
+            ,(format #f "Name=~a\n" name)
+            ,(format #f "Type=~a\n"
+                     (string-capitalize (symbol->string type)))
+            ,@(serialize-alist config)
+            ,@(append-map serialize-xdg-desktop-action actions)))))
 
 (define-configuration home-xdg-mime-applications-configuration
   (added

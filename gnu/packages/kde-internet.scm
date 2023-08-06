@@ -169,7 +169,7 @@ Other notable features include:
              (when tests? ;; FIXME: two tests fails.
                (invoke "ctest" "-E" "(schedulertest|filedeletertest)"))
              #t)))))
-    (home-page "http://www.kde.org/")
+    (home-page "https://www.kde.org/")
     (synopsis "Versatile and user-friendly download manager")
     (description "KGet is an advanced download manager with support for
 Metalink and Bittorrent.  Downloads are added to the list, where they can be
@@ -417,7 +417,7 @@ This package is part of the KDE networking module.")
            phonon
            qtbase-5
            qtscript
-           qtwebkit
+           qtwebengine-5
            solid
            syndication
            taglib))

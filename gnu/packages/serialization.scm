@@ -12,6 +12,9 @@
 ;;; Copyright © 2018 Joshua Sierles, Nextjournal <joshua@nextjournal.com>
 ;;; Copyright © 2020 Martin Becze <mjbecze@riseup.net>
 ;;; Copyright © 2020 Alexandros Theodotou <alex@zrythm.org>
+;;; Copyright © 2023 Alexey Abramov <levenson@mmer.org>
+;;; Copyright © 2023 Sharlatan Hellseher <sharlatanus@gmail.com>
+;;; Copyright © 2023 Vinicius Monego <monego@posteo.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -39,6 +42,8 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system meson)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
@@ -56,6 +61,8 @@
   #:use-module (gnu packages lua)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
+  #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-science)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages perl))
@@ -160,7 +167,7 @@ implement RPC protocols.")
                 (mkdir-p doc)
                 (copy-recursively "doc/html" doc)))))))
     (native-inputs
-     (list doxygen))
+     (list doxygen gcc-10))
     (home-page "https://uscilab.github.io/cereal/")
     (synopsis "C++11 library for serialization")
     (description
@@ -194,17 +201,26 @@ such as compact binary encodings, XML, or JSON.")
        (file-name (git-file-name "cereal" version))
        (sha256
         (base32
-         "0hc8wh9dwpc1w1zf5lfss4vg5hmgpblqxbrpp1rggicpx9ar831p"))))
+         "0hc8wh9dwpc1w1zf5lfss4vg5hmgpblqxbrpp1rggicpx9ar831p"))
+       (snippet
+        '(delete-file "unittests/doctest.h"))))
     (arguments
      (substitute-keyword-arguments (package-arguments cereal)
        ((#:configure-flags flags #~'())
-        #~'("-DSKIP_PORTABILITY_TEST=ON"))
+        #~'("-DSKIP_PORTABILITY_TEST=ON" "-DWITH_WERROR=OFF"))
        ((#:phases phases #~%standard-phases)
         #~(modify-phases #$phases
+            (add-after 'unpack 'update-doctest
+              (lambda* (#:key inputs #:allow-other-keys)
+                (install-file (search-input-file inputs "unittests/doctest.h")
+                              "unittests/")))
             (add-before 'configure 'skip-sandbox
               (lambda _
                 (substitute* "CMakeLists.txt"
-                  (("add_subdirectory\\(sandbox\\)") ""))))))))))
+                  (("add_subdirectory\\(sandbox\\)") ""))))))))
+    (native-inputs
+     (list doxygen gcc-10
+           (package-source cereal)))))
 
 (define-public msgpack
   (package
@@ -426,6 +442,33 @@ in which the loaded data is arranged in memory.")
     (home-page "https://github.com/tlsa/libcyaml")
     (license license:isc)))
 
+(define-public libfyaml
+  (package
+    (name "libfyaml")
+    (version "0.8")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/pantoniou/libfyaml")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "002g0grddfi5y42lq06zj8266rf7h27wq76sr598ad5pxllx3y3g"))))
+    (build-system gnu-build-system)
+    (native-inputs
+     (list autoconf
+           automake
+           libtool
+           pkg-config))
+    (home-page "https://github.com/pantoniou/libfyaml")
+    (synopsis "YAML version 1.2 and JSON parser and writer")
+    (description "Libfyaml is a YAML parser and emitter, supporting the latest
+YAML spec and passing the full YAML testsuite.  It is designed to be very
+efficient, avoiding copies of data, and has no artificial limits like the 1024
+character limit for implicit keys.")
+    (license license:expat)))
+
 (define-public yaml-cpp
   (package
     (name "yaml-cpp")
@@ -452,26 +495,16 @@ in which the loaded data is arranged in memory.")
 (define-public jsoncpp
   (package
     (name "jsoncpp")
-    (version "1.9.4")
+    (version "1.9.5")
     (home-page "https://github.com/open-source-parsers/jsoncpp")
     (source (origin
               (method git-fetch)
               (uri (git-reference (url home-page) (commit version)))
               (file-name (git-file-name name version))
-              (patches
-               (search-patches "jsoncpp-pkg-config-version.patch"))
               (sha256
                (base32
-                "0qnx5y6c90fphl9mj9d20j2dfgy6s5yr5l0xnzid0vh71zrp6jwv"))))
-    (build-system cmake-build-system)
-    (arguments
-     `(#:configure-flags '("-DBUILD_SHARED_LIBS:BOOL=YES"
-                           ,@(if (%current-target-system)
-                                 `("-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF")
-                                 '()))
-       ,@(if (%current-target-system)
-             '()
-             `(#:cmake ,cmake-bootstrap))))
+                "06zss7z56ykzwcsfdxarmini63hkf8i8gx70q3yw9wb0bw7wj9rv"))))
+    (build-system meson-build-system)
     (synopsis "C++ library for interacting with JSON")
     (description "JsonCpp is a C++ library that allows manipulating JSON values,
 including serialization and deserialization to and from strings.  It can also
@@ -494,7 +527,14 @@ it a convenient format to store user input files.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1180ln8blrb0mwzpcf78k49hlki6di65q77rsvglf83kfcyh4d7z"))))))
+                "1180ln8blrb0mwzpcf78k49hlki6di65q77rsvglf83kfcyh4d7z"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list #:configure-flags
+           #~'("-DBUILD_SHARED_LIBS:BOOL=YES"
+               #$@(if (%current-target-system)
+                      #~("-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF")
+                      #~()))))))
 
 (define-public json.sh
   (let ((commit "0d5e5c77365f63809bf6e77ef44a1f34b0e05840") ;no releases
@@ -544,7 +584,7 @@ object, without whitespace.")
 (define-public capnproto
   (package
     (name "capnproto")
-    (version "0.8.0")
+    (version "1.0")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -557,26 +597,84 @@ object, without whitespace.")
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-         (add-before 'check 'do-not-require-/etc/services
-           (lambda _
-             ;; Workaround for test that tries to resolve port name from
-             ;; /etc/services, which is not present in build environment.
-             (substitute* "src/kj/async-io-test.c++" ((":http") ":80"))
-             #t))
          (add-before 'check 'use-tmp-for-temporary-files
            (lambda _
              ;; Use /tmp for temporary files, as the default /var/tmp directory
              ;; doesn't exist.
              (substitute* "src/kj/filesystem-disk-test.c++"
                (("VAR\\_TMP \"/var/tmp\"")
-                "VAR_TMP \"/tmp\""))
-             #t)))))
+                "VAR_TMP \"/tmp\"")))))))
     (home-page "https://capnproto.org")
     (synopsis "Capability-based RPC and serialization system")
     (description
      "Cap'n Proto is a very fast data interchange format and capability-based
 RPC system.  Think JSON, except binary.  Or think Protocol Buffers, except faster.")
     (license license:expat)))
+
+(define-public python-msgspec
+  (package
+    (name "python-msgspec")
+    (version "0.16.0")
+    (source (origin
+              ;; There are no tests in the PyPI tarball.
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/jcrist/msgspec")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (modules '((guix build utils)))
+              (snippet
+               ;; Delete autogenerated file, regenerate in a phase.
+               '(begin
+                  (delete-file "msgspec/atof_consts.h")))
+              (sha256
+               (base32
+                "09q567klcv7ly60w9lqip2ffyhrij100ky9igh3p3vqwbml33zb3"))))
+    (build-system pyproject-build-system)
+    (arguments
+     (list
+      ;; Disable only one failing test.
+      ;;
+      ;; AssertionError: msgspec/structs.pyi:7: error: Positional-only
+      ;; parameters are only supported in Python 3.8 and greater
+      #:test-flags #~(list "-k" "not test_mypy")
+      #:phases #~(modify-phases %standard-phases
+                   (add-after 'unpack 'versioneer
+                     (lambda _
+                       (invoke "versioneer" "install")
+                       (substitute* "setup.py"
+                         (("version=versioneer.get_version\\(),")
+                          (format #f "version=~s," #$version)))))
+                   (add-after 'versioneer 'atof-consts
+                     (lambda _
+                       (with-directory-excursion "scripts"
+                         ;; Regenerate the autogenerated file.
+                         (invoke "python" "generate_atof_consts.py")))))))
+    (native-inputs (list python-attrs
+                         python-gcovr
+                         python-msgpack
+                         python-mypy
+                         python-pytest
+                         python-setuptools-scm
+                         python-versioneer))
+    (propagated-inputs (list python-pyyaml python-tomli python-tomli-w))
+    (home-page "https://jcristharif.com/msgspec/")
+    (synopsis "Fast serialization/validation library")
+    (description "@code{msgspec} is a fast serialization and validation
+library, with builtin support for JSON, MessagePack, YAML, and TOML.  It
+includes the following features:
+
+@itemize
+@item High performance encoders/decoders for common protocols.
+@item Support for a wide variety of Python types.
+@item Zero-cost schema validation using familiar Python type annotations.
+@item A speedy Struct type for representing structured data.
+@end itemize")
+    ;; XXX: It might support more architectures but GitHub Actions listed only
+    ;; two right now. Try to build for the rest supported by Guix.  See:
+    ;; https://github.com/jcrist/msgspec/blob/main/.github/workflows/ci.yml#L83
+    (supported-systems (list "x86_64-linux" "aarch64-linux"))
+    (license license:bsd-3)))
 
 (define-public python-ruamel.yaml
   (package
@@ -698,6 +796,20 @@ to generate and parse.  The two primary functions are @code{cbor.loads} and
 C#, C, Go, Java, JavaScript, PHP, and Python.  It was originally created for
 game development and other performance-critical applications.")
     (license license:asl2.0)))
+
+(define-public flatbuffers-next
+  (package
+    (inherit flatbuffers)
+    (version "23.1.21")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/google/flatbuffers")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name "flatbuffers" version))
+              (sha256
+               (base32
+                "1z3a6l8g2y53i5xzraswfs2i0i3kk52zv7nzc2q3fgisbyiri3pz"))))))
 
 (define-public python-feather-format
   (package

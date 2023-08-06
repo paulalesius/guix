@@ -1,6 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2017, 2019, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -24,8 +25,6 @@
   #:use-module (guix http-client)
   #:use-module (json)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-11)
-  #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-34)
   #:use-module (web uri)
   #:use-module (ice-9 match)
@@ -57,9 +56,10 @@ source for metadata."
                                             name "/" relative-url))))
                         '("tar.lz" "tar.xz" "tar.bz2" "tar.gz")))))))
 
-(define (latest-gnome-release package)
+(define* (import-gnome-release package #:key (version #f))
   "Return the latest release of PACKAGE, a GNOME package, or #f if it could
-not be determined."
+not be determined. Optionally include a VERSION string to fetch a specific
+version."
   (define %not-dot
     (char-set-complement (char-set #\.)))
 
@@ -88,6 +88,28 @@ https://discourse.gnome.org/t/new-gnome-versioning-scheme/4235"
     ;; Some packages like "NetworkManager" have camel-case names.
     (package-upstream-name package))
 
+  (define (find-latest-release releases)
+    (fold (match-lambda*
+           (((key . value) result)
+            (cond ((release-version? key)
+                   (match result
+                     (#f
+                      (cons key value))
+                     ((newest . _)
+                      (if (version>? key newest)
+                          (cons key value)
+                          result))))
+                  (else
+                   result))))
+          #f
+          releases))
+
+  (define (find-version-release releases version)
+    (find (match-lambda
+            ((key . value)
+             (string=? key version)))
+          releases))
+
   (guard (c ((http-get-error? c)
              (if (= 404 (http-get-error-code c))
                  #f
@@ -108,20 +130,9 @@ https://discourse.gnome.org/t/new-gnome-versioning-scheme/4235"
       (match json
         (#(4 releases _ ...)
          (let* ((releases (assoc-ref releases upstream-name))
-                (latest   (fold (match-lambda*
-                                  (((key . value) result)
-                                   (cond ((release-version? key)
-                                          (match result
-                                            (#f
-                                             (cons key value))
-                                            ((newest . _)
-                                             (if (version>? key newest)
-                                                 (cons key value)
-                                                 result))))
-                                         (else
-                                          result))))
-                                #f
-                                releases)))
+                (latest (if version
+                            (find-version-release releases version)
+                            (find-latest-release releases))))
            (and latest
                 (jsonish->upstream-source upstream-name latest))))))))
 
@@ -130,4 +141,4 @@ https://discourse.gnome.org/t/new-gnome-versioning-scheme/4235"
    (name 'gnome)
    (description "Updater for GNOME packages")
    (pred (url-prefix-predicate "mirror://gnome/"))
-   (latest latest-gnome-release)))
+   (import import-gnome-release)))

@@ -35,6 +35,7 @@
   #:use-module (gnu packages admin)
   #:use-module (gnu packages dav)
   #:use-module (gnu packages tls)
+  #:use-module (guix deprecation)
   #:use-module (guix modules)
   #:use-module (guix records)
   #:use-module (guix packages)
@@ -42,7 +43,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
-  #:export (dovecot-service
+  #:export (dovecot-service  ; deprecated
             dovecot-service-type
             dovecot-configuration
             opaque-dovecot-configuration
@@ -1577,7 +1578,7 @@ greyed out, instead of only later giving \"not selectable\" popup error.
     (list (shepherd-service
            (documentation "Run the Dovecot POP3/IMAP mail server.")
            (provision '(dovecot))
-           (requirement '(networking))
+           (requirement '(pam networking))
            (start #~(make-forkexec-constructor
                      (list (string-append #$dovecot "/sbin/dovecot")
                            "-F")))
@@ -1601,9 +1602,11 @@ greyed out, instead of only later giving \"not selectable\" popup error.
                        (service-extension activation-service-type
                                           %dovecot-activation)))
                 (description "Run Dovecot, a mail server that can run POP3,
-IMAP, and LMTP.")))
+IMAP, and LMTP.")
+                (default-value (dovecot-configuration))))
 
-(define* (dovecot-service #:key (config (dovecot-configuration)))
+(define-deprecated (dovecot-service #:key (config (dovecot-configuration)))
+  dovecot-service-type
   "Return a service that runs @command{dovecot}, a mail server that can run
 POP3, IMAP, and LMTP.  @var{config} should be a configuration object created
 by @code{dovecot-configuration}.  @var{config} may also be created by
@@ -1651,6 +1654,8 @@ by @code{dovecot-configuration}.  @var{config} may also be created by
   opensmtpd-configuration?
   (package     opensmtpd-configuration-package
                (default opensmtpd))
+  (shepherd-requirement opensmtpd-configuration-shepherd-requirement
+                        (default '())) ; list of symbols
   (config-file opensmtpd-configuration-config-file
                (default %default-opensmtpd-config-file))
   (setgid-commands? opensmtpd-setgid-commands? (default #t)))
@@ -1666,18 +1671,18 @@ action outbound relay
 match from local for any action outbound
 "))
 
-(define opensmtpd-shepherd-service
-  (match-lambda
-    (($ <opensmtpd-configuration> package config-file)
-     (list (shepherd-service
-            (provision '(smtpd))
-            (requirement '(loopback))
-            (documentation "Run the OpenSMTPD daemon.")
-            (start (let ((smtpd (file-append package "/sbin/smtpd")))
-                     #~(make-forkexec-constructor
-                        (list #$smtpd "-f" #$config-file)
-                        #:pid-file "/var/run/smtpd.pid")))
-            (stop #~(make-kill-destructor)))))))
+(define (opensmtpd-shepherd-service config)
+  (match-record config <opensmtpd-configuration>
+                       (package config-file shepherd-requirement)
+    (list (shepherd-service
+           (provision '(smtpd))
+           (requirement `(pam loopback ,@shepherd-requirement))
+           (documentation "Run the OpenSMTPD daemon.")
+           (start (let ((smtpd (file-append package "/sbin/smtpd")))
+                    #~(make-forkexec-constructor
+                       (list #$smtpd "-f" #$config-file)
+                       #:pid-file "/var/run/smtpd.pid")))
+           (stop #~(make-kill-destructor))))))
 
 (define %opensmtpd-accounts
   (list (user-group
@@ -1698,58 +1703,56 @@ match from local for any action outbound
          (home-directory "/var/empty")
          (shell (file-append shadow "/sbin/nologin")))))
 
-(define opensmtpd-activation
-  (match-lambda
-    (($ <opensmtpd-configuration> package config-file)
-     (let ((smtpd (file-append package "/sbin/smtpd")))
-       #~(begin
-           (use-modules (guix build utils))
-           ;; Create mbox and spool directories.
-           (mkdir-p "/var/mail")
-           (mkdir-p "/var/spool/smtpd")
-           (chmod "/var/spool/smtpd" #o711)
-           (mkdir-p "/var/spool/mail")
-           (chmod "/var/spool/mail" #o711))))))
+(define (opensmtpd-activation config)
+  (match-record config <opensmtpd-configuration> (package config-file)
+    (let ((smtpd (file-append package "/sbin/smtpd")))
+      #~(begin
+          (use-modules (guix build utils))
+          ;; Create mbox and spool directories.
+          (mkdir-p "/var/mail")
+          (mkdir-p "/var/spool/smtpd")
+          (chmod "/var/spool/smtpd" #o711)
+          (mkdir-p "/var/spool/mail")
+          (chmod "/var/spool/mail" #o711)))))
 
 (define %opensmtpd-pam-services
   (list (unix-pam-service "smtpd")))
 
-(define opensmtpd-set-gids
-  (match-lambda
-    (($ <opensmtpd-configuration> package config-file set-gids?)
-     (if set-gids?
-         (list
-          (setuid-program
-           (program (file-append package "/sbin/smtpctl"))
-           (setuid? #false)
-           (setgid? #true)
-           (group "smtpq"))
-          (setuid-program
-           (program (file-append package "/sbin/sendmail"))
-           (setuid? #false)
-           (setgid? #true)
-           (group "smtpq"))
-          (setuid-program
-           (program (file-append package "/sbin/send-mail"))
-           (setuid? #false)
-           (setgid? #true)
-           (group "smtpq"))
-          (setuid-program
-           (program (file-append package "/sbin/makemap"))
-           (setuid? #false)
-           (setgid? #true)
-           (group "smtpq"))
-          (setuid-program
-           (program (file-append package "/sbin/mailq"))
-           (setuid? #false)
-           (setgid? #true)
-           (group "smtpq"))
-          (setuid-program
-           (program (file-append package "/sbin/newaliases"))
-           (setuid? #false)
-           (setgid? #true)
-           (group "smtpq")))
-         '()))))
+(define (opensmtpd-set-gids config)
+  (match-record config <opensmtpd-configuration> (package config-file setgid-commands?)
+    (if setgid-commands?
+        (list
+         (setuid-program
+          (program (file-append package "/sbin/smtpctl"))
+          (setuid? #false)
+          (setgid? #true)
+          (group "smtpq"))
+         (setuid-program
+          (program (file-append package "/sbin/sendmail"))
+          (setuid? #false)
+          (setgid? #true)
+          (group "smtpq"))
+         (setuid-program
+          (program (file-append package "/sbin/send-mail"))
+          (setuid? #false)
+          (setgid? #true)
+          (group "smtpq"))
+         (setuid-program
+          (program (file-append package "/sbin/makemap"))
+          (setuid? #false)
+          (setgid? #true)
+          (group "smtpq"))
+         (setuid-program
+          (program (file-append package "/sbin/mailq"))
+          (setuid? #false)
+          (setgid? #true)
+          (group "smtpq"))
+         (setuid-program
+          (program (file-append package "/sbin/newaliases"))
+          (setuid? #false)
+          (setgid? #true)
+          (group "smtpq")))
+        '())))
 
 (define opensmtpd-service-type
   (service-type

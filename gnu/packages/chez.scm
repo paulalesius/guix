@@ -4,7 +4,7 @@
 ;;; Copyright © 2017, 2019 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019 Brett Gilio <brettg@gnu.org>
 ;;; Copyright © 2020 Brendan Tildesley <mail@brendan.scot>
-;;; Copyright © 2021, 2022 Philip McGrath <philip@philipmcgrath.com>
+;;; Copyright © 2021, 2022, 2023 Philip McGrath <philip@philipmcgrath.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -251,10 +251,9 @@ provided and is #f."
                  (if (target-64bit? system)
                      "64"
                      "32")
-                 ;; missing (guix utils) predicate target-little-endian?
-                 (if (target-ppc32? system)
-                     "b"
-                     "l")))
+                 (if (target-little-endian? system)
+                     "l"
+                     "b")))
 
 (define* (racket-cs-native-supported-system? #:optional
                                              (system
@@ -467,7 +466,7 @@ and 32-bit PowerPC architectures.")
   (package
     (inherit chez-scheme)
     (name "chez-scheme-for-racket")
-    (version "9.5.9.8")
+    (version "9.9.9-pre-release.16")
     ;; The version should match `scheme-version`.
     ;; See racket/src/ChezScheme/s/cmacros.ss c. line 360.
     ;; It will always be different than the upstream version!
@@ -693,10 +692,12 @@ source.")))
                          (search-input-file (or native-inputs inputs)
                                             "/opt/racket-vm/bin/racket")
                          "../rktboot/main.rkt"
-                         #$@(if (racket-cs-native-supported-system?)
-                                #~()
-                                (let ((m (nix-system->pbarch-machine-type)))
-                                  #~("--machine" #$m)))))))))))))
+                         ;; Temporary handling of builds on non-x86 architectures,
+                         ;; see https://github.com/racket/racket/issues/3948
+                         ;; Autodetect in rktboot only addresses x86 archs, so far.
+                         #$@(let ((m (or (racket-cs-native-supported-system?)
+                                         (nix-system->pbarch-machine-type))))
+                              #~("--machine" #$m))))))))))))
     (supported-systems
      (package-supported-systems chez-scheme-for-racket))
     (home-page "https://github.com/racket/ChezScheme")
@@ -758,13 +759,7 @@ Chez Scheme.")))
        ;; though it would probably be easy to add.
        (propagated-inputs
         (list xorg-rgb
-              (texlive-updmap.cfg
-               (list texlive-dvips-l3backend
-                     texlive-hyperref
-                     texlive-bibtex
-                     texlive-epsf
-                     texlive-fonts-ec
-                     texlive-oberdiek))
+              (texlive-updmap.cfg (list texlive-epsf))
               ghostscript
               netpbm))
        ;; Debian uses a versionless path for STEXLIB,
@@ -1013,18 +1008,11 @@ create compilers, making them easier to understand and maintain.")
       (native-inputs
        (list (chez-scheme-for-system)
              ghostscript
-             ;; FIXME: This package fails to build with the error:
-             ;;     mktexpk: don't know how to create bitmap font for bchr8r
-             ;; Replacing the following with `texlive` fixes it.
-             ;; What is missing?
-             (texlive-updmap.cfg (list texlive-oberdiek
-                                       texlive-epsf
-                                       texlive-metapost
-                                       texlive-charter
-                                       texlive-pdftex
-                                       texlive-context
-                                       texlive-cm
-                                       texlive-tex-plain))))
+             (texlive-updmap.cfg
+              (list texlive-charter
+                    texlive-context
+                    texlive-cweb
+                    texlive-metapost))))
       (arguments
        (list
         #:make-flags
@@ -1034,9 +1022,18 @@ create compilers, making them easier to understand and maintain.")
                 ;; lib/chez-scheme/chezweb ???
                 (string-append "LIBDIR=" #$output "/lib/chezweb")
                 (string-append "TEXDIR=" #$output "/share/texmf-local"))
-        #:tests? #f ; no tests
+        #:tests? #f                     ; no tests
         #:phases
         #~(modify-phases %standard-phases
+            (add-after 'unpack 'fix-tex-input
+              (lambda _
+                ;; Fix "I can't find file `supp-pdf'." error.
+                (substitute* "chezweb.w"
+                  (("supp-pdf") "supp-pdf.mkii"))
+                ;; Recent cweb packages do not include "\acrofalse".  Remove
+                ;; it.
+                (substitute* "doc/cwebman.tex"
+                  (("\\acrofalse.*") ""))))
             ;; This package has a custom "bootstrap" script that
             ;; is meant to be run from the Makefile.
             (delete 'bootstrap)
@@ -1078,10 +1075,10 @@ programming in Scheme.")
       (native-inputs
        (list (chez-scheme-for-system)
              chez-web
-             (texlive-updmap.cfg (list texlive-pdftex))))
+             (texlive-updmap.cfg)))
       (arguments
        (list
-        #:tests? #f ; no tests
+        #:tests? #f                     ; no tests
         #:phases
         #~(modify-phases %standard-phases
             (replace 'configure
@@ -1239,7 +1236,7 @@ syntax, with various aliases for commonly used patterns.")
                (replace 'install
                  (lambda* (#:key (make-flags '()) #:allow-other-keys)
                    (apply invoke "make" "chez-install" make-flags))))))
-    (home-page "http://synthcode.com/scheme/fmt")
+    (home-page "https://synthcode.com/scheme/fmt")
     (synopsis "Combinator formatting library for Chez Scheme")
     (description "This package provides a library of procedures for
 formatting Scheme objects to text in various ways, and for easily

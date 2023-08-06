@@ -83,10 +83,12 @@ there are none."
        dir)))
 
   (define native-input-directories
-    (match native-inputs
+    ;; When cross-compiling, the source appears in native-inputs rather than
+    ;; inputs.
+    (match (and=> native-inputs (cut alist-delete "source" <>))
       (((_ . dir) ...)
        dir)
-      (#f                                         ; not cross compiling
+      (#f                               ;not cross-compiling
        '())))
 
   ;; Tell 'ld-wrapper' to disallow non-store libraries.
@@ -727,9 +729,9 @@ which cannot be found~%"
                      ;; UTF-8-encoded.
                      (with-fluids ((%default-port-encoding "UTF-8"))
                        (substitute* files
-                         (("^Exec=([^/[:blank:]\r\n]*)(.*)$" _ binary rest)
+                         (("^Exec=([^/[:blank:]\r\n]+)(.*)$" _ binary rest)
                           (string-append "Exec=" (which binary) rest))
-                         (("^TryExec=([^/[:blank:]\r\n]*)(.*)$" _ binary rest)
+                         (("^TryExec=([^/[:blank:]\r\n]+)(.*)$" _ binary rest)
                           (string-append "TryExec="
                                          (which binary) rest)))))))))
             outputs))

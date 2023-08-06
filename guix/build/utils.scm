@@ -3,11 +3,11 @@
 ;;; Copyright © 2013 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2013 Nikita Karetnikov <nikita@karetnikov.org>
 ;;; Copyright © 2015, 2018, 2021 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2018 Arun Isaac <arunisaac@systemreboot.net>
+;;; Copyright © 2018, 2022 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2020 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2020, 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
-;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
+;;; Copyright © 2021, 2022 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2021 Brendan Tildesley <mail@brendan.scot>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -48,6 +48,7 @@
                ;; <https://debbugs.gnu.org/cgi/bugreport.cgi?bug=26805#16>.
                delete)
   #:export (%store-directory
+            %store-hash-string-length
             store-file-name?
             strip-store-file-name
             package-name->name+version
@@ -60,8 +61,11 @@
             directory-exists?
             executable-file?
             symbolic-link?
+            switch-symlinks
             call-with-temporary-output-file
             call-with-ascii-input-file
+            file-header-match
+            png-file?
             elf-file?
             ar-file?
             gzip-file?
@@ -86,6 +90,8 @@
             search-error?
             search-error-path
             search-error-file
+
+            define-constant
 
             every*
             alist-cons-before
@@ -125,6 +131,16 @@
             make-desktop-entry-file
 
             locale-category->string))
+
+
+;;;
+;;; Syntax
+;;;
+
+;; Note that in its current form VAL doesn't get evaluated, just simply
+;; inlined. TODO?
+(define-syntax-rule (define-constant name val)
+  (define-syntax name (identifier-syntax val)))
 
 
 ;;;
@@ -183,15 +199,21 @@ compression."
       (getenv "NIX_STORE")              ;inside builder, set by the daemon
       "/gnu/store"))
 
+(define-constant %store-hash-string-length 32)
+
 (define (store-file-name? file)
   "Return true if FILE is in the store."
   (string-prefix? (%store-directory) file))
 
+(define (store-path-prefix-length)
+  (+ 2         ; the slash after %store-directory, and the dash after the hash
+     (string-length (%store-directory))
+     %store-hash-string-length))
+
 (define (strip-store-file-name file)
   "Strip the '/gnu/store' and hash from FILE, a store file name.  The result
 is typically a \"PACKAGE-VERSION\" string."
-  (string-drop file
-               (+ 34 (string-length (%store-directory)))))
+  (string-drop file (store-path-prefix-length)))
 
 (define (package-name->name+version name)
   "Given NAME, a package name like \"foo-0.9.1b\", return two values:
@@ -237,6 +259,25 @@ introduce the version part."
 (define (symbolic-link? file)
   "Return #t if FILE is a symbolic link (aka. \"symlink\".)"
   (eq? (stat:type (lstat file)) 'symlink))
+
+(define (switch-symlinks link target)
+  "Atomically switch LINK, a symbolic link, to point to TARGET.  Works
+both when LINK already exists and when it does not."
+  (let ((pivot (string-append link ".new")))
+    ;; Create pivot link, deleting it if it already exists. This can
+    ;; happen if a previous switch-symlinks was interrupted.
+    (let symlink/remove-old ()
+      (catch 'system-error
+        (lambda ()
+          (symlink target pivot))
+        (lambda args
+          (if (= (system-error-errno args) EEXIST)
+              (begin
+                ;; Remove old link and retry.
+                (delete-file pivot)
+                (symlink/remove-old))
+              (apply throw args)))))
+    (rename-file pivot link)))
 
 (define (call-with-temporary-output-file proc)
   "Call PROC with a name of a temporary file and open output port to that
@@ -290,6 +331,15 @@ with the bytes in HEADER, a bytevector."
         (if (= EISDIR (system-error-errno args))
             #f                                    ;FILE is a directory
             (apply throw args))))))
+
+(define %png-magic-bytes
+  ;; Magic bytes of PNG images, see ‘5.2 PNG signatures’ in
+  ;; ‘Portable Network Graphics (PNG) Specification (Second Edition)’
+  ;; on <https://www.w3.org/TR/PNG/>.
+  #vu8(137 80 78 71 13 10 26 10))
+
+(define png-file?
+  (file-header-match %png-magic-bytes))
 
 (define %elf-magic-bytes
   ;; Magic bytes of ELF files.  See <elf.h>.

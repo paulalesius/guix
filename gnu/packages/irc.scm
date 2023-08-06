@@ -2,10 +2,10 @@
 ;;; Copyright © 2013 Cyril Roelandt <tipecaml@gmail.com>
 ;;; Copyright © 2014 Kevin Lemonnier <lemonnierk@ulrar.net>
 ;;; Copyright © 2015, 2017 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Nikita <nikita@n0.is>
 ;;; Copyright © 2017 Marius Bakke <mbakke@fastmail.com>
-;;; Copyright © 2017–2022 Tobias Geerinckx-Rice <me@tobias.gr>
+;;; Copyright © 2017–2023 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2020 Oleg Pykhalov <go.wigust@gmail.com>
 ;;; Copyright © 2020, 2021, 2022 Vinicius Monego <monego@posteo.net>
 ;;; Copyright © 2020 Jakub Kądziołka <kuba@kadziolka.net>
@@ -34,11 +34,12 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix download)
   #:use-module (guix git-download)
-  #:use-module (guix utils)
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system go)
+  #:use-module (guix build-system haskell)
   #:use-module (guix build-system meson)
   #:use-module (guix build-system python)
   #:use-module (guix build-system qt)
@@ -62,10 +63,15 @@
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnupg)
+  #:use-module (gnu packages golang)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages haskell-check)
+  #:use-module (gnu packages haskell-crypto)
+  #:use-module (gnu packages haskell-xyz)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages lxqt)
+  #:use-module (gnu packages man)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages openldap)
   #:use-module (gnu packages kde)
@@ -89,6 +95,65 @@
   #:use-module (gnu packages web)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26))
+
+(define-public glirc
+  (package
+  (name "glirc")
+  (version "2.39.0.1")
+  (source
+   (origin
+     (method url-fetch)
+     (uri (hackage-uri "glirc" version))
+     (sha256
+      (base32 "0jaywb43jfv6kzyz540k02mxdgw1shc6hn7kia21alssszkilh4r"))))
+  (build-system haskell-build-system)
+  (arguments
+   (list
+    #:phases
+    #~(modify-phases %standard-phases
+      (add-after 'install 'install-extra-documentation
+        (lambda _
+          (install-file "glirc.1"
+                        (string-append #$output "/share/man/man1"))
+          ;; The man page is very terse and punts to the GitHub wiki for real
+          ;; information.  Some of that is also in the README, so install it.
+          (install-file "README.md"
+                        (string-append #$output "/share/doc/"
+                                       #$name "-" #$version)))))))
+  (native-inputs
+   (list ghc-hunit))
+  (inputs
+   (list ghc-async
+         ghc-attoparsec
+         ghc-base64-bytestring
+         ghc-config-schema
+         ghc-config-value
+         ghc-curve25519
+         ghc-free
+         ghc-githash
+         ghc-hashable
+         ghc-hookup
+         ghc-hsopenssl
+         ghc-irc-core
+         ghc-kan-extensions
+         ghc-lens
+         ghc-network
+         ghc-psqueues
+         ghc-random
+         ghc-regex-tdfa
+         ghc-split
+         ghc-unordered-containers
+         ghc-vector
+         ghc-vty))
+  (home-page "https://github.com/glguy/irc-core")
+  (synopsis "Console IRC client")
+  (description
+   "Glirc is a console IRC client that focuses on providing both high-detail
+and concise views of an IRC connection.  All views and transformation are
+dynamic and don't change the underlying model.  It also provides advanced
+line-editing features including syntax-highlighting, multi-line buffering,
+and argument placeholders.")
+  (license license:isc)))
 
 (define-public quassel
   (package
@@ -152,7 +217,7 @@ irssi, but graphical.")
 (define-public irssi
   (package
     (name "irssi")
-    (version "1.4.3")
+    (version "1.4.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/irssi/irssi/"
@@ -160,7 +225,7 @@ irssi, but graphical.")
                                   version ".tar.xz"))
               (sha256
                (base32
-                "0d04bam0lrk66wi7ygd5si5y6adf2ajhh6mn89zyc8m34d972gxr"))))
+                "1bby23mn7318dmxf8aw9ahs6j4mbc0ilm4swji4m8ixiqz49xzpy"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
@@ -195,14 +260,14 @@ Conferencing} and @acronym{ICB, Internet Citizen's Band}.")
 (define-public weechat
   (package
     (name "weechat")
-    (version "3.6")
+    (version "4.0.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://weechat.org/files/src/weechat-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "1ppj676gwh67krq92xnfkmh3qnwbz8d51djsscxw013x7cdxg1cx"))))
+                "0g026j47140h8kqyh3l0367fq9194wdx8q7f4na0kj14s3h8wr0f"))))
     (build-system cmake-build-system)
     (outputs '("out" "doc"))
     (native-inputs
@@ -210,9 +275,7 @@ Conferencing} and @acronym{ICB, Internet Citizen's Band}.")
        ("pkg-config" ,pkg-config)
        ,@(if (target-x86?)
            `(("ruby-asciidoctor" ,ruby-asciidoctor))
-           '())
-       ;; For tests.
-       ("cpputest" ,cpputest)))
+           '())))
     (inputs
      (list aspell
            curl
@@ -233,9 +296,9 @@ Conferencing} and @acronym{ICB, Internet Citizen's Band}.")
        (list "-DENABLE_PHP=OFF"
              ,@(if (target-x86?)
                  '("-DENABLE_MAN=ON"
-                   "-DENABLE_DOC=ON")
-                '())
-             "-DENABLE_TESTS=ON")       ; ‘make test’ fails otherwise
+                   "-DENABLE_DOC=ON"
+                   "-DENABLE_DOC_INCOMPLETE=ON")
+                '()))
        #:phases
        (modify-phases %standard-phases
          ,@(if (target-x86?)
@@ -346,19 +409,23 @@ for the IRCv3 protocol.")
 (define-public catgirl
   (package
     (name "catgirl")
-    (version "1.9a")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://git.causal.agency/catgirl/snapshot/"
-                                  name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "0pci8crcgm33zb58y7ky2aydzyqsirj8ri8ik1zdlz6npadbjj9h"))))
+    (version "2.2")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.causal.agency/catgirl")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0r1h10qdhhgy3359ndbjh269daivm126qc0c23db7bffv0xs4bff"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f ; no tests
-       #:make-flags (list (string-append "PREFIX=" %output)
-                          ,(string-append "CC=" (cc-for-target)))))
+     (list
+      #:tests? #f                       ; no tests
+      #:make-flags
+      #~(list (string-append "prefix=" #$output)
+              (string-append "CC=" #$(cc-for-target)))))
     (native-inputs
      (list universal-ctags pkg-config))
     (inputs
@@ -387,22 +454,23 @@ highlighted.
 (define-public ii
   (package
     (name "ii")
-    (version "1.9")
+    (version "2.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://dl.suckless.org/tools/"
                                   name "-" version ".tar.gz"))
               (sha256
                (base32
-                "05wcaszm9hap5gqf58bciqm3ad1kfgp976fs3fsn3ll3nliv6345"))))
+                "0ns2wpzkk7qzhv7addgr0w5as0m7jwag5nxai2dr61wc436syrsg"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f                      ; no tests
-       #:make-flags (list (string-append "PREFIX=" %output)
-                          ,(string-append "CC=" (cc-for-target)))
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure))))         ; no configure
+     (list #:tests? #f                  ; no tests
+           #:make-flags
+           #~(list (string-append "PREFIX=" #$output)
+                   (string-append "CC=" #$(cc-for-target)))
+           #:phases
+           #~(modify-phases %standard-phases
+               (delete 'configure))))   ; no configure script
     (home-page "https://tools.suckless.org/ii/")
     (synopsis "FIFO and file system based IRC client")
     (description
@@ -437,7 +505,7 @@ highlighted.
 (define-public kirc
   (package
     (name "kirc")
-    (version "0.2.9")
+    (version "0.3.2")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -445,7 +513,7 @@ highlighted.
                      (commit version)))
               (file-name (git-file-name name version))
               (sha256
-               (base32 "0ahmfxhgcvnlgmxxbv9vga5x6krab1n7qq55ygj7hj3x7s7ra419"))))
+               (base32 "1ighpinss3k6xyqk05wrs76wvp2ahhh0jkkg8h7bhg66b14fsws9"))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f                      ; no tests
@@ -586,17 +654,90 @@ interface for those who are accustomed to the ircII way of doing things.")
                    ;; distribute binaries.
                    (license:non-copyleft "http://epicsol.org/copyright")))))
 
+(define-public go-gopkg-in-irc-v3
+  (package
+    (name "go-gopkg-in-irc-v3")
+    (version "3.1.4")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://gopkg.in/irc.v3")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0f2vv947yf9ygy8ylwqkd9yshybfdsbsp9pffjyvm7l7rnq5da60"))))
+    (build-system go-build-system)
+    (arguments
+     '(;; TODO 3 tests fail because of missing files
+       ;; https://paste.sr.ht/~whereiseveryone/784d068887a65c1b869caa7d7c2077d28a2b2187
+       #:tests? #f
+       #:import-path "gopkg.in/irc.v3" #:unpack-path "gopkg.in/irc.v3"))
+    (propagated-inputs
+     `(("go-gopkg-in-yaml-v2" ,go-gopkg-in-yaml-v2)
+       ("go-github-com-stretchr-testify" ,go-github-com-stretchr-testify)))
+    (home-page "https://gopkg.in/irc.v3")
+    (synopsis "Low-level IRC library for Go")
+    (description "Package irc provides a simple IRC library meant as a
+building block for other projects.")
+    (license license:expat)))
+
+(define-public chathistorysync
+  (package
+    (name "chathistorysync")
+    (version "0.2.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.sr.ht/~emersion/chathistorysync")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "03dxr178wnicggx0k95wvyzgyk4s4g0adbi2z0md517a5qd1lh23"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:import-path "git.sr.ht/~emersion/chathistorysync"
+           #:install-source? #f ; chathistorysync is an end-user application.
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'build 'doc
+                 (lambda _
+                   (with-directory-excursion
+                       "src/git.sr.ht/~emersion/chathistorysync"
+                     (invoke "sh" "-c"
+                             "scdoc <chathistorysync.1.scd >chathistorysync.1"))))
+               (add-after 'install 'install-doc
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let* ((out (assoc-ref outputs "out")))
+                     (with-directory-excursion
+                         "src/git.sr.ht/~emersion/chathistorysync"
+                       (install-file
+                        "chathistorysync.1"
+                        (string-append out "/share/man/man1")))))))))
+    (inputs
+     (list go-golang-org-x-sys
+           go-golang-org-x-term
+           go-golang-org-x-crypto
+           go-gopkg-in-irc-v3))
+    (native-inputs (list scdoc))
+    (home-page "https://git.sr.ht/~emersion/chathistorysync")
+    (synopsis "Synchronization tool for IRC chat history")
+    (description
+     "This package provides a synchronization tool for IRC chat history.")
+    (license license:agpl3)))
+
 (define-public litterbox
   (package
     (name "litterbox")
-    (version "1.8")
+    (version "1.9")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://git.causal.agency/litterbox/snapshot/litterbox-"
                            version ".tar.gz"))
        (sha256
-        (base32 "0ll5d18slngdg2qhaxkvrcq2p1admh0h7sr06wx8347ka0vvrgjl"))))
+        (base32 "1ag5x7h71pxjaaf4b561rwdqr05zzywkc0p3jf2yhg3lbjkjrc7z"))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f ; There are no tests.
@@ -675,7 +816,7 @@ but can also be used independently as a logging bot.")
            gnutls
            libmaxminddb
            mbedtls-apache
-           mysql
+           (list mariadb "dev")
            openldap
            openssl
            `(,pcre "bin")

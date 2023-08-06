@@ -1,8 +1,8 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2012, 2013, 2014, 2015, 2016 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014, 2015 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2018 Efraim Flashner <efraim@flashner.co.il>
-;;; Copyright © 2021 Marius Bakke <marius@gnu.org>
+;;; Copyright © 2018, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2021, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2022 Paul A. Patience <paul@apatience.com>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -29,6 +29,7 @@
   #:use-module (gnu packages libsigsegv)
   #:use-module (gnu packages multiprecision)
   #:use-module (guix packages)
+  #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix utils)
@@ -38,55 +39,45 @@
 (define-public gawk
   (package
    (name "gawk")
-   (version "5.1.0")
+   (version "5.2.1")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnu/gawk/gawk-" version
                                 ".tar.xz"))
             (sha256
-             (base32 "1gc2cccqy1x1bf6rhwlmd8q7dz7gnam6nwgl38bxapv6qm5flpyg"))))
+             (base32 "0kvy78jdv6lww1s6y2jm1w2cj46mz1fhflgdj9bwq64y3ywm6db7"))))
    (build-system gnu-build-system)
    (arguments
-    `(#:phases (modify-phases %standard-phases
-                 (add-before 'configure 'set-shell-file-name
-                   (lambda* (#:key inputs #:allow-other-keys)
-                     ;; Refer to the right shell.
-                     (let ((bash (assoc-ref inputs "bash")))
-                       (substitute* "io.c"
-                         (("/bin/sh")
-                          (string-append bash "/bin/sh")))
+    (list #:phases
+          #~(modify-phases %standard-phases
+              (add-before 'configure 'set-shell-file-name
+                (lambda* (#:key inputs #:allow-other-keys)
+                  ;; Refer to the right shell.
+                  (let ((/bin/sh (search-input-file inputs "bin/sh")))
+                    (substitute* "io.c"
+                      (("/bin/sh") /bin/sh))
 
-                       ;; When cross-compiling, remove dependencies on the
-                       ;; `check-for-shared-lib-support' target, which tries
-                       ;; to run the cross-built `gawk'.
-                       ,@(if (%current-target-system)
-                             '((substitute* "extension/Makefile.in"
+                    ;; When cross-compiling, remove dependencies on the
+                    ;; `check-for-shared-lib-support' target, which tries
+                    ;; to run the cross-built `gawk'.
+                    #$@(if (%current-target-system)
+                           '((substitute* "extension/Makefile.in"
                                  (("^.*: check-for-shared-lib-support" match)
                                   (string-append "### " match))))
-                             '()))))
+                           '()))))
 
-                 (add-before 'check 'adjust-test-infrastructure
-                   (lambda _
-                     ;; Remove dependency on 'more' (from util-linux), which
-                     ;; would needlessly complicate bootstrapping.
-                     (substitute* "test/Makefile"
-                       (("\\| more") ""))
+              (add-before 'check 'adjust-test-infrastructure
+                (lambda _
+                  ;; Remove dependency on 'more' (from util-linux), which
+                  ;; would needlessly complicate bootstrapping.
+                  (substitute* "test/Makefile"
+                    (("\\| more") ""))
 
-                     ;; Silence a warning from bash about not being able
-                     ;; to change to an ISO-8859-1 locale.  The test itself
-                     ;; works fine, but newer versions of bash give a
-                     ;; locale warning which mangles the test output.
-                     (substitute* "test/localenl.sh"
-                       (("for LC_ALL in")
-                        "for LC in")
-                       (("export LC_ALL\n")
-                        "export LC_ALL=$LC 2>/dev/null\n"))
-
-                     ;; Adjust the shebang in that file since it is then diff'd
-                     ;; against the actual test output.
-                     (substitute* "test/watchpoint1.ok"
-                       (("#! /usr/bin/gawk")
-                        (string-append "#!" (which "gawk")))))))))
+                  ;; Adjust the shebang in that file since it is then diff'd
+                  ;; against the actual test output.
+                  (substitute* "test/watchpoint1.ok"
+                    (("#! /usr/bin/gawk")
+                     (string-append "#!" (which "gawk")))))))))
 
    (inputs (list libsigsegv
                  ;; Use the full-fledged Bash package, otherwise the test suite

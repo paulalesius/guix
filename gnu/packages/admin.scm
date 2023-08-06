@@ -1,15 +1,15 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2013 Cyril Roelandt <tipecaml@gmail.com>
 ;;; Copyright © 2014, 2015, 2016, 2018, 2019, 2020 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022 Eric Bavier <bavier@posteo.net>
+;;; Copyright © 2014, 2015-2018, 2020-2023 Eric Bavier <bavier@posteo.net>
 ;;; Copyright © 2015, 2016 Taylan Ulrich Bayırlı/Kammer <taylanbayirli@gmail.com>
 ;;; Copyright © 2015 Alex Sassmannshausen <alex.sassmannshausen@gmail.com>
 ;;; Copyright © 2015 Eric Dvorsak <eric@dvorsak.fr>
 ;;; Copyright © 2016, 2017, 2020 Leo Famulari <leo@famulari.name>
 ;;; Copyright © 2016 Pjotr Prins <pjotr.guix@thebird.nl>
 ;;; Copyright © 2016, 2017 Ricardo Wurmus <rekado@elephly.net>
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Peter Feigl <peter.feigl@nexoid.at>
 ;;; Copyright © 2016 John J. Foerch <jjfoerch@earthlink.net>
 ;;; Copyright © 2016, 2017 Nikita <nikita@n0.is>
@@ -31,11 +31,11 @@
 ;;; Copyright © 2019, 2021, 2022 Guillaume Le Vaillant <glv@posteo.net>
 ;;; Copyright © 2019, 2020, 2021 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2020 Oleg Pykhalov <go.wigust@gmail.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022 Michael Rohleder <mike@rohleder.de>
 ;;; Copyright © 2020 Vincent Legoll <vincent.legoll@gmail.com>
 ;;; Copyright © 2020 Morgan Smith <Morgan.J.Smith@outlook.com>
-;;; Copyright © 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2021 Zheng Junjie <873216071@qq.com>
 ;;; Copyright © 2021 Stefan Reichör <stefan@xsteve.at>
 ;;; Copyright © 2021 qblade <qblade@protonmail.com>
@@ -53,8 +53,13 @@
 ;;; Copyright © 2022 Petr Hodina <phodina@protonmail.com>
 ;;; Copyright © 2022 Andreas Rammhold <andreas@rammhold.de>
 ;;; Copyright © 2022 ( <paren@disroot.org>
-;;; Copyright © 2022 Matthew James Kraai <kraai@ftbfs.org>
+;;; Copyright © 2022, 2023 Matthew James Kraai <kraai@ftbfs.org>
 ;;; Copyright © 2022 jgart <jgart@dismail.de>
+;;; Copyright © 2023 Juliana Sims <jtsims@protonmail.com>
+;;; Copyright © 2023 Lu Hui <luhux76@gmail.com>
+;;; Copyright © 2023 Yovan Naumovski <yovan@gorski.stream>
+;;; Copyright © 2023 Alexey Abramov <levenson@mmer.org>
+;;; Copyright © 2023 Bruno Victal <mirai@makinata.eu>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -81,6 +86,7 @@
   #:use-module (guix build-system meson)
   #:use-module (guix build-system perl)
   #:use-module (guix build-system python)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system qt)
   #:use-module (guix build-system ruby)
   #:use-module (guix build-system trivial)
@@ -108,6 +114,7 @@
   #:use-module (gnu packages cryptsetup)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages cyrus-sasl)
+  #:use-module (gnu packages datastructures)
   #:use-module (gnu packages dns)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages file)
@@ -125,7 +132,6 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages guile-xyz)
-  #:use-module (gnu packages hurd)
   #:use-module (gnu packages image)
   #:use-module (gnu packages imagemagick)
   #:use-module (gnu packages inkscape)
@@ -153,6 +159,7 @@
   #:use-module (gnu packages polkit)
   #:use-module (gnu packages popt)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
@@ -325,12 +332,9 @@ interface and is based on GNU Guile.")
     (license license:gpl3+)
     (home-page "https://www.gnu.org/software/shepherd/")))
 
-;; Update on the next rebuild cycle.
-(define-public shepherd shepherd-0.8)
-
 (define-public shepherd-0.9
   (package
-    (inherit shepherd)
+    (inherit shepherd-0.8)
     (version "0.9.3")
     (source (origin
               (method url-fetch)
@@ -365,31 +369,30 @@ interface and is based on GNU Guile.")
                          guile-fibers-1.1))       ;for cross-compilation
     (inputs (list guile-3.0-latest guile-fibers-1.1))))
 
-(define-public guile2.2-shepherd
+(define-public shepherd-0.10
   (package
     (inherit shepherd-0.9)
+    (version "0.10.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnu/shepherd/shepherd-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0v9ld9gbqdp5ya380fbkdsxa0iqr90gi6yk004ccz3n792nq6wlj"))))
+    (native-inputs (modify-inputs (package-native-inputs shepherd-0.9)
+                     (replace "guile-fibers" guile-fibers-1.3)))
+    (inputs (modify-inputs (package-inputs shepherd-0.9)
+              (replace "guile-fibers" guile-fibers-1.3)))))
+
+(define-public shepherd shepherd-0.9)
+
+(define-public guile2.2-shepherd
+  (package
+    (inherit shepherd-0.10)
     (name "guile2.2-shepherd")
     (native-inputs (list pkg-config guile-2.2))
     (inputs (list guile-2.2 guile2.2-fibers))))
-
-(define-public guile2.0-shepherd
-  (package
-    (inherit shepherd)
-    (name "guile2.0-shepherd")
-    (native-inputs
-     (list help2man pkg-config guile-2.0))
-    (inputs
-     (list guile-2.0))
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-source
-           (lambda _
-             ;; (ice-9 threads) isn't available in guile-2.0
-             (substitute* "modules/shepherd.scm"
-               ((".*\\(ice-9 threads\\).*") ""))
-             #t)))
-       ,@(package-arguments shepherd)))))
 
 (define-public cfm
   (package
@@ -591,7 +594,7 @@ graphs and can export its output to different formats.")
 (define-public facter
   (package
     (name "facter")
-    (version "4.0.52")
+    (version "4.4.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -600,63 +603,61 @@ graphs and can export its output to different formats.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "05j4q87sak1f1isj7ngzr59h3j3xskfwjjwfv0xd7lhwcaxg3a3c"))))
+                "080v0ml2svw2vbzfa659v8718pmhh2kav0l0q1jjvc6mm8sgnmmn"))))
     (build-system ruby-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'delete-facter-ng-gemspec
-           (lambda _
-             ;; XXX: ruby-build-system incorrectly finds
-             ;; facter-ng.gemspec from this directory and tries to
-             ;; build that instead of the proper facter.gemspec.
-             ;; Just delete it as a workaround, as it appears to
-             ;; only exist for backwards-compatibility after the
-             ;; facter-ng->facter rename.
-             (delete-file "agent/facter-ng.gemspec")
-             #t))
-         (add-after 'unpack 'embed-absolute-references
-           ;; Refer to absolute executable file names to avoid propagation.
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* (find-files "lib/facter/resolvers" "\\.rb$")
-               (("execute\\('(which |)([^ ']+)" _ _ name)
-                (string-append "execute('" (or (which name)
-                                               name))))
-             #t))
-         (delete 'check)
-         (add-after 'wrap 'check
-           (lambda* (#:key tests? outputs #:allow-other-keys)
-             ;; XXX: The test suite wants to run Bundler and
-             ;; complains that the gemspec is invalid.  For now
-             ;; just make sure that we can run the wrapped
-             ;; executable directly.
-             (if tests?
-                 (invoke (string-append (assoc-ref outputs "out")
-                                        "/bin/facter")
-                         ;; Many facts depend on /sys, /etc/os-release,
-                         ;; etc, so we only run a small sample.
-                         "facterversion" "architecture"
-                         "kernel" "kernelversion")
-                 (format #t "tests disabled~%"))
-             #t)))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'delete-facter-ng-gemspec
+            (lambda _
+              ;; XXX: ruby-build-system incorrectly finds
+              ;; facter-ng.gemspec from this directory and tries to
+              ;; build that instead of the proper facter.gemspec.
+              ;; Just delete it as a workaround, as it appears to
+              ;; only exist for backwards-compatibility after the
+              ;; facter-ng->facter rename.
+              (delete-file "agent/facter-ng.gemspec")))
+          (add-after 'unpack 'embed-absolute-references
+            ;; Refer to absolute executable file names to avoid propagation.
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* (find-files "lib/facter/resolvers" "\\.rb$")
+                (("execute\\('(which |)([^ ']+)" _ _ name)
+                 (string-append "execute('" (or (which name)
+                                                name))))))
+          (delete 'check)
+          (add-after 'wrap 'check
+            (lambda* (#:key tests? outputs #:allow-other-keys)
+              ;; XXX: The test suite wants to run Bundler and
+              ;; complains that the gemspec is invalid.  For now
+              ;; just make sure that we can run the wrapped
+              ;; executable directly.
+              (if tests?
+                  (invoke (string-append (assoc-ref outputs "out")
+                                         "/bin/facter")
+                          ;; Many facts depend on /sys, /etc/os-release,
+                          ;; etc, so we only run a small sample.
+                          "facterversion" "architecture"
+                          "kernel" "kernelversion")
+                  (format #t "tests disabled~%")))))))
     (inputs
-     `(("ruby-hocon" ,ruby-hocon)
-       ("ruby-sys-filesystem" ,ruby-sys-filesystem)
-       ("ruby-thor" ,ruby-thor)
+     (list ruby-hocon
+           ruby-sys-filesystem
+           ruby-thor
 
-       ;; For ‘embed-absolute-references’.
-       ("dmidecode" ,dmidecode)
-       ("inetutils" ,inetutils)         ; for ‘hostname’
-       ("iproute" ,iproute)
-       ("pciutils" ,pciutils)
-       ("util-linux" ,util-linux)))
+           ;; For ‘embed-absolute-references’.
+           dmidecode
+           inetutils                    ; for ‘hostname’
+           iproute
+           pciutils
+           util-linux))
     (synopsis "Collect and display system facts")
     (description
      "Facter is a tool that gathers basic facts about nodes (systems) such
 as hardware details, network settings, OS type and version, and more.  These
 facts can be collected on the command line with the @command{facter} command
 or via the @code{facter} Ruby library.")
-    (home-page "https://github.com/puppetlabs/facter-ng")
+    (home-page "https://github.com/puppetlabs/facter")
     (license license:expat)))
 
 (define-public ttyload
@@ -768,7 +769,7 @@ on memory usage on GNU/Linux systems.")
 (define-public htop
   (package
     (name "htop")
-    (version "3.2.1")
+    (version "3.2.2")
     (source
      (origin
        (method git-fetch)
@@ -776,28 +777,11 @@ on memory usage on GNU/Linux systems.")
              (url "https://github.com/htop-dev/htop")
              (commit version)))
        (sha256
-        (base32 "0yfmkw3y4qyd42svhpiijif7krvmnb8z88y6h9g4fwf7sfynq2rk"))
+        (base32 "0cyaprgnhfrc7rqq053903bjylaplvxkb65b04bsxmiva09lvf9s"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (inputs
-     `(("ncurses" ,ncurses)
-       ("lm-sensors" ,lm-sensors "lib")
-       ("libcap" ,libcap)
-       ("hwloc" ,hwloc "lib")))
-    (arguments
-     `(#:configure-flags
-       '("--enable-hwloc"
-         "--enable-sensors=yes"
-         "--enable-capabilities")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'wrap-program
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (libsensors (assoc-ref inputs "lm-sensors")))
-               (wrap-program (string-append out "/bin/htop")
-                 `("LD_LIBRARY_PATH" ":" prefix
-                   (,(string-append libsensors "/lib"))))))))))
+     (list ncurses))
     (native-inputs
      (list autoconf automake python-minimal-wrapper))     ; for scripts/MakeHeader.py
     (home-page "https://htop.dev")
@@ -911,14 +895,14 @@ re-executing them as necessary.")
 (define-public inetutils
   (package
     (name "inetutils")
-    (version "2.0")
+    (version "2.3")
     (source (origin
-             (method url-fetch)
-             (uri (string-append "mirror://gnu/inetutils/inetutils-"
-                                 version ".tar.gz"))
-             (sha256
-              (base32
-               "0j1nb69bhg29cm4xkqqjh2ln1zqcj2lnpm92v638lpwrs11dypxl"))))
+              (method url-fetch)
+              (uri (string-append "mirror://gnu/inetutils/inetutils-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "1dj4ilxy1wrfxhxc85iya3x28h1mhjpqc5nv862xcq3ww2gqkv8w"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags '("--localstatedir=/var"
@@ -928,7 +912,7 @@ re-executing them as necessary.")
                            ,@(if (%current-target-system)
                                  '("--with-path-procnet-dev=/proc/net/dev")
                                  '())
-                           ,@(if (hurd-target?)
+                           ,@(if (target-hurd?)
                                  '("--disable-rcp"
                                    "--disable-rexec"
                                    "--disable-rexecd"
@@ -942,19 +926,21 @@ re-executing them as necessary.")
        ;; Make sure that canonical "coreutils" package is not referred.
        #:make-flags
        (list (string-append "CPPFLAGS=-DPATHDEF_CP=\\\""
-                            (assoc-ref %build-inputs "coreutils*")
-                            "/bin/cp\\\""))
+                            (search-input-file %build-inputs "bin/cp")
+                            "\\\""))
        ;; On some systems, 'libls.sh' may fail with an error such as:
        ;; "Failed to tell switch -a apart from -A".
        #:parallel-tests? #f))
-    (inputs `(("coreutils*" ,coreutils)
-              ("shadow" ,shadow)    ;for login (used in telnetd and rlogind)
-              ("ncurses" ,ncurses)
-              ("readline" ,readline)))        ;for 'ftp'
-    (native-inputs (if (member (%current-system)
-                               (package-supported-systems net-tools))
-                       `(("netstat" ,net-tools))  ;for tests
-                       '()))
+    (inputs
+     (list coreutils
+           shadow                     ;for login (used in telnetd and rlogind)
+           ncurses
+           readline))                   ;for 'ftp'
+    (native-inputs
+     (if (member (%current-system)
+                 (package-supported-systems net-tools))
+         (list net-tools)               ;for tests
+         '()))
     (home-page "https://www.gnu.org/software/inetutils/")
     (synopsis "Basic networking utilities")
     (description
@@ -966,21 +952,21 @@ hostname.")
 (define-public shadow
   (package
     (name "shadow")
-    (version "4.9")
+    (version "4.13")
     (source (origin
               (method url-fetch)
               (uri (string-append
                     "https://github.com/shadow-maint/shadow/releases/"
-                    "download/v" version "/shadow-" version ".tar.xz"))
+                    "download/" version "/shadow-" version ".tar.xz"))
               (sha256
                (base32
-                "0i4iijbshnwnsrskxzrh18xgmzff0hdpsnnkmyc2gdn1x4n1zv7y"))))
+                "0b6xz415b4y3y5nk3pw9xibv05kln4cjbmhybyncmrx2g5fj9zls"))))
     (build-system gnu-build-system)
     (arguments
      `(;; Assume System V `setpgrp (void)', which is the default on GNU
        ;; variants (`AC_FUNC_SETPGRP' is not cross-compilation capable.)
        #:configure-flags
-       '(,@(if (hurd-target?)
+       '(,@(if (target-hurd?)
              '()
              '("--with-libpam"))
           "shadow_cv_logdir=/var/log"
@@ -1016,7 +1002,13 @@ hostname.")
                (substitute* "lib/nscd.c"
                  (("/usr/sbin/nscd")
                   (string-append libc "/sbin/nscd"))))))
-         (add-after 'install 'remove-groups
+         (add-after 'install 'install-man-pages
+           (lambda _
+             ;; The top-level Makefile.am wrongfully has "SUBDIRS += man"
+             ;; under "if ENABLE_REGENERATE_MAN", even though prebuilt man
+             ;; pages are available.  Thus, install them manually.
+             (invoke "make" "-C" "man" "install")))
+         (add-after 'install-man-pages 'remove-groups
            (lambda* (#:key outputs #:allow-other-keys)
              ;; Remove `groups', which is already provided by Coreutils.
              (let* ((out (assoc-ref outputs "out"))
@@ -1025,7 +1017,7 @@ hostname.")
                (delete-file (string-append bin "/groups"))
                (for-each delete-file (find-files man "^groups\\."))))))))
     (inputs
-     `(,@(if (hurd-target?)
+     `(,@(if (target-hurd?)
            '()
            `(("linux-pam" ,linux-pam)))
        ,@(if (%current-target-system)
@@ -1037,26 +1029,9 @@ hostname.")
      "Shadow provides a number of authentication-related tools, including:
 login, passwd, su, groupadd, and useradd.")
 
-    (properties '((hidden? . #t)))                ;see below
-
     ;; The `vipw' program is GPLv2+.
     ;; libmisc/salt.c is public domain.
     (license license:bsd-3)))
-
-(define-public shadow-with-man-pages
-  ;; TODO: Merge with 'shadow' on the next core-updates cycle.
-  (package/inherit shadow
-    (properties '())                              ;not hidden
-    (arguments
-     (substitute-keyword-arguments (package-arguments shadow)
-       ((#:phases phases '%standard-phases)
-        `(modify-phases ,phases
-           (add-after 'install 'install-man-pages
-             (lambda _
-               ;; The top-level Makefile.am wrongfully has "SUBDIRS += man"
-               ;; under "if ENABLE_REGENERATE_MAN", even though prebuilt man
-               ;; pages are available.  Thus, install them manually.
-               (invoke "make" "-C" "man" "install")))))))))
 
 (define-public mingetty
   (package
@@ -1178,7 +1153,7 @@ ONC RPC numbers.")
        (let ((out (assoc-ref %outputs "out")))
          (list (string-append "--mandir=" out "/share/man")
                (string-append "--infodir=" out "/share/info")))))
-    (home-page "http://netcat.sourceforge.net")
+    (home-page "https://netcat.sourceforge.net")
     (synopsis "Read and write data over TCP/IP")
     (description
      "Netcat is a featured networking utility which reads and writes data
@@ -1192,7 +1167,7 @@ would need and has several interesting built-in capabilities.")
 (define-public netcat-openbsd
   (package
     (name "netcat-openbsd")
-    (version "1.218-5")
+    (version "1.219-1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1201,7 +1176,7 @@ would need and has several interesting built-in capabilities.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0hpbmz9m2q22a6qgbn9590z2x96xgffim8g0m1v47mariz3pqhlc"))))
+                "1fhrmnbdl6bgsjk02vi78zy9i486mmniymbbbhdkzl8zfjbjkpxc"))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f                      ; no test suite
@@ -1295,7 +1270,7 @@ IPv6, proxies, and Unix sockets.")
                   "1gpvd2kjyhs18sh6sga5bk9wj8s78blfd4c0m38r0wl92jx2yv1b"))))))
     (inputs
      (list ncurses))
-    (home-page "http://nmon.sourceforge.net/")
+    (home-page "https://nmon.sourceforge.net/")
     (synopsis
      "Monitor system performance in a terminal or to a @file{.csv} log file")
     (description
@@ -1426,14 +1401,14 @@ connection alive.")
                                       bind-release-version)))
     (package
       (name "isc-dhcp")
-      (version "4.4.3")
+      (version "4.4.3-P1")
       (source (origin
                 (method url-fetch)
                 (uri (string-append "https://ftp.isc.org/isc/dhcp/"
                                     version "/dhcp-" version ".tar.gz"))
                 (sha256
                  (base32
-                  "062q2g8cj2zv0zv22x6pg21m21bdlscxkg3li0ac0pm0qasccghf"))))
+                  "1ivkvhhvqxap6c51cli7pa6xn76ngxri1zbl45ishz4ranxidi0a"))))
       (build-system gnu-build-system)
       (arguments
        `(#:parallel-build? #f
@@ -1550,8 +1525,8 @@ connection alive.")
        (list config perl file))
 
       (inputs `(("inetutils" ,inetutils)
-                ("bash" ,(canonical-package bash-minimal)) ;for wrap-program
-                ,@(if (hurd-target?) '()
+                ("bash" ,bash-minimal)
+                ,@(if (target-hurd?) '()
                       `(("net-tools" ,net-tools)
                         ("iproute" ,iproute)))
 
@@ -1576,7 +1551,10 @@ connection alive.")
       (description
        "ISC's Dynamic Host Configuration Protocol (DHCP) distribution provides a
 reference implementation of all aspects of DHCP, through a suite of DHCP
-tools: server, client, and relay agent.")
+tools: server, client, and relay agent.
+
+This software is @emph{end-of-life}!  ISC does not intend to issue any further
+maintenance releases.")
       (license license:mpl2.0)
       (properties '((cpe-name . "dhcp"))))))
 
@@ -1683,14 +1661,14 @@ network statistics collection, security monitoring, network debugging, etc.")
 (define-public tcpdump
   (package
     (name "tcpdump")
-    (version "4.99.1")
+    (version "4.99.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://www.tcpdump.org/release/tcpdump-"
                                   version ".tar.gz"))
               (sha256
                (base32
-                "1ghfs5gifzrk3813zf9zalfbjs70wg6llz6q31k180r7zf2nkcvr"))))
+                "1slzwjk5f8sygwxqci4vkbas0qqcgs5a0w3f8br6p7gjn8dj6ch2"))))
     (build-system gnu-build-system)
     (inputs (list libpcap openssl))
     (native-inputs (list perl))        ; for tests
@@ -1819,7 +1797,7 @@ over ssh connections.")
 (define-public realmd
   (package
     (name "realmd")
-    (version "0.17.0")
+    (version "0.17.1")
     (source
      (origin
        (method git-fetch)
@@ -1828,8 +1806,7 @@ over ssh connections.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32
-         "1c6q2a86kk2f1akzc36nh52hfwsmmc0mbp6ayyjxj4zsyk9zx5bf"))))
+        (base32 "063cf4jkpfj548a7dxmffrpbh3j413nq3zy1zzj20lcfffnnaqwn"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags '("--with-systemd-unit-dir=no"
@@ -1983,7 +1960,7 @@ system administrator.")
 (define-public sudo
   (package
     (name "sudo")
-    (version "1.9.12p1")
+    (version "1.9.14p3")
     (source (origin
               (method url-fetch)
               (uri
@@ -1993,7 +1970,7 @@ system administrator.")
                                     version ".tar.gz")))
               (sha256
                (base32
-                "1n5ppabp9ark1qz7xi63528s07pmpak67c7agj8v5a1xxfl1hnj7"))
+                "0qibg30d30gy85g83fj6gsg59g1sj3i9mkfl0k0851dwqjqii0x0"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -2012,9 +1989,9 @@ system administrator.")
 
              ;; 'visudo.c' expects _PATH_MV to be defined, but glibc doesn't
              ;; provide it.
-             (string-append "CPPFLAGS=-D_PATH_MV='\""
+             (string-append "CPPFLAGS=-D_PATH_MV=\\\""
                             (assoc-ref %build-inputs "coreutils")
-                            "/bin/mv\"'"))
+                            "/bin/mv\\\""))
 
        ;; Avoid non-determinism; see <http://bugs.gnu.org/21918>.
        #:parallel-build? #f
@@ -2059,7 +2036,7 @@ system administrator.")
      (list groff))
     (inputs
      `(("coreutils" ,coreutils)
-       ,@(if (hurd-target?)
+       ,@(if (target-hurd?)
            '()
            `(("linux-pam" ,linux-pam)))
        ("zlib" ,zlib)))
@@ -2236,6 +2213,10 @@ command.")
     (name "wpa-supplicant")
     (inputs (modify-inputs (package-inputs wpa-supplicant-minimal)
               (prepend dbus)))
+    (source (origin
+              (inherit (package-source wpa-supplicant-minimal))
+              (patches (search-patches
+                        "wpa-supplicant-dbus-group-policy.patch"))))
     (arguments
      (substitute-keyword-arguments (package-arguments wpa-supplicant-minimal)
        ((#:phases phases)
@@ -2325,7 +2306,9 @@ command.")
                      (display "CONFIG_LIBNL32=y
                                CONFIG_IEEE80211R=y
                                CONFIG_IEEE80211N=y
-                               CONFIG_IEEE80211AC=y\n" port)
+                               CONFIG_IEEE80211AC=y
+                               CONFIG_FULL_DYNAMIC_VLAN=y
+                               CONFIG_ACS=y\n" port)
                      (close-port port))))
                (add-after 'unpack 'patch-pkg-config
                  (lambda _
@@ -2436,15 +2419,15 @@ module slots, and the list of I/O ports (e.g. serial, parallel, USB).")
 (define-public acpica
   (package
     (name "acpica")
-    (version "20220331")
+    (version "20230628")
     (source (origin
               (method url-fetch)
               (uri (string-append
-                    "https://acpica.org/sites/acpica/files/acpica-unix2-"
+                    "https://downloadmirror.intel.com/783536/acpica-unix2-"
                     version ".tar.gz"))
               (sha256
                (base32
-                "0yjcl00nnnlw01sz6a1i5d3v75gr17mkbxkxfx2v344al33abk8w"))))
+                "1fmkng72zb0yqp4hfl8a6pqmylixqbpjd43xmi6k3p74x5qiq0h6"))))
     (build-system gnu-build-system)
     (native-inputs (list flex bison))
     (arguments
@@ -2471,13 +2454,13 @@ development, not the kernel implementation of ACPI.")
 (define-public s-tui
   (package
     (name "s-tui")
-    (version "1.1.3")
+    (version "1.1.4")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "s-tui" version))
        (sha256
-        (base32 "1l2ik5iwmb8vxa2aqdy62zfy3zfzbpq5a0pgpka2vvlw9ivpqy5p"))))
+        (base32 "1vf9gpfk9x6sqpz7n420ijkn3ykws8g9b77kmbmlrjsm76dnp1dj"))))
     (build-system python-build-system)
     (inputs
      (list python-psutil python-urwid))
@@ -2491,14 +2474,14 @@ utilization, temperature and power.")
 (define-public stress
   (package
     (name "stress")
-    (version "1.0.5")
+    (version "1.0.7")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://debian/pool/main/s/stress/stress_"
                                   version ".orig.tar.gz"))
               (sha256
                (base32
-                "09shpd85g8dvpiw0mnwykss676g0s7lbi8ab37xjinb5lfff960p"))))
+                "1cg0mklfrwfyzwqkzidd0151r8n2jgbiiqz1v0p3w4q62mkmdand"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf automake))
@@ -2623,24 +2606,20 @@ characters can be replaced as well, as can UTF-8 characters.")
 (define-public tree
   (package
     (name "tree")
-    (version "2.0.4")
+    (version "2.1.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
                     "https://mama.indstate.edu/users/ice/tree/src/tree-"
                     version ".tgz"))
               (sha256
-               (base32 "0x7s9wxvf83fw4qah16kapswl2277pybw3d514zrlms9g0cr5smh"))))
+               (base32 "1mchmdkq77d4c2mx7xmarccbk46a3sm2aqslarjwgxrs81gxbhyk"))))
     (build-system gnu-build-system)
     (arguments
      (list
        #:phases
        #~(modify-phases %standard-phases
-           (delete 'configure)          ; No configure script.
-           (add-after 'unpack 'fix-manpage-version
-             (lambda _
-               (substitute* "doc/tree.1"
-                 (("Tree 2\\.0\\.0") (string-append "Tree " #$version))))))
+           (delete 'configure))         ; No configure script.
        #:tests? #f                      ; No check target.
        #:make-flags
        #~(list (string-append "PREFIX=" #$output)
@@ -2754,7 +2733,7 @@ various ways that may be running with too much privilege.")
 (define-public smartmontools
   (package
     (name "smartmontools")
-    (version "7.2")
+    (version "7.3")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -2762,7 +2741,7 @@ various ways that may be running with too much privilege.")
                     version "/smartmontools-" version ".tar.gz"))
               (sha256
                (base32
-                "1mlc25sd5rgj5xmzcllci47inmfdw7cp185fday6hc9rwqkqmnaw"))))
+                "0ax2wf5j8k2fbm85s0rbj9sajn5q3j2a2k22wyqcyn0cin0ghi55"))))
     (build-system gnu-build-system)
     (arguments
      (list #:make-flags
@@ -2781,7 +2760,7 @@ degradation and failure.")
 (define-public fdupes
   (package
     (name "fdupes")
-    (version "2.1.2")
+    (version "2.2.1")
     (source
      (origin
        (method url-fetch)
@@ -2789,7 +2768,7 @@ degradation and failure.")
                            "releases/download/v" version "/"
                            "fdupes-" version ".tar.gz"))
        (sha256
-        (base32 "1g9p50xhi2sp0hqxml4w2k0kq9jv988q2yxm347z5349dlxvap6d"))))
+        (base32 "13b9qph8nmxwns9n28im3f7bdzhpjas51vckm9b7h5ghlffbfsw4"))))
     (build-system gnu-build-system)
     (inputs
      (list ncurses pcre2))
@@ -2803,13 +2782,13 @@ specified directories.")
 (define-public ansible-core
   (package
     (name "ansible-core")
-    (version "2.11.6")
+    (version "2.14.4")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "ansible-core" version))
        (sha256
-        (base32 "0fih7nxszni8imi5sywsifd976v77ydhip43pzg7dd65qy1h5mck"))))
+        (base32 "057g87smxcn6zc558xk4zr6ga4q8clmkyxghn5gx60a94sy61clh"))))
     (build-system python-build-system)
     (arguments
      `(#:modules ((guix build python-build-system)
@@ -2845,10 +2824,25 @@ sys.argv[0] = re.sub(r'\\.([^/]*)-real$', r'\\1', sys.argv[0])
                                (and (eq? 'symlink (stat:type (lstat x)))
                                     (string-prefix? "ansible-" x)
                                     (string=? "ansible" (readlink x)))))))))
+         (add-after 'unpack 'skip-controller-tests
+           (lambda _
+             ;; XXX: This disables all the controller tests, which fail for
+             ;; unknown reasons, seemingly while attempting to set the
+             ;; locale to en_US.UTF-8.
+             (substitute* "test/lib/ansible_test/_internal/commands\
+/units/__init__.py"
+               (("^            if test_context == TestContext.controller:.*"
+                 all)
+                (string-append all "                continue\n")))))
          (add-after 'unpack 'preserve-pythonpath
            (lambda _
              (substitute* "test/lib/ansible_test/_internal/ansible_util.py"
                (("PYTHONPATH=get_ansible_python_path\\(args\\)" all)
+                (string-append all "+ ':' + os.environ['GUIX_PYTHONPATH']")))
+             (substitute* "test/lib/ansible_test/_internal/commands\
+/units/__init__.py"
+               (("PYTHONPATH=get_units_ansible_python_path\\(args, \
+test_context)" all)
                 (string-append all "+ ':' + os.environ['GUIX_PYTHONPATH']")))))
          (add-after 'unpack 'patch-paths
            (lambda* (#:key inputs outputs #:allow-other-keys)
@@ -2860,18 +2854,10 @@ sys.argv[0] = re.sub(r'\\.([^/]*)-real$', r'\\1', sys.argv[0])
                (("/usr/bin/python")
                 (which "python")))))
          (replace 'check
-           ;; The environment for the test suite can be tricky to get right.
-           ;; The environment used for Ansible's CI defined in the following
-           ;; Dockerfile can be used as a reference:
-           ;; https://raw.githubusercontent.com/ansible/
-           ;; default-test-container/master/Dockerfile.
            (lambda* (#:key inputs outputs tests? #:allow-other-keys)
              (when tests?
                ;; Otherwise Ansible fails to create its config directory.
                (setenv "HOME" "/tmp")
-               (setenv "PATH" (string-append (getenv "PATH") ":"
-                                             (assoc-ref outputs "out") "/bin"))
-               (add-installed-pythonpath inputs outputs)
                ;; This test module messes up with sys.path and causes many
                ;; test failures.
                (delete-file "test/units/_vendor/test_vendor.py")
@@ -2880,11 +2866,23 @@ sys.argv[0] = re.sub(r'\\.([^/]*)-real$', r'\\1', sys.argv[0])
                (delete-file "test/units/utils/test_display.py")
                ;; This test fail for reasons unknown.
                (delete-file "test/units/cli/test_adhoc.py")
+               ;; These tests fail in the container; it appears that the
+               ;; mocking of the absolute file names such as /usr/bin/svcs do
+               ;; not work as intended there.
+               (delete-file "test/units/modules/test_iptables.py")
+               (delete-file "test/units/modules/test_service.py")
+               ;; These tests fail with a "unsupported locale setting" error
+               ;; when invoking 'locale.setlocale(locale.LC_ALL, '')'
+               (delete-file "test/units/module_utils/basic/\
+test_command_nonexisting.py")
+               (delete-file "test/units/module_utils/basic/test_tmpdir.py")
                ;; The test suite needs to be run with 'ansible-test', which
                ;; does some extra environment setup.  Taken from
                ;; https://raw.githubusercontent.com/ansible/ansible/\
                ;; devel/test/utils/shippable/shippable.sh.
-               (invoke "ansible-test" "units" "-v")))))))
+               (invoke "ansible-test" "units" "-v"
+                       "--num-workers" (number->string
+                                        (parallel-job-count)))))))))
     (native-inputs
      (list openssh
            openssl
@@ -2902,7 +2900,7 @@ sys.argv[0] = re.sub(r'\\.([^/]*)-real$', r'\\1', sys.argv[0])
      (list python-cryptography
            python-jinja2
            python-pyyaml
-           python-packaging ;for version number parsing
+           python-packaging             ;for version number parsing
            python-resolvelib-0.5))
     (home-page "https://www.ansible.com/")
     (synopsis "Radically simple IT automation")
@@ -2930,16 +2928,15 @@ provides the following commands:
 (define-public ansible
   (package
     (name "ansible")
-    (version "4.7.0")
+    (version "7.4.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "ansible" version))
        (sha256
-        (base32 "0aab9id6dqfw2111r731c7y1p77dpzczynmgl4d989p3a7n54z0b"))))
+        (base32 "142barhwz0wx5kn74xi0bfl21iwq2yq3jp14kxajsg9nggndcr09"))))
     (build-system python-build-system)
-    (propagated-inputs
-     (list ansible-core))
+    (propagated-inputs (list ansible-core))
     ;; The Ansible collections are found by ansible-core via the Python search
     ;; path; the following search path ensures that they are found even when
     ;; Python is not present in the profile.
@@ -2949,7 +2946,7 @@ provides the following commands:
      ;; variable in the tests/cpan.scm test.
      (list (search-path-specification
             (variable "GUIX_PYTHONPATH")
-            (files (list "lib/python3.9/site-packages")))))
+            (files (list "lib/python3.10/site-packages")))))
     (home-page "https://www.ansible.com/")
     (synopsis "Radically simple IT automation")
     (description "Ansible aims to be a radically simple IT automation system.
@@ -2983,7 +2980,7 @@ modules and plugins that extend Ansible.")
     (inputs
      (list ansible
            encfs
-           fuse
+           fuse-2
            util-linux ;; for umount
            findutils
            gnupg
@@ -3322,14 +3319,14 @@ rules is done with the @code{auditctl} utility.")
 (define-public nmap
   (package
     (name "nmap")
-    (version "7.92")
+    (version "7.93")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://nmap.org/dist/nmap-" version
                                   ".tar.bz2"))
               (sha256
                (base32
-                "18bifn67kz2wxkbnfwcrin2xrhc6qf4p2bvxfqb2a2vbi8pryix5"))
+                "0lb6s4nmmicfnc221mzgx2w51dcd4b2dhx22pabcqnp2jd3zxg2m"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -3342,18 +3339,7 @@ rules is done with the @code{auditctl} utility.")
                               ;; Remove pre-compiled binares.
                               "mswin32"))))))
     (build-system gnu-build-system)
-    (inputs
-     `(("openssl" ,openssl)
-       ("libpcap" ,libpcap)
-       ("pcre" ,pcre)
-       ("lua" ,lua)
-       ("zlib" ,zlib)                   ;for NSE compression support
-
-       ;; For 'ndiff'.
-       ("python" ,python-2)))
-
-    ;; TODO Add zenmap output.
-    (outputs '("out" "ndiff"))
+    (outputs '("out" "ndiff"))          ; TODO Add zenmap output
     (arguments
      `(#:configure-flags '("--without-zenmap")
        #:phases
@@ -3396,6 +3382,13 @@ rules is done with the @code{auditctl} utility.")
                        "check-dns")))))
        ;; Nmap can't cope with out-of-source building.
        #:out-of-source? #f))
+    (inputs
+     (list libpcap
+           lua
+           openssl-3.0
+           pcre
+           zlib                         ; for NSE compression
+           python-2))                   ; for ndiff
     (home-page "https://nmap.org/")
     (synopsis "Network discovery and security auditing tool")
     (description
@@ -3404,7 +3397,7 @@ tool.  It is also useful for tasks such as network inventory, managing service
 upgrade schedules, and monitoring host or service uptime.  It also provides an
 advanced netcat implementation (ncat), a utility for comparing scan
 results (ndiff), and a packet generation and response analysis tool (nping).")
-    ;; See <https://github.com/nmap/nmap/issues/2199#issuecomment-894812634>.
+    ;; See <https://github.com/nmap/nmap/issues/2199#issuecomment-1380592744>.
     ;; This package uses nmap's bundled versions of libdnet and liblinear, which
     ;; both use a 3-clause BSD license.
     (license (list license:nmap license:bsd-3))))
@@ -3460,6 +3453,52 @@ throughput (in the same interval).")
     (home-page "http://dag.wiee.rs/home-made/dstat/")
     (license license:gpl2+)))
 
+(define-public dool
+  (package
+    (name "dool")
+    (version "1.1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/scottchiefbaker/dool")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name "dool" version))
+       (sha256
+        (base32 "13qq52lq7z3pl2mgrhwqh8c69p9x5rkyjqjswszd6vdbzm7zk7yq"))))
+    (build-system python-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'remove-symlinks-and-snap-packaging
+            ;; Remove symlinks that make 'ensure-no-mtimes-pre-1980 fail.
+            (lambda _
+              (delete-file "examples/dstat.py")
+              (delete-file-recursively "packaging/snap")))
+          (delete 'build)
+          (replace 'install
+            (lambda _
+              (substitute* "install.py"
+                (("(bin_dir *= ?).*" _ prefix)
+                 (string-append prefix  "\"" #$output "/bin/\"\n"))
+                (("(plugin_dir *= ?).*" _ prefix)
+                 (string-append prefix "\"" #$output "/share/dool/\"\n"))
+                (("(manpage_dir *= ?).*" _ prefix)
+                 (string-append prefix "\"" #$output "/share/man/man1/\"\n")))
+              (invoke "python" "install.py" "--root")))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "./dool" "--version")
+                (invoke "./dool" "-taf" "1" "5")))))))
+    (synopsis "Command line system resource monitoring tool")
+    (description "Dool is a command line tool to monitor many aspects of your
+system: CPU, Memory, Network, Load Average, etc.  It also includes a robust
+plug-in architecture to allow monitoring other system metrics.")
+    (home-page "https://github.com/scottchiefbaker/dool")
+    (license license:gpl2+)))
+
 (define-public thefuck
   (package
     (name "thefuck")
@@ -3504,24 +3543,27 @@ a new command using the matched rule, and runs it.")
 (define-public di
   (package
     (name "di")
-    (version "4.51")
+    (version "4.52")
     (source
      (origin
        (method url-fetch)
-       (uri (string-append "mirror://sourceforge/diskinfo-di/di-" version ".tar.gz"))
+       (uri (string-append "mirror://sourceforge/diskinfo-di/"
+                           "di-" version ".tar.gz"))
        (sha256
-        (base32 "1fv12j9b9sw6p38lcbzcw87zl5qp1aa7a4a4jn3449zz9af15ckr"))))
+        (base32 "07vsnn1gxm3r7dchbrq63iazd64gza2ac7b2m1039708rf5flxdp"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f                      ; obscure test failures
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)            ; no configure script
-         (add-before 'build 'setup-environment
-           (lambda* (#:key outputs #:allow-other-keys)
-             (setenv "CC" ,(cc-for-target))
-             (setenv "prefix" (assoc-ref outputs "out")))))
-       #:make-flags (list "--environment-overrides")))
+     (list
+      #:tests? #f                       ; obscure test failures
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)           ; no configure script
+          (add-before 'build 'override-environment
+            (lambda _
+              (setenv "CC" #$(cc-for-target))
+              (setenv "prefix" #$output))))
+      #:make-flags
+      #~(list "--environment-overrides")))
     (home-page "https://gentoo.com/di/")
     (synopsis "Advanced df like disk information utility")
     (description
@@ -3534,7 +3576,7 @@ produce uniform output across heterogeneous networks.")
 (define-public cbatticon
   (package
     (name "cbatticon")
-    (version "1.6.10")
+    (version "1.6.13")
     (source
      (origin
        (method git-fetch)
@@ -3542,7 +3584,7 @@ produce uniform output across heterogeneous networks.")
              (url "https://github.com/valr/cbatticon")
              (commit version)))
        (sha256
-        (base32 "0ivm2dzhsa9ir25ry418r2qg2llby9j7a6m3arbvq5c3kaj8m9jr"))
+        (base32 "1xs37xrycvk0021r5l3xs4ijgf3lm25d2zhm8dppb5kx66xcj22m"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (arguments
@@ -3754,7 +3796,7 @@ in order to be able to find it.
 (define-public xfel
   (package
     (name "xfel")
-    (version "1.2.4")
+    (version "1.2.9")
     (source
      (origin
        (method git-fetch)
@@ -3762,7 +3804,7 @@ in order to be able to find it.
               (url "https://github.com/xboot/xfel.git")
               (commit (string-append "v" version))))
        (sha256
-         (base32 "0r4j63vh6279fj1yh71h08d1av3nc0majlad5yh6admsxiig101m"))
+         (base32 "0gs37w5zjfmyadm49hdalq6vr6gidc683agz3shncgj93x2hxx02"))
        (file-name (git-file-name name version))))
     (native-inputs
      (list pkg-config))
@@ -3780,12 +3822,14 @@ in order to be able to find it.
                 (("/usr/local") out)
                 (("/usr") out)
                 (("/etc/udev/rules.d")
-                 (string-append out "/lib/udev/rules.d"))))))
+                 (string-append out "/lib/udev/rules.d"))
+                (("udevadm control --reload") ; next version will remove this
+                  "")))))
          (delete 'configure))))
     (home-page "https://github.com/xboot/xfel")
-    (synopsis "Remote debugging tool for Allwinner D1 computers")
-    (description "This package contains a debugging tool for Allwinner D1
-devices (connects via USB OTG).")
+    (synopsis "Remote debugging tool for Allwinner devices")
+    (description "This package contains a debugging tool for Allwinner devices
+(connects via USB OTG).")
     (license license:expat)))
 
 (define-public sedsed
@@ -3853,17 +3897,18 @@ buffers.")
 (define-public igt-gpu-tools
   (package
     (name "igt-gpu-tools")
-    ;; You should very likely remove the 'fix-meson.build phase when upgrading.
-    (version "1.26")
+    (version "1.27.1")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://gitlab.freedesktop.org/drm/igt-gpu-tools.git")
-             (commit (string-append "igt-gpu-tools-" version))))
+             (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0m124pqv7zna25jnvk566c4kk628jr0w8mgnp8mr5xqz9cprgczm"))))
+        (base32 "0d6jsj77qddccv0vfmqmbw3k2prvxzvmgc8zdi83gdi3wpp5i7zd"))
+       (patches
+        (search-patches "igt-gpu-tools-Use-libproc2.patch"))))
     (build-system meson-build-system)
     (arguments
      `(#:tests? #f              ; many of the tests try to load kernel modules
@@ -3872,13 +3917,7 @@ buffers.")
          (add-after 'unpack 'find-rst2man.py
            (lambda _
              (substitute* "man/meson.build"
-               (("'rst2man'") "'rst2man.py'"))))
-         (add-after 'unpack 'fix-meson.build
-           ;; Fix ‘ERROR: Function does not take positional arguments.’
-           (lambda _
-             (substitute* "lib/meson.build"
-               (("f\\.underscorify\\(f\\)")
-                "f.underscorify()")))))))
+               (("'rst2man'") "'rst2man.py'")))))))
     (inputs
      (list cairo
            elfutils ; libdw
@@ -3936,19 +3975,20 @@ you are running, what theme or icon set you are using, etc.")
 (define-public hyfetch
   (package
     (name "hyfetch")
-    (version "1.4.1")
+    (version "1.4.8")
     (source
-      (origin
-        (method url-fetch)
-        (uri (pypi-uri "HyFetch" version))
-        (sha256
-          (base32 "18s8r63aqyah34vbahccgkiqw4008i2w5kvhqd9s8bdd4yvsrn4n"))))
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/hykilpikonna/hyfetch")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "127nwgxcq0fs9wavs0sqv8zqdz7yfahw1nr9pgb6z5yjnc5cdcx3"))))
     (build-system python-build-system)
-    (inputs (list python-hypy-utils python-typing-extensions))
-    (arguments `(#:phases (modify-phases %standard-phases
-                            (add-before 'build 'set-HOME
-                              (lambda _  ;; Tries to set files in .config
-                                (setenv "HOME" "/tmp"))))))
+    (arguments (list #:tests? #f))      ;no tests
+    (inputs (list python-typing-extensions))
     (home-page "https://github.com/hykilpikonna/HyFetch")
     (synopsis "@code{neofetch} with pride flags <3")
     (description "HyFetch is a command-line system information tool fork of
@@ -3958,6 +3998,48 @@ the pattern of the pride flag of your choice.  The main purpose of HyFetch is to
 be used in screenshots to show other users what operating system or distribution
 you are running, what theme or icon set you are using, etc.")
     (license license:expat)))
+
+(define-public uwufetch
+  (package
+    (name "uwufetch")
+    (version "2.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/TheDarkBug/uwufetch")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "182jwkm4vacz2bhyn7v4jl9bxs7md51az958r0qfp9ky71m2q3vh"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #f ;no tests
+      #:make-flags
+      #~(list (string-append "DESTDIR=" #$output)
+              (string-append "ETC_DIR=" #$output "/etc")
+              (string-append "CC=" #$(cc-for-target)))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (add-before 'build 'path-source-paths
+            (lambda _
+              (substitute* "uwufetch.c"
+                (("(/usr(/local)?)(.*;)" all _ _ rest)
+                 (string-append #$output rest))))))))
+    (inputs (list lshw
+                  ;; viu XXX not yet packaged in Guix
+                  xwininfo))
+    (home-page "https://github.com/TheDarkBug/uwufetch")
+    (synopsis "Meme system info tool based on Nyan/UwU trend")
+    (description
+     "UwUFetch is a system information tool in the lineage of NeoFetch,
+PFetch, HyFetch, and the like.  It prints ASCII art of your system's logo as
+well as a summary of system information.  UwUFetch's unique contribution is the
+uwu-ification of various words used in the description.  For example, Guix
+becomes gUwUix.")
+    (license license:gpl3+)))
 
 (define-public screenfetch
   (package
@@ -4012,20 +4094,20 @@ everyone's screenshots nowadays.")
     (license license:gpl3)))
 
 (define-public ufetch
-  (let ((commit "98b622023e03fe24dbc137e9a68104dfe1fbd04a")
-        (revision "1"))
+  (let ((commit "12b68fa35510a063582d626ccd1abc48f301b6b1")
+        (revision "0"))
     (package
       (name "ufetch")
-      (version (git-version "0.2" revision commit))
+      (version "0.3")
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
                       (url "https://gitlab.com/jschx/ufetch.git")
-                      (commit commit)))
+                      (commit (string-append "v" version))))
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "09c4zmikza16xpydinnqbi3hmcibfrrn10wij7j0j1wv1pj2sl2l"))))
+                  "0sv17zmvhp0vfdscs8yras7am10ah7rpfyfia608sx74k845bfyl"))))
       (build-system trivial-build-system)
       (inputs
        `(("bash" ,bash)
@@ -4058,7 +4140,7 @@ everyone's screenshots nowadays.")
       (home-page "https://gitlab.com/jschx/ufetch")
       (synopsis "Tiny system info")
       (description "This package provides a tiny system info utility.")
-      (license license:isc))))
+      (license license:expat))))
 
 (define-public pfetch
   (let ((commit "e18a0959ab98b963744755ec4687e59dc11db3c5")
@@ -4102,14 +4184,14 @@ information tool.")
 (define-public nnn
   (package
     (name "nnn")
-    (version "4.6")
+    (version "4.7")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/jarun/nnn/releases/download/v"
                            version "/nnn-v" version ".tar.gz"))
        (sha256
-        (base32 "0gvyvynw957yirvc1aj65flzni7niaj5bvyk82ka5dfgi2dazb0m"))))
+        (base32 "0dbm54m3iv8hzar38dsfxh77z4mlpjj649ga82s0wwms4vlrm5pg"))))
     (build-system gnu-build-system)
     (inputs
      (list ncurses readline))
@@ -4137,7 +4219,7 @@ hard-coded.")
 (define-public thermald
   (package
     (name "thermald")
-    (version "2.4.7")
+    (version "2.5.3")
     (source
      (origin
       (method git-fetch)
@@ -4146,7 +4228,7 @@ hard-coded.")
              (commit (string-append "v" version))))
       (file-name (git-file-name name version))
       (sha256
-       (base32 "1n0ih86bkm09bzhjl7hllxkl4gzcxvzsznbwi8dx87ragsjlix6n"))))
+       (base32 "0hpk7pjlrnj62m5zdmih7gf3nihhyphyslh5xakdjb64cvx5z25d"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags
@@ -4326,7 +4408,7 @@ Python loading in HPC environments.")
   (let ((real-name "inxi"))
     (package
       (name "inxi-minimal")
-      (version "3.3.23-1")
+      (version "3.3.28-1")
       (source
        (origin
          (method git-fetch)
@@ -4335,12 +4417,12 @@ Python loading in HPC environments.")
                (commit version)))
          (file-name (git-file-name real-name version))
          (sha256
-          (base32 "0bpaffv4zqinfk46sbx82gic7572xsqiwb1lf894l1s6a6xi7zrd"))))
+          (base32 "0h00dasmw3crci8kwpa503jljy3c5r2fsdhpbbczhsgznhlr8pbi"))))
       (build-system trivial-build-system)
       (inputs
-       `(("bash" ,bash-minimal)
-         ("perl" ,perl)
-         ("procps" ,procps)))
+       (list bash-minimal
+             perl
+             procps))
       (native-inputs
        (list gzip))
       (arguments
@@ -4350,10 +4432,14 @@ Python loading in HPC environments.")
            (use-modules (guix build utils)
                         (ice-9 match)
                         (srfi srfi-26))
-           (setenv "PATH" (string-append
-                           (assoc-ref %build-inputs "bash") "/bin" ":"
-                           (assoc-ref %build-inputs "gzip") "/bin" ":"
-                           (assoc-ref %build-inputs "perl") "/bin" ":"))
+           (setenv "PATH" (string-join
+                           (map (lambda (file)
+                                  (dirname (search-input-file %build-inputs
+                                                              file)))
+                                (list "bin/bash"
+                                      "bin/gzip"
+                                      "bin/perl"))
+                           ":"))
            (copy-recursively (assoc-ref %build-inputs "source")
                              ,(string-append real-name "-" version))
            (with-directory-excursion ,(string-append real-name "-" version)
@@ -4566,7 +4652,7 @@ Logitech Unifying Receiver.")
   (package
     (name "lynis")
     ;; Also update the ‘lynis-sdk’ input to the commit matching this release.
-    (version "3.0.8")
+    (version "3.0.9")
     (source
      (origin
        (method git-fetch)
@@ -4575,7 +4661,7 @@ Logitech Unifying Receiver.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "19kz1ffbbd431cdfw7fjcl5hjkks3gfkwk3w2zkwsxgyiky1gx3w"))
+        (base32 "1rgiifbzlk9lfjhbgxy6pqza5kxpr5rsr8vj9fcqvqihzdb5izj1"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -4591,50 +4677,53 @@ Logitech Unifying Receiver.")
            (method git-fetch)
            (uri (git-reference
                  (url "https://github.com/CISOfy/lynis-sdk")
-                 (commit "dffe5d352e4d6029ea95a84d50604ccd97cb8999")))
+                 (commit "92522b3ec39ad4cdef4756dc303d99741ec7fe20")))
            (file-name (git-file-name "lynis-sdk" version))
            (sha256
             (base32 "05qq4395x8f0kyl1ppm74npsf8sb3hhgz0ck4fya91sy6a26b4ja"))))))
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'unpack
-           ;; XXX Remove after fixing <https://issues.guix.gnu.org/55287>.
-           (lambda* (#:key source #:allow-other-keys)
-             (mkdir "source")
-             (chdir "source")
-             (copy-recursively source "."
-                               #:keep-mtime? #t)))
-         (replace 'configure
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (substitute* "lynis"
-               (("/usr/share/lynis")
-                (string-append (assoc-ref outputs "out") "/share/lynis")))
-             (substitute* "include/functions"
-               (("/usr/local/etc/lynis")
-                (string-append (assoc-ref outputs "out") "/etc/lynis")))))
-         (delete 'build)
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (install-file "lynis" (string-append out "/bin/"))
-               (install-file "default.prf" (string-append out "/etc/lynis"))
-               (for-each
-                (lambda (dir)
-                  (copy-recursively dir (string-append out "/share/lynis/" dir)))
-                (list "db" "include" "plugins"))
-               (install-file "lynis.8" (string-append out "/share/man/man8")))))
-         (replace 'check
-           (lambda* (#:key inputs #:allow-other-keys)
-             (copy-recursively (assoc-ref inputs "lynis-sdk") "../lynis-sdk")
-             (setenv "LANG" "en_US.UTF-8")
-             (let ((lynis-dir (getcwd)))
-               (with-directory-excursion "../lynis-sdk"
-                 (substitute* "config"
-                   (("\\.\\./lynis") lynis-dir))
-                 (substitute* "unit-tests/tests-language-translations.sh"
-                   (("\\.\\./lynis") lynis-dir))
-                 (invoke "sh" "lynis-devkit" "run" "unit-tests"))))))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'unpack
+            ;; XXX Remove after fixing <https://issues.guix.gnu.org/55287>.
+            (lambda* (#:key source #:allow-other-keys)
+              (mkdir "source")
+              (chdir "source")
+              (copy-recursively source "."
+                                #:keep-mtime? #t)))
+          (replace 'configure
+            (lambda _
+              (substitute* "lynis"
+                (("/usr/share/lynis")
+                 (string-append #$output "/share/lynis")))
+              (substitute* "include/functions"
+                (("/usr/local/etc/lynis")
+                 (string-append #$output "/etc/lynis")))))
+          (delete 'build)
+          (replace 'install
+            (lambda _
+              (install-file "lynis" (string-append #$output "/bin/"))
+              (install-file "default.prf" (string-append #$output "/etc/lynis"))
+              (for-each
+               (lambda (dir)
+                 (copy-recursively
+                  dir (string-append #$output "/share/lynis/" dir)))
+               (list "db" "include" "plugins"))
+              (install-file "lynis.8"
+                            (string-append #$output "/share/man/man8"))))
+          (replace 'check
+            (lambda _
+              (copy-recursively #$(this-package-native-input "lynis-sdk")
+                                "../lynis-sdk")
+              (setenv "LANG" "en_US.UTF-8")
+              (let ((lynis-dir (getcwd)))
+                (with-directory-excursion "../lynis-sdk"
+                  (substitute* "config"
+                    (("\\.\\./lynis") lynis-dir))
+                  (substitute* "unit-tests/tests-language-translations.sh"
+                    (("\\.\\./lynis") lynis-dir))
+                  (invoke "sh" "lynis-devkit" "run" "unit-tests"))))))))
     (home-page "https://cisofy.com/lynis/")
     (synopsis "Security auditing tool")
     (description "Lynis is a security auditing tool.  It performs an in-depth
@@ -4742,7 +4831,7 @@ LUKS volumes encrypted with the user's log-in password.")
 (define-public jc
   (package
     (name "jc")
-    (version "1.19.0")
+    (version "1.23.4")
     (source
      (origin
        ;; The PyPI tarball lacks the test suite.
@@ -4752,8 +4841,8 @@ LUKS volumes encrypted with the user's log-in password.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "021zk0y8kb6v3qf3hwfg8qjzzmrca039nz3fjywiy2njmbhr8hyi"))))
-    (build-system python-build-system)
+        (base32 "07ic7pd9684k59f6zycn20903q31jdacqqjymrbr5zqj4qv8whkp"))))
+    (build-system pyproject-build-system)
     (arguments
      (list #:phases
            #~(modify-phases %standard-phases
@@ -4762,6 +4851,7 @@ LUKS volumes encrypted with the user's log-in password.")
                  (lambda _
                    (substitute* (find-files "tests" "^test.*\\.py$")
                      (("America/Los_Angeles") "PST8PDT")))))))
+    (native-inputs (list python-pytest))
     (propagated-inputs
      (list python-pygments python-ruamel.yaml python-xmltodict))
     (home-page "https://github.com/kellyjonbrazil/jc")
@@ -4870,7 +4960,7 @@ entries, providing commands to add, remove, comment, and search.")
 (define-public nmrpflash
   (package
     (name "nmrpflash")
-    (version "0.9.16")
+    (version "0.9.19")
     (source
      (origin
        (method git-fetch)
@@ -4879,7 +4969,7 @@ entries, providing commands to add, remove, comment, and search.")
          (url "https://github.com/jclehner/nmrpflash")
          (commit (string-append "v" version))))
        (sha256
-        (base32 "0gp66l3a2wznjnlc2ljs8g38mfrf1b9a0qcfxqg2bczmfxnrsynj"))
+        (base32 "02r2z3mnbj8dfka7adw1l76zq1jh1l13mmkns93c54ychs44jz3d"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (native-inputs
@@ -4898,7 +4988,7 @@ entries, providing commands to add, remove, comment, and search.")
            (lambda* (#:key outputs #:allow-other-keys)
              (mkdir-p (string-append (assoc-ref outputs "out") "/bin")))))))
     (home-page "https://github.com/jclehner/nmrpflash")
-    (synopsis "Netgear unbrick utility")
+    (synopsis "Reflash (``unbrick'') Netgear devices with corrupted firmware")
     (description "This package provides a utility to flash a new firmware
 image to a Netgear device.  It has been tested on Netgear EX2700, EX6120,
 EX6150v2, DNG3700v2, R6100, R6220, R7000, D7000, WNR3500, R6400, R6800,
@@ -4909,14 +4999,14 @@ Netgear devices.")
 (define-public atop
   (package
     (name "atop")
-    (version "2.7.1")
+    (version "2.9.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://www.atoptool.nl/download/atop-"
                                   version ".tar.gz"))
               (sha256
                (base32
-                "0kjwgf94skbrndv1krlmsrq34smzi3iwk73fbsnyw787gvqx4j6a"))))
+                "1y4qmc8i7zg2cqrmz38dxbsj8bb2h7jm1zz23gqcdygkgaymwddw"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -5210,7 +5300,7 @@ it won't take longer to install 15 machines than it would to install just 2.")
 (define-public greetd
   (package
     (name "greetd")
-    (version "0.8.0")
+    (version "0.9.0")
     (home-page "https://git.sr.ht/~kennylevinsen/greetd")
     (source (origin
               (method git-fetch)
@@ -5219,11 +5309,11 @@ it won't take longer to install 15 machines than it would to install just 2.")
                     (commit version)))
               (file-name (git-file-name name version))
               (sha256
-               (base32 "0x5c3jkw09kvj2grcxm899y2n6ws8p990cyp9cs0fy6lm4fzlh6v"))))
+               (base32 "1b79lb0vikh5vwpdlyga6zwzm11gpsd7ghp8zb0q2m6mlqlj5by3"))))
     (build-system cargo-build-system)
     (arguments
      `(#:cargo-inputs
-       (("rust-nix" ,rust-nix-0.19)
+       (("rust-nix" ,rust-nix-0.26)
         ("rust-pam-sys" ,rust-pam-sys-0.5)
         ("rust-rpassword" ,rust-rpassword-5)
         ("rust-users" ,rust-users-0.11)
@@ -5270,8 +5360,7 @@ it won't take longer to install 15 machines than it would to install just 2.")
                  (install-file "greetd-ipc.7" man7)
                  (install-file "agreety.1" man1))))))))
     (native-inputs
-     `(("linux-pam" ,linux-pam)
-       ("scdoc" ,scdoc)))
+     (list linux-pam scdoc))
     (synopsis "Minimal and flexible login manager daemon")
     (description
      "greetd is a minimal and flexible login manager daemon
@@ -5686,7 +5775,7 @@ file or files to several hosts.")
 (define-public doctl
   (package
     (name "doctl")
-    (version "1.84.1")
+    (version "1.94.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -5695,7 +5784,7 @@ file or files to several hosts.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1jmqvz1rdqrsr4l0bv3ik1jla0xnbdvcmnw9892acvfs3wsmliyc"))))
+                "0a221n0x7qrq0dbhhf1saya2g7jyy1798k3rhy9nzyvqzc4vnd0x"))))
     (build-system go-build-system)
     (arguments
      (list #:import-path "github.com/digitalocean/doctl/cmd/doctl"
@@ -5731,3 +5820,86 @@ file or files to several hosts.")
     (description
      "@code{doctl} provides a unified command line interface to the DigitalOcean API.")
     (license license:asl2.0)))
+
+(define-public du-dust
+  (package
+    (name "du-dust")
+    (version "0.8.3")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "du-dust" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1daif13rdd7wb8m5fbp6zif5b8znqcvmkxrjpp2w2famsp36sahx"))))
+    (build-system cargo-build-system)
+    (arguments
+     `(#:cargo-inputs (("rust-ansi-term" ,rust-ansi-term-0.12)
+                       ("rust-clap" ,rust-clap-3)
+                       ("rust-clap" ,rust-clap-3)
+                       ("rust-clap-complete" ,rust-clap-complete-3)
+                       ("rust-config-file" ,rust-config-file-0.2)
+                       ("rust-directories" ,rust-directories-4)
+                       ("rust-lscolors" ,rust-lscolors-0.7)
+                       ("rust-rayon" ,rust-rayon-1)
+                       ("rust-regex" ,rust-regex-1)
+                       ("rust-serde" ,rust-serde-1)
+                       ("rust-stfu8" ,rust-stfu8-0.2)
+                       ("rust-sysinfo" ,rust-sysinfo-0.15)
+                       ("rust-terminal-size" ,rust-terminal-size-0.1)
+                       ("rust-thousands" ,rust-thousands-0.2)
+                       ("rust-unicode-width" ,rust-unicode-width-0.1)
+                       ("rust-winapi-util" ,rust-winapi-util-0.1))
+       #:cargo-development-inputs (("rust-assert-cmd" ,rust-assert-cmd-1)
+                                   ("rust-tempfile" ,rust-tempfile-3))))
+    (home-page "https://github.com/bootandy/dust")
+    (synopsis "Graphical disk usage analyzer")
+    (description "This package provides a graphical disk usage analyzer in
+text mode.")
+    (license license:asl2.0)))
+
+(define-public mactelnet
+  (package
+    (name "mactelnet")
+    (version "0.4.4")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/haakonnessjoen/MAC-Telnet")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1z63dz22crrvrm0sh2cwpyqb7wqd9m45m6f2641mwmyp6hcpf4k4"))
+              (patches (search-patches "mactelnet-remove-init.patch"))
+              (modules '((guix build utils)))
+              (snippet
+               #~(begin
+                   (delete-file "src/utlist.h")
+                   (substitute* (find-files "src/" "\\.c$")
+                     (("\"utlist\\.h\"") "<utlist.h>"))))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #f))  ; no tests
+    (native-inputs (list autoconf automake gettext-minimal))
+    (inputs (list uthash))
+    (synopsis "MAC-Telnet utilities for communicating with RouterOS devices")
+    (description "This package provides an implementation of the MAC-Telnet protocol
+used by RouterOS devices.  It provides the following commands:
+@table @command
+@item{macping}
+Ping RouterOS devices or @command{mactelnetd} hosts.
+@item{mactelnetd}
+MAC-Telnet daemon.
+@item{mactelnet}
+MAC-Telnet client.
+@item{mndp}
+Discover other RouterOS devices or @command{mactelnetd} hosts.
+@end table")
+    (home-page "https://lunatic.no/2010/10/routeros-mac-telnet-application-for-linux-users/")
+    (license
+     (list license:gpl2+
+           ;; Note: applies to src/md5.{c,h}
+           ;; This file is likely to be gone in the next release.
+           license:zlib))))

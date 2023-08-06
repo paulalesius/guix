@@ -33,7 +33,6 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix packages)
-  #:use-module (ice-9 match)
   #:export (%qt-build-system-modules
             qt-build
             qt-build-system))
@@ -135,9 +134,8 @@
                    (validate-runpath? #t)
                    (patch-shebangs? #t)
                    (strip-binaries? #t)
-                   (strip-flags ''("--strip-debug"))
-                   (strip-directories ''("lib" "lib64" "libexec"
-                                         "bin" "sbin"))
+                   (strip-flags %strip-flags)
+                   (strip-directories %strip-directories)
                    (phases '%standard-phases)
                    (qt-wrap-excluded-outputs ''())
                    (qt-wrap-excluded-inputs %qt-wrap-excluded-inputs)
@@ -209,10 +207,8 @@ provides a 'CMakeLists.txt' file as its build system."
                          (validate-runpath? #t)
                          (patch-shebangs? #t)
                          (strip-binaries? #t)
-                         (strip-flags ''("--strip-debug"
-                                         "--enable-deterministic-archives"))
-                         (strip-directories ''("lib" "lib64" "libexec"
-                                               "bin" "sbin"))
+                         (strip-flags %strip-flags)
+                         (strip-directories %strip-directories)
                          (phases '%standard-phases)
                          (system (%current-system))
                          (build (nix-system->gnu-triplet system))

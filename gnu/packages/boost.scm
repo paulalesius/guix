@@ -12,12 +12,11 @@
 ;;; Copyright © 2018, 2020 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2019, 2020 Giacomo Leidi <goodoldpaul@autistici.org>
-;;; Copyright © 2020 Marius Bakke <mbakke@fastmail.com>
+;;; Copyright © 2020, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Jonathan Brielmaier <jonathan.brielmaier@web.de>
 ;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Greg Hogan <code@greghogan.com>
+;;; Copyright © 2021, 2022 Greg Hogan <code@greghogan.com>
 ;;; Copyright © 2021 Franck Pérignon <franck.perignon@univ-grenoble-alpes.fr>
-;;; Copyright © 2021 Greg Hogan <code@greghogan.com>
 ;;; Copyright © 2021 Aleksandr Vityazev <avityazev@posteo.org>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -38,6 +37,7 @@
 (define-module (gnu packages boost)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix utils)
+  #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
@@ -68,122 +68,155 @@
 (define-public boost
   (package
     (name "boost")
-    (version "1.77.0")
+    (version "1.80.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://boostorg.jfrog.io/artifactory/main/release/"
                                   version "/source/boost_"
                                   (version-with-underscores version) ".tar.bz2"))
+              (patches
+               (list (boost-patch
+                      ;; Boost.Filesystem directory iterators may fail to
+                      ;; construct for a network share on Windows prior to 10:
+                      ;; https://github.com/boostorg/filesystem/pull/246,
+                      ;; https://github.com/boostorg/filesystem/issues/245
+                      "0001-filesystem-win-fix-dir-it-net-share.patch" version
+                      "067hhylqkzzdbqzc1hkbpaqmvz248lxqrdhb2yi6iq9qabsik3lk")
+                     (boost-patch
+                      ;; In Boost.Filesystem on Windows, weakly_canonical fails
+                      ;; to process paths that start with the "\\?\" prefix:
+                      ;; https://github.com/boostorg/filesystem/issues/247
+                      "0002-filesystem-fix-weakly-canonical-long-paths.patch" version
+                      "00w3albf8527glclx85p5b2ml3vr06xpwwmfyzg005v1cp8avcpi")
+                     (boost-patch
+                      ;; Boost.Unordered containers are not in a valid state
+                      ;; after moving:
+                      ;; https://github.com/boostorg/unordered/issues/139
+                      "0003-unordered-valid-after-move.patch" version
+                      "0dw839w22cawqawfpsx7j7v9y0x2vn66m732iidpxvdxbjn2kzva")
+                     (boost-patch
+                      ;; Fixed a missing include on POSIX systems that don't
+                      ;; support *at APIs:
+                      ;; https://github.com/boostorg/filesystem/issues/250
+                      "0004-filesystem-posix-fix-no-at-apis-missing-include.patch" version
+                      "09k8k3b1306jkjls12wfghj820n828j6aaxzmcr0wpnjhp8fzi1v")))
               (sha256
                (base32
-                "0m08hhk3l7zvzajyk39qlw566q3fhixayhc2j11328qf0gy8b7zw"))))
+                "1h00qp4z5k6lfz310xjwsmqs8fwxi6ngas51169cafz4h9fmc68y"))))
     (build-system gnu-build-system)
-    (inputs (list icu4c zlib))
+    (inputs
+     (append
+      (list icu4c zlib)
+      (if (%current-target-system)
+          '()
+          (list python-minimal-wrapper))))
     (native-inputs
-     `(("perl" ,perl)
-       ,@(if (%current-target-system)
-             '()
-             `(("python" ,python-minimal-wrapper)))
-       ("tcsh" ,tcsh)))
+     (list perl tcsh))
     (arguments
-     `(#:imported-modules ((guix build python-build-system)
+     (list
+      #:imported-modules `((guix build python-build-system)
                            ,@%gnu-build-system-modules)
-       #:modules (((guix build python-build-system) #:select (python-version))
+      #:modules `(((guix build python-build-system) #:select (python-version))
                   ,@%gnu-build-system-modules)
-       #:tests? #f
-       #:make-flags
-       (list "threading=multi" "link=shared"
+      #:tests? #f
+      #:configure-flags
+      #~(let ((icu (dirname (dirname (search-input-file
+                                      %build-inputs "bin/uconv")))))
+          (list
+           ;; Auto-detection looks for ICU only in traditional
+           ;; install locations.
+           (string-append "--with-icu=" icu)
+           ;; Ditto for Python.
+           #$@(if (%current-target-system)
+                  #~()
+                  #~((let ((python (dirname (dirname (search-input-file
+                                                      %build-inputs
+                                                      "bin/python")))))
+                       (string-append "--with-python-root=" python)
+                       (string-append "--with-python=" python
+                                      "/bin/python")
+                       (string-append "--with-python-version="
+                                      (python-version python)))))
+           "--with-toolset=gcc"))
+      #:make-flags
+      #~(list "threading=multi" "link=shared"
 
-             ;; Set the RUNPATH to $libdir so that the libs find each other.
-             (string-append "linkflags=-Wl,-rpath="
-                            (assoc-ref %outputs "out") "/lib")
-             ,@(if (%current-target-system)
-                   `("--user-config=user-config.jam"
-                     ;; Python is not supported when cross-compiling.
-                     "--without-python"
-                     "binary-format=elf"
-                     "target-os=linux"
-                     ,@(cond
-                        ((string-prefix? "arm" (%current-target-system))
-                         '("abi=aapcs"
-                           "address-model=32"
-                           "architecture=arm"))
-                        ((string-prefix? "aarch64" (%current-target-system))
-                         '("abi=aapcs"
-                           "address-model=64"
-                           "architecture=arm"))
-                        (else '())))
-                   '()))
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'bootstrap)
-         (replace 'configure
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((icu (assoc-ref inputs "icu4c"))
-                   (python (assoc-ref inputs "python"))
-                   (out (assoc-ref outputs "out")))
-               (substitute* '("libs/config/configure"
-                              "libs/spirit/classic/phoenix/test/runtest.sh"
-                              "tools/build/src/engine/execunix.cpp")
-                 (("/bin/sh") (which "sh")))
+              ;; Set the RUNPATH to $libdir so that the libs find each other.
+              (string-append "linkflags=-Wl,-rpath="
+                             #$output "/lib")
+              #$@(if (%current-target-system)
+                     #~("--user-config=user-config.jam"
+                        ;; Python is not supported when cross-compiling.
+                        "--without-python"
+                        "binary-format=elf"
+                        "target-os=linux"
+                        #$@(cond
+                            ((string-prefix? "arm" (%current-target-system))
+                             #~("abi=aapcs"
+                                "address-model=32"
+                                "architecture=arm"))
+                            ((string-prefix? "aarch64" (%current-target-system))
+                             #~("abi=aapcs"
+                                "address-model=64"
+                                "architecture=arm"))
+                            (else #~())))
+                     #~()))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-shells
+            (lambda _
+              (substitute* '("libs/config/configure"
+                             "libs/spirit/classic/phoenix/test/runtest.sh"
+                             "tools/build/src/engine/execunix.cpp")
+                (("/bin/sh") (which "sh")))))
+          (delete 'bootstrap)
+          (replace 'configure
+            (lambda* (#:key (configure-flags ''()) #:allow-other-keys)
+              (setenv "SHELL" (which "sh"))
+              (setenv "CONFIG_SHELL" (which "sh"))
 
-               (setenv "SHELL" (which "sh"))
-               (setenv "CONFIG_SHELL" (which "sh"))
-
-               ,@(if (%current-target-system)
-                     `((call-with-output-file "user-config.jam"
+              #$@(if (%current-target-system)
+                     #~((call-with-output-file "user-config.jam"
                           (lambda (port)
                             (format port
                                     "using gcc : cross : ~a-c++ ;"
-                                    ,(%current-target-system)))))
-                     '())
+                                    #$(%current-target-system)))))
+                     #~())
 
-               ;; Change an #ifdef __MACH__ that really targets macOS.
-               (substitute* "boost/test/utils/timer.hpp"
-                 (("defined\\(__MACH__\\)")
-                  "(defined __MACH__ && !defined __GNU__)"))
-
-               (invoke "./bootstrap.sh"
-                       (string-append "--prefix=" out)
-                       ;; Auto-detection looks for ICU only in traditional
-                       ;; install locations.
-                       (string-append "--with-icu=" icu)
-                       ;; Ditto for Python.
-                       ,@(if (%current-target-system)
-                             '()
-                             `((string-append "--with-python-root=" python)
-                               (string-append "--with-python=" python "/bin/python")
-                               (string-append "--with-python-version="
-                                              (python-version python))))
-                       "--with-toolset=gcc"))))
-         (replace 'build
-           (lambda* (#:key make-flags #:allow-other-keys)
-             (apply invoke "./b2"
-                    (format #f "-j~a" (parallel-job-count))
-                    make-flags)))
-         (replace 'install
-           (lambda* (#:key make-flags #:allow-other-keys)
-             (apply invoke "./b2" "install" make-flags)))
-         ,@(if (%current-target-system)
-               '()
-               '((add-after 'install 'provide-libboost_python
-                    (lambda* (#:key inputs outputs #:allow-other-keys)
-                      (let* ((out (assoc-ref outputs "out"))
-                             (python-version (python-version
-                                              (assoc-ref inputs "python")))
-                             (libboost_pythonNN.so
-                              (string-append "libboost_python"
-                                             (string-join (string-split
-                                                           python-version #\.)
-                                                          "")
-                                             ".so")))
-                        (with-directory-excursion (string-append out "/lib")
-                          (symlink libboost_pythonNN.so "libboost_python.so")
-                          ;; Some packages only look for the major version.
-                          (symlink libboost_pythonNN.so
-                                   (string-append "libboost_python"
-                                                  (string-take python-version 1)
-                                                  ".so")))))))))))
+              (apply invoke "./bootstrap.sh"
+                     (string-append "--prefix=" #$output)
+                     configure-flags)))
+          (replace 'build
+            (lambda* (#:key make-flags #:allow-other-keys)
+              (apply invoke "./b2"
+                     (format #f "-j~a" (parallel-job-count))
+                     make-flags)))
+          (replace 'install
+            (lambda* (#:key make-flags #:allow-other-keys)
+              (apply invoke "./b2" "install" make-flags)))
+          #$@(if (%current-target-system)
+                 #~()
+                 #~((add-after 'install 'provide-libboost_python
+                      (lambda* (#:key make-flags inputs outputs #:allow-other-keys)
+                        (let* ((static? (member "link=static" make-flags))
+                               (libext (if static? ".a" ".so"))
+                               (python (dirname (dirname (search-input-file
+                                                          inputs "bin/python"))))
+                               (python-version (python-version python))
+                               (libboost_pythonNN
+                                (string-append "libboost_python"
+                                               (string-join (string-split
+                                                             python-version #\.)
+                                                            "")
+                                               libext)))
+                          (with-directory-excursion (string-append #$output "/lib")
+                            (symlink libboost_pythonNN
+                                     (string-append "libboost_python" libext))
+                            ;; Some packages only look for the major version.
+                            (symlink libboost_pythonNN
+                                     (string-append "libboost_python"
+                                                    (string-take python-version 1)
+                                                    libext)))))))))))
 
     (home-page "https://www.boost.org")
     (synopsis "Peer-reviewed portable C++ source libraries")
@@ -285,23 +318,7 @@ across a broad spectrum of applications.")
     (arguments
      (substitute-keyword-arguments (package-arguments boost)
        ((#:make-flags flags)
-        `(cons "link=static" (delete "link=shared" ,flags)))
-       ((#:phases phases)
-        `(modify-phases ,phases
-           (replace 'provide-libboost_python
-             (lambda* (#:key inputs outputs #:allow-other-keys)
-               (let* ((out (assoc-ref outputs "out"))
-                      (python-version (python-version
-                                       (assoc-ref inputs "python")))
-                      (libboost_pythonNN.a
-                       (string-append "libboost_python"
-                                      (string-join (string-split
-                                                    python-version #\.)
-                                                   "")
-                                      ".a")))
-                 (with-directory-excursion (string-append out "/lib")
-                   (symlink libboost_pythonNN.a "libboost_python.a"))
-                 #t)))))))))
+        #~(cons "link=static" (delete "link=shared" #$flags)))))))
 
 (define-public boost-for-mysql
   ;; Older version for MySQL 5.7.23.
@@ -317,43 +334,33 @@ across a broad spectrum of applications.")
               (sha256
                (base32
                 "1jj1aai5rdmd72g90a3pd8sw9vi32zad46xv5av8fhnr48ir6ykj"))))
-    (arguments (substitute-keyword-arguments (package-arguments boost)
-      ((#:phases phases)
-       `(modify-phases ,phases
-          (replace 'configure
-            (lambda* (#:key inputs outputs #:allow-other-keys)
-              (let ((icu (assoc-ref inputs "icu4c"))
-                    (out (assoc-ref outputs "out")))
+    (arguments
+     (substitute-keyword-arguments (package-arguments boost)
+       ((#:configure-flags _ #~'())
+        #~(let ((icu (dirname (dirname (search-input-file
+                                        %build-inputs "bin/uconv")))))
+            (list
+             ;; Auto-detection looks for ICU only in traditional
+             ;; install locations.
+             (string-append "--with-icu=" icu)
+             "--with-toolset=gcc")))
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (replace 'patch-shells
+              (lambda _
                 (substitute* (append
-                               (find-files "tools/build/src/engine/" "execunix\\.c.*")
-                               '("libs/config/configure"
-                                 "libs/spirit/classic/phoenix/test/runtest.sh"
-                                 "tools/build/doc/bjam.qbk"
-                                 "tools/build/src/engine/Jambase"))
-                  (("/bin/sh") (which "sh")))
-
-                (setenv "SHELL" (which "sh"))
-                (setenv "CONFIG_SHELL" (which "sh"))
-
-                ,@(if (%current-target-system)
-                    `((call-with-output-file "user-config.jam"
-                        (lambda (port)
-                          (format port
-                                  "using gcc : cross : ~a-c++ ;"
-                                  ,(%current-target-system)))))
-                    '())
-
-                (invoke "./bootstrap.sh"
-                        (string-append "--prefix=" out)
-                        ;; Auto-detection looks for ICU only in traditional
-                        ;; install locations.
-                        (string-append "--with-icu=" icu)
-                        "--with-toolset=gcc"))))
-          (delete 'provide-libboost_python)))
-      ((#:make-flags make-flags)
-       `(cons* "--without-python" ,make-flags))))
-    (native-inputs
-     (alist-delete "python" (package-native-inputs boost)))
+                              (find-files "tools/build/src/engine/" "execunix\\.c.*")
+                              '("libs/config/configure"
+                                "libs/spirit/classic/phoenix/test/runtest.sh"
+                                "tools/build/doc/bjam.qbk"
+                                "tools/build/src/engine/Jambase"))
+                  (("/bin/sh") (which "sh")))))
+            (delete 'provide-libboost_python)))
+       ((#:make-flags make-flags)
+        #~(cons* "--without-python" #$make-flags))))
+    (inputs
+     (modify-inputs (package-inputs boost)
+       (delete "python-minimal-wrapper")))
     (properties '((hidden? . #t)))))
 
 (define-public boost-sync
@@ -421,22 +428,19 @@ signals and slots system.")
   (package
     (inherit boost)
     (name "boost-mpi")
-    (native-inputs
-     `(("perl" ,perl)
-       ,@(if (%current-target-system)
-             '()
-             `(("python" ,python-wrapper)))
-       ("openmpi" , openmpi)))
+    (inputs
+     (modify-inputs (package-inputs boost)
+       (append openmpi)))
     (arguments
      (substitute-keyword-arguments (package-arguments boost)
-      ((#:phases phases)
-       `(modify-phases ,phases
-          (add-after 'configure 'update-jam
-            (lambda* (#:key inputs outputs #:allow-other-keys)
-              (let ((output-port (open-file "project-config.jam" "a")))
-                (display "using mpi ;" output-port)
-                (newline output-port)
-                (close output-port))))))))
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (add-after 'configure 'update-jam
+              (lambda* (#:key inputs outputs #:allow-other-keys)
+                (let ((output-port (open-file "project-config.jam" "a")))
+                  (display "using mpi ;" output-port)
+                  (newline output-port)
+                  (close output-port))))))))
     (home-page "https://www.boost.org")
     (synopsis "Message Passing Interface (MPI) library for C++")))
 

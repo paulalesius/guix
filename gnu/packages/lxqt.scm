@@ -100,7 +100,7 @@ to statistics about the system on which it's run.")
 (define-public lxqt-build-tools
   (package
     (name "lxqt-build-tools")
-    (version "0.11.0")
+    (version "0.13.0")
     (source
      (origin
        (method url-fetch)
@@ -108,7 +108,7 @@ to statistics about the system on which it's run.")
                            "/download/" version
                            "/lxqt-build-tools-" version ".tar.xz"))
        (sha256
-        (base32 "1ff1pkrlxd8h0j8v49p6wrfhnqrz8s5b53hi835m41cvkzjljpfx"))))
+        (base32 "1kjrxc1aj7yfn3v72lwryn58hkwsribsspm480qg4qbw1nfijg7x"))))
     (build-system cmake-build-system)
     (arguments
      (list
@@ -148,7 +148,7 @@ itself as well as other components maintained by the LXQt project.")
 (define-public libqtxdg
   (package
     (name "libqtxdg")
-    (version "3.9.1")
+    (version "3.11.0")
     (source
      (origin
        (method url-fetch)
@@ -156,7 +156,7 @@ itself as well as other components maintained by the LXQt project.")
              "https://github.com/lxqt/libqtxdg/releases/download/"
              version "/libqtxdg-" version ".tar.xz"))
        (sha256
-        (base32 "1kh4hv59bkjifq20ksh1mizf9mp7x30v6fpwccr45mi7hasqvvfi"))))
+        (base32 "0alphfvkwxaqfnckjxbrwjkj7wjl4yff7qxzmyjz67c8728lxbny"))))
     (build-system cmake-build-system)
     (arguments
      '(#:configure-flags
@@ -183,7 +183,7 @@ in Qt.")
 (define-public qtxdg-tools
   (package
     (name "qtxdg-tools")
-    (version "3.9.1")
+    (version "3.11.0")
     (source
      (origin
        (method url-fetch)
@@ -191,7 +191,7 @@ in Qt.")
              "https://github.com/lxqt/qtxdg-tools/releases/download/"
              version "/qtxdg-tools-" version ".tar.xz"))
        (sha256
-        (base32 "0qn35v4dv71g0a4cqkbikppwmihxmfa560q9kw5pwk2y0xiwpncr"))))
+        (base32 "05bfff9hl1fjy59j89cbxkmzf8yswazb0yz9r01a8a1fw4sh7br9"))))
     (build-system cmake-build-system)
     (arguments '(#:tests? #f))          ; no tests
     (propagated-inputs (list libqtxdg))
@@ -206,7 +206,7 @@ applications.")
 (define-public liblxqt
   (package
     (name "liblxqt")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
@@ -214,7 +214,7 @@ applications.")
              "https://github.com/lxqt/" name "/releases/download/"
              version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "1fickg1q54pcb8bv3x0ydg4xx02cqykibnjcq09as2kws6xbhk9n"))))
+        (base32 "1vr43sd2dzs4gmiaidr1gpm64fl500k30rlxxq7yj9p3iwk5d3xp"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f                      ; no tests
@@ -270,14 +270,14 @@ and memory usage or network traffic.")
 (define-public lxqt-about
   (package
     (name "lxqt-about")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "03bqhbpdnfpan3l4snzzz6j0054m4r9zcgygcg21znslwicbqnw3"))))
+        (base32 "08b922gyg4591b399pw0y9zl3gr2627dw20c33abqpl30iq1fmd9"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -305,14 +305,14 @@ LXQt and the system it's running on.")
 (define-public lxqt-admin
   (package
     (name "lxqt-admin")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "1zah3xdnif9miaq52mmfbbzvqjhca7w7h81ngrn25j9pvd2bflm8"))))
+        (base32 "1p9959rvj5kh1svv2p9dsfnf008xvrhllcccrsxnk4s8vzjhdqjp"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -343,14 +343,14 @@ the operating system LXQt is running on.")
 (define-public lxqt-config
   (package
     (name "lxqt-config")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "0f0x82qma86kjdvn08qlg0ydxh9fnqikijfhnicynxdqfnp50ia5"))))
+        (base32 "13v9mrp6dswdw9vq39lfpd5cgz2bg74mk2kp1x7zinzqijsn17wj"))))
     (build-system cmake-build-system)
     (inputs
      (list eudev
@@ -393,7 +393,7 @@ configuration of both LXQt and the underlying operating system.")
 (define-public lxqt-globalkeys
   (package
     (name "lxqt-globalkeys")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
@@ -401,7 +401,7 @@ configuration of both LXQt and the underlying operating system.")
                            "releases/download/" version "/"
                            "lxqt-globalkeys-" version ".tar.xz"))
        (sha256
-        (base32 "0bbw85aa59w0qnvkdggm3hbacps6yfcvcrs32d34mvvhc7d6g04l"))))
+        (base32 "17km7yl5fqwhjy35w700s4rjxf9ann3vv6mw6l4r1cf7pvzmxhy7"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -423,14 +423,14 @@ as a whole and are not limited to distinct applications.")
 (define-public lxqt-notificationd
   (package
     (name "lxqt-notificationd")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "0bz3qdvv591zvpkxqzqqmh1yq5icc3iinmjr13qzws3ajlj19z44"))))
+        (base32 "182mjvc17dvavk8vznhgnk6j1lv594bqv4796p2p1f4zdhq6fgm6"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -451,14 +451,14 @@ according to the Desktop Notifications Specification.")
 (define-public lxqt-openssh-askpass
   (package
     (name "lxqt-openssh-askpass")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "1hxix513z2sanmygfzq1fgx30kaxw5rjmmklbyyzl8bv1xzjcwk7"))))
+        (base32 "014jpyw4sgr63kjqdmksi6fsaz7pm5gkzr17f5rkaadx640ij4m0"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -479,14 +479,14 @@ of other programs.")
 (define-public lxqt-panel
   (package
     (name "lxqt-panel")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "11dg18ac6kj8qkkrg940bzpykjih6nnw8y3hfww3wiyg6dka9gd7"))))
+        (base32 "1lnqiw1rd5m9576rsg7lx8v95nc8krrj35fbi54ipc688na3j6s3"))))
     (build-system cmake-build-system)
     (inputs
      (list alsa-lib
@@ -538,14 +538,14 @@ of other programs.")
 (define-public lxqt-policykit
   (package
     (name "lxqt-policykit")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "150ggcfprascnwgsz721vnmay9cbar9annlhp6h2yzkl69iyc49r"))))
+        (base32 "051lb4kx29rx3ls3whlrbi83r9z9pdiqwyb1wbni56aqilv0svh0"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -568,14 +568,14 @@ LXQt.")
 (define-public lxqt-powermanagement
   (package
     (name "lxqt-powermanagement")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "0zy6abbf3iwrxsr18gbxidb4m5spsigpa2778xg7y9r7fwgmqqkk"))))
+        (base32 "17d1wh50pjjzqyxv3w7b4qlc1ym1p16yvbhyah9bzl2825irz9ar"))))
     (build-system cmake-build-system)
     (inputs
      (list kidletime
@@ -600,14 +600,14 @@ when laptop batteries are low on power.")
 (define-public lxqt-qtplugin
   (package
     (name "lxqt-qtplugin")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "1zw79lnm35gj3dyd4vlnk08n1lnr8391n36nbn81d0fgmvs21yx4"))))
+        (base32 "0hdxa9cb39vklx616ywcc7jgipij99p4bd16w0f0cvidh6p1rqhv"))))
     (build-system cmake-build-system)
     (inputs
      (list libdbusmenu-qt
@@ -637,14 +637,14 @@ Qt with LXQt.")
 (define-public lxqt-runner
   (package
     (name "lxqt-runner")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "1wfng8g28mq97ibrgpfbj353i15vdimmjp83pfqrmkddx0yvzcdv"))))
+        (base32 "1916cl12v09x4iqrgvp2dwchy50wa97a0y68q4rdigarpdrp3x7j"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -668,14 +668,14 @@ allows for launching applications or shutting down the system.")
 (define-public lxqt-session
   (package
     (name "lxqt-session")
-    (version "1.1.1")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "0j8q5jfpb2l0vvji3xs8y0jcr792z6sxzj111qqvmdrbpxrkwxnw"))))
+        (base32 "0xa5nqiq9mxwfynnw91i4c2cgpmpapl4nxys084nbs7yd88kbm2l"))))
     (build-system cmake-build-system)
     (inputs
      (list eudev
@@ -726,14 +726,14 @@ for the LXQt desktop environment.")
 (define-public lxqt-sudo
   (package
     (name "lxqt-sudo")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "064w40v43m91y9aywxxf2pj5rpcl4gbsgj7dv97pg4vhj9s790b8"))))
+        (base32 "0pqz2pkzwq3af70s90p9x3a8rvlpl2jjb4mnjwgs1wz30cb7jrii"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -756,14 +756,14 @@ permissions of other users including root.")
 (define-public lxqt-themes
   (package
     (name "lxqt-themes")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "18zrp2j0xpsrzy6m2dw8k55zczcc9jzavncasrp5j1dxscnzwrcr"))))
+        (base32 "013mqqjrqpjwm1a2zh97r7mgxyyic2lp1m07kcnbkmf1n9dyqzr1"))))
     (build-system cmake-build-system)
     (native-inputs
      (list lxqt-build-tools))
@@ -782,14 +782,14 @@ for LXQt.")
 (define-public libfm-qt
   (package
     (name "libfm-qt")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "0m2fq1wh553yqi64a5nrdvm57fk3jnc3kxgaf0ja7h95jw6czvm5"))))
+        (base32 "1rjrbjw6ixn5yw4r2187xfs7xd6v0j28p7fnjwjnv29lvvzgfm8x"))))
     (build-system cmake-build-system)
     (arguments
      '(#:tests? #f))                    ; no tests
@@ -813,14 +813,14 @@ components to build desktop file managers which belongs to LXDE.")
 (define-public pcmanfm-qt
   (package
     (name "pcmanfm-qt")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "0pwl2j5kbs86vmq86phavq89bl2i82ic839bjk0v8kmxm9q2mrh9"))))
+        (base32 "190gfq6sp2z6hs7wy02xw831gdp2sxfrpy6jrhrf0zlfv26f6z3w"))))
     (build-system cmake-build-system)
     (arguments
      (list
@@ -873,14 +873,14 @@ manager Compton.")
 (define-public lximage-qt
   (package
     (name "lximage-qt")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "0nal8n7nmkafapdbcs9c8rk313md2fak4xjl9m56n10dxcjpi2wb"))))
+        (base32 "1zrlzx72zqcnqk1j0slwc2jsaxf71v5y1zhcwgv0n4z5548x3n38"))))
     (build-system cmake-build-system)
     (inputs
      (list libexif libfm-qt qtbase-5 qtsvg-5 qtx11extras))
@@ -930,14 +930,14 @@ window manager OpenBox.")
 (define-public pavucontrol-qt
   (package
     (name "pavucontrol-qt")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "0y3ql25cmg1cmzjvadf7zcb58hh69gcslvr944sxxhaqp4daz10v"))))
+        (base32 "0alxsz9q1lw3jc9qv18w9rc1ggib8x85mk3d7c17nbsvld5wfwmc"))))
     (build-system cmake-build-system)
     (inputs
      (list glib pcre pulseaudio qtbase-5 qtx11extras))
@@ -954,14 +954,14 @@ window manager OpenBox.")
 (define-public qps
   (package
     (name "qps")
-    (version "2.5.0")
+    (version "2.7.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "16ybq07xpkl22mszakc1175xlqcayyj21i2h6wlxb8bmb7csg30n"))))
+        (base32 "126zkj9jvjwxrh2fcm9h0c2iq9m5rm5hbkh155swijn2i8airxgx"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem
@@ -983,14 +983,14 @@ processes currently in existence, much like code{top} or code{ps}.")
 (define-public qtermwidget
   (package
     (name "qtermwidget")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "1m64c1m8dkb06fgfk09da2anjspphph6qdk41rqhds2qymh090v4"))))
+        (base32 "0kl0lmd6np0lka60372sn8xd7l5h67hvy11x4gbf665p5fhsigkl"))))
     (build-system cmake-build-system)
     (inputs
      (list qtbase-5 utf8proc))
@@ -1006,14 +1006,14 @@ processes currently in existence, much like code{top} or code{ps}.")
 (define-public qterminal
   (package
     (name "qterminal")
-    (version "1.1.0")
+    (version "1.3.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "1b9568y5xyxymk8r7pkz878ba24dyaxql2sfiy6blr8szf308c5l"))))
+        (base32 "1ibhl51mggf81xhvcmrkbsxl7ls8v0sn74rwhjxw4vqk6r6fhiby"))))
     (build-system cmake-build-system)
     (inputs
      (list qtbase-5 qtx11extras qtermwidget))
@@ -1030,14 +1030,14 @@ QTermWidget.")
 (define-public screengrab
   (package
     (name "screengrab")
-    (version "2.4.0")
+    (version "2.6.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/lxqt/screengrab/releases/download/"
                            version "/screengrab-" version ".tar.xz"))
        (sha256
-        (base32 "14kh287d70v1lpd5w8pji88nmw3jd44q4h927vnszrkv6bwplzx7"))))
+        (base32 "0xc004h7i2hnl3jj4p8v6wkqav2v07k1mzdvys3ya171z4ffmc9j"))))
     (build-system cmake-build-system)
     (inputs
      (list kwindowsystem libqtxdg qtbase-5 qtsvg-5 qtx11extras))
@@ -1055,14 +1055,14 @@ easily publishing them on internet image hosting services.")
 (define-public lxqt-archiver
   (package
     (name "lxqt-archiver")
-    (version "0.6.0")
+    (version "0.8.0")
     (source
       (origin
         (method url-fetch)
         (uri (string-append "https://github.com/lxqt/" name "/releases/download/"
                            version "/" name "-" version ".tar.xz"))
         (sha256
-          (base32 "1cxxr7rpflh2ki272pac927gzcw2w1lp3qz8vplflf148laigwc0"))))
+          (base32 "096fjx86w413k8z8vhmk44k08d25dmagv6w4gc88hpqq4r81klr9"))))
     (build-system cmake-build-system)
     (inputs
       (list glib json-glib libfm-qt qtbase-5 qtx11extras))
@@ -1128,7 +1128,7 @@ desktop.")
 (define-public lxqt
   (package
     (name "lxqt")
-    (version "17.0")
+    (version (package-version liblxqt))
     (source #f)
     (build-system trivial-build-system)
     (arguments '(#:builder (begin (mkdir %output) #t)))

@@ -1,7 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2017 Peter Mikkelsen <petermikkelsen10@gmail.com>
 ;;; Copyright © 2018, 2019 Marius Bakke <mbakke@fastmail.com>
-;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2021, 2022 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;;
@@ -30,7 +30,6 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (guix packages)
-  #:use-module (ice-9 match)
   #:export (%meson-build-system-modules
             meson-build-system
             make-cross-file))
@@ -55,6 +54,7 @@ for TRIPLET."
                          ((target-x86-64? triplet) "x86_64")
                          ((target-arm32? triplet) "arm")
                          ((target-aarch64? triplet) "aarch64")
+                         ((target-mips64el? triplet) "mips64")
                          ((target-powerpc? triplet)
                           (if (target-64bit? triplet)
                               "ppc64"
@@ -73,16 +73,9 @@ for TRIPLET."
                   ;; for selecting optimisations, so set it to something
                   ;; arbitrary.
                   (#t "strawberries")))
-    (endian . ,(cond ((string-prefix? "powerpc64le-" triplet) "little")
-                     ((string-prefix? "mips64el-" triplet) "little")
-                     ((target-x86-32? triplet) "little")
-                     ((target-x86-64? triplet) "little")
-                     ;; At least in Guix.  Aarch64 and 32-bit arm
-                     ;; have a big-endian mode as well.
-                     ((target-arm? triplet) "little")
-                     ((target-ppc32? triplet) "big")
-                     ((target-riscv64? triplet) "little")
-                     (#t (error "meson: unknown architecture"))))))
+    (endian . ,(if (target-little-endian? triplet)
+                   "little"
+                   "big"))))
 
 (define (make-binaries-alist triplet)
   "Make an associatoin list describing what should go into
@@ -180,9 +173,8 @@ TRIPLET."
                       (validate-runpath? #t)
                       (patch-shebangs? #t)
                       (strip-binaries? #t)
-                      (strip-flags ''("--strip-debug"))
-                      (strip-directories ''("lib" "lib64" "libexec"
-                                            "bin" "sbin"))
+                      (strip-flags %strip-flags)
+                      (strip-directories %strip-directories)
                       (elf-directories ''("lib" "lib64" "libexec"
                                           "bin" "sbin"))
                       (phases '%standard-phases)
@@ -228,8 +220,8 @@ has a 'meson.build' file."
                              #:validate-runpath? #$validate-runpath?
                              #:patch-shebangs? #$patch-shebangs?
                              #:strip-binaries? #$strip-binaries?
-                             #:strip-flags #$(sexp->gexp strip-flags)
-                             #:strip-directories #$(sexp->gexp strip-directories)
+                             #:strip-flags #$strip-flags
+                             #:strip-directories #$strip-directories
                              #:elf-directories #$(sexp->gexp elf-directories))))))
 
   (mlet %store-monad ((guile (package->derivation (or guile (default-guile))
@@ -262,9 +254,8 @@ has a 'meson.build' file."
                             (validate-runpath? #t)
                             (patch-shebangs? #t)
                             (strip-binaries? #t)
-                            (strip-flags ''("--strip-debug"))
-                            (strip-directories ''("lib" "lib64" "libexec"
-                                                  "bin" "sbin"))
+                            (strip-flags %strip-flags)
+                            (strip-directories %strip-directories)
                             (elf-directories ''("lib" "lib64" "libexec"
                                                 "bin" "sbin"))
                             ;; See 'gnu-cross-build' for why this needs to be
@@ -341,8 +332,8 @@ SOURCE has a 'meson.build' file."
                        #:validate-runpath? #$validate-runpath?
                        #:patch-shebangs? #$patch-shebangs?
                        #:strip-binaries? #$strip-binaries?
-                       #:strip-flags #$(sexp->gexp strip-flags)
-                       #:strip-directories #$(sexp->gexp strip-directories)
+                       #:strip-flags #$strip-flags
+                       #:strip-directories #$strip-directories
                        #:elf-directories #$(sexp->gexp elf-directories)))))
 
   (mlet %store-monad ((guile (package->derivation (or guile (default-guile))

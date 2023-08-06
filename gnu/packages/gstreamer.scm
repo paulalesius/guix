@@ -5,11 +5,12 @@
 ;;; Copyright © 2015, 2018 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2016, 2017, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016, 2018 Leo Famulari <leo@famulari.name>
-;;; Copyright © 2017 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2017, 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2018, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019, 2020 Marius Bakke <mbakke@fastmail.com>
 ;;; Copyright © 2020 Liliana Marie Prikler <liliana.prikler@gmail.com>
 ;;; Copyright © 2020 Michael Rohleder <mike@rohleder.de>
+;;; Copyright © 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -32,7 +33,6 @@
   #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix git-download)
-  #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system meson)
   #:use-module (guix build-system trivial)
@@ -44,6 +44,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bison)
+  #:use-module (gnu packages build-tools)
   #:use-module (gnu packages cdrom)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages compression)
@@ -171,49 +172,48 @@ module for the DMA capture of the video flow.")
 (define-public ccextractor
   (package
     (name "ccextractor")
-    (version "0.88")
+    (version "0.94")
     (source
      (origin
        (method git-fetch)
-       (uri
-        (git-reference
-         (url "https://github.com/CCExtractor/ccextractor")
-         (commit (string-append "v" version))))
+       (uri (git-reference
+             (url "https://github.com/CCExtractor/ccextractor")
+             (commit (string-append "v" version))))
        (file-name (git-file-name name version))
+       ;; FIXME: Delete the 'src/thirdparty directory and unbundle the
+       ;; libraries it contains, such as freetype, libpng, zlib, and others.
+       (patches (search-patches "ccextractor-add-missing-header.patch"
+                                "ccextractor-autoconf-tesseract.patch"
+                                "ccextractor-fix-ocr.patch"))
        (sha256
-        (base32 "1sya45hvv4d46bk7541yimmafgvgyhkpsvwfz9kv6pm4yi1lz6nb"))))
-    (build-system cmake-build-system)
+        (base32 "1hrk4xlzkvk9pnv0yr4whcsh8h4fzk42mrf30dsr3xzh1lgpfslg"))))
+    (build-system gnu-build-system)
     (arguments
-     `(#:tests? #f                      ; No target
-       #:configure-flags
-       (list
-        "-DWITH_FFMPEG=ON"
-        "-DWITH_OCR=ON"
-        "-DWITH_SHARING=ON"
-        "-DWITH_HARDSUBX=ON")
-       #:phases
-       (modify-phases %standard-phases
-         ;; The package is in a sub-dir of this repo.
-         (add-after 'unpack 'chdir
-           (lambda _
-             (chdir "src")
-             #t))
-         (add-after 'chdir 'fix-build-errors
-           (lambda _
-             (substitute* "CMakeLists.txt"
-               (("libnanomsg")
-                "nanomsg"))
-             #t)))))
-    (native-inputs
-     `(("perl" ,perl)
-       ("pkg-config" ,pkg-config)
-       ("python" ,python-wrapper)))
-    (inputs
-     `(("ffmeg" ,ffmpeg-3.4)
-       ("nanomsg" ,nanomsg)
-       ("leptonica" ,leptonica)
-       ("ocr" ,tesseract-ocr)
-       ("zlib" ,zlib)))
+     (list #:configure-flags
+           #~(list "--enable-ffmpeg"
+                   "--enable-ocr"
+                   "--enable-hardsubx"
+                   ;; Disable Rust support, as there's no rust source included
+                   ;; and cargo wants to fetch the crates from the network
+                   ;; (see:
+                   ;; https://github.com/CCExtractor/ccextractor/issues/1502).
+                   "--without-rust")
+           #:phases #~(modify-phases %standard-phases
+                        (add-after 'unpack 'chdir
+                          (lambda _
+                            (chdir "linux")))
+                        (add-after 'chdir 'patch-pre-build.sh
+                          (lambda _
+                            (substitute* "pre-build.sh"
+                              (("/usr/bin/env") (which "env")))))
+                        (replace 'check
+                          (lambda* (#:key tests? #:allow-other-keys)
+                            (when tests?
+                              ;; There is no test suite; simply run the binary
+                              ;; to validate there are no obvious problems.
+                              (invoke "./ccextractor" "--help")))))))
+    (native-inputs (list autoconf automake pkg-config))
+    (inputs (list ffmpeg-3.4 leptonica-1.80 tesseract-ocr-4))
     (synopsis "Closed Caption Extractor")
     (description "CCExtractor is a tool that analyzes video files and produces
 independent subtitle files from the closed captions data.  It is portable, small,
@@ -245,10 +245,7 @@ and very fast.")
              (chdir "libvisual")
              #t)))))
     (native-inputs
-     `(("gettext" ,gettext-minimal)
-       ("libintl" ,intltool)
-       ("libtool" ,libtool)
-       ("pkg-config" ,pkg-config)))
+     (list gettext-minimal intltool libtool pkg-config))
     (inputs
      (list sdl))
     (native-search-paths
@@ -300,20 +297,20 @@ applications that want audio visualisation and audio visualisation plugins.")
              (chdir "libvisual-plugins")
              #t)))))
     (native-inputs
-     `(("bison" ,bison)
-       ("flex" ,flex)
-       ("gettext" ,gettext-minimal)
-       ("libintl" ,intltool)
-       ("libtool" ,libtool)
-       ("pkg-config" ,pkg-config)))
+     (list bison
+           flex
+           gettext-minimal
+           intltool
+           libtool
+           pkg-config))
     (inputs
-     `(("alsa-lib" ,alsa-lib)
-       ("esound" ,esound)
-       ("librsvg" ,librsvg)
-       ("gtk+" ,gtk+-2)
-       ("jack" ,jack-2)
-       ("libx11" ,libx11)
-       ("libxext" ,libxext)))
+     (list alsa-lib
+           esound
+           librsvg
+           gtk+-2
+           jack-2
+           libx11
+           libxext))
     (propagated-inputs
      (list libvisual))
     (synopsis "Audio visualisation library")
@@ -356,8 +353,7 @@ playback by a single audio device.  You can also pre-load samples, and play them
 back without having to send all the data for the sound.  Network transparency is
 also built in, so you can play sounds on one machine, and listen to them on
 another.")
-    (home-page "https://web.archive.org/web/20160528230227/
-http://www.tux.org/~ricdude/overview.html")
+    (home-page "https://web.archive.org/web/20160528230227/http://www.tux.org/~ricdude/overview.html")
     (license
      (list
       ;; Libraries.
@@ -405,7 +401,7 @@ arrays of data.")
 (define-public gstreamer-docs
   (package
     (name "gstreamer-docs")
-    (version "1.20.3")
+    (version "1.22.2")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -413,7 +409,7 @@ arrays of data.")
                     "/gstreamer-docs-" version ".tar.xz"))
               (sha256
                (base32
-                "1gziccq5f4fy23q6dm8nwbmzh68gn9rfbqw0xcn4r8yn82545z3k"))))
+                "1fljaydlinzw9jf5nkhwf7ihfzd5250k2cv220mi8dxxf7rgn18y"))))
     (build-system trivial-build-system)
     (arguments
      `(#:modules ((guix build utils))
@@ -465,7 +461,7 @@ the GStreamer multimedia framework.")
 (define-public gstreamer
   (package
     (name "gstreamer")
-    (version "1.20.3")
+    (version "1.22.2")
     (source
      (origin
        (method url-fetch)
@@ -474,10 +470,11 @@ the GStreamer multimedia framework.")
              version ".tar.xz"))
        (sha256
         (base32
-         "0aisl8nazcfi4b5j6fz8zwpp0k9csb022zniz65b2pxxpdjayzb0"))))
+         "08cfz2vkf494rsg0bn75px26fxs3syvxnsc9lj5n074j0cvfgbxj"))))
     (build-system meson-build-system)
     (arguments
-     (list #:phases
+     (list #:disallowed-references (list python)
+           #:phases
            #~(modify-phases %standard-phases
                #$@%common-gstreamer-phases
                #$@(if (string-prefix? "i686" (or (%current-target-system)
@@ -493,12 +490,22 @@ test_stress_cleanup_unschedule.*")
                               (("tcase_add_test \\(tc_chain, \
 test_stress_reschedule.*")
                                "")))))
-                      '()))))
+                      '())
+               (add-after 'patch-shebangs 'do-not-capture-python
+                 (lambda _
+                   ;; The patch-source-shebangs phase causes the following build
+                   ;; script to reference Python in its shebang, which is
+                   ;; unnecessary.
+                   (substitute* (string-append
+                                 #$output "/libexec/gstreamer-1.0/"
+                                 "gst-plugins-doc-cache-generator")
+                     (((which "python3"))
+                      "/usr/bin/env python3")))))))
     (propagated-inputs
      ;; In gstreamer-1.0.pc:
      ;;   Requires: glib-2.0, gobject-2.0
      ;;   Requires.private: gmodule-no-export-2.0 libunwind libdw
-     (list elfutils ; libdw
+     (list elfutils                     ;libdw
            glib libunwind))
     (native-inputs
      (list bash-completion
@@ -508,7 +515,7 @@ test_stress_reschedule.*")
            gobject-introspection
            perl
            pkg-config
-           python-wrapper))
+           python))
     (inputs
      (list gmp libcap
            ;; For tests.
@@ -535,7 +542,7 @@ This package provides the core library and elements.")
 (define-public gst-plugins-base
   (package
     (name "gst-plugins-base")
-    (version "1.20.3")
+    (version "1.22.2")
     (source
      (origin
       (method url-fetch)
@@ -543,7 +550,7 @@ This package provides the core library and elements.")
                           name "-" version ".tar.xz"))
       (sha256
        (base32
-        "17rw8wj1x1bg153m9z76pdvgz5k93m3riyalfpzq00x7h7fv6c3y"))))
+        "0jcxcx4mgfjvfb3ixibwhx8j330mq3ap469w7hapm6z79q614rgb"))))
     (build-system meson-build-system)
     (propagated-inputs
      (list glib                     ;required by gstreamer-sdp-1.0.pc
@@ -634,7 +641,7 @@ for the GStreamer multimedia library.")
 (define-public gst-plugins-good
   (package
     (name "gst-plugins-good")
-    (version "1.20.3")
+    (version "1.22.2")
     (source
      (origin
        (method url-fetch)
@@ -643,7 +650,7 @@ for the GStreamer multimedia library.")
          "https://gstreamer.freedesktop.org/src/" name "/"
          name "-" version ".tar.xz"))
        (sha256
-        (base32 "1dv8b2md1xk6d45ir1wzbvqhxbvm6mxv881rjl0brnjwpw3c5wzq"))))
+        (base32 "1p8cpkk4dynglw0xswqyf57xl5fnxmb3xld71kv35cpj4nacb33w"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -661,6 +668,11 @@ for the GStreamer multimedia library.")
                  (string-append prefix "\"" libsoup "\"\n")))))
           (add-after 'unpack 'skip-failing-tests
             (lambda _
+              (substitute* "tests/check/elements/flvmux.c"
+                ;; This test randomly times out (see:
+                ;; https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/786).
+                ((".*tcase_add_test.*test_video_caps_late.*")
+                 ""))
               (substitute* "tests/check/meson.build"
                 ;; Reported as shaky upstream, see
                 ;; <https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/785>
@@ -734,17 +746,28 @@ model to base your own plug-in on, here it is.")
     (home-page "https://gstreamer.freedesktop.org/")
     (license license:lgpl2.0+)))
 
+(define-public gst-plugins-good-qt
+  (package
+    (inherit gst-plugins-good)
+    (name "gst-plugins-good-qt")
+    (inputs
+     (modify-inputs (package-inputs gst-plugins-good)
+       (prepend qtbase-5
+                qtdeclarative-5
+                qtwayland-5
+                qtx11extras)))))
+
 (define-public gst-plugins-bad
   (package
     (name "gst-plugins-bad")
-    (version "1.20.3")
+    (version "1.22.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://gstreamer.freedesktop.org/src/"
                                   name "/" name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0kys6m5hg5bc30wfg8qa3s7dmkdz3kj1j8lhvn3267fxalxw24bs"))
+                "03rd09wsrf9xjianpnnvamb4n3lndhd4x31srqsqab20wcfaz3rx"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -758,16 +781,6 @@ model to base your own plug-in on, here it is.")
       #:phases
       #~(modify-phases %standard-phases
           #$@%common-gstreamer-phases
-          #$@(if (string-prefix? "arm" (or (%current-target-system)
-                                           (%current-system)))
-                 ;; Disable test that fails on ARMv7.
-                 ;; https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/issues/1188
-                 `((add-after 'unpack 'disable-asfmux-test
-                     (lambda _
-                       (substitute* "tests/check/meson.build"
-                         (("\\[\\['elements/asfmux\\.c'\\]\\],")
-                          "")))))
-                 '())
           (add-after 'unpack 'adjust-tests
             (lambda* (#:key native-inputs inputs #:allow-other-keys)
               (let ((gst-plugins-good (assoc-ref (or native-inputs inputs)
@@ -779,21 +792,27 @@ model to base your own plug-in on, here it is.")
                    (string-append "'GST_PLUGIN_SYSTEM_PATH_1_0', '"
                                   gst-plugins-good "/lib/gstreamer-1.0'"))
 
-                  ;; https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/issues/1136
-                  ((".*elements/msdkh264enc\\.c.*") "")
-                  ((".*elements/svthevcenc\\.c.*") "")
-
                   ;; The 'elements_shm.test_shm_live' test sometimes times out
                   ;; (see:
                   ;; https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/790).
                   ((".*'elements/shm\\.c'.*") "")
 
-                  ;; FIXME: Why is this failing.
-                  ((".*elements/dash_mpd\\.c.*") "")
+                  ;; This test is flaky on at least some architectures.
+                  ;; https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/1244
+                  #$@(if (target-riscv64?)
+                       `((("'elements/camerabin\\.c'\\].*],")
+                          "'elements/camerabin.c'], true, ],")
+                         (("'elements/viewfinderbin\\.c'\\].*],")
+                          "'elements/viewfinderbin.c'], true, ],"))
+                       '())
 
-                  ;; These tests are flaky and occasionally time out:
-                  ;; https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/issues/932
-                  ((".*elements/curlhttpsrc\\.c.*") "")
+                  ;; This substitution is no longer effective and can be removed.
+                  #$@(if (member (%current-system)
+                                 '("i686-linux" "aarch64-linux" "riscv64-linux"))
+                         `((("'elements/camerabin\\.c'\\]\\],")
+                            "'elements/camerabin.c'], true, ],"))
+                         '())
+
                   ;; https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/issues/1412
                   ((".*elements/dtls\\.c.*") ""))
                 (substitute* "tests/check/elements/zxing.c"
@@ -932,7 +951,7 @@ par compared to the rest.")
 (define-public gst-plugins-ugly
   (package
     (name "gst-plugins-ugly")
-    (version "1.20.3")
+    (version "1.22.2")
     (source
      (origin
        (method url-fetch)
@@ -940,7 +959,7 @@ par compared to the rest.")
         (string-append "https://gstreamer.freedesktop.org/src/"
                        name "/" name "-" version ".tar.xz"))
        (sha256
-        (base32 "1zdfsq0zm1d3wj3w3z44bf3v28clr8yd6qzmkjs09hq9k9w21alc"))))
+        (base32 "1486x08bwasq6l7kc75nph5az61siq9mbgkgpw4kf1mxn16z8c4g"))))
     (build-system meson-build-system)
     (arguments
      (list #:glib-or-gtk? #t         ; To wrap binaries and/or compile schemas
@@ -989,7 +1008,7 @@ think twice about shipping them.")
 (define-public gst-libav
   (package
     (name "gst-libav")
-    (version "1.20.3")
+    (version "1.22.2")
     (source
      (origin
        (method url-fetch)
@@ -998,14 +1017,11 @@ think twice about shipping them.")
          "https://gstreamer.freedesktop.org/src/" name "/"
          name "-" version ".tar.xz"))
        (sha256
-        (base32 "1zkxybdzdkn07wwmj0rrgxyvbry472dggjv2chdsmpzwc02x3v9z"))))
+        (base32 "1zfg7giwampmjxkqr5pqy66vck42b0akmwby661brwz8iy3zkapw"))))
     (build-system meson-build-system)
-    (native-inputs
-     (list perl pkg-config python-wrapper ruby))
-    (inputs
-     (list ffmpeg))
-    (propagated-inputs
-     (list gstreamer gst-plugins-base))
+    (native-inputs (list perl pkg-config python-wrapper ruby))
+    (inputs (list ffmpeg))
+    (propagated-inputs (list gstreamer gst-plugins-base))
     (synopsis "GStreamer plugins and helper libraries")
     (description "Gst-Libav contains a GStreamer plugin for using the encoders,
 decoders, muxers, and demuxers provided by FFmpeg.")
@@ -1015,7 +1031,7 @@ decoders, muxers, and demuxers provided by FFmpeg.")
 (define-public gst-editing-services
   (package
     (name "gst-editing-services")
-    (version "1.20.3")
+    (version "1.22.2")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -1023,7 +1039,7 @@ decoders, muxers, and demuxers provided by FFmpeg.")
                     "gst-editing-services-" version ".tar.xz"))
               (sha256
                (base32
-                "18msiadg6wi1636ylp02yfiwphxlz39gh3vbxchl9qpvd7g9dn2z"))))
+                "1gyfw11ns2la1cm6gvvvv5qj3q5gcvcypc3wk8kdwmrqzij18fs5"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -1083,7 +1099,7 @@ binary, but none of the actual plugins.")))
 (define-public python-gst
   (package
     (name "python-gst")
-    (version "1.20.3")
+    (version "1.22.2")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -1091,7 +1107,7 @@ binary, but none of the actual plugins.")))
                     "gst-python-" version ".tar.xz"))
               (sha256
                (base32
-                "1p6g05k88nbbv5x9madsvphxcdkfl1z0lmp39p6bhmg9x8h82d6v"))))
+                "1bak46bj92gyz613m99mnl0yw0qhbhq5dfxifnvldgp45kcb7wmy"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -1140,3 +1156,29 @@ framework.  It plays all file formats gstreamer supports, so if you have a
 music collection which contains different file formats, like flac, ogg and
 mp3, you can use gst123 to play all your music files.")
     (license license:lgpl2.0+)))
+
+(define-public gst-plugins-espeak
+  (let ((commit "7f6e41274fb833a487a7ee8ac0c236f0821330cc")
+        (revision "1"))
+    (package
+      (name "gst-plugins-espeak")
+      (version (git-version "0.5.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/sugarlabs/gst-plugins-espeak")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0va4ghcdda8cbqzv376hgmv1ay79va4kyazibfj8m5n52bhxxqgz"))))
+      (build-system gnu-build-system)
+      (inputs
+       (list espeak-ng gstreamer gst-plugins-base))
+      (native-inputs
+       (list autoconf automake libtool pkg-config))
+      (home-page "http://wiki.sugarlabs.org/go/Activity_Team/gst-plugins-espeak")
+      (synopsis "Use espeak ")
+      (description "This is a Gstreamer @code{src} plugin to use the espeak
+speech synthesizer as a sound source.")
+      (license license:lgpl2.0+))))

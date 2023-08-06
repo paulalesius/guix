@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2015, 2018 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2014 Eric Bavier <bavier@member.fsf.org>
 ;;; Copyright © 2016, 2018 Efraim Flashner <efraim@flashner.co.il>
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Kei Kebreau <kkebreau@posteo.net>
 ;;; Copyright © 2018, 2022 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2019 Julien Lepiller <julien@lepiller.eu>
@@ -46,14 +46,14 @@
 (define-public tcl
   (package
     (name "tcl")
-    (version "8.6.11")
+    (version "8.6.12")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://sourceforge/tcl/Tcl/"
                                   version "/tcl" version "-src.tar.gz"))
               (sha256
                (base32
-                "0n4211j80mxr6ql0xx52rig8r885rcbminfpjdb2qrw6hmk8c14c"))))
+                "19n1wk6ypx19p26gywvibwbhqs2zapp93n3136qlhzhn1zfrbj96"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases (modify-phases %standard-phases
@@ -69,7 +69,13 @@
                        ;; Programs such as Ghostscript rely on it.
                        (with-directory-excursion bin
                          (symlink (car (find-files "." "tclsh"))
-                                  "tclsh"))))))
+                                  "tclsh")))))
+                 ,@(if (system-hurd?)
+                       '((add-after 'unpack 'delete-tests
+                           (lambda _
+                             (delete-file "tests/chanio.test")
+                             (delete-file "tests/socket.test"))))
+                       '()))
 
        ;; By default, man pages are put in PREFIX/man, but we want them in
        ;; PREFIX/share/man.  The 'validate-documentation-location' phase is
@@ -134,7 +140,7 @@
      (list tcl))
     (inputs
      (list tcllib))
-    (home-page "http://incrtcl.sourceforge.net/")
+    (home-page "https://incrtcl.sourceforge.net/")
     (synopsis "Object Oriented programming (OOP) extension for Tcl")
     (description
      "[incr Tcl] is a widely used object-oriented system for Tcl.  The name is
@@ -193,7 +199,7 @@ X11 GUIs.")
 (define-public tk
   (package
     (name "tk")
-    (version "8.6.11.1")
+    (version "8.6.12")
     (source (origin
              (method url-fetch)
              (uri (string-append "mirror://sourceforge/tcl/Tcl/"
@@ -201,7 +207,7 @@ X11 GUIs.")
                                  version "-src.tar.gz"))
              (sha256
               (base32
-               "1gh9k7l76qg9l0sb78ijw9xz4xl1af47aqbdifb6mjpf3cbsnv00"))
+               "0c0665h9b55cr3p6civcrgaixx6dldz7k7v870lyssyb7wgmqf8j"))
              (patches (search-patches "tk-find-library.patch"))))
     (build-system gnu-build-system)
     (arguments
@@ -392,7 +398,7 @@ modules for Tk, all written in high-level Tcl.  Examples of provided widgets:
                             (assoc-ref %build-inputs "libxslt")
                             "/bin/xslt-config"))
        #:test-target "test"))
-    (home-page "http://tclxml.sourceforge.net/")
+    (home-page "https://tclxml.sourceforge.net/")
     (synopsis "Tcl library for XML parsing")
     (description "TclXML provides event-based parsing of XML documents.  The
 application may register callback scripts for certain document features, and
@@ -424,7 +430,7 @@ callback is evaluated.")
                                               "/lib"))))
     (inputs
      (list tcl tk))
-    (home-page "http://tclx.sourceforge.net/")
+    (home-page "https://tclx.sourceforge.net/")
     (synopsis "System programming extensions for Tcl")
     (description
      "Extended Tcl is oriented towards system programming tasks and large

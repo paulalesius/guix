@@ -3,21 +3,22 @@
 ;;; Copyright © 2013, 2015 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2013 Nikita Karetnikov <nikita@karetnikov.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2021 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2016, 2020, 2021 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2016, 2020, 2021, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Lukas Gradl <lgradl@openmailbox.org>
 ;;; Copyright © 2017, 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2017 Petter <petter@mykolab.ch>
 ;;; Copyright © 2018, 2019 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018 Alex Vong <alexvong1995@gmail.com>
-;;; Copyright © 2019, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2019, 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2019 Giacomo Leidi <goodoldpaul@autistici.org>
 ;;; Copyright © 2019, 2020, 2021 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Nicolò Balzarotti <nicolo@nixo.xyz>
 ;;; Copyright © 2020 Florian Pelz <pelzflorian@pelzflorian.de>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Arthur Margerit <ruhtra.mar@gmail.com>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2022 Petr Hodina <phodina@protonmail.com>
+;;; Copyright © 2023 Saku Laesvuori <saku@laesvuori.fi>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -103,15 +104,15 @@
 (define dbus
   (package
     (name "dbus")
-    (version "1.12.20")
+    (version "1.14.0")
     (source (origin
               (method url-fetch)
               (uri (string-append
                     "https://dbus.freedesktop.org/releases/dbus/dbus-"
-                    version ".tar.gz"))
+                    version ".tar.xz"))
               (sha256
                (base32
-                "1zp5gpx61v1cpqf2zwb1cidhp9xylvw49d3zydkxqk6b1qa20xpp"))
+                "1m7bibavml4gx9d67j403l0kzd1a4z8lhrpxb2as3q4nfpiwrmyc"))
               (patches (search-patches "dbus-helper-search-path.patch"))))
     (build-system gnu-build-system)
     (arguments
@@ -215,7 +216,7 @@ information, refer to the @samp{dbus-daemon(1)} man page.")))
 (define glib
   (package
     (name "glib")
-    (version "2.70.2")
+    (version "2.72.3")
     (source
      (origin
        (method url-fetch)
@@ -224,7 +225,7 @@ information, refer to the @samp{dbus-daemon(1)} man page.")))
                        name "/" (string-take version 4) "/"
                        name "-" version ".tar.xz"))
        (sha256
-        (base32 "0vw08p4jllavp9qmlqg1yl1zanmy53yid46wipas6gfdhnf4al85"))
+        (base32 "1w25sf2wxkkah2p2w189q58mza3zv8z1fh2q1m82sldq4kva4faa"))
        (patches
         (search-patches "glib-appinfo-watch.patch"
                         "glib-skip-failing-test.patch"))
@@ -239,127 +240,224 @@ information, refer to the @samp{dbus-daemon(1)} man page.")))
                "bin"                    ;executables; depends on Python
                "debug"))
     (arguments
-     `(#:disallowed-references
-       (,tzdata-for-tests
-        ;; Verify glib-mkenums, gtester, ... use the cross-compiled
-        ;; python.
-        ,@(if (%current-target-system)
-              (map (cut gexp-input <> #:native? #t)
-                   `(,(this-package-native-input "python")
-                     ,(this-package-native-input "python-wrapper")))
-              '()))
-       #:configure-flags ,#~(list "--default-library=both"
-                                  "-Dman=false"
-                                  "-Dselinux=disabled"
-                                  (string-append "--bindir="
-                                                 #$output:bin "/bin"))
-       #:phases
-       (modify-phases %standard-phases
-         ;; Needed to pass the test phase on slower ARM and i686 machines.
-         (add-after 'unpack 'increase-test-timeout
-           (lambda _
-             (substitute* "meson.build"
-               (("(test_timeout.*) = ([[:digit:]]+)" all first second)
-                (string-append first " = " second "0")))))
-         (add-after 'unpack 'disable-failing-tests
-           (lambda _
-             (substitute* "gio/tests/meson.build"
-               ((".*'testfilemonitor'.*") ;marked as flaky
-                ""))
-             (with-directory-excursion "glib/tests"
-               (substitute* '("unix.c" "utils.c")
-                 (("[ \t]*g_test_add_func.*;") "")))
-             (with-directory-excursion "gio/tests"
-               (substitute* '("contenttype.c" "gdbus-address-get-session.c"
-                              "gdbus-peer.c" "appinfo.c" "desktop-app-info.c")
-                 (("[ \t]*g_test_add_func.*;") "")))
+     (list
+      #:disallowed-references
+      (cons tzdata-for-tests
+            ;; Verify glib-mkenums, gtester, ... use the cross-compiled
+            ;; python.
+            (if (%current-target-system)
+                (map (cut gexp-input <> #:native? #t)
+                     `(,(this-package-native-input "python")
+                       ,(this-package-native-input "python-wrapper")))
+                '()))
+      #:configure-flags #~(list "--default-library=both"
+                                "-Dman=false"
+                                "-Dselinux=disabled"
+                                (string-append "--bindir="
+                                               #$output:bin "/bin"))
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; Needed to pass the test phase on slower ARM and i686 machines.
+          (add-after 'unpack 'increase-test-timeout
+            (lambda _
+              (substitute* "meson.build"
+                (("(test_timeout.*) = ([[:digit:]]+)" all first second)
+                 (string-append first " = " second "0")))))
+          (add-after 'unpack 'disable-failing-tests
+            (lambda _
+              (substitute* "gio/tests/meson.build"
+                ((".*'testfilemonitor'.*") ;marked as flaky
+                 ""))
+              (with-directory-excursion "glib/tests"
+                (substitute* '("unix.c" "utils.c")
+                  (("[ \t]*g_test_add_func.*;") "")))
+              (with-directory-excursion "gio/tests"
+                (substitute* '("contenttype.c" "gdbus-address-get-session.c"
+                               "gdbus-peer.c" "appinfo.c" "desktop-app-info.c")
+                  (("[ \t]*g_test_add_func.*;") "")))
 
-             ,@(if (target-x86-32?)
-                   ;; Comment out parts of timer.c that fail on i686 due to
-                   ;; excess precision when building with GCC 10:
-                   ;; <https://gitlab.gnome.org/GNOME/glib/-/issues/820>.
-                   '((substitute* "glib/tests/timer.c"
-                       (("^  g_assert_cmpuint \\(micros.*" all)
-                        (string-append "//" all "\n"))
-                       (("^  g_assert_cmpfloat \\(elapsed, ==.*" all)
-                        (string-append "//" all "\n"))))
-                   '())))
-         ;; Python references are not being patched in patch-phase of build,
-         ;; despite using python-wrapper as input. So we patch them manually.
-         ;;
-         ;; These python scripts are both used during build and installed,
-         ;; so at first, use a python from 'native-inputs', not 'inputs'. When
-         ;; cross-compiling, the 'patch-shebangs' phase will replace
-         ;; the native python with a python from 'inputs'.
-         (add-after 'unpack 'patch-python-references
-           (lambda* (#:key native-inputs inputs #:allow-other-keys)
-             (substitute* '("gio/gdbus-2.0/codegen/gdbus-codegen.in"
-                            "glib/gtester-report.in"
-                            "gobject/glib-genmarshal.in"
-                            "gobject/glib-mkenums.in")
-               (("@PYTHON@")
-                (search-input-file (or native-inputs inputs)
-                                   (string-append
-                                    "/bin/python"
-                                    ,(version-major+minor
-                                      (package-version python))))))))
-         (add-before 'check 'pre-check
-           (lambda* (#:key native-inputs inputs outputs #:allow-other-keys)
-             ;; For tests/gdatetime.c.
-             (setenv "TZDIR"
-                     (search-input-directory (or native-inputs inputs)
-                                             "share/zoneinfo"))
-             ;; Some tests want write access there.
-             (setenv "HOME" (getcwd))
-             (setenv "XDG_CACHE_HOME" (getcwd))))
-         (add-after 'install 'move-static-libraries
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out"))
-                   (static (assoc-ref outputs "static")))
-               (mkdir-p (string-append static "/lib"))
-               (for-each (lambda (a)
-                           (rename-file a (string-append static "/lib/"
-                                                         (basename a))))
-                         (find-files out "\\.a$")))))
-         (add-after 'install 'patch-pkg-config-files
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               ;; Do not refer to "bindir", which points to "${prefix}/bin".
-               ;; We don't patch "bindir" to point to "$bin/bin", because that
-               ;; would create a reference cycle between the "out" and "bin"
-               ;; outputs.
-               (substitute*
-                   (list
-                    (string-append out "/lib/pkgconfig/gio-2.0.pc")
-                    (string-append out "/lib/pkgconfig/glib-2.0.pc"))
-                 (("^bindir=.*")
-                  "")
-                 (("=\\$\\{bindir\\}/")
-                  "="))))))))
+              #$@(if (target-x86-32?)
+                     ;; Comment out parts of timer.c that fail on i686 due to
+                     ;; excess precision when building with GCC 10:
+                     ;; <https://gitlab.gnome.org/GNOME/glib/-/issues/820>.
+                     '((substitute* "glib/tests/timer.c"
+                         (("^  g_assert_cmpuint \\(micros.*" all)
+                          (string-append "//" all "\n"))
+                         (("^  g_assert_cmpfloat \\(elapsed, ==.*" all)
+                          (string-append "//" all "\n"))))
+                     '())
+              #$@(if (system-hurd?)
+                     '((with-directory-excursion "gio/tests"
+                         ;; TIMEOUT after 600s
+                         (substitute* '("actions.c"
+                                        "dbus-appinfo.c"
+                                        "debugcontroller.c"
+                                        "gdbus-bz627724.c"
+                                        "gdbus-connection-slow.c"
+                                        "gdbus-exit-on-close.c"
+                                        "gdbus-export.c"
+                                        "gdbus-introspection.c"
+                                        "gdbus-method-invocation.c"
+                                        "gdbus-non-socket.c"
+                                        "gdbus-proxy-threads.c"
+                                        "gdbus-proxy-unique-name.c"
+                                        "gdbus-proxy-well-known-name.c"
+                                        "gdbus-proxy.c"
+                                        "gdbus-test-codegen.c"
+                                        "gmenumodel.c"
+                                        "gnotification.c"
+                                        "stream-rw_all.c")
+                           (("return (g_test_run|session_bus_run)" all call)
+                            (string-append "return 0;// " call))
+                           ((" (ret|rtv|result) = (g_test_run|session_bus_run)"
+                             all var call)
+                            (string-append " " var " = 0;// " call))
+                           (("[ \t]*g_test_add_func.*;") ""))
+
+                         ;; commenting-out g_assert, g_test_add_func, g_test_run
+                         ;; does not help; special-case short-circuit.
+                         (substitute* "gdbus-connection-loss.c" ;; TODO?
+                           (("  gchar \\*path;.*" all)
+                            (string-append all "  return 0;\n")))
+
+                         ;; FAIL
+                         (substitute* '("appmonitor.c"
+                                        "async-splice-output-stream.c"
+                                        "autoptr.c"
+                                        "contexts.c"       
+                                        "converter-stream.c"
+                                        "file.c"
+                                        "g-file-info.c"
+                                        "g-file.c"
+                                        "g-icon.c"
+                                        "gapplication.c"
+                                        "gdbus-connection-flush.c"
+                                        "gdbus-connection.c"
+                                        "gdbus-names.c"    
+                                        "gdbus-server-auth.c"
+                                        "gsocketclient-slow.c"
+                                        "gsubprocess.c"
+                                        "io-stream.c"
+                                        "live-g-file.c"
+                                        "memory-monitor.c" 
+                                        "mimeapps.c"
+                                        "network-monitor-race.c"
+                                        "network-monitor.c"
+                                        "pollable.c"
+                                        "power-profile-monitor.c"
+                                        "readwrite.c"
+                                        "resources.c"
+                                        "socket-service.c"
+                                        "socket.c"
+                                        "tls-bindings.c"
+                                        "tls-certificate.c"
+                                        "tls-database.c"
+                                        "trash.c"
+                                        "vfs.c")
+                           (("return (g_test_run|session_bus_run)" all call)
+                            (string-append "return 0;// " call))
+                           ((" (ret|rtv|result) = (g_test_run|session_bus_run)"
+                             all var call)
+                            (string-append " " var " = 0;// " call))
+                           (("[ \t]*g_test_add_func.*;") ""))
+
+                         ;; commenting-out g_test_add_func, g_test_run does
+                         ;; not help; special-case short-circuit.
+                         (substitute* "gsettings.c"
+                           (("#ifdef TEST_LOCALE_PATH" all)
+                            (string-append "  return 0;\n" all)))
+
+                         ;; commenting-out g_test_add_func, ;; g_test_run does
+                         ;; not help; special-case short-circuit.
+                         (substitute* "proxy-test.c"
+                           (("  gint result.*;" all)
+                            (string-append all "  return 0;\n")))
+
+                         ;; commenting-out g_test_add_func, g_test_run
+                         ;; does not help; special-case short-circuit.
+                         (substitute* "volumemonitor.c"
+                           (("  gboolean ret;" all)
+                            (string-append all "  return 0;\n"))))
+
+                       (with-directory-excursion "glib/tests"
+                         ;; TIMEOUT after 600s
+                         (substitute* "thread-pool.c"
+                           (("[ \t]*g_test_add_func.*;") ""))
+
+                         ;; FAIL
+                         (substitute* "fileutils.c"
+                           (("[ \t]*g_test_add_func.*;") ""))))
+                     '())))
+          ;; Python references are not being patched in patch-phase of build,
+          ;; despite using python-wrapper as input. So we patch them manually.
+          ;;
+          ;; These python scripts are both used during build and installed,
+          ;; so at first, use a python from 'native-inputs', not 'inputs'. When
+          ;; cross-compiling, the 'patch-shebangs' phase will replace
+          ;; the native python with a python from 'inputs'.
+          (add-after 'unpack 'patch-python-references
+            (lambda* (#:key native-inputs inputs #:allow-other-keys)
+              (substitute* '("gio/gdbus-2.0/codegen/gdbus-codegen.in"
+                             "glib/gtester-report.in"
+                             "gobject/glib-genmarshal.in"
+                             "gobject/glib-mkenums.in")
+                (("@PYTHON@")
+                 (search-input-file (or native-inputs inputs)
+                                    (string-append
+                                     "/bin/python"
+                                     #$(version-major+minor
+                                        (package-version python))))))))
+          (add-before 'check 'pre-check
+            (lambda* (#:key native-inputs inputs outputs #:allow-other-keys)
+              ;; For tests/gdatetime.c.
+              (setenv "TZDIR"
+                      (search-input-directory (or native-inputs inputs)
+                                              "share/zoneinfo"))
+              ;; Some tests want write access there.
+              (setenv "HOME" (getcwd))
+              (setenv "XDG_CACHE_HOME" (getcwd))))
+          (add-after 'install 'move-static-libraries
+            (lambda _
+              (mkdir-p (string-append #$output:static "/lib"))
+              (for-each (lambda (a)
+                          (rename-file a (string-append #$output:static "/lib/"
+                                                        (basename a))))
+                        (find-files #$output "\\.a$"))))
+          (add-after 'install 'patch-pkg-config-files
+            (lambda* (#:key outputs #:allow-other-keys)
+              ;; Do not refer to "bindir", which points to "${prefix}/bin".
+              ;; We don't patch "bindir" to point to "$bin/bin", because that
+              ;; would create a reference cycle between the "out" and "bin"
+              ;; outputs.
+              (substitute*
+                  (list (search-input-file outputs "lib/pkgconfig/gio-2.0.pc")
+                        (search-input-file outputs "lib/pkgconfig/glib-2.0.pc"))
+                (("^bindir=.*")
+                 "")
+                (("=\\$\\{bindir\\}/")
+                 "=")))))))
     (native-inputs
-     `(("gettext" ,gettext-minimal)
-       ("m4" ,m4)                       ; for installing m4 macros
-       ("perl" ,perl)                   ; needed by GIO tests
-       ("pkg-config" ,pkg-config)
-       ("python" ,python)               ; For 'patch-python-references
-       ("python-wrapper" ,python-wrapper)
-       ("tzdata" ,tzdata-for-tests)))   ; for tests/gdatetime.c
-    (inputs
-     (list bash-completion
-           ;; "python", "python-wrapper" and "bash-minimal"
-           ;; are for the 'patch-shebangs' phase, to make
-           ;; sure the installed scripts end up with a correct shebang
-           ;; when cross-compiling.
-           python
+     (list dbus
+           gettext-minimal
+           m4                           ;for installing m4 macros
+           perl                         ;needed by GIO tests
+           pkg-config
+           python                       ;for 'patch-python-references
            python-wrapper
-           bash-minimal
-           dbus
-           libelf))
+           tzdata-for-tests))           ;for tests/gdatetime.c
+    (inputs
+     (list ;; "python", "python-wrapper" and "bash-minimal"
+      ;; are for the 'patch-shebangs' phase, to make
+      ;; sure the installed scripts end up with a correct shebang
+      ;; when cross-compiling.
+      bash-minimal
+      python
+      python-wrapper))
     (propagated-inputs
-     (list libffi ; in the Requires.private field of gobject-2.0.pc
-           pcre ; in the Requires.private field of glib-2.0.pc
-           `(,util-linux "lib") ;for libmount
-           zlib))         ; in the Requires.private field of glib-2.0.pc
+     (list libffi             ;in the Requires.private field of gobject-2.0.pc
+           pcre               ;in the Requires.private field of glib-2.0.pc
+           `(,util-linux "lib")  ;for libmount
+           zlib))                ;in the Requires.private field of glib-2.0.pc
     (native-search-paths
      ;; This variable is not really "owned" by GLib, but several related
      ;; packages refer to it: gobject-introspection's tools use it as a search
@@ -405,35 +503,35 @@ functions for strings and common data structures.")
        ((#:test-options test-options ''())
         ;; Skip flaky or slow tests.
         `(cons* "--no-suite=slow" "--no-suite=flaky" ,test-options))
-       ((#:phases phases '%standard-phases)
-        `(modify-phases ,phases
-           (replace 'disable-failing-tests
-             (lambda _
-               (with-directory-excursion "glib/tests"
-                 (substitute* '("unix.c" "utils.c")
-                   (("[ \t]*g_test_add_func.*;") "")))
-               ;; The "glib:gio / file" test fails with the error "No
-               ;; application is registered as handling this file" (see:
-               ;; https://gitlab.gnome.org/GNOME/glib/-/issues/2742).
-               (with-directory-excursion "gio/tests"
-                 (substitute* '("appinfo.c"
-                                "contenttype.c"
-                                "desktop-app-info.c"
-                                "file.c"
-                                "gdbus-address-get-session.c"
-                                "gdbus-peer.c")
-                   (("[ \t]*g_test_add_func.*;") "")))
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (replace 'disable-failing-tests
+              (lambda _
+                (with-directory-excursion "glib/tests"
+                  (substitute* '("unix.c" "utils.c")
+                    (("[ \t]*g_test_add_func.*;") "")))
+                ;; The "glib:gio / file" test fails with the error "No
+                ;; application is registered as handling this file" (see:
+                ;; https://gitlab.gnome.org/GNOME/glib/-/issues/2742).
+                (with-directory-excursion "gio/tests"
+                  (substitute* '("appinfo.c"
+                                 "contenttype.c"
+                                 "desktop-app-info.c"
+                                 "file.c"
+                                 "gdbus-address-get-session.c"
+                                 "gdbus-peer.c")
+                    (("[ \t]*g_test_add_func.*;") "")))
 
-               ,@(if (target-x86-32?)
-                     ;; Comment out parts of timer.c that fail on i686 due to
-                     ;; excess precision when building with GCC 10:
-                     ;; <https://gitlab.gnome.org/GNOME/glib/-/issues/820>.
-                     '((substitute* "glib/tests/timer.c"
-                         (("^  g_assert_cmpuint \\(micros.*" all)
-                          (string-append "//" all "\n"))
-                         (("^  g_assert_cmpfloat \\(elapsed, ==.*" all)
-                          (string-append "//" all "\n"))))
-                     '())))))))
+                #$@(if (target-x86-32?)
+                       ;; Comment out parts of timer.c that fail on i686 due to
+                       ;; excess precision when building with GCC 10:
+                       ;; <https://gitlab.gnome.org/GNOME/glib/-/issues/820>.
+                       '((substitute* "glib/tests/timer.c"
+                           (("^  g_assert_cmpuint \\(micros.*" all)
+                            (string-append "//" all "\n"))
+                           (("^  g_assert_cmpfloat \\(elapsed, ==.*" all)
+                            (string-append "//" all "\n"))))
+                       '())))))))
     (native-inputs
      (modify-inputs (package-native-inputs glib)
        (append desktop-file-utils)))
@@ -444,44 +542,31 @@ functions for strings and common data structures.")
 (define-public glib-with-documentation
   ;; glib's doc must be built in a separate package since it requires gtk-doc,
   ;; which in turn depends on glib.
-  (let ((base glib-next))
-    (package/inherit base
-      (properties (alist-delete 'hidden? (package-properties base)))
-      (outputs (cons "doc" (package-outputs base))) ; 20 MiB of GTK-Doc reference
-      (native-inputs
-       `(("docbook-xml-4.2" ,docbook-xml-4.2)
-         ("docbook-xml-4.5" ,docbook-xml)
-         ("docbook-xsl" ,docbook-xsl)
-         ("gtk-doc" ,gtk-doc)
-         ("libxml2" ,libxml2)
-         ("xsltproc" ,libxslt)
-         ,@(package-native-inputs base)))
-      (arguments
-       (substitute-keyword-arguments (package-arguments base)
-         ((#:configure-flags flags ''())
-          #~(cons "-Dgtk_doc=true"
-                  (delete "-Dman=false" #$flags)))
-         ((#:phases phases)
-          `(modify-phases ,phases
-             (add-after 'unpack 'patch-docbook-xml
-               (lambda* (#:key inputs #:allow-other-keys)
-                 (with-directory-excursion "docs"
-                   (substitute* (find-files "." "\\.xml$")
-                     (("http://www.oasis-open.org/docbook/xml/4\\.5/")
-                      (string-append (assoc-ref inputs "docbook-xml-4.5")
-                                     "/xml/dtd/docbook/"))
-                     (("http://www.oasis-open.org/docbook/xml/4\\.2/")
-                      (string-append (assoc-ref inputs "docbook-xml-4.2")
-                                     "/xml/dtd/docbook/"))))))
-             (add-after 'install 'move-doc
-               (lambda* (#:key outputs #:allow-other-keys)
-                 (let* ((out (assoc-ref outputs "out"))
-                        (doc (assoc-ref outputs "doc"))
-                        (html (string-append "/share/gtk-doc")))
-                   (mkdir-p (string-append doc "/share"))
-                   (rename-file
-                    (string-append out html)
-                    (string-append doc html))))))))))))
+  (package/inherit glib
+    (properties (alist-delete 'hidden? (package-properties glib)))
+    (outputs (cons "doc" (package-outputs glib))) ; 20 MiB of GTK-Doc reference
+    (native-inputs
+     (modify-inputs (package-native-inputs glib)
+       (prepend docbook-xml-4.2
+                docbook-xml
+                docbook-xsl
+                gtk-doc
+                libxml2
+                libxslt)))
+    (arguments
+     (substitute-keyword-arguments (package-arguments glib)
+       ((#:configure-flags flags ''())
+        #~(cons "-Dgtk_doc=true"
+                (delete "-Dman=false" #$flags)))
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (add-after 'install 'move-doc
+              (lambda _
+                (let ((html "/share/gtk-doc"))
+                  (mkdir-p (string-append #$output:doc "/share"))
+                  (rename-file
+                   (string-append #$output html)
+                   (string-append #$output:doc html)))))))))))
 
 (define (python-extension-suffix python triplet)
   "Determine the suffix for C extensions for PYTHON when compiled
@@ -522,14 +607,14 @@ be used when cross-compiling."
 (define gobject-introspection
   (package
     (name "gobject-introspection")
-    (version "1.66.1")
+    (version "1.72.0")
     (source (origin
              (method url-fetch)
              (uri (string-append "mirror://gnome/sources/"
                    "gobject-introspection/" (version-major+minor version)
                    "/gobject-introspection-" version ".tar.xz"))
              (sha256
-              (base32 "078n0q7b6z682mf4irclrksm73cyixq295mqnqifl9plwmgaai6x"))
+              (base32 "1g5aps3b20ck96ahy7fjl4nhp9nabkd9rlqd0s1qzn3111cqxzh2"))
              (patches (search-patches
                        "gobject-introspection-cc.patch"
                        "gobject-introspection-girepository.patch"
@@ -573,16 +658,15 @@ be used when cross-compiling."
                                           "/_giscanner"))))
                 #~()))))
     (native-inputs
-     `(("glib" ,glib "bin")
+     `(,@(if (%current-target-system)
+           `(("python" ,python))
+           '())
+       ("glib" ,glib "bin")
        ("pkg-config" ,pkg-config)
        ("bison" ,bison)
        ("flex" ,flex)))
     (inputs
-     `(,@(if (%current-target-system)
-             `(("python" ,python))
-             `(("bison" ,bison)
-               ("flex" ,flex)
-               ("python" ,python-wrapper)))
+     `(("python" ,python)
        ("zlib" ,zlib)))
     (propagated-inputs
      (list glib
@@ -682,27 +766,25 @@ The intltool collection can be used to do these things:
 (define itstool
   (package
     (name "itstool")
-    (version "2.0.6")
+    (version "2.0.7")
     (source (origin
              (method url-fetch)
              (uri (string-append "http://files.itstool.org/itstool/itstool-"
                                  version ".tar.bz2"))
              (sha256
               (base32
-               "1acjgf8zlyk7qckdk19iqaca4jcmywd7vxjbcs1mm6kaf8icqcv2"))))
+               "1jl7gsr7aclb9nvqazr039m86y7f7ivfhl2pixcrbfqjkb97r6kb"))))
     (build-system gnu-build-system)
     (inputs
      (list libxml2 python-libxml2 python))
     (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'wrap-program
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((prog (string-append (assoc-ref outputs "out")
-                                        "/bin/itstool")))
-               (wrap-program prog
-                 `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH"))))
-               #t))))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'wrap-program
+            (lambda _
+              (wrap-program (string-append #$output "/bin/itstool")
+                `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH")))))))))
     (home-page "https://itstool.org")
     (synopsis "Tool to translate XML documents with PO files")
     (description
@@ -829,55 +911,39 @@ credentials and service-specific settings.")
     (build-system meson-build-system)
     (outputs '("out" "doc"))
     (arguments
-     `(#:configure-flags
-       (list
-        "-Dbuild-documentation=true")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-docbook-xml
-           (lambda* (#:key inputs #:allow-other-keys)
-             (with-directory-excursion "docs"
-               (substitute* (find-files "." "\\.xml$")
-                 (("http://www.oasis-open.org/docbook/xml/4\\.1\\.2/")
-                  (string-append (assoc-ref inputs "docbook-xml")
-                                 "/xml/dtd/docbook/"))))
-             #t))
-         (add-after 'install 'move-doc
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (doc (assoc-ref outputs "doc")))
-               (mkdir-p (string-append doc "/share"))
-               (rename-file
-                (string-append out "/share/doc")
-                (string-append doc "/share/doc"))
-               #t))))))
+     (list #:configure-flags #~(list "-Dbuild-documentation=true")
+           #:phases #~(modify-phases %standard-phases
+                        (add-after 'install 'move-doc
+                          (lambda _
+                            (mkdir-p (string-append #$output:doc "/share"))
+                            (rename-file
+                             (string-append #$output "/share/doc")
+                             (string-append #$output:doc "/share/doc")))))))
     (native-inputs
-     `(("docbook-xml" ,docbook-xml-4.1.2)
-       ("docbook-xsl" ,docbook-xsl)
-       ("dot" ,graphviz)
-       ("doxygen" ,doxygen)
-       ("m4" ,m4)
-       ("mm-common" ,mm-common)
-       ("perl" ,perl)
-       ("pkg-config" ,pkg-config)
-       ("xmllint" ,libxml2)
-       ("xsltproc" ,libxslt)))
-    (inputs
-     (list boost))
+     (list docbook-xml-4.1.2
+           docbook-xsl
+           graphviz
+           doxygen
+           m4
+           mm-common
+           perl
+           pkg-config
+           libxml2
+           libxslt))
+    (inputs (list boost))
     (home-page "https://libsigcplusplus.github.io/libsigcplusplus/")
     (synopsis "Type-safe callback system for standard C++")
     (description
      "Libsigc++ implements a type-safe callback system for standard C++.  It
-     allows you to define signals and to connect those signals to any callback
-     function, either global or a member function, regardless of whether it is
-     static or virtual.
-
-     It also contains adaptor classes for connection of dissimilar callbacks and
-     has an ease of use unmatched by other C++ callback libraries.")
+allows you to define signals and to connect those signals to any callback
+function, either global or a member function, regardless of whether it is
+static or virtual.  It also contains adaptor classes for connection of
+dissimilar callbacks and has an ease of use unmatched by other C++ callback
+libraries.")
     (license license:lgpl3+)))
 
- (define-public libsigc++-2
-   (package
+(define-public libsigc++-2
+  (package
     (inherit libsigc++)
     (name "libsigc++")
     (version "2.9.3")
@@ -892,30 +958,19 @@ credentials and service-specific settings.")
         (base32 "0zq963d0sss82q62fdfjs7l9iwbdch51albck18cb631ml0v7y8b"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-docbook-xml
-           (lambda* (#:key inputs #:allow-other-keys)
-             (with-directory-excursion "docs"
-               (substitute* (find-files "." "\\.xml$")
-                 (("http://www.oasis-open.org/docbook/xml/4\\.1\\.2/")
-                  (string-append (assoc-ref inputs "docbook-xml")
-                                 "/xml/dtd/docbook/"))))
-             #t))
-         (add-after 'install 'move-doc
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (doc (assoc-ref outputs "doc")))
-               (mkdir-p (string-append doc "/share"))
-               (rename-file
-                (string-append out "/share/doc")
-                (string-append doc "/share/doc"))
-               #t))))))))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'install 'move-doc
+                 (lambda _
+                   (mkdir-p (string-append #$output:doc "/share"))
+                   (rename-file
+                    (string-append #$output "/share/doc")
+                    (string-append #$output:doc "/share/doc")))))))))
 
 (define glibmm
   (package
     (name "glibmm")
-    (version "2.70.0")
+    (version "2.72.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/glibmm/"
@@ -923,31 +978,29 @@ credentials and service-specific settings.")
                                   "/glibmm-" version ".tar.xz"))
               (sha256
                (base32
-                "085mzpphz71sh5wh71ppikwnxsgn4pk3s4bzz6ingj6wxn5gs240"))))
+                "1n2w2pcpbxjbsxynmar3i5ibr7src6gnrdxb9nn57p5miai4jxia"))))
     (build-system meson-build-system)
     (outputs '("out" "doc"))
     (arguments
-     `(#:configure-flags
-       (list "-Dbuild-documentation=true")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'disable-failing-tests
-           (lambda _
-             (substitute* "tests/meson.build"
-               ;; This test uses /etc/fstab as an example file to read
-               ;; from; disable it.
-               (("[ \t]*.*giomm_simple.*$") "")
-               ;; This test does a DNS lookup, and then expects to be able
-               ;; to open a TLS session; just skip it.
-               (("[ \t]*.*giomm_tls_client.*$") ""))))
-         (add-after 'install 'move-doc
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (doc (assoc-ref outputs "doc")))
-               (mkdir-p (string-append doc "/share"))
-               (rename-file
-                (string-append out "/share/doc")
-                (string-append doc "/share/doc"))))))))
+     (list
+      #:configure-flags #~(list "-Dbuild-documentation=true")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'disable-failing-tests
+            (lambda _
+              (substitute* "tests/meson.build"
+                ;; This test uses /etc/fstab as an example file to read from;
+                ;; disable it.
+                (("[ \t]*.*giomm_simple.*$") "")
+                ;; This test does a DNS lookup, and then expects to be able to
+                ;; open a TLS session; just skip it.
+                (("[ \t]*.*giomm_tls_client.*$") ""))))
+          (add-after 'install 'move-doc
+            (lambda _
+              (mkdir-p (string-append #$output:doc "/share"))
+              (rename-file
+               (string-append #$output "/share/doc")
+               (string-append #$output:doc "/share/doc")))))))
     (native-inputs
      (list graphviz
            doxygen
@@ -965,6 +1018,23 @@ credentials and service-specific settings.")
      "Glibmm provides a C++ programming interface to the part of GLib that are
 useful for C++.")
     (license license:lgpl2.1+)))
+
+(define-public glibmm-next
+  (package
+   (inherit glibmm)
+   (version "2.76.0")
+   (name "glibmm")
+   (source (origin
+            (method url-fetch)
+            (uri (string-append "mirror://gnome/sources/glibmm/"
+                                (version-major+minor version)
+                                "/glibmm-" version ".tar.xz"))
+            (sha256
+             (base32
+              "1cia8vrpwzn8zwalws42mga5hi965840m5s8dvfzv55xx86dhdw6"))))
+   (propagated-inputs
+    (modify-inputs (package-propagated-inputs glibmm)
+      (replace "glib" glib-next)))))
 
  (define-public glibmm-2.64
    (package
@@ -987,7 +1057,7 @@ useful for C++.")
 (define-public python-pygobject
   (package
     (name "python-pygobject")
-    (version "3.40.1")
+    (version "3.42.2")
     (source
      (origin
        (method url-fetch)
@@ -996,7 +1066,7 @@ useful for C++.")
                            "/pygobject-" version ".tar.xz"))
        (sha256
         (base32
-         "0d80g5kgf2i9cginyhalvb7ibfk9g30yilqzmcsw6h6byj8xbih0"))
+         "0my95gjnps093inzznbipkhf25cffbc32v9is2fq8wvh59g6ks5d"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -1032,12 +1102,14 @@ useful for C++.")
     (synopsis "Python bindings for GObject")
     (description
      "Python bindings for GLib, GObject, and GIO.")
+    (properties
+     '((upstream-name . "pygobject")))
     (license license:lgpl2.1+)))
 
 (define-public perl-glib
   (package
     (name "perl-glib")
-    (version "1.3292")
+    (version "1.3293")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -1045,7 +1117,7 @@ useful for C++.")
                     version ".tar.gz"))
               (sha256
                (base32
-                "1q5075d6v2g5sm675hyzrcpxsrh09z83crfci8b0wl3jwmnz0frg"))))
+                "005m3inz12xcsd5sr056cm1kbhmxsx2ly88ifbdv6p6cwz0s05kk"))))
     (build-system perl-build-system)
     (native-inputs
      (list perl-extutils-depends perl-extutils-pkgconfig))

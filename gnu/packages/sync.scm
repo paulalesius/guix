@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2015-2020, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015-2020, 2022-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2017 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2018, 2019, 2020 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018, 2021 Ludovic Courtès <ludo@gnu.org>
@@ -54,6 +54,7 @@
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages image)
   #:use-module (gnu packages kde-frameworks)
+  #:use-module (gnu packages libevent)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages ocaml)
@@ -75,7 +76,7 @@
 (define-public nextcloud-client
   (package
     (name "nextcloud-client")
-    (version "3.2.0")
+    (version "3.8.2")
     (source
      (origin
        (method git-fetch)
@@ -86,14 +87,14 @@
        (file-name
         (git-file-name name version))
        (sha256
-        (base32 "137h65sn4ixspbblvn0r2ngg8234yk582bppkkr87c3krfp21gx4"))
+        (base32 "0gmj217jmmx13wwb096prwzn3njv616njk1id97g6lrbn969fcnn"))
        (modules '((guix build utils)
                   (ice-9 ftw)
                   (srfi srfi-1)))
        (snippet
         '(begin
            ;; Not available in Guix.
-           (let* ((keep '("QProgressIndicator" "qtokenizer")))
+           (let* ((keep '("QProgressIndicator" "qtokenizer" "kirigami")))
              (with-directory-excursion "src/3rdparty"
                (for-each delete-file-recursively
                          (lset-difference string=?
@@ -102,11 +103,11 @@
            (with-directory-excursion "src/gui"
              (substitute* "CMakeLists.txt"
                ;; Remove references of deleted 3rdparties.
-               (("[ \t]*\\.\\./3rdparty/qtlockedfile/?.*\\.cpp")
+               (("[ \t]*\\.\\./3rdparty/qtlockedfile/?.*\\.(cpp|h)")
                 "")
-               (("[ \t]*\\.\\./3rdparty/qtsingleapplication/?.*\\.cpp")
+               (("[ \t]*\\.\\./3rdparty/qtsingleapplication/?.*\\.(cpp|h)")
                 "")
-               (("[ \t]*\\.\\./3rdparty/kmessagewidget/?.*\\.cpp")
+               (("[ \t]*\\.\\./3rdparty/kmessagewidget/?.*\\.(cpp|h)")
                 "")
                (("[ \t]*list\\(APPEND 3rdparty_SRC \\.\\./3rdparty/?.*\\)")
                 "")
@@ -120,8 +121,8 @@
                 "@kwidgetsaddons@")
                ;; Expand libraries, that used to be statically linked, but
                ;; no longer are post-vendoring.
-               (("\\$\\{synclib_NAME\\}")
-                (string-append "${synclib_NAME} "
+               (("KF5::Archive")
+                (string-append "KF5::Archive "
                                "QtSolutions_LockedFile "
                                "QtSolutions_SingleApplication "
                                "KF5WidgetsAddons")))
@@ -136,7 +137,7 @@
     (arguments
      `(#:configure-flags
        (list
-        "-DUNIT_TESTING=ON")
+        "-DUNIT_TESTING=ON" "-DBUILD_UPDATER=OFF")
        #:imported-modules
        ((guix build glib-or-gtk-build-system)
         ,@%qt-build-system-modules)
@@ -150,7 +151,7 @@
            (lambda* (#:key inputs #:allow-other-keys)
              ;; Patch install directory for dbus service files.
              (substitute* "shell_integration/libcloudproviders/CMakeLists.txt"
-               (("PKGCONFIG_GETVAR\\(.+ _install_dir\\)")
+               (("pkg_get_variable\\(_install_dir dbus-1 .*\\)")
                 (string-append "set(_install_dir \"${CMAKE_INSTALL_PREFIX}"
                                "/share/dbus-1/services\")")))
              (substitute* "shell_integration/dolphin/CMakeLists.txt"
@@ -160,6 +161,11 @@
                (("@kwidgetsaddons@")
                 (search-input-directory inputs
                                         "/include/KF5/KWidgetsAddons/")))))
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               (setenv "QT_QPA_PLATFORM" "offscreen")
+               (invoke "ctest" "-E" "SyncXAttrTest"))))
          (add-before 'check 'pre-check
            (lambda _
              ;; Tests write to $HOME.
@@ -175,6 +181,7 @@
        ("doxygen" ,doxygen)
        ("extra-cmake-modules" ,extra-cmake-modules)
        ("glib:bin" ,glib "bin")
+       ("librsvg" ,(librsvg-for-system))
        ("perl" ,perl)
        ("pkg-config" ,pkg-config)
        ("python" ,python-wrapper)
@@ -182,8 +189,10 @@
        ("ruby" ,ruby)))
     (inputs
      (list appstream
+           dbus
            desktop-file-utils
            glib
+           karchive
            kconfig
            kcoreaddons
            kio
@@ -217,7 +226,7 @@ Nextcloud Server with your computer.")
 (define-public megacmd
   (package
     (name "megacmd")
-    (version "1.1.0")
+    (version "1.5.1")
     (source
       (origin
         (method git-fetch)
@@ -227,28 +236,29 @@ Nextcloud Server with your computer.")
               (recursive? #t)))
         (sha256
          (base32
-          "004j8m3xs6slx03g2g6wzr97myl2v3zc09wxnfar5c62a625pd53"))
+          "12v46jyxdgp2qqdpmd084d60hd5srjbgwpk082b3rp5dl7yg1rd8"))
         (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     ;; XXX: Disabling tests because they depend on libgtest.la from googletest,
     ;; which is not installed for unclear reasons.
     (arguments
-     `(#:tests? #f
-       #:configure-flags '("--with-pcre")))
+     (list #:tests? #f
+           #:configure-flags #~'("--with-pcre")))
     (native-inputs
      (list autoconf automake libtool))
     (inputs
-     `(("c-ares" ,c-ares)
-       ("crypto++" ,crypto++)
-       ("curl" ,curl)
-       ("freeimage" ,freeimage)
-       ("gtest" ,googletest)
-       ("openssl" ,openssl)
-       ("pcre" ,pcre)
-       ("readline" ,readline)
-       ("sodium" ,libsodium)
-       ("sqlite3" ,sqlite)
-       ("zlib" ,zlib)))
+     (list c-ares
+           crypto++
+           curl
+           freeimage
+           googletest
+           libuv
+           openssl
+           pcre
+           readline
+           libsodium
+           sqlite
+           zlib))
     (home-page "https://mega.nz/cmd")
     (synopsis
      "Command Line Interactive and Scriptable Application to access mega.nz")
@@ -366,7 +376,7 @@ silently and reliably flow across to every other.")
 (define-public onedrive
   (package
     (name "onedrive")
-    (version "2.4.21")
+    (version "2.4.23")
     (source
       (origin
         (method git-fetch)
@@ -375,7 +385,7 @@ silently and reliably flow across to every other.")
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "04rnkc6ap9mkghvlj102f2gvnjqg3bs4vw9q3wm869fsflnm3599"))))
+         (base32 "1nj4g1rbbg6g9kw1k89dmjg4mnyh5q1b3wbjhrayvnjmssx66yn8"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -390,17 +400,9 @@ silently and reliably flow across to every other.")
        #~(list (string-append "CC=" #$(cc-for-target)))
        #:phases
        #~(modify-phases %standard-phases
-         (add-after 'unpack 'link-to-external-libraries
-           (lambda* (#:key inputs #:allow-other-keys)
-             (setenv "DCFLAGS" (string-append
-                                 ;; The default linker is ld.gold.
-                                 "--linker=\"\" "
-                                 ;; Only link necessary libraries.
-                                 "-L--as-needed "))))
          (add-after 'configure 'adjust-makefile
            (lambda _
              (substitute* "Makefile"
-               (("-L/gnu") "-Wl,-rpath=/gnu")
                (("-O ") "-O2 "))))
          (replace 'check
            (lambda* (#:key tests? #:allow-other-keys)
@@ -410,7 +412,7 @@ silently and reliably flow across to every other.")
      (list pkg-config))
     (inputs
      (list bash-minimal
-           curl-minimal
+           curl
            ldc
            libnotify
            sqlite))
@@ -544,7 +546,7 @@ written in @command{scsh}.  It makes use of @command{unison} and
              acl
              libselinux
              eudev
-             fuse
+             fuse-2
              openssl
              zlib))
       (synopsis "File synchronization and backup system")

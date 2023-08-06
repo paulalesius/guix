@@ -23,6 +23,7 @@
 ;;; Copyright © 2021 Matthew James Kraai <kraai@ftbfs.org>
 ;;; Copyright © 2021 Xinglu Chen <public@yoctocell.xyz>
 ;;; Copyright © 2021 Simon Tournier <zimon.toutoune@gmail.com>
+;;; Copyright © 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -63,6 +64,7 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages version-control)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system haskell)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix gexp)
@@ -729,7 +731,11 @@ interactive environment for the functional language Haskell.")
     (inputs
      `(("gmp" ,gmp)
        ("ncurses" ,ncurses)
-       ("libffi" ,libffi)
+
+       ;; Use a LibFFI variant without static trampolines to work around
+       ;; <https://gitlab.haskell.org/ghc/ghc/-/issues/20051>.
+       ("libffi" ,libffi-sans-static-trampolines)
+
        ("ghc-testsuite"
         ,(origin
            (method url-fetch)
@@ -893,7 +899,9 @@ interactive environment for the functional language Haskell.")
     (supported-systems '("i686-linux" "x86_64-linux"))
     (outputs '("out" "doc"))
     (inputs
-     (list gmp ncurses libffi))
+     ;; Use a LibFFI variant without static trampolines to work around
+     ;; <https://gitlab.haskell.org/ghc/ghc/-/issues/20051>.
+     (list gmp ncurses libffi-sans-static-trampolines))
     (native-inputs
      `(("perl" ,perl)
        ("python" ,python-2)                ; for tests
@@ -1001,7 +1009,13 @@ interactive environment for the functional language Haskell.")
                  version "/" name "-" version "-testsuite.tar.xz"))
            (sha256
             (base32
-             "0s8lf9sxj7n89pjagi58b3fahnp34qvmwhnn0j1fbg6955vbrfj6"))))))
+             "0s8lf9sxj7n89pjagi58b3fahnp34qvmwhnn0j1fbg6955vbrfj6"))
+           (modules '((guix build utils)))
+           (snippet
+            ;; collections.Iterable was moved to collections.abc in Python 3.10.
+            '(substitute* "testsuite/driver/testlib.py"
+               (("collections\\.Iterable")
+                "collections.abc.Iterable")))))))
     (arguments
      (substitute-keyword-arguments (package-arguments ghc-8.0)
        ((#:phases phases)
@@ -1063,10 +1077,17 @@ interactive environment for the functional language Haskell.")
            (uri (string-append
                  "https://www.haskell.org/ghc/dist/"
                  version "/" name "-" version "-testsuite.tar.xz"))
-           (patches (search-patches "ghc-testsuite-dlopen-pie.patch"))
+           (patches (search-patches "ghc-testsuite-dlopen-pie.patch"
+                                    "ghc-testsuite-grep-compat.patch"))
            (sha256
             (base32
-             "0pw9r91g2np3i806g2f4f8z4jfdd7mx226cmdizk4swa7av1qf91"))))
+             "0pw9r91g2np3i806g2f4f8z4jfdd7mx226cmdizk4swa7av1qf91"))
+           (modules '((guix build utils)))
+           (snippet
+            ;; collections.Iterable was moved to collections.abc in Python 3.10.
+            '(substitute* "testsuite/driver/testlib.py"
+               (("collections\\.Iterable")
+                "collections.abc.Iterable")))))
        ,@(filter (match-lambda
                    (("ghc-bootstrap" . _) #f)
                    (("ghc-testsuite" . _) #f)
@@ -1138,11 +1159,18 @@ interactive environment for the functional language Haskell.")
            (uri (string-append
                  "https://www.haskell.org/ghc/dist/"
                  version "/ghc-" version "-testsuite.tar.xz"))
-           (patches (search-patches "ghc-testsuite-dlopen-pie.patch"))
+           (patches (search-patches "ghc-testsuite-dlopen-pie.patch"
+                                    "ghc-testsuite-grep-compat.patch"))
            (sha256
             (base32
-             "0c55pj2820q26rikhpf636sn4mjgqsxjrl94vsywrh79dxp3k14z"))))
-       ("git" ,git-minimal/fixed)                 ; invoked during tests
+             "0c55pj2820q26rikhpf636sn4mjgqsxjrl94vsywrh79dxp3k14z"))
+           (modules '((guix build utils)))
+           (snippet
+            ;; collections.Iterable was moved to collections.abc in Python 3.10.
+            '(substitute* "testsuite/driver/testlib.py"
+               (("collections\\.Iterable")
+                "collections.abc.Iterable")))))
+       ("git" ,git-minimal/pinned)                 ; invoked during tests
        ,@(filter (match-lambda
                    (("ghc-bootstrap" . _) #f)
                    (("ghc-testsuite" . _) #f)
@@ -1190,11 +1218,18 @@ interactive environment for the functional language Haskell.")
            (uri (string-append
                  "https://www.haskell.org/ghc/dist/"
                  version "/ghc-" version "-testsuite.tar.xz"))
-           (patches (search-patches "ghc-testsuite-dlopen-pie.patch"))
+           (patches (search-patches "ghc-testsuite-dlopen-pie.patch"
+                                    "ghc-testsuite-grep-compat.patch"))
            (sha256
             (base32
-             "1zl25gg6bpx5601k8h3cqnns1xfc0nqgwnh8jvn2s65ra3f2g1nz"))))
-       ("git" ,git-minimal/fixed)                 ; invoked during tests
+             "1zl25gg6bpx5601k8h3cqnns1xfc0nqgwnh8jvn2s65ra3f2g1nz"))
+           (modules '((guix build utils)))
+           (snippet
+            ;; collections.Iterable was moved to collections.abc in Python 3.10.
+            '(substitute* "testsuite/driver/testlib.py"
+               (("collections\\.Iterable")
+                "collections.abc.Iterable")))))
+       ("git" ,git-minimal/pinned)                 ; invoked during tests
        ,@(filter (match-lambda
                    (("ghc-bootstrap" . _) #f)
                    (("ghc-testsuite" . _) #f)
@@ -1226,7 +1261,27 @@ interactive environment for the functional language Haskell.")
                ;;    quasiquotation/T14028.run  T14028 [bad stderr] (dyn)
                (substitute* '("testsuite/tests/quasiquotation/all.T")
                  (("unless\\(config.have_ext_interp, skip\\),")
-                  "unless(config.have_ext_interp, skip), when(arch('i386'), skip),"))))))))
+                  "unless(config.have_ext_interp, skip), when(arch('i386'), skip),"))))
+           ;; i686 fails on CI, but (sometimes and with generous timeouts) completes
+           ;; locally. The issue seems to be that the testsuite tries to run some very
+           ;; broad regular expressions on output files of several megabytes in size,
+           ;; which takes a long time. Since the expressions never match anything on
+           ;; our builds anyways, remove them.
+           ;; TODO: Merge with 'skip-failing-tests-i686 or move into snippets on
+           ;; next rebuild. Note that they are required for GHC 8.10 and 9.2.
+           #$@(if (string-prefix? "i686" (or (%current-target-system)
+                                             (%current-system)))
+               #~((add-after 'skip-failing-tests-i686 'skip-more-failing-tests-i686
+                    (lambda _
+                      (substitute* '("testsuite/tests/profiling/should_run/all.T")
+                        (("test\\('T11627a', \\[ ")
+                         "test('T11627a', [ when(arch('i386'), skip), "))
+                      (substitute* '("testsuite/driver/testlib.py")
+                        ((".*changes being made to the file will invalidate the code signature.*")
+                         "")
+                        ((".*warning: argument unused during compilation:.*")
+                         "")))))
+               #~())))))
     (native-search-paths (list (search-path-specification
                                 (variable "GHC_PACKAGE_PATH")
                                 (files (list
@@ -1234,17 +1289,12 @@ interactive environment for the functional language Haskell.")
                                 (file-pattern ".*\\.conf\\.d$")
                                 (file-type 'directory))))))
 
-;; Versions newer than ghc defined below (i.e. the compiler
-;; haskell-build-system uses) should use ghc-next as their name to
-;; ensure ghc (without version specification) and ghc-* packages are
-;; always compatible. See https://issues.guix.gnu.org/issue/47335.
-
 (define-public ghc-8 ghc-8.10)
 
 (define-public ghc-9.0
   (package
     (inherit ghc-8.10)
-    (name "ghc-next")
+    (name "ghc")
     (version "9.0.2")
     (source (origin
               (method url-fetch)
@@ -1264,7 +1314,14 @@ interactive environment for the functional language Haskell.")
                   version "/ghc-" version "-testsuite.tar.xz"))
            (sha256
             (base32
-             "1m5fzhr4gjn9ni8gxx7ag3fkbw1rspjzgv39mnfb0nkm5mw70v3s"))))
+             "1m5fzhr4gjn9ni8gxx7ag3fkbw1rspjzgv39mnfb0nkm5mw70v3s"))
+           (patches (search-patches "ghc-9.2-grep-warnings.patch"))
+           (modules '((guix build utils)))
+           (snippet
+            ;; collections.Iterable was moved to collections.abc in Python 3.10.
+            '(substitute* "testsuite/driver/testlib.py"
+               (("collections\\.Iterable")
+                "collections.abc.Iterable")))))
        ,@(filter (match-lambda
                    (("ghc-bootstrap" . _) #f)
                    (("ghc-testsuite" . _) #f)
@@ -1277,6 +1334,172 @@ interactive environment for the functional language Haskell.")
             (file-pattern ".*\\.conf\\.d$")
             (file-type 'directory))))))
 
-(define-public ghc ghc-8)
+(define-public ghc-9.2
+  ;; Use 8.10 to shorten the build chain.
+  (let ((base ghc-8.10))
+    (package
+      (inherit base)
+      (name "ghc")
+      (version "9.2.5")
+      (source (origin
+                (method url-fetch)
+                (uri (string-append "https://www.haskell.org/ghc/dist/" version
+                                    "/ghc-" version "-src.tar.xz"))
+                (sha256
+                 (base32
+                  "07028i0hm74svvq9b3jpkczaj6lsdgn3hgr4wa7diqiq3dypj1h6"))
+                (patches (search-patches "ghc-9.2-glibc-2.33-link-order.patch"))))
+      (arguments
+       (substitute-keyword-arguments (package-arguments base)
+         ((#:phases phases '%standard-phases)
+          #~(modify-phases #$phases
+              ;; File Common.hs has been moved to src/ in this release.
+              (replace 'fix-cc-reference
+                (lambda _
+                  (substitute* "utils/hsc2hs/src/Common.hs"
+                    (("\"cc\"") "\"gcc\""))))
+              (add-after 'skip-more-tests 'skip-T21694-i686
+                (lambda _
+                  (substitute* '("testsuite/tests/simplCore/should_compile/all.T")
+                    (("^test\\('T21694', \\[ " all)
+                     (string-append all "when(arch('i386'), skip), ")))))))
+         ;; Increase verbosity, so running the test suite does not time out on CI.
+         ((#:make-flags make-flags ''())
+          #~(cons "VERBOSE=4" #$make-flags))))
+      (properties '((max-silent-time . 36000))) ; 10 hours, for i686.
+      (native-inputs
+       `(;; GHC 9.2 must be built with GHC >= 8.6.
+         ("ghc-bootstrap" ,base)
+         ("ghc-testsuite"
+          ,(origin
+             (method url-fetch)
+             (uri (string-append
+                   "https://www.haskell.org/ghc/dist/"
+                   version "/ghc-" version "-testsuite.tar.xz"))
+             (sha256
+              (base32
+               "19ha0hidrijawy53vm2r0sgml5zkl8126mqy7p0pyacmw3k7913l"))
+             (patches (search-patches "ghc-9.2-grep-warnings.patch"))))
+         ,@(filter (match-lambda
+                     (("ghc-bootstrap" . _) #f)
+                     (("ghc-testsuite" . _) #f)
+                     (_ #t))
+                   (package-native-inputs base))))
+      (native-search-paths
+       (list (search-path-specification
+              (variable "GHC_PACKAGE_PATH")
+              (files (list (string-append "lib/ghc-" version)))
+              (file-pattern ".*\\.conf\\.d$")
+              (file-type 'directory)))))))
+
+;; Versions newer than ghc defined below (i.e. the compiler
+;; haskell-build-system uses) should use ghc-next as their name to
+;; ensure ghc (without version specification) and ghc-* packages are
+;; always compatible. See https://issues.guix.gnu.org/issue/47335.
+(define-public ghc ghc-9.2)
+
+;; 9.4 is the last version to support the make-based build system,
+;; but it boot with 9.2, only 9.0 is supported.
+(define ghc-bootstrap-for-9.4 ghc-9.0)
+
+;; We need two extra dependencies built with ghc-bootstrap-for-9.4,
+;; which are duplicated here from haskell-xyz to make sure the
+;; bootstraping process always works.
+(define ghc-alex-bootstrap-for-9.4
+  (hidden-package
+    (package
+     (name "ghc-alex")
+     (version "3.2.6")
+     (source
+      (origin
+        (method url-fetch)
+        (uri (hackage-uri "alex" version))
+        (sha256
+         (base32
+          "042lrkn0dbpjn5ivj6j26jzb1fwrj8c1aj18ykxja89isg0hiali"))))
+     (build-system haskell-build-system)
+     (arguments
+       (list #:tests? #f
+             #:haskell ghc-bootstrap-for-9.4))
+     (native-inputs
+      (list which))
+     (home-page "https://www.haskell.org/alex/")
+     (synopsis
+      "Tool for generating lexical analysers in Haskell")
+     (description
+      "Alex is a tool for generating lexical analysers in Haskell.  It takes a
+ description of tokens based on regular expressions and generates a Haskell
+ module containing code for scanning text efficiently.  It is similar to the
+ tool lex or flex for C/C++.")
+     (license license:bsd-3))))
+
+(define ghc-happy-bootstrap-for-9.4
+  (hidden-package
+    (package
+     (name "ghc-happy")
+     (version "1.20.0")
+     (source
+      (origin
+        (method url-fetch)
+        (uri (hackage-uri "happy" version))
+        (sha256
+         (base32
+          "1346r2x5ravs5fqma65bzjragqbb2g6v41wz9maknwm2jf7kl79v"))))
+     (build-system haskell-build-system)
+     (arguments
+       (list #:haskell ghc-bootstrap-for-9.4
+             #:tests? #f))
+     (home-page "https://hackage.haskell.org/package/happy")
+     (synopsis "Parser generator for Haskell")
+     (description "Happy is a parser generator for Haskell.  Given a grammar
+ specification in BNF, Happy generates Haskell code to parse the grammar.
+ Happy works in a similar way to the yacc tool for C.")
+     (license license:bsd-3))))
+
+(define-public ghc-9.4
+  ;; Inherit from 9.2, which added a few fixes, but boot from 9.0 (see above).
+  (let ((base ghc-9.2))
+    (package
+      (inherit base)
+      (name "ghc-next")
+      (version "9.4.4")
+      (source (origin
+                (method url-fetch)
+                (uri (string-append "https://www.haskell.org/ghc/dist/" version
+                                    "/ghc-" version "-src.tar.xz"))
+                (sha256
+                 (base32
+                  "1qk7rlqf02s3b6m6sqqngmjq1mxnrz88h159lz6k25gddmdg5kp8"))))
+      (arguments
+       (substitute-keyword-arguments (package-arguments base)
+         ((#:phases phases '%standard-phases)
+          #~(modify-phases #$phases
+             ;; Files don’t exist any more.
+             (delete 'skip-tests)))))
+      (native-inputs
+       `(;; GHC 9.4 must be built with GHC >= 9.0.
+         ("ghc-bootstrap" ,ghc-bootstrap-for-9.4)
+         ("ghc-testsuite"
+          ,(origin
+             (method url-fetch)
+             (uri (string-append
+                    "https://www.haskell.org/ghc/dist/"
+                    version "/ghc-" version "-testsuite.tar.xz"))
+             (sha256
+              (base32
+               "04p2lawxxg3nyv6frzhyjyh3arhqqyh5ka3alxa2pxhcd2hdcja3"))))
+         ("ghc-alex" ,ghc-alex-bootstrap-for-9.4)
+         ("ghc-happy" ,ghc-happy-bootstrap-for-9.4)
+         ,@(filter (match-lambda
+                     (("ghc-bootstrap" . _) #f)
+                     (("ghc-testsuite" . _) #f)
+                     (_ #t))
+                   (package-native-inputs base))))
+      (native-search-paths
+       (list (search-path-specification
+              (variable "GHC_PACKAGE_PATH")
+              (files (list (string-append "lib/ghc-" version)))
+              (file-pattern ".*\\.conf\\.d$")
+              (file-type 'directory)))))))
 
 ;;; haskell.scm ends here

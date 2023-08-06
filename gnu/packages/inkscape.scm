@@ -7,6 +7,7 @@
 ;;; Copyright © 2020, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2020 Boris A. Dekshteyn <boris.dekshteyn@gmail.com>
 ;;; Copyright © 2020 Ekaitz Zarraga <ekaitz@elenq.tech>
+;;; Copyright © 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -35,6 +36,7 @@
   #:use-module (gnu packages bdw-gc)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages gettext)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages graphics)
@@ -46,6 +48,7 @@
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages popt)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages ghostscript)
@@ -60,15 +63,16 @@
   (hidden-package
    (package
      (name "inkscape")
-     (version "1.1.1")
+     (version "1.2.1")
      (source
       (origin
         (method url-fetch)
         (uri (string-append "https://media.inkscape.org/dl/"
                             "resources/file/"
                             "inkscape-" version ".tar.xz"))
+        (patches (search-patches "inkscape-poppler-compat.patch"))
         (sha256
-         (base32 "1bvqg5xfs3m6r7qfdhmgzwhd1hx8wvg3nhvhmalwzcdm6ffhpjmf"))
+         (base32 "06scilds4p4bw337ss22nfdxy2kynv5yjw6vq6nlpjm7xfh7vkj6"))
         (modules '((guix build utils)
                    (ice-9 format)))
         (snippet
@@ -175,6 +179,38 @@ endif()~%~%"
               (substitute* "testfiles/cli_tests/CMakeLists.txt"
                 (("add_cli_test\\(export-latex")
                  "message(TEST_DISABLED: export-latex"))))
+          (add-after 'unpack 'disable-vertical-glyph-tests
+            (lambda _
+              ;; FIXME: These tests fail with newer Pango and Harfbuzz:
+              ;;   https://gitlab.com/inkscape/inkscape/-/issues/2917
+              ;;   https://gitlab.com/inkscape/inkscape/-/issues/3554
+              ;; Simply providing older versions don't work, as we need
+              ;; the full GTK stack; we could use package-input-rewriting
+              ;; but then have to also downgrade pangomm and disable tests
+              ;; in librsvg and GTK+.  Just ignore for now.
+              (substitute* "testfiles/rendering_tests/CMakeLists.txt"
+                (("test-glyph-y-pos") "")
+                (("text-glyphs-combining") "")
+                (("text-glyphs-vertical") "")
+                (("test-rtl-vertical") ""))))
+          ,@(if (or (target-aarch64?)
+                    (target-ppc64le?)
+                    (target-riscv64?))
+              `((add-after 'unpack 'disable-more-tests
+                  (lambda _
+                    ;; https://gitlab.com/inkscape/inkscape/-/issues/3554#note_1035680690
+                    (substitute* "testfiles/CMakeLists.txt"
+                      (("lpe64-test") "#lpe64-test"))
+                    ;; https://gitlab.com/inkscape/inkscape/-/issues/3554#note_1035539888
+                    ;; According to upstream, this is a false positive.
+                    (substitute* "testfiles/rendering_tests/CMakeLists.txt"
+                      (("test-use") "#test-use"))
+                    ;; https://gitlab.com/inkscape/inkscape/-/issues/3554#note_1035539888
+                    ;; Allegedly a precision error in the gamma.
+                    (substitute* "testfiles/cli_tests/CMakeLists.txt"
+                      (("add_cli_test\\(export-png-color-mode-gray-8_png" all)
+                       (string-append "#" all))))))
+              '())
           (add-after 'unpack 'set-home
             ;; Mute Inkscape warnings during tests.
             (lambda _
@@ -190,45 +226,51 @@ endif()~%~%"
           (add-after 'glib-or-gtk-compile-schemas 'glib-or-gtk-wrap
             (assoc-ref glib-or-gtk:%standard-phases 'glib-or-gtk-wrap))
           (add-after 'install 'wrap-program
-            ;; Ensure Python is available at runtime.
-            (lambda* (#:key outputs #:allow-other-keys)
-              (let ((out (assoc-ref outputs "out")))
-                (wrap-program (string-append out "/bin/inkscape")
-                  `("GUIX_PYTHONPATH" ":" prefix
-                    (,(getenv "GUIX_PYTHONPATH"))))))))))
+             ;; Ensure Python is available at runtime.
+             (lambda* (#:key outputs #:allow-other-keys)
+               (let ((out (assoc-ref outputs "out")))
+                 (wrap-program (string-append out "/bin/inkscape")
+                   `("GUIX_PYTHONPATH" prefix
+                     (,(getenv "GUIX_PYTHONPATH")))
+                   ;; Wrapping GDK_PIXBUF_MODULE_FILE allows Inkscape to load
+                   ;; its own icons in pure environments.
+                   `("GDK_PIXBUF_MODULE_FILE" =
+                     (,(getenv "GDK_PIXBUF_MODULE_FILE"))))))))))
      (inputs
-      `(("aspell" ,aspell)
-        ("autotrace" ,autotrace)
-        ("gdl" ,gdl-minimal)
-        ("gtkmm" ,gtkmm-3)
-        ("gtk" ,gtk+)
-        ("gtkspell3" ,gtkspell3)
-        ("gsl" ,gsl)
-        ("poppler" ,poppler)
-        ("lib2geom" ,lib2geom)
-        ("libjpeg" ,libjpeg-turbo)
-        ("libpng" ,libpng)
-        ("libxml2" ,libxml2)
-        ("libxslt" ,libxslt)
-        ("libgc" ,libgc)
-        ("libsoup" ,libsoup-minimal-2)
-        ("libcdr" ,libcdr)
-        ("libvisio" ,libvisio)
-        ("libwpd" ,libwpd)
-        ("libwpg" ,libwpg)
-        ("freetype" ,freetype)
-        ("popt" ,popt)
-        ("potrace" ,potrace)
-        ("lcms" ,lcms)
-        ("boost" ,boost)
-        ("python" ,python-wrapper)
-        ("python-scour" ,python-scour)
-        ("python-pyserial" ,python-pyserial)
-        ("python-numpy" ,python-numpy)
-        ("python-lxml" ,python-lxml)))
+      (list aspell
+            autotrace
+            bash-minimal
+            gdl-minimal
+            gtkmm-3
+            gtk+
+            gtkspell3
+            gsl
+            poppler
+            lib2geom
+            libjpeg-turbo
+            libpng
+            libxml2
+            libxslt
+            libgc
+            (librsvg-for-system)        ;for the pixbuf loader
+            libsoup-minimal-2
+            libcdr
+            libvisio
+            libwpd
+            libwpg
+            freetype
+            popt
+            potrace
+            lcms
+            boost
+            python-wrapper
+            python-scour
+            python-pyserial
+            python-numpy
+            python-lxml))
      (native-inputs
-      (list imagemagick                  ;for tests
-            intltool
+      (list gettext-minimal
+            imagemagick                  ;for tests
             `(,glib "bin")
             googletest
             perl
@@ -271,7 +313,5 @@ as the native format.")
                    `("GDK_PIXBUF_MODULE_FILE" =
                      (,(getenv "GDK_PIXBUF_MODULE_FILE")))))))))))
     (inputs (modify-inputs (package-inputs inkscape/stable)
-              (replace "lib2geom" lib2geom-1.2)
-              (append bash-minimal
-                      librsvg)))        ;for the pixbuf loader
+              (append python-cssselect)))        ;to render qrcode
     (properties (alist-delete 'hidden? (package-properties inkscape/stable)))))

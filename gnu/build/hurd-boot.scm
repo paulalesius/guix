@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2020, 2021 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -105,7 +105,7 @@ Return the value associated with OPTION, or #f on failure."
 
   ;; TODO: Set the 'gnu.translator' extended attribute for passive translator
   ;; settings?
-  )
+  (mkdir-p (scope "servers/bus/pci")))
 
 (define (passive-translator-xattr? file-name)
   "Return true if FILE-NAME has an extended @code{gnu.translator} attribute
@@ -127,6 +127,9 @@ set."
 
 (define (translated? file-name)
   "Return true if a translator is installed on FILE-NAME."
+  ;; On GNU/Hurd, 'getxattr' in glibc opens the file without O_NOTRANS, and
+  ;; then, for "gnu.translator", it calls 'file_get_translator', resulting in
+  ;; EOPNOTSUPP (conversely, 'showtrans' opens the file with O_NOTRANS).
   (if (string-contains %host-type "linux-gnu")
       (passive-translator-xattr? file-name)
       (passive-translator-installed? file-name)))
@@ -180,7 +183,8 @@ set."
        (mkdir-p dir))))
 
   (define servers
-    '(("servers/crash-dump-core" ("/hurd/crash" "--dump-core"))
+    '(("servers/bus/pci"         ("/hurd/pci-arbiter"))
+      ("servers/crash-dump-core" ("/hurd/crash" "--dump-core"))
       ("servers/crash-kill"      ("/hurd/crash" "--kill"))
       ("servers/crash-suspend"   ("/hurd/crash" "--suspend"))
       ("servers/password"        ("/hurd/password"))
@@ -191,7 +195,7 @@ set."
       ("proc"                    ("/hurd/procfs" "--stat-mode=444"))))
 
   (define devices
-    '(("dev/full"    ("/hurd/null"     "--full")            #o666)
+    `(("dev/full"    ("/hurd/null"     "--full")            #o666)
       ("dev/null"    ("/hurd/null")                         #o666)
       ("dev/random"  ("/hurd/random"   "--seed-file" "/var/lib/random-seed")
                                                             #o644)
@@ -210,30 +214,57 @@ set."
       ;; 'fd_to_filename' in libc expects it.
       ("dev/fd"      ("/hurd/magic"    "--directory" "fd")  #o555)
 
-      ("dev/tty1"    ("/hurd/term"     "/dev/tty1" "hurdio" "/dev/vcs/1/console")
-                                                            #o666)
-      ("dev/tty2"    ("/hurd/term"     "/dev/tty2" "hurdio" "/dev/vcs/2/console")
-                                                            #o666)
-      ("dev/tty3"    ("/hurd/term"     "/dev/tty3" "hurdio" "/dev/vcs/3/console")
-                                                            #o666)
+      ("dev/rumpdisk" ("/hurd/rumpdisk")                    #o660)
+      ("dev/netdde"  ("/hurd/netdde")                       #o660)
+      ("dev/eth0"    ("/hurd/devnode" "--master-device=/dev/net"
+                      "eth0")
+                                                            #o660)
+      ("dev/eth1"    ("/hurd/devnode" "--master-device=/dev/net"
+                      "eth1")
+                                                            #o660)
 
-      ("dev/ptyp0"   ("/hurd/term"     "/dev/ptyp0" "pty-master" "/dev/ttyp0")
-                                                            #o666)
-      ("dev/ptyp1"   ("/hurd/term"     "/dev/ptyp1" "pty-master" "/dev/ttyp1")
-                                                            #o666)
-      ("dev/ptyp2"   ("/hurd/term"     "/dev/ptyp2" "pty-master" "/dev/ttyp2")
-                                                            #o666)
+      ;; Create a number of ttys; syslogd writes to tty12 by default.
+      ;; FIXME: Creating /dev/tty12 leads the console client to switch to
+      ;; tty12 when syslogd starts, which is confusing for users.  Thus, do
+      ;; not create tty12.
+      ,@(map (lambda (n)
+               (let ((n (number->string n)))
+                 `(,(string-append "dev/tty" n)
+                   ("/hurd/term" ,(string-append "/dev/tty" n)
+                    "hurdio" ,(string-append "/dev/vcs/" n "/console"))
+                   #o666)))
+             (iota 11 1))
 
-      ("dev/ttyp0"   ("/hurd/term"     "/dev/ttyp0" "pty-slave" "/dev/ptyp0")
-                                                            #o666)
-      ("dev/ttyp1"   ("/hurd/term"     "/dev/ttyp1" "pty-slave" "/dev/ptyp1")
-                                                            #o666)
-      ("dev/ttyp2"   ("/hurd/term"     "/dev/ttyp2" "pty-slave" "/dev/ptyp2")
-                                                            #o666)))
+      ,@(append-map (lambda (n)
+                      (let ((n (number->string n)))
+                        `((,(string-append "dev/ptyp" n)
+                           ("/hurd/term" ,(string-append "/dev/ptyp" n)
+                            "pty-master" ,(string-append "/dev/ttyp" n))
+                           #o666)
+
+                          (,(string-append "dev/ttyp" n)
+                           ("/hurd/term" ,(string-append "/dev/ttyp" n)
+                            "pty-slave" ,(string-append "/dev/ptyp" n))
+                           #o666))))
+                    (iota 10 0))
+      ,@(append-map (lambda (n)
+                      (let* ((n (number->string n))
+                             (drive (string-append "dev/wd" n))
+                             (disk (string-append "@/dev/disk:wd" n)))
+                        `((,drive ("/hurd/storeio" ,disk) #o600)
+                          ,@(map (lambda (p)
+                                   (let ((p (number->string p)))
+                                     `(,(string-append drive "s" p)
+                                       ("/hurd/storeio"
+                                        "--store-type=typed"
+                                        ,(string-append
+                                          "part:" p ":device:" disk))
+                                       #o660)))
+                                 (iota 4 1)))))
+                    (iota 4 0))))
 
   (for-each scope-set-translator servers)
   (mkdir* "dev/vcs/1")
-  (mkdir* "dev/vcs/2")
   (mkdir* "dev/vcs/2")
   (rename-file (scope "dev/console") (scope "dev/console-"))
   (for-each scope-set-translator devices)
@@ -243,6 +274,10 @@ set."
   (false-if-EEXIST (symlink "/dev/fd/1" (scope "dev/stdout")))
   (false-if-EEXIST (symlink "/dev/fd/2" (scope "dev/stderr")))
   (false-if-EEXIST (symlink "crash-dump-core" (scope "servers/crash")))
+  (false-if-EEXIST (symlink "/dev/rumpdisk" (scope "dev/disk")))
+  (false-if-EEXIST (symlink "/dev/netdde" (scope "dev/net")))
+  (false-if-EEXIST (symlink "/servers/socket/2" (scope "servers/socket/inet")))
+  (false-if-EEXIST (symlink "/servers/socket/26" (scope "servers/socket/inet6")))
 
   ;; Make sure /etc/mtab is a symlink to /proc/mounts.
   (false-if-exception (delete-file (scope "etc/mtab")))
@@ -274,13 +309,13 @@ XXX TODO: use Linux xattr/setxattr to remove (settrans in) /libexec/RUNSYSTEM
             (system  (find-long-option "gnu.system" args))
             (to-load (find-long-option "gnu.load" args)))
 
-       (format #t "Setting-up essential translators...\n")
-       (setenv "PATH" (string-append system "/profile/bin"))
-       (set-hurd-device-translators)
-
        (false-if-exception (delete-file "/hurd"))
        (let ((hurd/hurd (readlink* (string-append system "/profile/hurd"))))
          (symlink hurd/hurd "/hurd"))
+
+       (format #t "Setting-up essential translators...\n")
+       (setenv "PATH" (string-append system "/profile/bin"))
+       (set-hurd-device-translators)
 
        (format #t "Starting pager...\n")
        (unless (zero? (system* "/hurd/mach-defpager"))

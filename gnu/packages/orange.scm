@@ -25,6 +25,7 @@
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages graph)
   #:use-module (gnu packages machine-learning)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-science)
   #:use-module (gnu packages python-web)
@@ -160,7 +161,7 @@ GUI based workflow.  It is primarily used in the Orange framework.")
            python-orange-widget-base
            python-pandas
            python-pygments
-           python-pyqt-without-qtwebkit
+           python-pyqt
            python-pyqtgraph
            python-pyqtwebengine
            python-pyyaml

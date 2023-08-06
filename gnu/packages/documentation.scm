@@ -10,8 +10,9 @@
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2020, 2021 Michael Rohleder <mike@rohleder.de>
-;;; Copyright © 2021 Marius Bakke <marius@gnu.org>
+;;; Copyright © 2021, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.counoyer@gmail.com>
+;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -36,9 +37,11 @@
   #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system cmake)
+  #:use-module (guix build-system perl)
   #:use-module (guix build-system python)
   #:use-module (guix build-system qt)
   #:use-module (guix deprecation)
+  #:use-module (guix utils)
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages backup)
@@ -65,7 +68,7 @@
 (define-public latex2html
   (package
     (name "latex2html")
-    (version "2020.2")
+    (version "2022.2")
     (source
      (origin
        (method git-fetch)
@@ -75,29 +78,26 @@
          (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1icyl6kl60wh7cavprgbd8q6lpjwr7wn24m34kpiif7ahknhcbcm"))))
+        (base32 "1z71anjzxy5jsdlaqba4w9spncc6iycldarnr2z1dq8xmk6yhpjn"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-configure
-           (lambda* (#:key outputs #:allow-other-keys)
-             (substitute* "configure"
-               (("/usr/local")
-                (assoc-ref outputs "out"))
-               (("\\$\\{CONFIG_SHELL-/bin/sh\\}")
-                (which "bash")))
-             #t))
-         (replace 'configure
-           (lambda _
-             (invoke "./configure")
-             #t))
-         (add-after 'configure 'patch-cfgcache
-           (lambda* (#:key outputs #:allow-other-keys)
-             (substitute* "cfgcache.pm"
-               (("/usr/local")
-                (assoc-ref outputs "out")))
-             #t)))))
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'patch-configure
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (substitute* "configure"
+                     (("/usr/local")
+                      #$output)
+                     (("\\$\\{CONFIG_SHELL-/bin/sh\\}")
+                      (which "bash")))))
+               (replace 'configure
+                 (lambda _
+                   (invoke "./configure")))
+               (add-after 'configure 'patch-cfgcache
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (substitute* "cfgcache.pm"
+                     (("/usr/local")
+                      #$output)))))))
     (inputs
      (list perl))
     (synopsis "LaTeX documents to HTML")
@@ -142,8 +142,7 @@ pages in HTML.")
                            (("XMLLINT = 'xmllint'")
                             (string-append "XMLLINT = '" xmllint "'"))
                            (("XSLTPROC = 'xsltproc'")
-                            (string-append "XSLTPROC = '" xsltproc "'")))
-                         #t)))
+                            (string-append "XSLTPROC = '" xsltproc "'"))))))
          ;; Make asciidoc use the local docbook-xsl package instead of fetching
          ;; it from the internet at run-time.
          (add-before 'install 'make-local-docbook-xsl
@@ -155,20 +154,16 @@ release/xsl/current")
                            "xsl:import href=\""
                            (string-append (assoc-ref inputs "docbook-xsl")
                                           "/xml/xsl/docbook-xsl-"
-                                          ,(package-version docbook-xsl)))))
-                       #t))
+                                          ,(package-version docbook-xsl)))))))
          ;; Do the same for docbook-xml.
          (add-before 'install 'make-local-docbook-xml
                      (lambda* (#:key inputs #:allow-other-keys)
                        (substitute* "docbook45.conf"
                          (("http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd")
                           (string-append (assoc-ref inputs "docbook-xml")
-                                         "/xml/dtd/docbook/docbookx.dtd")))
-                       #t)))))
-    (native-inputs
-     (list autoconf))
-    (inputs
-     (list python docbook-xml docbook-xsl libxml2 libxslt))
+                                         "/xml/dtd/docbook/docbookx.dtd"))))))))
+    (native-inputs (list autoconf))
+    (inputs (list python docbook-xml-4.5 docbook-xsl libxml2 libxslt))
     (home-page "https://asciidoc.org/")
     (synopsis "Text-based document generation system")
     (description
@@ -187,48 +182,59 @@ markup) can be customized and extended by the user.")
 (define-public doxygen
   (package
     (name "doxygen")
-    (version "1.9.1")
+    (version "1.9.5")
     (home-page "https://www.doxygen.nl/")
     (source (origin
-             (method url-fetch)
-             (uri (list (string-append home-page "files/doxygen-"
-                                       version ".src.tar.gz")
-                        (string-append "mirror://sourceforge/doxygen/rel-"
-                                       version "/doxygen-" version
-                                       ".src.tar.gz")))
-             (sha256
-              (base32
-               "1lcif1qi20gf04qyjrx7x367669g17vz2ilgi4cmamp1whdsxbk7"))))
+              (method url-fetch)
+              (uri (list (string-append home-page "files/doxygen-"
+                                        version ".src.tar.gz")
+                         (string-append "mirror://sourceforge/doxygen/rel-"
+                                        version "/doxygen-" version
+                                        ".src.tar.gz")))
+              (sha256
+               (base32
+                "1v1f9cp5lyymg7xmw0ldnzi7ql8agbaqam1xdyljk0lrbnrm9d2m"))))
     (build-system cmake-build-system)
     (native-inputs
-     (list bison flex libxml2 ;provides xmllint for the tests
-           python))             ;for creating the documentation
+     (list bison
+           flex
+           libxml2                      ;provides xmllint for the tests
+           python))                     ;for creating the documentation
     (inputs
-     `(("bash" ,bash-minimal)))
+     (list bash-minimal))
     (arguments
      ;; Force cmake to use iconv header from cross-libc instead of the one
      ;; from native libc.
-     `(,@(if (%current-target-system)
-             '(#:configure-flags
-               (list (string-append "-DICONV_INCLUDE_DIR="
-                                    (assoc-ref %build-inputs "cross-libc")
-                                    "/include")))
-             '())
-       #:test-target "tests"
-       #:phases (modify-phases %standard-phases
-                  (add-after 'unpack 'disable-bibtex-test
-                    (lambda _
-                      ;; Disable test that requires bibtex to avoid a
-                      ;; circular dependency.
-                      (for-each delete-file-recursively
-                                '("testing/012" "testing/012_cite.dox"))))
-                  (add-before 'configure 'patch-sh
-                              (lambda* (#:key inputs #:allow-other-keys)
-                                (substitute* "src/portable.cpp"
-                                  (("/bin/sh")
-                                   (string-append
-                                    (assoc-ref inputs "bash") "/bin/sh")))
-                                #t)))))
+     (list
+      #:configure-flags
+      (if (%current-target-system)
+          #~(list (string-append "-DICONV_INCLUDE_DIR="
+                                 (assoc-ref %build-inputs "cross-libc")
+                                 "/include"))
+          #~'())
+      #:test-target "tests"
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'disable-bibtex-test
+            (lambda _
+              ;; Disable test that requires bibtex to avoid a
+              ;; circular dependency.
+              (for-each delete-file-recursively
+                        '("testing/012" "testing/012_cite.dox"))))
+          (add-before 'configure 'patch-sh
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((/bin/sh (search-input-file inputs "/bin/sh")))
+                (substitute* "src/portable.cpp"
+                  (("/bin/sh")
+                   /bin/sh)))))
+          #$@(if (target-hurd?)
+                 #~((add-after 'unpack 'apply-patch
+                      (lambda _
+                        (let ((patch-file
+                               #$(local-file
+                                  (search-patch "doxygen-hurd.patch"))))
+                          (invoke "patch" "--force" "-p1" "-i" patch-file)))))
+                 #~()))))
     (synopsis "Generate documentation from annotated sources")
     (description "Doxygen is the de facto standard tool for generating
 documentation from annotated C++ sources, but it also supports other popular
@@ -253,7 +259,7 @@ and to some extent D.")
     (build-system gnu-build-system)
     (native-inputs
      (list flex gettext-minimal))
-    (home-page "http://docpp.sourceforge.net/")
+    (home-page "https://docpp.sourceforge.net")
     (synopsis "Documentation system for C, C++, IDL, and Java")
     (description
      "DOC++ is a documentation system for C, C++, IDL, and Java.  It can
@@ -261,6 +267,32 @@ generate both TeX output for high-quality hardcopies or HTML output for online
 browsing.  The documentation is extracted directly from the C/C++/IDL source
 or Java class files.")
     (license gpl2+)))
+
+(define-public pod2pdf
+  (package
+    (name "pod2pdf")
+    (version "0.42")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                     "mirror://cpan/authors/id/J/JO/JONALLEN/pod2pdf-"
+                     version
+                     ".tar.gz"))
+              (sha256
+                (base32
+                  "0w5p7yy01vph74nfr9qzjb18p1avmhhcpza0qz9r88fmb0blbiyv"))))
+    (build-system perl-build-system)
+    (propagated-inputs
+     (list perl-getopt-argvfile
+           perl-pdf-api2
+           perl-pod-parser))
+    (home-page "https://metacpan.org/release/pod2pdf")
+    (synopsis "Convert Pod to PDF format")
+    (description "pod2pdf converts documents written in Perl's @acronym{POD, Plain Old
+Documentation} format to PDF files.  It also supports some extensions to the POD
+format, and supports the file types JPG, GIF, TIFF, PNG, and PNM for embedded
+objects.")
+    (license artistic2.0)))
 
 (define-public python-docrepr
   (package
@@ -274,7 +306,8 @@ or Java class files.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1ma5gwy93m1djd3zdlnqfrwhgr8ic1qbsz5kkrb9f987ax40lfkd"))))
+                "1ma5gwy93m1djd3zdlnqfrwhgr8ic1qbsz5kkrb9f987ax40lfkd"))
+              (patches (search-patches "python-docrepr-fix-tests.patch"))))
     (build-system python-build-system)
     (arguments
      (list
@@ -336,7 +369,7 @@ additional metadata about the object to which the docstring belongs.")
            docbook-xml-4.2))
     (native-inputs
      (list intltool))
-    (home-page "http://scrollkeeper.sourceforge.net/")
+    (home-page "https://scrollkeeper.sourceforge.net/")
     (synopsis "Open Documentation Cataloging Project")
     (description
      "ScrollKeeper is a cataloging system for documentation.  It manages
@@ -347,7 +380,7 @@ the Net to search for documents which are not on the local system.")
     (license lgpl2.1+)))
 
 (define-public zeal
-  (let ((commit "d3c5521c501d24050f578348ff1b9d68244b992c")
+  (let ((commit "1cfa7c637f745be9d98777f06b4f8dec90892bf2")
         (revision "1"))
     (package
       (name "zeal")
@@ -360,7 +393,7 @@ the Net to search for documents which are not on the local system.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "1ky2qi2cmjckc51lm3i28815ixgqdm36j7smixxr16jxpmbqs6sl"))))
+          (base32 "1m7pp3cwc21x03718vhwfd9j2n8md3hv5dp10s234vcsd755s7a3"))))
       (build-system qt-build-system)
       (arguments
        `(#:tests? #f                    ;no tests

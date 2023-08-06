@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2020 Timothy Sample <samplet@ngyro.com>
+;;; Copyright © 2020, 2022 Timothy Sample <samplet@ngyro.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -25,17 +25,18 @@
 
 (define-module (guix build gnu-bootstrap)
   #:use-module (guix build utils)
+  #:use-module (srfi srfi-1)
   #:use-module (system base compile)
   #:export (bootstrap-configure
             bootstrap-build
             bootstrap-install))
 
-(define (bootstrap-configure version modules scripts)
+(define (bootstrap-configure name version modules scripts)
   "Create a procedure that configures an early bootstrap package.  The
-procedure will search the MODULES directory and configure all of the
-'.in' files with VERSION.  It will then search the SCRIPTS directory and
-configure all of the '.in' files with the bootstrap Guile and its module
-and object directories."
+procedure will search each directory in MODULES and configure all of the
+'.in' files with NAME and VERSION.  It will then search the SCRIPTS
+directory and configure all of the '.in' files with the bootstrap
+Guile and its module and object directories."
   (lambda* (#:key inputs outputs #:allow-other-keys)
     (let* ((out (assoc-ref outputs "out"))
            (guile-dir (assoc-ref inputs "guile"))
@@ -50,10 +51,10 @@ and object directories."
                   (let ((target (string-drop-right template 3)))
                     (copy-file template target)
                     (substitute* target
+                      (("@PACKAGE_NAME@") name)
                       (("@VERSION@") version))))
-                (find-files modules
-                            (lambda (fn st)
-                              (string-suffix? ".in" fn))))
+                (append-map (lambda (dir) (find-files dir "\\.in$"))
+                            modules))
       (for-each (lambda (template)
                   (format #t "Configuring ~a~%" template)
                   (let ((target (string-drop-right template 3)))
@@ -70,7 +71,7 @@ and object directories."
 
 (define (bootstrap-build modules)
   "Create a procedure that builds an early bootstrap package.  The
-procedure will search the MODULES directory and compile all of the
+procedure will search each directory in MODULES and compile all of the
 '.scm' files."
   (lambda _
     (add-to-load-path (getcwd))
@@ -80,13 +81,15 @@ procedure will search the MODULES directory and compile all of the
                        (dir (dirname scm)))
                   (format #t "Compiling ~a~%" scm)
                   (compile-file scm #:output-file go)))
-              (find-files modules "\\.scm$"))
+              (append-map (lambda (dir) (find-files dir "\\.scm$"))
+                          modules))
     #t))
 
 (define (bootstrap-install modules scripts)
   "Create a procedure that installs an early bootstrap package.  The
-procedure will install all of the '.scm' and '.go' files in the MODULES
-directory, and all the executable files in the SCRIPTS directory."
+procedure will install all of the '.scm' and '.go' files in each of the
+directories in MODULES, and all the executable files in the SCRIPTS
+directory."
   (lambda* (#:key inputs outputs #:allow-other-keys)
     (let* ((out (assoc-ref outputs "out"))
            (guile-dir (assoc-ref inputs "guile"))
@@ -104,7 +107,8 @@ directory, and all the executable files in the SCRIPTS directory."
                     (install-file scm (string-append moddir "/" dir))
                     (format #t "Installing ~a~%" go)
                     (install-file go (string-append godir "/" dir))))
-                (find-files modules "\\.scm$"))
+                (append-map (lambda (dir) (find-files dir "\\.scm$"))
+                            modules))
       (for-each (lambda (script)
                   (format #t "Installing ~a~%" script)
                   (install-file script (string-append out "/bin")))

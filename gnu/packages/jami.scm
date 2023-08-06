@@ -2,7 +2,7 @@
 ;;; Copyright © 2019 Pierre Neidhardt <mail@ambrevar.xyz>
 ;;; Copyright © 2020 Vincent Legoll <vincent.legoll@gmail.com>
 ;;; Copyright © 2019, 2020 Jan Wielkiewicz <tona_kosmicznego_smiecia@interia.pl>
-;;; Copyright © 2020, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -59,7 +59,6 @@
   #:use-module (gnu packages xiph)
   #:use-module (gnu packages xorg)
   #:use-module (gnu packages)
-  #:use-module (guix build-system cmake)
   #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system qt)
@@ -69,38 +68,26 @@
   #:use-module (guix packages)
   #:use-module (guix utils))
 
-(define %jami-version "20221031.1308.130cc26")
+(define %jami-version "20230323.0")
 
 (define %jami-sources
   ;; Return an origin object of the tarball release sources archive of the
   ;; Jami project.
   (origin
     (method url-fetch)
-    (uri (string-append "https://dl.jami.net/release/tarballs/jami_"
-                        %jami-version
-                        ".tar.gz"))
+    (uri (string-append "https://dl.jami.net/release/tarballs/jami-"
+                        %jami-version ".tar.gz"))
     (modules '((guix build utils)))
     (snippet
-     `(begin
-        ;; Delete multiple MiBs of bundled tarballs.  The contrib directory
-        ;; contains the custom patches for pjproject and other libraries used
-        ;; by Jami.
-        (delete-file-recursively "daemon/contrib/tarballs")
-        ;; Remove the git submodule directories of unused Jami clients.
-        (for-each delete-file-recursively '("client-android"
-                                            "client-ios"
-                                            "client-macosx"
-                                            "plugins"))))
+     ;; Delete multiple MiBs of bundled tarballs.  The daemon/contrib
+     ;; directory contains the custom patches for pjproject and other
+     ;; libraries used by Jami.
+     '(delete-file-recursively "daemon/contrib/tarballs"))
     (sha256
      (base32
-      "0hbsjjs61n7268lyjnjb9lzfpkkd65fmz76l1bg4awlz1f3cyywm"))
+      "0vjsjr37cb87j9hqbmipyxn4877k1wn3l0vzca3l3ldgknglz7v2"))
     (patches (search-patches "jami-disable-integration-tests.patch"
-                             "jami-libjami-headers-search.patch"
-                             "jami-fix-unit-tests-build.patch"
-                             "jami-fix-qml-imports.patch"
-                             "jami-no-webengine.patch"
-                             "jami-sip-unregister.patch"
-                             "jami-xcb-link.patch"))))
+                             "jami-libjami-headers-search.patch"))))
 
 ;; Jami maintains a set of patches for some key dependencies (currently
 ;; pjproject and ffmpeg) of Jami that haven't yet been integrated upstream.
@@ -112,18 +99,16 @@
         (invoke "tar" "-xvf" #$%jami-sources
                 "-C" patches-directory
                 "--strip-components=5"
-                (string-append "jami-project/daemon/contrib/src/"
-                               dep-name))
-        (for-each
-         (lambda (file)
-           (invoke "patch" "--force" "--ignore-whitespace" "-p1" "-i"
-                   (string-append patches-directory "/"
-                                  file ".patch")))
-         patches))))
+                "--wildcards"
+                (string-append "jami-*/daemon/contrib/src/" dep-name))
+        (for-each (lambda (f)
+                    (invoke "patch" "--force" "--ignore-whitespace" "-p1" "-i"
+                            (string-append patches-directory "/" f ".patch")))
+                  patches))))
 
 (define-public pjproject-jami
-  (let ((commit "513a3f14c44b2c2652f9219ec20dea64b236b713")
-        (revision "1"))
+  (let ((commit "e4b83585a0bdf1523e808a4fc1946ec82ac733d0")
+        (revision "3"))
     (package
       (inherit pjproject)
       (name "pjproject-jami")
@@ -142,7 +127,7 @@
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "1vzfpiwhd96a9ibk398z922a60j18xd7mblsmi6355r7ccj2aw7p"))))
+                  "0gky5idyyqxhqk959lzys5l7x1i925db773lfdpvxxmkmfizdq21"))))
       (arguments
        (substitute-keyword-arguments (package-arguments pjproject)
          ((#:phases phases '%standard-phases)
@@ -158,10 +143,12 @@
                    '("0009-add-config-site")))))))))))
 
 ;; The following variables are configure flags used by ffmpeg-jami.  They're
-;; from the jami-project/daemon/contrib/src/ffmpeg/rules.mak file.  We try to
-;; keep it as close to the official Jami package as possible, to provide all
-;; the codecs and extra features that are expected (see:
-;; https://review.jami.net/plugins/gitiles/ring-daemon/+/refs/heads/master/contrib/src/ffmpeg/rules.mak)
+;; from the jami/daemon/contrib/src/ffmpeg/rules.mak file.  We try to keep it
+;; as close to the official Jami package as possible, to provide all the
+;; codecs and extra features that are expected (see:
+;; https://review.jami.net/plugins/gitiles/jami-daemon/+/refs/heads/master/contrib/src/ffmpeg/rules.mak).
+;; An exception are the ffnvcodec-related switches, which is not packaged in
+;; Guix and would not work with Mesa.
 (define %ffmpeg-default-configure-flags
   '("--disable-everything"
     "--enable-zlib"
@@ -192,6 +179,7 @@
     "--enable-muxer=h264"
     "--enable-muxer=hevc"
     "--enable-muxer=matroska"
+    "--enable-muxer=wav"
     "--enable-muxer=webm"
     "--enable-muxer=ogg"
     "--enable-muxer=pcm_s16be"
@@ -270,40 +258,30 @@
     "--enable-encoder=libopus"
     "--enable-decoder=libopus"
 
-    ;; Decoders for ringtones and audio streaming.
+    ;; Encoders/decoders for ringtones and audio streaming.
     "--enable-decoder=flac"
     "--enable-decoder=vorbis"
     "--enable-decoder=aac"
     "--enable-decoder=ac3"
     "--enable-decoder=eac3"
     "--enable-decoder=mp3"
-    "--enable-decoder=pcm_u24be"
     "--enable-decoder=pcm_u24le"
-    "--enable-decoder=pcm_u32be"
     "--enable-decoder=pcm_u32le"
     "--enable-decoder=pcm_u8"
     "--enable-decoder=pcm_f16le"
-    "--enable-decoder=pcm_f24le"
-    "--enable-decoder=pcm_f32be"
     "--enable-decoder=pcm_f32le"
-    "--enable-decoder=pcm_f64be"
     "--enable-decoder=pcm_f64le"
-    "--enable-decoder=pcm_s16be"
-    "--enable-decoder=pcm_s16be_planar"
     "--enable-decoder=pcm_s16le"
-    "--enable-decoder=pcm_s16le_planar"
-    "--enable-decoder=pcm_s24be"
     "--enable-decoder=pcm_s24le"
-    "--enable-decoder=pcm_s24le_planar"
-    "--enable-decoder=pcm_s32be"
     "--enable-decoder=pcm_s32le"
-    "--enable-decoder=pcm_s32le_planar"
-    "--enable-decoder=pcm_s64be"
     "--enable-decoder=pcm_s64le"
-    "--enable-decoder=pcm_s8"
-    "--enable-decoder=pcm_s8_planar"
-    "--enable-decoder=pcm_u16be"
     "--enable-decoder=pcm_u16le"
+    "--enable-encoder=pcm_u8"
+    "--enable-encoder=pcm_f32le"
+    "--enable-encoder=pcm_f64le"
+    "--enable-encoder=pcm_s16le"
+    "--enable-encoder=pcm_s32le"
+    "--enable-encoder=pcm_s64le"
 
     ;; Encoders/decoders for images.
     "--enable-encoder=gif"
@@ -353,53 +331,24 @@
     "--enable-encoder=mjpeg_vaapi"
     "--enable-encoder=hevc_vaapi"))
 
-;; ffnvcodec is not supported on ARM; enable it only for the i386 and x86_64
-;; architectures.
-(define %ffmpeg-linux-x86-configure-flags
-  '("--arch=x86"
-    "--enable-cuvid"
-    "--enable-ffnvcodec"
-    "--enable-nvdec"
-    "--enable-nvenc"
-    "--enable-hwaccel=h264_nvdec"
-    "--enable-hwaccel=hevc_nvdec"
-    "--enable-hwaccel=vp8_nvdec"
-    "--enable-hwaccel=mjpeg_nvdec"
-    "--enable-encoder=h264_nvenc"
-    "--enable-encoder=hevc_nvenc"))
-
-;; This procedure composes the configure flags list for ffmpeg-jami.
 (define (ffmpeg-compose-configure-flags)
-  (define (system=? s)
-    (string-prefix? s (%current-system)))
-
-  `(,@%ffmpeg-default-configure-flags
-    ,@(if (string-contains (%current-system) "linux")
-          (if (or (system=? "i686")
-                  (system=? "x86_64"))
-              (append %ffmpeg-linux-configure-flags
-                      %ffmpeg-linux-x86-configure-flags)
-              %ffmpeg-linux-configure-flags)
-          '())))
+  "Compose the configure flag lists of ffmpeg-jami."
+  #~(append '#$%ffmpeg-default-configure-flags
+            (if (string-contains #$(%current-system) "linux")
+                '#$%ffmpeg-linux-configure-flags
+                '())))
 
 (define-public ffmpeg-jami
   (package
-    (inherit ffmpeg-5)
+    (inherit ffmpeg)
     (name "ffmpeg-jami")
-    ;; XXX: Use a slightly older version, otherwise the
-    ;; 'libopusdec-enable-FEC' patch doesn't apply.
-    (version "5.0.1")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://ffmpeg.org/releases/ffmpeg-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "0yq0jcdc4qm5znrzylj3dsicrkk2n3n8bv28vr0a506fb7iglbpg"))))
     (arguments
-     (substitute-keyword-arguments (package-arguments ffmpeg-5)
-       ((#:configure-flags '())
-        (ffmpeg-compose-configure-flags))
+     (substitute-keyword-arguments (package-arguments ffmpeg)
+       ((#:configure-flags _ '())
+        #~(cons* "--disable-static"
+                 "--enable-shared"
+                 "--disable-stripping"
+                 #$(ffmpeg-compose-configure-flags)))
        ((#:phases phases)
         #~(modify-phases #$phases
             (add-after 'unpack 'apply-patches
@@ -413,26 +362,14 @@
                              "rtp_ext_abs_send_time"
                              "libopusdec-enable-FEC"
                              "libopusenc-reload-packet-loss-at-encode"
-                             "screen-sharing-x11-fix"))))
-            (add-after 'apply-patches 'disable-problematic-tests
-              (lambda _
-                ;; The "rtp_ext_abs_send_time" patch causes the 'lavf-mov_rtphint'
-                ;; test to fail (see:
-                ;; https://git.jami.net/savoirfairelinux/jami-daemon/-/issues/685).
-                (substitute* "tests/fate/lavf-container.mak"
-                  (("mov mov_rtphint ismv")
-                   "mov ismv")
-                  (("fate-lavf-mov_rtphint:.*") ""))))))))
-    (inputs (modify-inputs (package-inputs ffmpeg-5)
-              (replace "libvpx" libvpx-next)
-              (replace "libx264" libx264-next)))))
+                             "screen-sharing-x11-fix"))))))))))
 
 (define-public libjami
   (package
     (name "libjami")
     (version %jami-version)
     (source %jami-sources)
-    (outputs '("out" "debug"))
+    (outputs '("out" "bin" "debug"))    ;"bin' contains jamid
     (build-system gnu-build-system)
     (arguments
      (list
@@ -455,7 +392,20 @@
             (lambda _
               (for-each delete-file
                         (find-files (string-append #$output "/lib")
-                                    "\\.a$")))))))
+                                    "\\.a$"))))
+          (add-after 'install 'move-jamid
+            ;; This nearly halves the size of the main output (from 1566.2 MiB
+            ;; to 833.6 MiB), due to not depending on dbus-c++ and its large
+            ;; dependencies.
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let ((libexec (string-append #$output:bin "/libexec"))
+                    (share (string-append #$output:bin "/share")))
+                (mkdir-p libexec)
+                (rename-file (search-input-file outputs "libexec/jamid")
+                             (string-append libexec "/jamid"))
+                (mkdir-p share)
+                (rename-file (search-input-directory outputs "share/dbus-1")
+                             (string-append share "/dbus-1"))))))))
     (inputs
      (list alsa-lib
            asio
@@ -491,13 +441,11 @@
 Jami core functionality.  Jami is a secure and distributed voice, video and
 chat communication platform that requires no centralized server and leaves the
 power of privacy in the hands of the user.  It supports the SIP and IAX
-protocols, as well as decentralized calling using P2P-DHT.")
+protocols, as well as decentralized calling using P2P-DHT.  The @samp{\"bin\"}
+output contains the D-Bus daemon (@command{jamid}) as well as the Jami D-Bus
+service definitions.")
     (home-page "https://jami.net/")
     (license license:gpl3+)))
-
-;;; Remove when 2023 comes.
-(define-public libring
-  (deprecated-package "libring" libjami))
 
 (define-public jami
   (package
@@ -562,9 +510,6 @@ protocols, as well as decentralized calling using P2P-DHT.")
            pkg-config
            python
            qttools
-           doxygen
-           graphviz
-           gsettings-desktop-schemas    ;for tests
            vulkan-headers))
     (inputs
      (list ffmpeg-jami
@@ -591,18 +536,10 @@ It supports the SIP and IAX protocols, as well as decentralized calling using
 P2P-DHT.")
     (license license:gpl3+)))
 
-;;; Remove when 2023 comes.
-(define-public jami-gnome
-  (deprecated-package "jami-gnome" jami))
-
-;;; Remove when 2023 comes.
-(define-public jami-qt
-  (deprecated-package "jami-qt" jami))
-
 (define-public jami-docs
   ;; There aren't any tags, so use the latest commit.
-  (let ((revision "0")
-        (commit "b00574bcc46538c4b405b5edb3b43bf5404ff511"))
+  (let ((revision "1")
+        (commit "ff466ebadb9b99a1672a814126793de670c3099b"))
     (package
       (name "jami-docs")
       (version (git-version "0.0.0" revision commit))
@@ -614,7 +551,7 @@ P2P-DHT.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "0iayi6yrb6djk0l2dwdxzlsga9c18ra8adplh8dad3zjdi75wnsq"))))
+                  "1n8a9dk8mi617rk3ycz5jrzbwv9ybfynlci5faz1klckx0aqdf6q"))))
       (build-system copy-build-system)
       (arguments
        (list

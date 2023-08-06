@@ -1,13 +1,13 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012, 2013, 2015, 2016, 2017, 2019, 2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2013, 2015-2017, 2019, 2022-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014, 2016 Eric Bavier <bavier@member.fsf.org>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2017, 2019 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2017, 2019, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2019 Pierre-Moana Levesque <pierre.moana.levesque@gmail.com>
 ;;; Copyright © 2019, 2020 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2020 Nicolas Goaziou <mail@nicolasgoaziou.fr>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2022 ( <paren@disroot.org>
 ;;;
@@ -42,19 +42,21 @@
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages perl)
+  #:use-module (gnu packages perl-compression)
   #:use-module (gnu packages readline))
 
 (define-public texinfo
   (package
     (name "texinfo")
-    (version "6.7")
+    (version "6.8")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/texinfo/texinfo-"
                                   version ".tar.xz"))
+              (patches (search-patches "texinfo-headings-single.patch"))
               (sha256
                (base32
-                "1aicn1v3czqii08wc91jw089n1x3gfchkf808q2as59dak0h714q"))))
+                "1i7yb7mrp3inz25zbzv2pllr4y7d58v818f1as7iz8mw53nm7dwf"))))
     (build-system gnu-build-system)
     (arguments
      ;; When cross-compiling, the package is configured twice: once with the
@@ -71,7 +73,11 @@
                     (("env -i")
                      "env "))
                   #t)))
-            %standard-phases)))
+            %standard-phases)
+
+       ;; XXX: Work around <https://issues.guix.gnu.org/59616>.
+       #:tests? ,(and (not (target-hurd?))
+                      (not (%current-target-system)))))
     (inputs (list ncurses perl))
     ;; When cross-compiling, texinfo will build some of its own binaries with
     ;; the native compiler. This means ncurses is needed both in both inputs
@@ -98,14 +104,34 @@ is on expressing the content semantically, avoiding physical markup commands.")
 (define-public texinfo-7
   (package
     (inherit texinfo)
-    (version "7.0")
+    (version "7.0.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/texinfo/texinfo-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "1q73zd0bm7zjamc5ssf329v7fndd8dqv0d7fii6s1rqwaf14nx10"))))))
+                "1gq7i01iblgfcwby1977adh8mab9vpq318vsz628wlkzkp821d3l"))))
+    (inputs (modify-inputs (package-inputs texinfo)
+              (append perl-archive-zip)))        ;needed for 'tex2any --epub3'
+    (arguments
+     (substitute-keyword-arguments (package-arguments texinfo)
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-after 'install 'wrap-program
+              (lambda* (#:key inputs outputs #:allow-other-keys)
+                (let* ((out (assoc-ref outputs "out"))
+                       (bin (string-append out "/bin"))
+                       (program (string-append bin "/texi2any"))
+                       (zip (car (find-files
+                                  (assoc-ref inputs "perl-archive-zip")
+                                  (lambda (file stat)
+                                    (and (eq? 'directory (stat:type stat))
+                                         (string=? (basename file)
+                                                   "Archive")))
+                                  #:directories? #t))))
+                  (wrap-program program
+                    `("PERL5LIB" prefix (,(dirname zip)))))))))))))
 
 (define-public texinfo-5
   (package (inherit texinfo)

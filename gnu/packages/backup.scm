@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2014, 2015, 2020 Eric Bavier <bavier@posteo.net>
+;;; Copyright © 2014, 2015, 2020, 2023 Eric Bavier <bavier@posteo.net>
 ;;; Copyright © 2014 Ian Denhardt <ian@zenhack.net>
 ;;; Copyright © 2015, 2016, 2017, 2021, 2022 Leo Famulari <leo@famulari.name>
 ;;; Copyright © 2017–2022 Tobias Geerinckx-Rice <me@tobias.gr>
@@ -13,7 +13,7 @@
 ;;; Copyright © 2018 Oleg Pykhalov <go.wigust@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2019 Alex Vong <alexvong1995@gmail.com>
-;;; Copyright © 2019 Marius Bakke <mbakke@fastmail.com>
+;;; Copyright © 2019, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2020, 2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2020 Marcin Karpezo <sirmacik@wioo.waw.pl>
@@ -23,6 +23,7 @@
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2022 Feng Shu <tumashu@163.com>
+;;; Copyright © 2023 Timo Wilken <guix@twilken.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -50,7 +51,6 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system go)
-  #:use-module (guix build-system perl)
   #:use-module (guix build-system python)
   #:use-module (guix build-system qt)
   #:use-module (gnu packages)
@@ -239,7 +239,7 @@ backups (called chunks) to allow easy burning to CD/DVD.")
 (define-public libarchive
   (package
     (name "libarchive")
-    (version "3.5.1")
+    (version "3.6.1")
     (source
      (origin
        (method url-fetch)
@@ -250,7 +250,7 @@ backups (called chunks) to allow easy burning to CD/DVD.")
                                  version ".tar.xz")))
        (sha256
         (base32
-         "16r95rlmikll1k8vbhh06vq6x3srkc10hzxjjf3021mjs2ld65qf"))))
+         "1rj8q5v26lxxr8x4b4nqbrj7p06qvl91hb8cdxi3xx3qp771lhas"))))
     (build-system gnu-build-system)
     (inputs
      (list bzip2
@@ -261,69 +261,59 @@ backups (called chunks) to allow easy burning to CD/DVD.")
            zlib
            `(,zstd "lib")))
     (arguments
-     `(#:configure-flags '("--disable-static")
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'build 'patch-pwd
-           (lambda _
-             (substitute* "Makefile"
-               (("/bin/pwd") (which "pwd")))
-             #t))
-         (replace 'check
-           (lambda* (#:key (tests? #t) #:allow-other-keys)
-             (if tests?
-		 ;; XXX: The test_owner_parse, test_read_disk, and
-		 ;; test_write_disk_lookup tests expect user 'root' to
-		 ;; exist, but the chroot's /etc/passwd doesn't have
-		 ;; it.  Turn off those tests.
-		 ;;
-		 ;; XXX: Adjust test that fails with zstd 1.4.1
-		 ;; because the default options compresses two bytes
-		 ;; better than this test expects.
-		 ;; https://github.com/libarchive/libarchive/issues/1226
-                 (begin
-                   (substitute* "libarchive/test/test_write_filter_zstd.c"
-		     (("compression-level\", \"6\"")
-		      "compression-level\", \"7\""))
+     (list
+      #:configure-flags #~'("--disable-static")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'build 'patch-pwd
+            (lambda _
+              (substitute* "Makefile"
+                (("/bin/pwd") (which "pwd")))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (if tests?
+		  ;; XXX: The test_owner_parse, test_read_disk, and
+		  ;; test_write_disk_lookup tests expect user 'root' to
+		  ;; exist, but the chroot's /etc/passwd doesn't have
+		  ;; it.  Turn off those tests.
+                  (begin
+		    ;; The tests allow one to disable tests matching a globbing pattern.
+		    (invoke "make"
+			    "libarchive_test"
+			    "bsdcpio_test"
+			    "bsdtar_test")
 
-		   ;; The tests allow one to disable tests matching a globbing pattern.
-		   (invoke "make"
-			   "libarchive_test"
-			   "bsdcpio_test"
-			   "bsdtar_test")
-
-		   ;; XXX: This glob disables too much.
-		   (invoke "./libarchive_test" "^test_*_disk*")
-		   (invoke "./bsdcpio_test" "^test_owner_parse")
-		   (invoke "./bsdtar_test"))
-                 ;; Tests may be disabled if cross-compiling.
-                 (format #t "Test suite not run.~%"))))
-         (add-after 'install 'add--L-in-libarchive-pc
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((out     (assoc-ref outputs "out"))
-                    (lib     (string-append out "/lib"))
-                    (nettle  (assoc-ref inputs "nettle"))
-                    (libxml2 (assoc-ref inputs "libxml2"))
-                    (xz      (assoc-ref inputs "xz"))
-                    (zlib    (assoc-ref inputs "zlib"))
-                    (zstd    (assoc-ref inputs "zstd"))
-                    (bzip2   (assoc-ref inputs "bzip2")))
-               ;; Embed absolute references to these inputs to avoid propagation.
-               (substitute* (list (string-append lib "/pkgconfig/libarchive.pc")
-                                  (string-append lib "/libarchive.la"))
-                 (("-lnettle")
-                  (string-append "-L" nettle "/lib -lnettle"))
-                 (("-lxml2")
-                  (string-append "-L" libxml2 "/lib -lxml2"))
-                 (("-llzma")
-                  (string-append "-L" xz "/lib -llzma"))
-                 (("-lz")
-                  (string-append "-L" zlib "/lib -lz"))
-                 (("-lzstd")
-                  (string-append "-L" zstd "/lib -lzstd"))
-                 (("-lbz2")
-                  (string-append "-L" bzip2 "/lib -lbz2")))
-               #t))))))
+		    ;; XXX: This glob disables too much.
+		    (invoke "./libarchive_test" "^test_*_disk*")
+		    (invoke "./bsdcpio_test" "^test_owner_parse")
+		    (invoke "./bsdtar_test"))
+                  ;; Tests may be disabled if cross-compiling.
+                  (format #t "Test suite not run.~%"))))
+          (add-after 'install 'add--L-in-libarchive-pc
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (let* ((out     #$output)
+                     (lib     (string-append out "/lib"))
+                     (nettle  (assoc-ref inputs "nettle"))
+                     (libxml2 (assoc-ref inputs "libxml2"))
+                     (xz      (assoc-ref inputs "xz"))
+                     (zlib    (assoc-ref inputs "zlib"))
+                     (zstd    (assoc-ref inputs "zstd"))
+                     (bzip2   (assoc-ref inputs "bzip2")))
+                ;; Embed absolute references to these inputs to avoid propagation.
+                (substitute* (list (string-append lib "/pkgconfig/libarchive.pc")
+                                   (string-append lib "/libarchive.la"))
+                  (("-lnettle")
+                   (string-append "-L" nettle "/lib -lnettle"))
+                  (("-lxml2")
+                   (string-append "-L" libxml2 "/lib -lxml2"))
+                  (("-llzma")
+                   (string-append "-L" xz "/lib -llzma"))
+                  (("-lz")
+                   (string-append "-L" zlib "/lib -lz"))
+                  (("-lzstd")
+                   (string-append "-L" zstd "/lib -lzstd"))
+                  (("-lbz2")
+                   (string-append "-L" bzip2 "/lib -lbz2")))))))))
     (home-page "https://libarchive.org/")
     (synopsis "Multi-format archive and compression library")
     (description
@@ -333,7 +323,8 @@ reading and writing archives compressed using various compression filters such
 as gzip and bzip2.  The library is inherently stream-oriented; readers
 serially iterate through the archive, writers serially add things to the
 archive.  In particular, note that there is currently no built-in support for
-random access nor for in-place modification.")
+random access nor for in-place modification.  This package provides the
+@command{bsdcat}, @command{bsdcpio} and @command{bsdtar} commands.")
     (license license:bsd-2)))
 
 (define-public rdup
@@ -400,7 +391,7 @@ list and implement the backup strategy.")
 (define-public snapraid
   (package
     (name "snapraid")
-    (version "12.0")
+    (version "12.2")
     (source
      (origin
        (method git-fetch)
@@ -409,7 +400,7 @@ list and implement the backup strategy.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0k8pynafkx8bhnqnjhc3jsds5p40sflz4drm88i6dg6ifv35mhh9"))))
+        (base32 "0xgvyhyyl2v6azxwzqbpgyln4r2dw34xa8z09116vpkgdgivh36z"))))
     (build-system gnu-build-system)
     (arguments
      (list #:configure-flags
@@ -489,19 +480,19 @@ errors.")
 (define-public rdiff-backup
   (package
     (name "rdiff-backup")
-    (version "2.0.5")
+    (version "2.2.5")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/rdiff-backup/rdiff-backup/releases/"
                            "download/v" version "/rdiff-backup-" version ".tar.gz"))
        (sha256
-        (base32 "11rvjcp77zwgkphz1kyf5yqgr3rlss7dm9xzmvpvc4lp99xq7drb"))))
+        (base32 "13m0kq9y6rzgaq0zlzh7qhi789qmbzp3dnc7y57fmhsfg1mq5ql6"))))
     (build-system python-build-system)
     (native-inputs
      (list python-setuptools-scm))
     (inputs
-     (list python librsync))
+     (list python python-pyaml librsync))
     (arguments
      `(#:tests? #f))                    ; Tests require root/sudo
     (home-page "https://rdiff-backup.net/")
@@ -523,7 +514,7 @@ rdiff-backup is easy to use and settings have sensible defaults.")
 (define-public rsnapshot
   (package
     (name "rsnapshot")
-    (version "1.4.4")
+    (version "1.4.5")
     (source
      (origin
        (method url-fetch)
@@ -531,7 +522,7 @@ rdiff-backup is easy to use and settings have sensible defaults.")
              "https://github.com/rsnapshot/rsnapshot/releases/download/"
              version "/rsnapshot-" version ".tar.gz"))
        (sha256
-        (base32 "0yc5k2fhm54ypxgm1fsaf8vrg5b7qbvbsqk371n6baf592vprjy1"))))
+        (base32 "0hl2ncld0xkwlnv1cqjmmnld2nlp65alkkdacs11wl95r80mxdqh"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
@@ -563,6 +554,13 @@ rsnapshot uses hard links to deduplicate identical files.")
               (modules '((guix build utils)))
               (snippet
                '(begin
+                  ;; Gnulib's <stdio.h> refers to 'gets' for the purposes of
+                  ;; warning against its use, but 'gets' is no longer declared
+                  ;; in glibc's <stdio.h>.  Remove that warning.
+                  (substitute* "lib/stdio.in.h"
+                    (("_GL_WARN_ON_USE \\(gets,.*")
+                     "\n/* 'gets' is gone, rejoice! */\n"))
+
                   ;; Include all the libtirpc headers necessary to get the
                   ;; definitions of 'u_int', etc.
                   (substitute* '("src/block-server.c"
@@ -571,8 +569,7 @@ rsnapshot uses hard links to deduplicate identical files.")
                     (("#include <rpc/(.*)\\.h>" _ header)
                      (string-append "#include <rpc/types.h>\n"
                                     "#include <rpc/rpc.h>\n"
-                                    "#include <rpc/" header ".h>\n")))
-                  #t))))
+                                    "#include <rpc/" header ".h>\n")))))))
     (build-system gnu-build-system)
     (arguments
      '(;; Link against libtirpc.
@@ -597,12 +594,16 @@ rsnapshot uses hard links to deduplicate identical files.")
                                   (string-append (getenv "CPATH")
                                                  ":" tirpc))
                           (setenv "CPATH" tirpc)))))
-                  (add-before 'check 'skip-test
+                  (add-before 'check 'adjust-test
                     (lambda _
-                      ;; XXX: This test fails (1) because current GnuTLS no
-                      ;; longer supports OpenPGP authentication, and (2) for
-                      ;; some obscure reason.  Better skip it.
-                      (setenv "XFAIL_TESTS" "utils/block-server"))))))
+                      ;; This test uses a weird construct to spawn
+                      ;; 'chop-block-server' in the background.  Replace it
+                      ;; with something that actually works.
+                      (substitute* "tests/utils/block-server"
+                        (("chop_fail_if ! chop-block-server")
+                         "chop-block-server")
+                        (("'&'")
+                         "&")))))))
     (native-inputs
      (list guile-2.0 gperf-3.0 ;see <https://bugs.gnu.org/32382>
            pkg-config rpcsvc-proto))           ;for 'rpcgen'
@@ -633,13 +634,13 @@ detection, and lossless compression.")
 (define-public borg
   (package
     (name "borg")
-    (version "1.2.2")
+    (version "1.2.4")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "borgbackup" version))
        (sha256
-        (base32 "0q3jwmwwa3jlb02cbkcgh5a9cvwg64vawaypn41bdgpi8ds6hc6p"))
+        (base32 "1a2d6z2ln476l0fcnkl4rpciij5b2lql44b71aivg0cy8vlm9gd4"))
        (modules '((guix build utils)))
        (snippet
         #~(begin
@@ -767,14 +768,14 @@ backups on untrusted computers.")
 (define-public wimlib
   (package
     (name "wimlib")
-    (version "1.13.5")
+    (version "1.14.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://wimlib.net/downloads/"
                                   "wimlib-" version ".tar.gz"))
               (sha256
                (base32
-                "08z3xxm5hq1n4wmyhgz14p1cv0w2lx610vn8nhfwpds4n7lwkz1j"))))
+                "0hkgcf3v3hmwck02s0623brdx1ijvk1la0h5mgly1whnaqviajj9"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
@@ -1019,6 +1020,53 @@ precious backup space.
 @end itemize")
     (license license:bsd-2)))
 
+(define-public restic-rest-server
+  (package
+    (name "restic-rest-server")
+    (version "0.11.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/restic/rest-server")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1nvmxc9x0mlks6yfn66fmwn50k5q83ip4g9vvb0kndzd7hwcyacy"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/restic/rest-server/cmd/rest-server"
+       #:unpack-path "github.com/restic/rest-server"
+       #:install-source? #f ;all we need is the binary
+       #:phases (modify-phases %standard-phases
+                  (replace 'check
+                    (lambda* (#:key tests? #:allow-other-keys . args)
+                      (when tests?
+                        ;; Unit tests seems to break with Guix' non-standard TMPDIR.
+                        (setenv "TMPDIR" "/tmp")
+                        (apply (assoc-ref %standard-phases
+                                          'check) args))))
+                  (add-after 'install 'rename-binary
+                    (lambda* (#:key outputs #:allow-other-keys)
+                      (with-directory-excursion (assoc-ref outputs "out")
+                        ;; "rest-server" is a bit too generic.
+                        (rename-file "bin/rest-server"
+                                     "bin/restic-rest-server")))))))
+    (propagated-inputs (list go-golang-org-x-crypto
+                             go-github-com-spf13-cobra
+                             go-github-com-prometheus-client-golang
+                             go-github-com-miolini-datacounter
+                             go-github-com-minio-sha256-simd
+                             go-github-com-gorilla-handlers
+                             go-github-com-coreos-go-systemd-activation))
+    (home-page "https://github.com/restic/rest-server")
+    (synopsis "Restic REST server")
+    (description
+     "The Restic REST server is a high performance HTTP server that implements
+restic's REST backend API.  It provides a secure and efficient way to backup
+data remotely, using the restic backup client and a @code{rest:} URL.")
+    (license license:bsd-2)))
+
 (define-public zbackup
   (package
     (name "zbackup")
@@ -1088,14 +1136,14 @@ interactive mode.")
 (define-public btrbk
   (package
     (name "btrbk")
-    (version "0.32.4")
+    (version "0.32.6")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://digint.ch/download/btrbk/releases/"
                                   "btrbk-" version ".tar.xz"))
               (sha256
                (base32
-                "1nl6cbzqkc2srwi1428vijq69rp5cdx7484zcx61ph0rnhg9srfc"))))
+                "0sxppfraakf56d1i4sbh4gyzg92panwpnq5y5hh6714igijarqh2"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -1105,7 +1153,7 @@ interactive mode.")
                      (lambda _
                        (substitute* "Makefile"
                          (("= /etc")
-                          (string-append "= " #$output "/etc")))))
+                          (string-append "= $(PREFIX)/etc")))))
                    (delete 'check)
                    (add-after 'install 'wrap-scripts
                      (lambda* (#:key inputs outputs #:allow-other-keys)
@@ -1211,14 +1259,14 @@ backup.")
 (define-public disarchive
   (package
     (name "disarchive")
-    (version "0.4.0")
+    (version "0.5.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://files.ngyro.com/disarchive/"
                                   "disarchive-" version ".tar.gz"))
               (sha256
                (base32
-                "1pql8cspsxyx8cpw3xyhirnisv6rb4vj5mxr1d7w9la72q740n8s"))))
+                "16sjplkn9nr7zhfrqll7l1m2b2j4hg8k29p6bqjap9fkj6zpn2q2"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf
@@ -1245,13 +1293,13 @@ compression parameters used by Gzip.")
 (define-public borgmatic
   (package
     (name "borgmatic")
-    (version "1.5.22")
+    (version "1.7.12")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "borgmatic" version))
        (sha256
-        (base32 "0pvqlj17vp81i7saxqh5hsaxqz29ldrjd7bcssh4g1h0ikmnaf2r"))))
+        (base32 "0720wvs3h2w8h28d7mpvjfp0q37dnrwf1y2ik3y4yr9csih7fmgh"))))
     (build-system python-build-system)
     (arguments
      (list #:phases
@@ -1260,10 +1308,15 @@ compression parameters used by Gzip.")
                  (lambda* (#:key inputs #:allow-other-keys)
                    ;; Set absolute store path to borg.
                    (substitute* "borgmatic/commands/borgmatic.py"
-                     (("location\\.get\\('local_path', 'borg'\\)")
-                      (string-append "location.get('local_path', '"
+                     (("\\.get\\('local_path', 'borg'\\)")
+                      (string-append ".get('local_path', '"
                                      (search-input-file inputs "bin/borg")
-                                     "')")))))
+                                     "')")))
+                   (substitute* "tests/unit/commands/test_borgmatic.py"
+                     (("(module.get_local_path.+ == )'borg'" all start)
+                      (string-append start "'"
+                                     (search-input-file inputs "bin/borg")
+                                     "'")))))
                (replace 'check
                  (lambda* (#:key tests? #:allow-other-keys)
                    (when tests?
@@ -1333,7 +1386,7 @@ borgmatic is powered by borg.")
            python-paramiko
            python-peewee
            python-psutil
-           python-pyqt-without-qtwebkit
+           python-pyqt
            python-secretstorage
            ;; This is included so that the qt-wrap phase picks it up.
            qtsvg-5))
@@ -1360,7 +1413,7 @@ archives.")
     (native-inputs (list intltool pkg-config))
     (inputs (list gtk+))
     (propagated-inputs (list rsync))
-    (home-page "http://www.opbyte.it/grsync/")
+    (home-page "https://www.opbyte.it/grsync/")
     (synopsis "GTK frontend for rsync")
     (description
      "Grsync is a simple graphical interface using GTK for the @command{rsync}

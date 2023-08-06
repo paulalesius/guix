@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2020 Julien Lepiller <julien@lepiller.eu>
-;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2021, 2022 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -26,7 +26,6 @@
   #:use-module (guix build-system)
   #:use-module (guix build-system gnu)
   #:use-module (guix packages)
-  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:export (%maven-build-system-modules
             default-maven
@@ -154,9 +153,8 @@
                       (exclude %default-exclude)
                       (local-packages '())
                       (tests? #t)
-                      (strip-flags ''("--strip-debug"))
-                      (strip-directories ''("lib" "lib64" "libexec"
-                                            "bin" "sbin"))
+                      (strip-flags %strip-flags)
+                      (strip-directories %strip-directories)
                       (phases '%standard-phases)
                       (system (%current-system))
                       (imported-modules %maven-build-system-modules)
@@ -184,8 +182,8 @@ provides its own binaries."
                        #:validate-runpath? #$validate-runpath?
                        #:patch-shebangs? #$patch-shebangs?
                        #:strip-binaries? #$strip-binaries?
-                       #:strip-flags #$(sexp->gexp strip-flags)
-                       #:strip-directories #$(sexp->gexp strip-directories)))))
+                       #:strip-flags #$strip-flags
+                       #:strip-directories #$strip-directories))))
 
   (mlet %store-monad ((guile (package->derivation (or guile (default-guile))
                                                   system #:graft? #f)))

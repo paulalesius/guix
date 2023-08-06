@@ -1,9 +1,10 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2021 Andrew Tropin <andrew@trop.in>
+;;; Copyright © 2021, 2023 Andrew Tropin <andrew@trop.in>
 ;;; Copyright © 2021 Xinglu Chen <public@yoctocell.xyz>
 ;;; Copyright © 2021 Pierre Langlois <pierre.langlois@gmx.com>
 ;;; Copyright © 2021 Oleg Pykhalov <go.wigust@gmail.com>
-;;; Copyright © 2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2022-2023 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2022 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2022 Antero Mejr <antero@mailbox.org>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -22,9 +23,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix scripts home)
-  #:use-module (gnu packages admin)
   #:use-module ((gnu services) #:hide (delete))
-  #:use-module (gnu packages)
   #:autoload   (gnu packages base) (coreutils)
   #:autoload   (gnu packages bash) (bash)
   #:autoload   (gnu packages gnupg) (guile-gcrypt)
@@ -63,11 +62,12 @@
   #:autoload   (guix scripts home edit) (guix-home-edit)
   #:autoload   (guix scripts home import) (import-manifest)
   #:use-module ((guix status) #:select (with-status-verbosity))
-  #:use-module ((guix build utils) #:select (mkdir-p))
+  #:use-module ((guix build utils) #:select (mkdir-p switch-symlinks))
   #:use-module (guix gexp)
   #:use-module (guix monads)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
   #:use-module (srfi srfi-37)
   #:use-module (srfi srfi-71)
@@ -171,7 +171,7 @@ Some ACTIONS support additional ARGS.\n"))
                    (alist-cons 'dry-run? #t result)))
          (option '(#\V "version") #f #f
                  (lambda args
-                   (show-version-and-exit "guix show")))
+                   (show-version-and-exit "guix home")))
          (option '(#\v "verbosity") #t #f
                  (lambda (opt name arg result)
                    (let ((level (string->number* arg)))
@@ -409,6 +409,7 @@ immediately.  Return the exit status of the process in the container."
                          network?)
   "Perform ACTION for home environment. "
 
+  (ensure-profile-directory)
   (define println
     (cut format #t "~a~%" <>))
 
@@ -473,7 +474,6 @@ ACTION must be one of the sub-commands that takes a home environment
 declaration as an argument (a file name.)  OPTS is the raw alist of options
 resulting from command-line parsing."
   (define (ensure-home-environment file-or-exp obj)
-    (ensure-profile-directory)
     (unless (home-environment? obj)
       (leave (G_ "'~a' does not return a home environment~%")
              file-or-exp))
@@ -572,10 +572,10 @@ argument list and OPTS is the option alist."
          (cut import-manifest manifest destination <>))
        (info (G_ "'~a' populated with all the Home configuration files~%")
              destination)
-       (display-hint (format #f (G_ "\
+       (display-hint (G_ "\
 Run @command{guix home reconfigure ~a/home-configuration.scm} to effectively
 deploy the home environment described by these files.\n")
-                             destination))))
+                     destination)))
     ((describe)
      (let ((list-installed-regex (assoc-ref opts 'list-installed)))
        (match (generation-number %guix-home)

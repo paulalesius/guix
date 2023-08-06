@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2013-2015, 2017-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2013-2015, 2017-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017 Marius Bakke <mbakke@fastmail.com>
 ;;; Copyright © 2020, 2021 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;;
@@ -30,7 +30,6 @@
   #:use-module (guix packages)
   #:use-module (guix derivations)
   #:use-module (guix profiles)
-  #:use-module (guix gexp)
   #:use-module (guix memoization)
   #:use-module (guix monads)
   #:use-module (guix channels)
@@ -45,7 +44,6 @@
   #:autoload   (gnu packages) (fold-available-packages)
   #:autoload   (guix scripts package) (build-and-use-profile
                                        delete-matching-generations)
-  #:autoload   (gnu packages base) (canonical-package)
   #:autoload   (gnu packages bootstrap) (%bootstrap-guile)
   #:autoload   (gnu packages certs) (le-certs)
   #:use-module (srfi srfi-1)
@@ -469,9 +467,9 @@ true, display what would be built without actually building it."
             ;; Is the 'guix' command previously in $PATH the same as the new
             ;; one?  If the answer is "no", then suggest 'hash guix'.
             (unless (member guix-command new)
-              (display-hint (format #f (G_ "After setting @code{PATH}, run
+              (display-hint (G_ "After setting @code{PATH}, run
 @command{hash guix} to make sure your shell refers to @file{~a}.")
-                                    (first new))))
+                            (first new)))
             (return #f))
           (return #f)))))
 
@@ -771,22 +769,21 @@ Use '~/.config/guix/channels.scm' instead."))
         (url (or (assoc-ref opts 'repository-url)
                  (environment-variable))))
     (if (or ref url)
-        (match (find guix-channel? channels)
-          ((? channel? guix)
-           ;; Apply '--url', '--commit', and '--branch' to the 'guix' channel.
-           (let ((url (or url (channel-url guix))))
-             (cons (match ref
-                     (('commit . commit)
-                      (channel (inherit guix)
-                               (url url) (commit commit) (branch #f)))
-                     (('branch . branch)
-                      (channel (inherit guix)
-                               (url url) (commit #f) (branch branch)))
-                     (#f
-                      (channel (inherit guix) (url url))))
-                   (remove guix-channel? channels))))
-          (#f                           ;no 'guix' channel, failure will ensue
-           channels))
+        ;; Apply '--url', '--commit', and '--branch' to the 'guix' channel.
+        (map (lambda (c)
+               (if (guix-channel? c)
+                   (let ((url (or url (channel-url c))))
+                     (match ref
+                       (('commit . commit)
+                        (channel (inherit c)
+                                 (url url) (commit commit) (branch #f)))
+                       (('branch . branch)
+                        (channel (inherit c)
+                                 (url url) (commit #f) (branch branch)))
+                       (#f
+                        (channel (inherit c) (url url)))))
+                   c))
+             channels)
         channels)))
 
 (define (validate-cache-directory-ownership)

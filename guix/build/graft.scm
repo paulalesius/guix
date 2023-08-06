@@ -44,10 +44,7 @@
 ;;;
 ;;; Code:
 
-(define-syntax-rule (define-inline name val)
-  (define-syntax name (identifier-syntax val)))
-
-(define-inline hash-length 32)
+(define-constant hash-length %store-hash-string-length)
 
 (define nix-base32-char?
   (cute char-set-contains?

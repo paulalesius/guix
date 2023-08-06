@@ -3,6 +3,7 @@
 ;;; Copyright © 2017 Kei Kebreau <address@hidden>
 ;;; Copyright © 2020 Eric Bavier <bavier@posteo.net>
 ;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -23,6 +24,8 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix git-download)
+  #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (guix build-system gnu)
   #:use-module (gnu packages)
@@ -30,9 +33,13 @@
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages glib)
+  #:use-module (gnu packages gtk)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages perl)
+  #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages xml)
+  #:use-module (gnu packages xorg)
   #:use-module (ice-9 match))
 
 (define %fpc-version "3.2.2")
@@ -229,46 +236,113 @@ many useful extensions to the Pascal programming language.")
 (define-public p2c
   (package
     (name "p2c")
-    (version "2.01")
+    (version "2.02")
     (source (origin
               (method url-fetch)
-              (uri (string-append "https://alum.mit.edu/www/toms/p2c/p2c-"
-                                  version ".tar.gz"))
+              (uri (string-append "http://users.fred.net/tds/lab/p2c/p2c-"
+                                  version ".zip"))
               (sha256
                (base32
-                "03x72lv6jrvikbrpz4kfq1xp61l2jw5ki6capib71lxs65zndajn"))))
+                "17q6s0vbz298pks80bxf4r6gm8kwbrml1q3vfs6g6yj75sqj58xs"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:make-flags
-       (let ((out (assoc-ref %outputs "out")))
-         (list (string-append "CC=" ,(cc-for-target))
-               (string-append "HOMEDIR=" out "/lib/p2c")
-               (string-append "INCDIR=" out "/include/p2c")
-               (string-append "BINDIR=" out "/bin")
-               (string-append "LIBDIR=" out "/lib")
-               (string-append "MANDIR=" out "/share/man/man1")
-               "MANFILE=p2c.man.inst"))
-       #:test-target "test"
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)
-         (add-before 'build 'mkdir
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (mkdir-p (string-append out "/share/man"))
-               (mkdir-p (string-append out "/lib"))
-               (mkdir-p (string-append out "/bin"))
-               (mkdir-p (string-append out "/include")))
-             #t))
-         (add-before 'build 'chdir
-           (lambda* (#:key make-flags #:allow-other-keys)
-             (chdir "src")
-             #t)))))
+     (list
+      #:make-flags
+      #~(list (string-append "CC=" #$(cc-for-target))
+              (string-append "HOMEDIR=" #$output "/lib/p2c")
+              (string-append "INCDIR=" #$output "/include/p2c")
+              (string-append "BINDIR=" #$output "/bin")
+              (string-append "LIBDIR=" #$output "/lib")
+              (string-append "MANDIR=" #$output "/share/man/man1")
+              "MANFILE=p2c.man.inst")
+      #:test-target "test"
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (add-before 'build 'mkdir
+            (lambda _
+              (mkdir-p (string-append #$output "/share/man"))
+              (mkdir-p (string-append #$output "/lib"))
+              (mkdir-p (string-append #$output "/bin"))
+              (mkdir-p (string-append #$output "/include"))))
+          (add-before 'build 'chdir
+            (lambda _ (chdir "src"))))))
     (native-inputs
-     (list perl which))
+     (list perl unzip which))
     (synopsis "p2c converts Pascal programs to C programs")
     (description "This package provides @command{p2c}, a program to convert
 Pascal source code to C source code, and @command{p2cc}, a compiler for
 Pascal programs.")
     (home-page "http://users.fred.net/tds/lab/p2c/")
     (license license:gpl2+)))
+
+(define-public lazarus
+  (package
+    (name "lazarus")
+    (version "2.2.6")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url
+                     "https://gitlab.com/freepascal.org/lazarus/lazarus.git")
+                    (commit (string-append "lazarus_"
+                                           (string-join (string-split version
+                                                                      #\.)
+                                                        "_")))))
+              (file-name (string-append name "-" version "-checkout"))
+              (sha256
+               (base32
+                "0hpk6fxmy1h1q0df41jg1vnp8g8vynrg5v5ad43lv229nizfs3wj"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f ;No tests exist
+           #:make-flags #~(list (string-append "INSTALL_PREFIX="
+                                               #$output))
+           #:phases #~(modify-phases %standard-phases
+                        (delete 'configure)
+                        (replace 'build
+                          (lambda* (#:key inputs outputs #:allow-other-keys)
+                            (let* ((libdirs (map (lambda (x)
+                                                   (assoc-ref inputs x))
+                                                 '("glib" "gdk-pixbuf"
+                                                   "gtk+"
+                                                   "libx11"
+                                                   "libx11"
+                                                   "pango"
+                                                   "cairo"
+                                                   "atk")))
+                                   (libs (append (map (lambda (name)
+                                                        (string-append "-Fl"
+                                                                       name
+                                                                       "/lib"))
+                                                      libdirs)
+                                                 (map (lambda (name)
+                                                        (string-append
+                                                         "-k-rpath=" name
+                                                         "/lib")) libdirs))))
+                              (setenv "LAZARUS_LIBPATHS"
+                                      (string-join libs " "))
+                              (setenv "MAKEFLAGS"
+                                      (string-append "LHELP_OPT="
+                                                     (string-join libs "\\ "))))
+                            (invoke "make" "bigide"))))))
+    (native-inputs (list fpc pkg-config))
+    (inputs (list glib
+                  gdk-pixbuf
+                  gtk+-2
+                  libx11
+                  pango
+                  cairo
+                  atk))
+    (synopsis "Integrated development environment for Pascal")
+    (description "This package provides an integrated development environment
+for Pascal.")
+    (home-page "https://www.lazarus-ide.org/")
+    ;; Some Android stuff is under asl2.0. Some artwork is under CC-BY-SA-3
+    ;; or CC-BY-SA-4.
+    ;; Some components are under MIT expat.
+    ;; The Freetype components are under Freetype license.
+    ;; A lot of components are under LGPL-2+.
+    ;; synedit and turbopower_ipro are under MPL-1.1
+    ;; PascalScript is under a zlib-like license.
+    (license (list license:gpl2+ license:lgpl2.0+))))

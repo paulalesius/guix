@@ -85,7 +85,7 @@
              (substitute* "desktopfiles/Makefile.am"
                (("gzip") "gzip -n"))
              #t)))))
-    (home-page "http://djvu.sourceforge.net/")
+    (home-page "https://djvu.sourceforge.net/")
     (synopsis "Implementation of DjVu, the document format")
     (description "DjVuLibre is an implementation of DjVu,
 including viewers, browser plugins, decoders, simple encoders, and
@@ -124,7 +124,7 @@ utilities.")
              (for-each make-file-writable
                        (find-files "."))
              #t)))))
-    (home-page "http://djvu.sourceforge.net/djview4.html")
+    (home-page "https://djvu.sourceforge.net/djview4.html")
     (synopsis "Viewer for the DjVu image format")
     (description "DjView is a standalone viewer for DjVu files.
 
@@ -141,7 +141,7 @@ a continuous layout.")
 (define-public pdf2djvu
   (package
     (name "pdf2djvu")
-    (version "0.9.18.1")
+    (version "0.9.19")
     (source
      (origin
        (method url-fetch)
@@ -149,9 +149,8 @@ a continuous layout.")
              "https://github.com/jwilk/pdf2djvu/releases/download/" version
              "/pdf2djvu-" version ".tar.xz"))
        (sha256
-        (base32 "0c595yziz81c9izf9s5sskd00qmgz2n1hp2vdcgg0dx81g3xfidb"))))
+        (base32 "16ma6z62mqpb9q4cg784m3vqc1jx987g6kg8gyghg50m2f0a8igb"))))
     (build-system gnu-build-system)
-    (arguments (list #:tests? #f))      ;requires Python 2
     (native-inputs (list gettext-minimal pkg-config))
     (inputs
      (list djvulibre
@@ -160,6 +159,20 @@ a continuous layout.")
            poppler
            poppler-data
            `(,util-linux "lib")))       ;for libuuid
+    (arguments
+     `(#:test-target "test"
+       #:tests? #f                                ;requires Python 2
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'fix-tests
+           (lambda _
+             (substitute* "tests/test-xmp-broken.py"
+               ;; Error message changed in recent versions of XML parser
+               (("XML parsing failure")
+                "Error in XMLValidator"))))
+         (add-before 'check 'set-home-for-tests
+           (lambda _
+             (setenv "HOME" "/tmp"))))))
     (synopsis "PDF to DjVu converter")
     (description
      "@code{pdf2djvu} creates DjVu files from PDF files.

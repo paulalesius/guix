@@ -25,6 +25,7 @@
 ;;; Copyright © 2022 Allan Adair <allan@adair.no>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
+;;; Copyright © 2023 Ivan Vilata-i-Balaguer <ivan@selidor.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -149,7 +150,7 @@
     (description "The libdecaf library is an implementation of elliptic curve
 cryptography using the Montgomery and Edwards curves Curve25519, Ed25519,
 Ed448-Goldilocks and Curve448, using the Decaf encoding.")
-    (home-page "http://ed448goldilocks.sourceforge.net/")
+    (home-page "https://ed448goldilocks.sourceforge.net/")
     (license (list license:expat        ;library
                    license:bsd-2))))    ;python bindings
 
@@ -215,7 +216,7 @@ communication, encryption, decryption, signatures, etc.")
 (define-public signify
   (package
     (name "signify")
-    (version "30")
+    (version "31")
     (home-page "https://github.com/aperezdc/signify")
     (source (origin
               (method url-fetch)
@@ -223,17 +224,18 @@ communication, encryption, decryption, signatures, etc.")
                                   "/download/v" version "/signify-" version ".tar.xz"))
               (sha256
                (base32
-                "11l67j04gyxnlw6zrzsygqs5cgsc1sww1rh0apl05yay131hd17n"))))
+                "0x1bipfphnyvf2kl7n9q4gawaglma79368vb8whama6lxsggsm8i"))))
     (build-system gnu-build-system)
     ;; TODO Build with libwaive (described in README.md), to implement something
     ;; like OpenBSD's pledge().
     (arguments
-     `(#:make-flags
-       (list ,(string-append "CC=" (cc-for-target))
-             (string-append "PREFIX=" (assoc-ref %outputs "out")))
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure))))
+     (list
+      #:make-flags
+      #~(list (string-append "CC=" #$(cc-for-target))
+              (string-append "PREFIX=" #$output))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure))))
     (native-inputs
      (list pkg-config))
     (inputs
@@ -331,7 +333,7 @@ OpenBSD tool of the same name.")
        ("googletest-source" ,(package-source googletest))
        ("perl" ,perl)))
     (inputs
-     (list attr fuse openssl tinyxml2))
+     (list attr fuse-2 openssl-1.1 tinyxml2))
     (arguments
      `(#:configure-flags (list "-DUSE_INTERNAL_TINYXML=OFF")
        #:phases
@@ -868,6 +870,8 @@ BLAKE.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32 "04z631v0vzl52g73v390ask5fnzi5wg83lcjkjhpmmymaz0jn152"))))
+      ;; "This code requires at least SSE2".
+      (supported-systems '("x86_64-linux"))
       (build-system gnu-build-system)
       (arguments
        `(#:make-flags (list (string-append "CC=" ,(cc-for-target))
@@ -899,7 +903,7 @@ SHA-1, SHA-2, and SHA-3, yet is at least as secure as SHA-3.")
 (define-public rhash
   (package
     (name "rhash")
-    (version "1.4.2")
+    (version "1.4.3")
     (source
      (origin
        (method url-fetch)
@@ -908,7 +912,7 @@ SHA-1, SHA-2, and SHA-3, yet is at least as secure as SHA-3.")
        (file-name (string-append "rhash-" version ".tar.gz"))
        (sha256
         (base32
-         "0qpc1fq7gdxxl11zya1gqhl9628jjk3x60q9sna43w0yz7sh03b0"))))
+         "0glaghjvwh9ziiqf599v0fdr6jrgc7lcnriq0h7r41k3jrkglh0y"))))
     (build-system gnu-build-system)
     (arguments
      (list #:configure-flags
@@ -953,14 +957,14 @@ SHA256, SHA512, SHA3, AICH, ED2K, Tiger, DC++ TTH, BitTorrent BTIH, GOST R
 (define-public botan
   (package
     (name "botan")
-    (version "2.19.2")
+    (version "2.19.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://botan.randombit.net/releases/"
                                   "Botan-" version ".tar.xz"))
               (sha256
                (base32
-                "0xad3fa96l6x3azxs2gbz5jfqm2drfv9y9idhf5wvdf62mvg3x9s"))))
+                "0m9dh00zibx13pbjij8lbncf86pix3cxklxmgl47z965k7rlgq6s"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -1013,7 +1017,7 @@ using ctypes is included, and several other language bindings are available.")
                (base32
                 "0kx4a5mhmp73ljknl2lcccmw9z3f5y8lqw0ghaymzvln1984g75i"))))
     (build-system gnu-build-system)
-    (home-page "http://ccrypt.sourceforge.net")
+    (home-page "https://ccrypt.sourceforge.net")
     (synopsis "Command-line utility for encrypting and decrypting files and streams")
     (description "@command{ccrypt} is a utility for encrypting and decrypting
 files and streams.  It was designed as a replacement for the standard unix
@@ -1096,48 +1100,50 @@ trivial to build for local use.  Portability is emphasized over performance.")
     (license license:unlicense)))
 
 (define-public libsecp256k1
-  (let ((commit "dbd41db16a0e91b2566820898a3ab2d7dad4fe00"))
-    (package
-      (name "libsecp256k1")
-      (version (git-version "20200615" "1" commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://github.com/bitcoin-core/secp256k1")
-                      (commit commit)))
-                (sha256
-                 (base32
-                  "1fcpnksq5cqwqzshn5f0lq94b73p3frwbp04hgmmbnrndpqg6mpy"))
-                (file-name (git-file-name name version))))
-      (build-system gnu-build-system)
-      (arguments
-       '(#:configure-flags '("--enable-module-recovery"
-                             "--enable-experimental"
-                             "--enable-module-ecdh"
-                             "--enable-shared")))
-      (native-inputs
-       (list autoconf automake libtool))
-      ;; WARNING: This package might need additional configure flags to run properly.
-      ;; See https://github.com/archlinux/svntogit-community/blob/packages/libsecp256k1/trunk/PKGBUILD.
-      (synopsis "C library for EC operations on curve secp256k1")
-      (description
-       "Optimized C library for EC operations on curve secp256k1.
-
-This library is a work in progress and is being used to research best
-practices.  Use at your own risk.
+  (package
+    (name "libsecp256k1")
+    (version "0.3.2")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/bitcoin-core/secp256k1")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "12wksk7bi3yfzmk1zwh5b6846zcaycqz1w4w4p23apjc8da4jwpn"))))
+    (build-system gnu-build-system)
+    (arguments
+     '(#:configure-flags '("--enable-module-recovery"
+                           "--enable-experimental"
+                           "--enable-module-ecdh"
+                           "--enable-module-schnorrsig"
+                           "--enable-shared"
+                           "--disable-static"
+                           "--disable-benchmark")))
+    (native-inputs
+     (list autoconf automake libtool))
+    (synopsis "C library for EC operations on curve secp256k1")
+    (description
+     "Optimized C library for EC operations on curve secp256k1.
 
 Features:
 
 @itemize
 @item secp256k1 ECDSA signing/verification and key generation.
-@item Adding/multiplying private/public keys.
+@item Additive and multiplicative tweaking of secret/public keys.
 @item Serialization/parsing of private keys, public keys, signatures.
-@item Constant time, constant memory access signing and pubkey generation.
-@item Derandomized DSA (via RFC6979 or with a caller provided function.)
+@item Constant time, constant memory access signing and public key generation.
+@item Derandomized ECDSA (via RFC6979 or with a caller provided function.)
 @item Very efficient implementation.
+@item Suitable for embedded systems.
+@item No runtime dependencies.
+@item Optional module for public key recovery.
+@item Optional module for ECDH key exchange.
+@item Optional module for Schnorr signatures according to BIP-340.
 @end itemize\n")
-      (home-page "https://github.com/bitcoin-core/secp256k1")
-      (license license:unlicense))))
+    (home-page "https://github.com/bitcoin-core/secp256k1")
+    (license license:expat)))
 
 (define-public libsecp256k1-bitcoin-cash
   (package
@@ -1205,7 +1211,7 @@ Features:
      (list pkg-config))
     (inputs
      (list nettle libxml2))
-    (home-page "http://stoken.sf.net")
+    (home-page "https://stoken.sf.net")
     (synopsis "Software Token for cryptographic authentication")
     (description
      "@code{stoken} is a token code generator compatible with RSA SecurID
@@ -1264,7 +1270,7 @@ quickly by using all your CPU cores and hardware acceleration.")
 (define-public minisign
   (package
     (name "minisign")
-    (version "0.10")
+    (version "0.11")
     (source
      (origin
        (method git-fetch)
@@ -1273,7 +1279,7 @@ quickly by using all your CPU cores and hardware acceleration.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0gi5z03w9sg72vyjs94y0mhkzz7bbhyzcg92mgmd9r2ydpi5gads"))))
+        (base32 "1vv2bhhsyhlpnjclfa7gkqgd9xi3jfcdrss7abbdxvvflyrwdk5i"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f))                    ; no test suite
@@ -1293,10 +1299,10 @@ signatures include trusted comments in addition to untrusted comments.
 Trusted comments are signed, thus verified, before being displayed.")
     (license license:isc)))
 
-(define-public libolm
+(define-public olm
   (package
-    (name "libolm")
-    (version "3.2.12")
+    (name "olm")
+    (version "3.2.14")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1304,7 +1310,7 @@ Trusted comments are signed, thus verified, before being displayed.")
                     (commit version)))
               (sha256
                (base32
-                "1k8v9ig32vmjm58rbris621d7mvp4q91qa5p79vc51p41sz91yhj"))
+                "0pj7gs32ixhlls792wah7xf49j5pra0avp7dpvy9cndkdkg6biq5"))
               (file-name (git-file-name name version))
               ;; Delete the bundled blob.  It's free, but unauditable,
               ;; and apparently only required for android.
@@ -1319,12 +1325,15 @@ Trusted comments are signed, thus verified, before being displayed.")
              (when tests?
                (with-directory-excursion "tests"
                  (invoke "ctest" "."))))))))
-    (synopsis "Implementation of the olm and megolm cryptographic ratchets")
-    (description "The libolm library implements the Double Ratchet
+    (synopsis "Implementation of the Olm and Megolm cryptographic ratchets")
+    (description "The Olm library implements the Double Ratchet
 cryptographic ratchet.  It is written in C and C++11, and exposed as a C
 API.")
     (home-page "https://matrix.org/docs/projects/other/olm/")
     (license license:asl2.0)))
+
+(define-public libolm
+  (deprecated-package "libolm" olm))
 
 (define-public python-olm
   (package
@@ -1351,10 +1360,9 @@ API.")
      (list python-cffi python-future))
     (native-inputs
      (list python-pytest python-pytest-benchmark python-aspectlib))
-    (synopsis "Python bindings for libolm")
-    (description "The libolm library implements the Double Ratchet
-cryptographic ratchet.  It is written in C and C++11, and exposed as a C
-API.  This package contains its Python bindings.")))
+    (synopsis "Python bindings for Olm")
+    (description "The Olm library implements the Double Ratchet
+cryptographic ratchet.  This package contains its Python bindings.")))
 
 (define-public hash-extender
   (let ((commit "cb8aaee49f93e9c0d2f03eb3cafb429c9eed723d")
@@ -1471,7 +1479,7 @@ non-encrypted files.")
 (define-public cryfs
   (package
     (name "cryfs")
-    (version "0.11.3")
+    (version "0.11.4")
     (source
      (origin
        (method url-fetch)
@@ -1479,7 +1487,7 @@ non-encrypted files.")
              "https://github.com/cryfs/cryfs/releases/download/"
              version "/cryfs-" version ".tar.xz"))
        (sha256
-        (base32 "1h41dhdfk2nll0vx5i66mgrdalv6kccwq5yx99gridywxw6qxxhq"))))
+        (base32 "0a48qijfrd02ianp19x3kz24w1pgigmlxdr5nks0gag7z5b2s7m7"))))
     (build-system cmake-build-system)
     (arguments
      '(#:modules ((guix build cmake-build-system)
@@ -1506,14 +1514,7 @@ non-encrypted files.")
              (when tests?
                (substitute* "CMakeLists.txt"
                  (("option.BUILD_TESTING .build test cases. OFF.")
-                  "option(BUILD_TESTING \"build test cases\" ON)")))
-             ;; work around a missing import fixed upstream in boost 1.78
-             ;; See https://github.com/boostorg/process/issues/213
-             (substitute* (find-files "." "subprocess.cpp$")
-               (("#include <boost/process.hpp>.*" line)
-                (string-append
-                 "#include <algorithm>\n"
-                 line)))))
+                  "option(BUILD_TESTING \"build test cases\" ON)")))))
          (replace 'check
            (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
@@ -1531,7 +1532,7 @@ non-encrypted files.")
     (native-inputs
      (list pkg-config python-wrapper))
     (inputs
-     (list boost curl fuse range-v3 spdlog))
+     (list boost curl fuse-2 range-v3 spdlog))
     (home-page "https://www.cryfs.org/")
     (synopsis "Encrypted FUSE filesystem for the cloud")
     (description "CryFS encrypts your files, so you can safely store them anywhere.
@@ -1668,7 +1669,7 @@ checksum tool based on the BLAKE3 cryptographic hash function.")
 (define-public libxcrypt
   (package
     (name "libxcrypt")
-    (version "4.4.28")
+    (version "4.4.36")
     (source
      (origin
        (method git-fetch)
@@ -1677,8 +1678,7 @@ checksum tool based on the BLAKE3 cryptographic hash function.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32
-         "0pacj0s1hlv22iz0k2bkysjslc6rbrgmvmsr02qq17lp4d2gw5rs"))))
+        (base32 "1yhpjjjv38y14nrj15bkndq824v42plndgi3k8mmc04grj1fbnjf"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf

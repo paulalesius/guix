@@ -334,7 +334,7 @@ This package is part of the KDE multimedia module.")
     (native-inputs
      (list docbook-xsl
            extra-cmake-modules
-           ffmpeg
+           ffmpeg-4
            kdoctools
            libxslt
            python-wrapper
@@ -460,8 +460,8 @@ and provide an easily usable interface.  Features include burning audio CDs
 from .WAV and .MP3 audio files, configuring external programs and configuring
 devices.
 
-The @code{udisks-service} should be enabled for @command{k3b} to discover the
-available CD drives.")
+The @code{udisks-service-type} should be enabled for @command{k3b} to discover
+the available CD drives.")
     (license ;; GPL for programs, FDL for documentation
      (list license:gpl2+ license:fdl1.2+))))
 

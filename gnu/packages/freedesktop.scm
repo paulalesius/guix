@@ -3,7 +3,7 @@
 ;;; Copyright © 2015 Sou Bunnbu <iyzsong@gmail.com>
 ;;; Copyright © 2015, 2017 Andy Wingo <wingo@pobox.com>
 ;;; Copyright © 2015-2017, 2019, 2021-2022 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2015, 2017, 2018, 2019, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2015, 2017, 2018, 2019, 2021, 2022, 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2015 David Hashe <david.hashe@dhashe.com>
 ;;; Copyright © 2016, 2017, 2019, 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Kei Kebreau <kkebreau@posteo.net>
@@ -25,12 +25,14 @@
 ;;; Copyright © 2021 pineapples <guixuser6392@protonmail.com>
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
 ;;; Copyright © 2021 Robby Zambito <contact@robbyzambito.me>
-;;; Copyright © 2021, 2022 Maxime Devos <maximedevos@telenet.be>
+;;; Copyright © 2021, 2022, 2023 Maxime Devos <maximedevos@telenet.be>
 ;;; Copyright © 2021, 2022 John Kehayias <john.kehayias@protonmail.com>
-;;; Copyright © 2021, 2021, 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2021, 2021, 2022, 2023 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2022 Daniel Meißner <daniel.meissner-i4k@ruhr-uni-bochum.de>
-;;; Copyright © 2022 muradm <mail@muradm.net>
+;;; Copyright © 2022 Wamm K. D. <jaft.r@outlook.com>
 ;;; Copyright © 2022 Petr Hodina <phodina@protonmail.com>
+;;; Copyright © 2022 muradm <mail@muradm.net>
+;;; Copyright © 2023 Alex Devaure <ajadevaure@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -66,6 +68,7 @@
   #:use-module (gnu packages acl)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages autotools)
+  #:use-module (gnu packages avahi)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages boost)
@@ -94,12 +97,12 @@
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages gstreamer)
   #:use-module (gnu packages gtk)
+  #:use-module (gnu packages hunspell)
   #:use-module (gnu packages ibus)
   #:use-module (gnu packages image)
   #:use-module (gnu packages kde-frameworks)
   #:use-module (gnu packages language)
   #:use-module (gnu packages libffi)
-  #:use-module (gnu packages libreoffice)
   #:use-module (gnu packages libunwind)
   #:use-module (gnu packages libusb)
   #:use-module (gnu packages linux)
@@ -121,6 +124,7 @@
   #:use-module (gnu packages samba)
   #:use-module (gnu packages serialization)
   #:use-module (gnu packages sqlite)
+  #:use-module (gnu packages tls)
   #:use-module (gnu packages valgrind)
   #:use-module (gnu packages video)
   #:use-module (gnu packages w3m)
@@ -133,7 +137,7 @@
 (define-public appstream
   (package
     (name "appstream")
-    (version "0.15.5")
+    (version "0.15.6")
     (source
      (origin
        (method url-fetch)
@@ -142,11 +146,10 @@
                        "appstream/releases/"
                        "AppStream-" version ".tar.xz"))
        (sha256
-        (base32 "1hh41r82a2p7anyadfsp9lmylrrj1a6gknx2g4w6ha97riifs5fb"))))
+        (base32 "03pirmc5r4izl6mzff879g7pk1nxq03kgpr2yvnnqnlb6r0ckmi3"))))
     (build-system meson-build-system)
     (arguments
      (list
-      #:meson meson-0.63
       #:glib-or-gtk? #t
       #:phases
       #~(modify-phases %standard-phases
@@ -223,73 +226,68 @@ application-centers for distributions.")
        (sha256
         (base32 "1sd8syldyq6bphfdm129s3gq554vfv7vh1vcwzk48gjryf101awk"))
        (patches
-        (search-patches
-         "farstream-gupnp.patch"        ;for test 'transmitter/rawudp'
-         "farstream-make.patch"))))
+        (search-patches "farstream-gupnp.patch" ;for test 'transmitter/rawudp'
+                        "farstream-make.patch"))))
     (build-system glib-or-gtk-build-system)
     (outputs '("out" "doc"))
     (arguments
-     `(#:configure-flags
-       (list
-        "--enable-gtk-doc"
-        "--enable-glib-asserts"
-        (string-append "--with-html-dir="
-                       (assoc-ref %outputs "doc")
-                       "/share/gtk-doc/html"))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'copy-common
-           (lambda _
-             (delete-file "autogen.sh")
-             (copy-recursively
-              (assoc-ref %build-inputs "common")
-              "common")
-             #t))
-         (add-after 'unpack 'disable-timeout-tests
-           (lambda _
-             (substitute* "tests/check/Makefile.am"
-               ;; This test timeouts despite changing
-               ;; the value of 'CK_DEFAULT_TIMEOUT' to 600,
-               ;; as per %common-gstreamer-phases.
-               ;; Reported to upstream:
-               ;; https://gitlab.freedesktop.org/farstream/farstream/-/issues/20
-               (("[ \t]*transmitter/nice.*$") ""))))
-         (add-after 'unpack 'patch-docbook-xml
-           (lambda* (#:key inputs #:allow-other-keys)
-             (with-directory-excursion "docs"
-               (substitute* '("libs/farstream-libs-docs.sgml"
-                              "plugins/farstream-plugins-docs.sgml")
-                 (("http://www.oasis-open.org/docbook/xml/4.1.2/")
-                  (string-append (assoc-ref inputs "docbook-xml")
-                                 "/xml/dtd/docbook/"))))
-             #t)))))
+     (list
+      #:configure-flags
+      #~(list "--enable-gtk-doc"
+              "--enable-glib-asserts"
+              (string-append "--with-html-dir=" #$output
+                             "/share/gtk-doc/html"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'copy-common
+            (lambda _
+              (delete-file "autogen.sh")
+              (copy-recursively
+               #$(origin
+                   (method git-fetch)
+                   (uri
+                    (git-reference
+                     (url "https://gitlab.freedesktop.org/gstreamer/common.git")
+                     (commit "52adcdb89a9eb527df38c569539d95c1c7aeda6e")))
+                   (file-name (git-file-name "common" "latest.52adcdb"))
+                   (sha256
+                    (base32
+                     "1zlm1q1lgcb76gi82rial5bwy2j9sz1x6x48ijhiz89cml7xxd1r")))
+               "common")))
+          (add-after 'unpack 'disable-problematic-tests
+            (lambda _
+              (substitute* "tests/check/Makefile.am"
+                ;; This test fails since updating gstreamer to version 1.22.1
+                ;; (see:
+                ;; https://gitlab.freedesktop.org/farstream/farstream/-/issues/25).
+                (("^\trtp/recvcodecs.*") "")
+                ;; This test timeouts despite changing the value of
+                ;; 'CK_DEFAULT_TIMEOUT' to 600 (see:
+                ;; https://gitlab.freedesktop.org/farstream/farstream/-/issues/20).
+                (("^\ttransmitter/nice.*") "")))))))
     (native-inputs
-     `(("autoconf" ,autoconf)
-       ("automake" ,automake)
-       ("common"
-        ,(origin
-           (method git-fetch)
-           (uri
-            (git-reference
-             (url "https://gitlab.freedesktop.org/gstreamer/common.git")
-             (commit "88e512ca7197a45c4114f7fa993108f23245bf50")))
-           (file-name
-            (git-file-name "common" "latest.88e512c"))
-           (sha256
-            (base32 "1nk94pnskjyngqcfb9p32g4yvf4nzpjszisw24r9azl0pawqpsn6"))))
-       ("docbook-xml" ,docbook-xml-4.1.2)
-       ("docbook-xsl" ,docbook-xsl)
-       ("gobject-introspection" ,gobject-introspection)
-       ("gtk-doc" ,gtk-doc/stable)
-       ("libtool" ,libtool)
-       ("perl" ,perl)
-       ("pkg-config" ,pkg-config)
-       ("python" ,python-wrapper)
-       ("xsltproc" ,libxslt)))
+     (list autoconf
+           automake
+           docbook-xml-4.1.2
+           docbook-xsl
+           gobject-introspection
+           gtk-doc/stable
+           libtool
+           libxml2                      ;for XML_CATALOG_FILES
+           libxslt
+           perl
+           pkg-config
+           python-wrapper))
     (inputs
-     (list glib gtk+ gupnp-igd libnice))
+     (list glib
+           gtk+
+           gupnp-igd
+           libnice))
     (propagated-inputs
-     (list gstreamer gst-plugins-bad gst-plugins-base gst-plugins-good))
+     (list gstreamer
+           gst-plugins-bad
+           gst-plugins-base
+           gst-plugins-good))
     (synopsis "The Farstream VVoIP framework")
     (description "Farstream is a collection of GStreamer modules and libraries
 for videoconferencing.")
@@ -472,112 +470,82 @@ display servers.  It supports many different languages and emoji.")
     (name "xdg-utils")
     (version "1.1.3")
     (source
-      (origin
-        (method url-fetch)
-          (uri (string-append
-                 "https://portland.freedesktop.org/download/xdg-utils-"
-                 version ".tar.gz"))
-          (sha256
-            (base32
-             "1nai806smz3zcb2l5iny4x7li0fak0rzmjg6vlyhdqm8z25b166p"))))
+     (origin
+       (method url-fetch)
+       (uri (string-append
+             "https://portland.freedesktop.org/download/xdg-utils-"
+             version ".tar.gz"))
+       (sha256
+        (base32
+         "1nai806smz3zcb2l5iny4x7li0fak0rzmjg6vlyhdqm8z25b166p"))))
     (build-system gnu-build-system)
     (native-inputs
-     (list docbook-xsl docbook-xml-4.1.2 libxslt w3m xmlto))
+     (list docbook-xsl docbook-xml-4.1.2 libxslt w3m-for-tests xmlto))
     (inputs
-     `(("awk" ,gawk)
-       ;; TODO(staging): Make this unconditional, to avoid canonical packages,
-       ;; see <https://lists.gnu.org/archive/html/guix-devel/2020-02/msg00148.html>.
-       ,@(if (%current-target-system)
-             `(("bash-minimal" ,bash-minimal)) ; for 'wrap-program'
-             '())
-       ("coreutils" ,coreutils)
-       ,@(if (%current-target-system)
-             `(("file" ,file))
-             '())
-       ("grep" ,grep)
-       ("inetutils" ,inetutils) ; xdg-screensaver uses `hostname'
-       ("perl-file-mimeinfo" ,perl-file-mimeinfo) ; for mimeopen fallback
-       ("sed" ,sed)
-       ("xprop" ,xprop) ; for Xfce detecting
-       ("xset" ,xset))) ; for xdg-screensaver
+     (list bash-minimal                 ;for 'wrap-program'
+           coreutils
+           file
+           gawk
+           grep
+           inetutils                    ;xdg-screensaver uses `hostname'
+           perl-file-mimeinfo           ;for mimeopen fallback
+           sed
+           xprop                        ;for Xfce detecting
+           xset))                       ;for xdg-screensaver
     (arguments
-     `(#:tests? #f   ; no check target
-       #:modules ((srfi srfi-26)
+     (list
+      #:tests? #f                       ;no check target
+      #:modules `((srfi srfi-26)
                   ,@%gnu-build-system-modules)
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-hardcoded-paths
-           ;; TODO(staging): make unconditional
-           (,@(if (%current-target-system)
-                 '(lambda* (#:key inputs #:allow-other-keys))
-                 '(lambda _))
+      #:phases
+      #~(modify-phases %standard-phases
+        (add-after 'unpack 'patch-hardcoded-paths
+          (lambda* (#:key inputs #:allow-other-keys)
             (substitute* "scripts/xdg-mime.in"
               (("/usr/bin/file")
-               (,@(if (%current-target-system)
-                      '(search-input-file inputs "bin/file")
-                      '(which "file")))))
+               (search-input-file inputs "bin/file")))
             (substitute* "scripts/xdg-open.in"
               (("/usr/bin/printf")
-               (,@(if (%current-target-system)
-                      '(search-input-file inputs "bin/printf")
-                      '(which "printf")))))
-            #t))
-         (add-before 'build 'locate-catalog-files
-           ;; TODO(staging): Make unconditional for simplicity.
-           (lambda* (#:key inputs ,@(if (%current-target-system)
-                                        '(native-inputs)
-                                        '()) #:allow-other-keys)
-             ;; TODO(staging): Make unconditional for simplicity and
-             ;; to avoid depending on input labels.
-             (let ,(if (%current-target-system)
-                       `((native-inputs (or native-inputs inputs))
-                         (xmldoc (search-input-directory native-inputs
-                                                         "xml/dtd/docbook"))
-                         (xsldoc
-                          (search-input-directory
-                           native-inputs
-                           (string-append "xml/xsl/docbook-xsl-"
-                                          ,(package-version docbook-xsl)))))
-                       `((xmldoc
-                          (string-append (assoc-ref inputs "docbook-xml")
-                                         "/xml/dtd/docbook"))
-                         (xsldoc
-                          (string-append (assoc-ref inputs "docbook-xsl")
-                                         "/xml/xsl/docbook-xsl-"
-                                         ,(package-version docbook-xsl)))))
-               (for-each (lambda (file)
-                           (substitute* file
-                             (("http://.*/docbookx\\.dtd")
-                              (string-append xmldoc "/docbookx.dtd"))))
-                         (find-files "scripts/desc" "\\.xml$"))
-               (substitute* "scripts/Makefile"
-                 ;; Apparently `xmlto' does not bother to looks up the stylesheets
-                 ;; specified in the XML, unlike the above substitition. Instead it
-                 ;; uses a hard-coded URL. Work around it here, but if this is
-                 ;; common perhaps we should hardcode this path in xmlto itself.
-                 (("\\$\\(XMLTO\\) man")
-                  (string-append "$(XMLTO) -x " xsldoc
-                                 "/manpages/docbook.xsl man")))
-               (setenv "STYLESHEET"
-                       (string-append xsldoc "/html/docbook.xsl"))
-               ;; TODO(staging): Might as well remove the #t while we are at
-               ;; it.
-               #t)))
-         (add-after 'install 'wrap-executables
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (with-directory-excursion (string-append out "/bin")
-                 (let ((path-ext
-                        (map (cute string-append <> "/bin")
-                             (cons out
-                                   (map (cute assoc-ref inputs <>)
-                                        '("awk" "coreutils" "grep" "inetutils"
-                                          "perl-file-mimeinfo" "sed" "xprop"
-                                          "xset"))))))
-                   (for-each (cute wrap-program <>
-                                   `("PATH" ":" prefix ,path-ext))
-                             (find-files "."))))
-               #t))))))
+               (search-input-file inputs "bin/printf")))))
+        (add-before 'build 'locate-catalog-files
+          (lambda* (#:key native-inputs inputs #:allow-other-keys)
+            (let* ((native (or native-inputs inputs))
+                   (xmldoc (search-input-directory native
+                                                   "xml/dtd/docbook"))
+                   (xsldoc (search-input-directory
+                            native
+                            (string-append "xml/xsl/docbook-xsl-"
+                                           #$(package-version
+                                              (this-package-native-input
+                                               "docbook-xsl"))))))
+              (for-each (lambda (file)
+                          (substitute* file
+                            (("http://.*/docbookx\\.dtd")
+                             (string-append xmldoc "/docbookx.dtd"))))
+                        (find-files "scripts/desc" "\\.xml$"))
+              (substitute* "scripts/Makefile"
+                ;; Apparently `xmlto' does not bother to looks up the stylesheets
+                ;; specified in the XML, unlike the above substitition. Instead it
+                ;; uses a hard-coded URL. Work around it here, but if this is
+                ;; common perhaps we should hardcode this path in xmlto itself.
+                (("\\$\\(XMLTO\\) man")
+                 (string-append "$(XMLTO) -x " xsldoc
+                                "/manpages/docbook.xsl man")))
+              (setenv "STYLESHEET"
+                      (string-append xsldoc "/html/docbook.xsl")))))
+        (add-after 'install 'wrap-executables
+          (lambda* (#:key inputs outputs #:allow-other-keys)
+            (let* ((dependencies '("awk" "grep" "hostname" "ls" "mimeopen"
+                                   "sed" "xprop" "xset"))
+                   (pkgs (map (lambda (cmd)
+                                (search-input-file inputs
+                                                   (string-append "bin/" cmd)))
+                              dependencies))
+                   (bindirs (map dirname pkgs)))
+              (with-directory-excursion (string-append #$output "/bin")
+                (for-each (cute wrap-program <>
+                                `("PATH" ":" prefix ,bindirs))
+                          (find-files ".")))))))))
     (home-page "https://www.freedesktop.org/wiki/Software/xdg-utils/")
     (synopsis "Freedesktop.org scripts for desktop integration")
     (description "The xdg-utils package is a set of simple scripts that
@@ -589,16 +557,15 @@ freedesktop.org project.")
   ;; Updating this will rebuild over 700 packages through libinput-minimal.
   (package
     (name "libinput")
-    (version "1.19.4")
+    (version "1.22.1")
     (source (origin
-              (method url-fetch)
-              ;; https://gitlab.freedesktop.org/libinput/libinput/-/archive/1.21.0/libinput-1.21.0.tar.gz
-              (uri (string-append "https://gitlab.freedesktop.org/libinput/libinput/-/archive/"
-                                  version
-                                  "/libinput-" version ".tar.gz"))
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://gitlab.freedesktop.org/libinput/libinput.git")
+                    (commit version)))
               (sha256
                (base32
-                "0pv8vdq734dwpadbz9l350ccp3i99c9jmh6vd1ddvd4kbn0y7wx2"))))
+                "17a5qlym2d6lg2j8fdpxda9k7x5zr35flb4wlj1bz7h0mnkh8326"))))
     (build-system meson-build-system)
     (arguments
      `(#:configure-flags '("-Ddocumentation=false")
@@ -732,6 +699,13 @@ the freedesktop.org XDG Base Directory specification.")
              (substitute* "meson.build"
                (("join_paths\\(bindir, 'pkttyagent'\\)")
                 "'\"/run/current-system/profile/bin/pkttyagent\"'"))))
+         (add-after 'unpack 'use-global-hook-directory
+           ;; XXX There is no run-time setting to set this per-process, only a
+           ;; build-time, hard-coded list of global directories.
+           (lambda _
+             (substitute* (list "src/login/elogind-dbus.c"
+                                "src/sleep/sleep.c")
+               (("PKGSYSCONFDIR") "\"/etc/elogind\""))))
          (add-after 'unpack 'adjust-tests
            (lambda _
              ;; Skip the following test, which depends on users such as 'root'
@@ -780,7 +754,7 @@ the freedesktop.org XDG Base Directory specification.")
              (substitute* "src/login/elogind.c"
                (("\"/run/elogind.pid\"") "\"/run/systemd/elogind.pid\"")))))))
     (native-inputs
-     `(("docbook-xml" ,docbook-xml)
+     `(("docbook-xml" ,docbook-xml-4.5)
        ("docbook-xml-4.2" ,docbook-xml-4.2)
        ("docbook-xsl" ,docbook-xsl)
        ("gettext" ,gettext-minimal)
@@ -814,7 +788,7 @@ of a the system to know what users are logged in, and where.")
 (define-public basu
   (package
     (name "basu")
-    (version "0.2.0")
+    (version "0.2.1")
     (home-page "https://git.sr.ht/~emersion/basu")
     (source
      (origin
@@ -825,11 +799,12 @@ of a the system to know what users are logged in, and where.")
          (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0h23n7wg18xc7xwldca18wi00iajyliixwicqyvv38qx831d8q18"))))
+        (base32 "054mg6f9aqi0i3i3w8fc37qnns1vng3qq5b8nfd9g51wi8h891nc"))))
     (build-system meson-build-system)
     (native-inputs
      (list pkg-config python gperf))
-    (inputs
+    (propagated-inputs
+     ;; Propagated because of pkg-config
      (list libcap))
     (synopsis "The sd-bus library, extracted from systemd")
     (description "Some projects rely on the sd-bus library for DBus support.
@@ -995,7 +970,14 @@ with localed.  This package is extracted from the broader systemd package.")
                                   ".tar.xz"))
               (sha256
                (base32
-                "09md23m4fw87x264mls1f5isrswk6iw7y9g4hr1nib008wbbk370"))))
+                "09md23m4fw87x264mls1f5isrswk6iw7y9g4hr1nib008wbbk370"))
+              (modules '((guix build utils)))
+              (snippet
+               '(begin
+                  (substitute* "contrib/meson.build"
+                    (("bash_.*_dep\\.get_.*\\('completionsdir', .*\\)")
+                     "join_paths(get_option('prefix'), 'share',
+                                 'bash-completion', 'completions')"))))))
     (build-system meson-build-system)
     (arguments
      (list #:tests? #f
@@ -1026,6 +1008,66 @@ e.g. updating, removing and installing software.  Through supporting many
 backends, PackageKit can perform these tasks using the appropriate package
 manager for the current system.")
     (license license:gpl2+)))
+
+(define-public power-profiles-daemon
+  (package
+    (name "power-profiles-daemon")
+    (version "0.12")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://gitlab.freedesktop.org/hadess/power-profiles-daemon")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "1wqcajbj358zpyj6y4h1v34y2yncq76wqxd0jm431habcly0bqyr"))))
+    (build-system meson-build-system)
+    (arguments
+     (list #:configure-flags #~(list "-Dsystemdsystemunitdir=false")
+           #:glib-or-gtk? #t
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-before 'install 'fake-pkexec
+                 (lambda _ (setenv "PKEXEC_UID" "-1")))
+               (add-before 'configure 'correct-polkit-dir
+                 (lambda _
+                   (substitute* "meson.build"
+                     (("polkit_gobject_dep\\..*")
+                      (string-append "'" #$output "/share/polkit-1/actions'")))))
+               (add-after 'install 'wrap-program
+                 (lambda _
+                   (wrap-program
+                       (string-append #$output "/bin/powerprofilesctl")
+                     `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH")))
+                     `("GI_TYPELIB_PATH" = (,(getenv "GI_TYPELIB_PATH")))))))))
+    (native-inputs
+     (list `(,glib "bin") gobject-introspection pkg-config python vala))
+    (inputs
+     (list bash-minimal                           ;for 'wrap-program'
+           dbus
+           dbus-glib
+           libgudev
+           glib polkit
+           python
+           python-pygobject
+           upower))
+    (home-page "https://gitlab.freedesktop.org/hadess/power-profiles-daemon")
+    (synopsis "Power profile handling over D-Bus")
+    (description
+     "power-profiles-daemon offers to modify system behaviour based upon
+user-selected power profiles.  There are 3 different power profiles, a
+\"balanced\" default mode, a \"power-saver\" mode, as well as a
+\"performance\" mode.  The first 2 of those are available on every system.
+The \"performance\" mode is only available on select systems and is
+implemented by different \"drivers\" based on the system or systems it
+targets.  In addition to those 2 or 3 modes (depending on the system),
+\"actions\" can be hooked up to change the behaviour of a particular device.
+For example, this can be used to disable the fast-charging for some USB
+devices when in power-saver mode.")
+    (license license:gpl3)))
+
 
 (define-public python-libevdev
   (package
@@ -1116,58 +1158,44 @@ Python.")
 (define-public wayland
   (package
     (name "wayland")
-    (version "1.20.0")
+    (version "1.22.0")
     (source (origin
               (method url-fetch)
-              (uri (string-append "https://wayland.freedesktop.org/releases/"
+              (uri (string-append "https://gitlab.freedesktop.org/" name
+                                  "/" name  "/-/releases/" version "/downloads/"
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "09c7rpbwavjg4y16mrfa57gk5ix6rnzpvlnv1wp7fnbh9hak985q"))))
+                "0hjq8b1cprxpxcv2klgir1hd63vy5hrqilp9v317394qlqgayh0m"))))
     (build-system meson-build-system)
     (outputs '("out" "doc"))
     (arguments
-     `(#:parallel-tests? #f
-        #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch-docbook-xml
-           (lambda* (#:key native-inputs inputs #:allow-other-keys)
-             (with-directory-excursion "doc"
-               (substitute* (find-files "." "\\.xml$")
-                 (("http://www.oasis-open.org/docbook/xml/4\\.5/")
-                  (string-append (assoc-ref (or native-inputs inputs)
-                                            "docbook-xml")
-                                 "/xml/dtd/docbook/"))
-                 (("http://www.oasis-open.org/docbook/xml/4\\.2/")
-                  (string-append (assoc-ref (or native-inputs inputs)
-                                            "docbook-xml-4.2")
-                                 "/xml/dtd/docbook/"))))))
-         (add-after 'install 'move-doc
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (doc (assoc-ref outputs "doc")))
-               (mkdir-p (string-append doc "/share"))
-               (rename-file
-                (string-append out "/share/doc")
-                (string-append doc "/share/doc"))))))))
+     (list #:parallel-tests? #f
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'install 'move-doc
+                 (lambda _
+                   (mkdir-p (string-append #$output:doc "/share"))
+                   (rename-file
+                    (string-append #$output "/share/doc")
+                    (string-append #$output:doc "/share/doc")))))))
     (native-inputs
-     `(("docbook-xml-4.2" ,docbook-xml-4.2)
-       ("docbook-xml" ,docbook-xml)
-       ("docbook-xsl" ,docbook-xsl)
-       ("dot" ,graphviz)
-       ("doxygen" ,doxygen)
-       ("pkg-config" ,pkg-config)
-       ("python" ,python)
-       ("xmlto" ,xmlto)
-       ("xsltproc" ,libxslt)
-       ,@(if (%current-target-system)
-             `(("pkg-config-for-build" ,pkg-config-for-build)
-               ("wayland" ,this-package)) ; for wayland-scanner
-             '())))
-    (inputs
-     (list expat libxml2))           ; for XML_CATALOG_FILES
-    (propagated-inputs
-     (list libffi))
+     (append
+      (list docbook-xml-4.2
+            docbook-xml-4.5
+            docbook-xsl
+            graphviz
+            doxygen
+            pkg-config
+            python
+            xmlto
+            libxslt)
+      (if (%current-target-system)
+          (list pkg-config-for-build
+                this-package)           ;for wayland-scanner
+          '())))
+    (inputs (list expat libxml2))       ;for XML_CATALOG_FILES
+    (propagated-inputs (list libffi))
     (home-page "https://wayland.freedesktop.org/")
     (synopsis "Core Wayland window system code and protocol")
     (description "Wayland is a project to define a protocol for a compositor to
@@ -1181,15 +1209,15 @@ fullscreen) or other display servers.")
 (define-public wayland-protocols
   (package
     (name "wayland-protocols")
-    (version "1.23")
+    (version "1.32")
     (source (origin
               (method url-fetch)
-              (uri (string-append
-                    "https://wayland.freedesktop.org/releases/"
-                    "wayland-protocols-" version ".tar.xz"))
+              (uri (string-append "https://gitlab.freedesktop.org/wayland/"
+                                  name "/-/releases/" version "/downloads/"
+                                  name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0xizccackgwszjhlq7jjiv2z2gwppljx0w32ga91bxlnby8z22kc"))))
+                "04dsn79409mryxs6maq9kfhca97gvl3pr1ggjnv9d0hc6jfpjnbl"))))
     (build-system meson-build-system)
     (inputs
      (list wayland))
@@ -1209,20 +1237,6 @@ protocol either in Wayland core, or some other protocol in wayland-protocols.")
         . "https://wayland.freedesktop.org/releases.html")))
     (license license:expat)))
 
-(define-public wayland-protocols-next
-  (package
-    (inherit wayland-protocols)
-    (name "wayland-protocols")
-    (version "1.26")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://wayland.freedesktop.org/releases/"
-                    "wayland-protocols-" version ".tar.xz"))
-              (sha256
-               (base32
-                "04vgllmpmrv14x3x64ns01vgwx4hriljayjkz9idgbv83i63hly5"))))))
-
 (define-public wayland-utils
   (package
     (name "wayland-utils")
@@ -1238,7 +1252,7 @@ protocol either in Wayland core, or some other protocol in wayland-protocols.")
                 "04k1yhyh7h4xawbhpz9pf6cpfmmp1l862fdgsvvnyp4hg9n3j9aj"))))
     (build-system meson-build-system)
     (native-inputs (list pkg-config))
-    (inputs (list libdrm wayland wayland-protocols-next))
+    (inputs (list libdrm wayland wayland-protocols))
     (home-page "https://wayland.freedesktop.org/")
     (synopsis "Display information about the Wayland protocols")
     (description "This package provides @code{wayland-info} tool that can be
@@ -1314,8 +1328,8 @@ compositor.")
            mtdev
            linux-pam
            pango
-           pipewire-0.3
-           wayland-protocols-next
+           pipewire
+           wayland-protocols
            xorg-server-xwayland))
     (propagated-inputs
      (list libxkbcommon pixman wayland))
@@ -1478,7 +1492,7 @@ formats.")
      (list pkg-config))
     (inputs
      (list eudev))
-    (home-page "http://0pointer.de/blog/projects/being-smart.html")
+    (home-page "https://0pointer.de/blog/projects/being-smart.html")
     (synopsis "ATA S.M.A.R.T. reading and parsing library")
     (description
      "This library supports a subset of the ATA S.M.A.R.T. (Self-Monitoring,
@@ -1611,15 +1625,6 @@ message bus.")
          "-Dsystemdsystemunitdir=/tmp/empty")
        #:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'patch-docbook-references
-           ;; Having XML_CATALOG_FILES set is not enough; xmlto does not seem
-           ;; to honor it.
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* (find-files "." "\\.xml(\\.in)?$")
-               (("http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd")
-                (search-input-file inputs "share/xml/dbus-1/introspect.dtd"))
-               (("http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd")
-                (search-input-file inputs "xml/dtd/docbook/docbookx.dtd")))))
          (add-after 'unpack 'patch-paths
            (lambda* (#:key inputs #:allow-other-keys)
              (substitute* "meson_post_install.py"
@@ -1741,7 +1746,7 @@ which speak the Qualcomm MSM Interface (QMI) protocol.")
 (define-public modem-manager
   (package
     (name "modem-manager")
-    (version "1.18.10")
+    (version "1.18.12")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -1749,7 +1754,7 @@ which speak the Qualcomm MSM Interface (QMI) protocol.")
                     "ModemManager-" version ".tar.xz"))
               (sha256
                (base32
-                "1sv53lvz9nfbq6jzprl5xhai0vylc01kglcdrgz2vszf5615y98n"))))
+                "0c74n5jl1qvq2qlbwzfkgxny8smjcgkid1nhdnl6qnlmbn9f8r5l"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -1780,6 +1785,86 @@ modems and setup connections with them.")
     (properties
      '((upstream-name . "ModemManager")))
     (license license:gpl2+)))
+
+(define-public telepathy-gabble
+  ;; telepathy-gabble bundles wocky, an unreleased library.  The latest commit
+  ;; includes a more recent version.
+  (let ((commit "f1c762df6328916b811a834047fedac8529cf157")
+        (revision "1"))
+    (package
+      (name "telepathy-gabble")
+      (version (git-version "0.18.4" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/TelepathyIM/telepathy-gabble/")
+               (commit commit)
+               (recursive? #true)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "00ss14hf1qwb42648cldghmfjfn1nkjvpy508b7vaz322fj37qa4"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        ;; Parallel tests freeze.
+        #:parallel-tests? #false
+        #:phases
+        '(modify-phases %standard-phases
+           (add-after 'unpack 'delete-autogen
+             (lambda _ (delete-file "autogen.sh")))
+           (add-before 'configure 'configure-wocky
+             (lambda* (#:key configure-flags #:allow-other-keys)
+               (with-directory-excursion "lib/ext/wocky"
+                 (invoke "gtkdocize")
+                 (invoke "bash" "autoreconf" "-vif")
+                 (substitute* "configure"
+                   (("/bin/sh") (which "sh")))
+                 (apply invoke "bash" "configure" configure-flags)))))
+        #:configure-flags
+        #~(list (string-append "--prefix=" #$output)
+                "--disable-avahi-tests"
+                "--disable-dependency-tracking"
+                "--disable-Werror"
+                "--without-ca-certificates")))
+      (native-inputs
+       (list autoconf
+             automake
+             libtool
+             `(,glib "bin")             ;for glib-compile-schemas, etc.
+             gtk-doc
+             pkg-config))
+      (inputs
+       (list dbus
+             glib
+             gnutls
+             gobject-introspection
+             libnice
+             libsoup-minimal-2
+             libxslt
+             python))
+      (propagated-inputs
+       (list telepathy-glib))
+      (home-page "https://telepathy.freedesktop.org/components/telepathy-gabble/")
+      (synopsis "XMPP connection manager for Telepathy")
+      (description
+       "Gabble is a Jabber/XMPP connection manager for the Telepathy
+framework, currently supporting:
+
+@itemize
+@item single-user chats
+@item multi-user chats
+@item voice/video calling
+@item file transfer
+@end itemize
+
+with Jabber/XMPP interoperability.
+
+Telepathy is a D-Bus framework for unifying real time communication, including
+instant messaging, voice calls and video calls.  It abstracts differences
+between protocols to provide a unified interface for applications.")
+      (license license:lgpl2.1))))
 
 (define-public telepathy-logger
   (package
@@ -1820,32 +1905,32 @@ different sorts of messages in different formats.")
     (license license:lgpl2.1+)))
 
 (define-public telepathy-idle
-  (package
-    (name "telepathy-idle")
-    (version "0.2.2")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/TelepathyIM/telepathy-idle")
-             (commit (string-append "telepathy-idle-" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "1pfw4g2cicw3ykxhsy743r0fc1yqbdrqxh2c5ha6am19dajcr95l"))))
-    (build-system gnu-build-system)
-    (native-inputs
-     (list autoconf automake libtool pkg-config))
-    (inputs
-     (list libxslt python-2 python2-dbus))
-    (propagated-inputs
-     (list telepathy-glib))
-    (home-page "https://telepathy.freedesktop.org/")
-    (synopsis "Telepathy IRC connection manager")
-    (description
-     "Idle is an IRC connection manager for the Telepathy framework.  This
+  ;; Use the latest commit, as the latest release does not support Python 3.
+  (let ((commit "b516eab0f2b92e078e0f5cab4224214d215b2ea5")
+        (revision "0"))
+    (package
+      (name "telepathy-idle")
+      (version (git-version "0.2.2" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/TelepathyIM/telepathy-idle")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "02wb61h2k3hhis5y2xi5rhc6pmikd13x722hk620sqb9b3m5pn3s"))))
+      (build-system gnu-build-system)
+      (native-inputs (list autoconf automake libtool pkg-config))
+      (inputs (list libxslt python-wrapper python-dbus))
+      (propagated-inputs (list telepathy-glib))
+      (home-page "https://telepathy.freedesktop.org/")
+      (synopsis "Telepathy IRC connection manager")
+      (description
+       "Idle is an IRC connection manager for the Telepathy framework.  This
 package enables usage of IRC channels and private messages in Telepathy instant
 messaging clients such as Empathy, GNOME Shell or KDE Telepathy.")
-    (license (list license:lgpl2.1 license:lgpl2.1+))))
+      (license (list license:lgpl2.1 license:lgpl2.1+)))))
 
 (define-public telepathy-mission-control
   (package
@@ -1875,6 +1960,81 @@ for the Telepathy framework, allowing user interfaces and other clients to
 share connections to real-time communication services without conflicting.")
     (license license:lgpl2.1)))
 
+(define-public telepathy-salut
+  ;; telepathy-salut bundles wocky, an unreleased library.  The latest commit
+  ;; includes a more recent version.
+  (let ((commit "90dbe5e74ccdd063cb123212a754f994c9d2019f")
+        (revision "1"))
+    (package
+      (name "telepathy-salut")
+      (version (git-version "0.8.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/TelepathyIM/telepathy-salut")
+               (commit commit)
+               (recursive? #true)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "195pz8dgwhyy1cygd0rlncyr3c4wzhnf99sfjj5qmc8j195j1k7a"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:phases
+        '(modify-phases %standard-phases
+           (add-after 'unpack 'delete-autogen
+             (lambda _ (delete-file "autogen.sh")))
+           ;; The twisted tests all fail, but there are no logs, so we can't
+           ;; tell what's wrong.
+           (add-after 'unpack 'disable-twisted-tests
+             (lambda _
+               (substitute* "tests/Makefile.am"
+                 (("SUBDIRS = twisted") ""))))
+           (add-before 'configure 'configure-wocky
+             (lambda* (#:key configure-flags #:allow-other-keys)
+               (with-directory-excursion "lib/ext/wocky"
+                 (invoke "gtkdocize")
+                 (invoke "bash" "autoreconf" "-vif")
+                 (substitute* "configure"
+                   (("/bin/sh") (which "sh")))
+                 (apply invoke "bash" "configure" configure-flags)))))
+        #:configure-flags
+        #~(list (string-append "--prefix=" #$output)
+                "--disable-avahi-tests"
+                "--without-ca-certificates"
+                "--disable-Werror"
+                "--enable-olpc")))
+      (native-inputs
+       (list autoconf
+             automake
+             libtool
+             `(,glib "bin")             ;for glib-compile-schemas, etc.
+             gtk-doc
+             pkg-config))
+      (inputs
+       (list avahi
+             dbus
+             glib
+             gnutls
+             gobject-introspection
+             libxml2
+             libxslt
+             libsoup-minimal-2
+             python
+             `(,util-linux "lib")))
+      (propagated-inputs
+       (list telepathy-glib))
+      (home-page "https://telepathy.freedesktop.org/wiki/Components/")
+      (synopsis "Link-local XMPP connection manager")
+      (description
+       "Salut is a link-local XMPP (XEP-0174) connection manager for the
+Telepathy framework, currently supporting presence and single-user chats with
+iChat interoperability, and multi-user chats and Tubes using the
+@url{https://telepathy.freedesktop.org/wiki/Clique,Clique} protocol.")
+      (license license:lgpl2.1))))
+
 (define-public colord-gtk
   (package
     (name "colord-gtk")
@@ -1897,9 +2057,7 @@ share connections to real-time communication services without conflicting.")
            pkg-config
            vala))
     (inputs
-     ;; TODO: remove pango-next after it's the default.
-     (list gtk+
-           pango-next))
+     (list gtk+))
     (propagated-inputs
      ;; colord-gtk.pc refers to all these.
      (list colord gtk))
@@ -1914,7 +2072,7 @@ that wish to perform colour calibration.")
 (define-public libfprint
   (package
     (name "libfprint")
-    (version "1.94.4")
+    (version "1.94.5")
     (source
      (origin
        (method git-fetch)
@@ -1923,12 +2081,15 @@ that wish to perform colour calibration.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1wfd2svsq26wizhsaifnr74havswbc1rlfm79b36yrhw9n7c3jqb"))))
+        (base32 "1l1ak7y2kz0nrdkfj41n7h34dyykgzdg50y752ayk3ginp6szr7r"))))
     (build-system meson-build-system)
     (arguments
      (list #:configure-flags
            #~(list (string-append "-Dudev_hwdb_dir=" #$output
                                   "/lib/udev/hwdb.d")
+                   (string-append "-Dc_link_args=-Wl,-rpath="
+                                  (search-input-directory %build-inputs
+                                                          "lib/nss"))
                    (string-append "-Dudev_rules_dir=" #$output
                                   "/lib/udev/rules.d"))))
     (native-inputs
@@ -2053,15 +2214,19 @@ to applications simultaneously competing for fingerprint readers.")
     (description
      "This package contains a few command line utilities for working with
 desktop entries:
+@table @command
+@item desktop-file-validate
+Validates a desktop file and prints warnings/errors about desktop entry
+specification violations.
 
-desktop-file-validate: validates a desktop file and prints warnings/errors
-                       about desktop entry specification violations.
+@item desktop-file-install
+Installs a desktop file to the applications directory, optionally munging it
+a bit in transit.
 
-desktop-file-install: installs a desktop file to the applications directory,
-                      optionally munging it a bit in transit.
-
-update-desktop-database: updates the database containing a cache of MIME types
-                         handled by desktop files.")
+@item update-desktop-database
+Updates the database containing a cache of MIME types handled by desktop
+files.
+@end table")
     (license license:gpl2+)))
 
 (define-public xdg-user-dirs
@@ -2359,23 +2524,13 @@ Its features include:
           (add-after 'unpack 'make-reproducible
             (lambda _
               (substitute* "src/main.c"
-                (("__DATE__") "\"guix\""))))
-          (add-before 'configure 'fix-docbook
-            (lambda _
-              (substitute* "docs/Makefile.in"
-                (("http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl")
-                 (string-append #$(this-package-native-input "docbook-xsl")
-                                "/xml/xsl/docbook-xsl-"
-                                #$(package-version (this-package-native-input "docbook-xsl"))
-                                "/manpages/docbook.xsl")))
-              (setenv "XML_CATALOG_FILES"
-                      (string-append #$(this-package-native-input "docbook-xml")
-                                     "/xml/dtd/docbook/catalog.xml")))))))
+                (("__DATE__") "\"guix\"")))))))
     (inputs
      (list glib pango libdrm libpng eudev))
     (native-inputs
      (list gettext-minimal
            pkg-config
+           libxml2                      ;for XML_CATALOG_FILES
            libxslt
            docbook-xsl
            docbook-xml))
@@ -2532,10 +2687,44 @@ Currently supported:
 @end itemize")
     (license license:isc)))
 
+(define-public flatpak-xdg-utils
+  (package
+    (name "flatpak-xdg-utils")
+    (version "1.0.5")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/flatpak/flatpak-xdg-utils")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1q8wsc46fcjm737hz10jvgci5wl9sz8hj9aix2y2zdj11bqib9af"))))
+    (build-system meson-build-system)
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases
+                        (replace 'check
+                          (lambda* (#:key tests? #:allow-other-keys)
+                            (when tests?
+                              (invoke "dbus-run-session" "--" "meson" "test"
+                                      "--print-errorlogs")))))))
+    (inputs (list glib))
+    (native-inputs (list dbus pkg-config))
+    (synopsis
+     "Simple portal-based commandline tools for use inside sandboxes")
+    (description
+     "This package contains a number of commandline utilities for use inside
+Flatpak sandboxes and other containers, like @command{guix shell --container}.
+They work by talking to portals.  Currently, there is flatpak-spawn for
+running commands in sandboxes as well as xdg-open and xdg-email, which are
+compatible with the well-known scripts of the same name.")
+    (home-page "https://github.com/flatpak/flatpak-xdg-utils")
+    (license (list license:lgpl2.0+ license:lgpl2.1+))))
+
 (define-public libportal
   (package
     (name "libportal")
-    (version "0.5")
+    (version "0.6")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2544,12 +2733,18 @@ Currently supported:
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "0i4v0wjyiryg7jq9hp9iaplqyhwj1cqy5891s4jfldcdzvcwxwx0"))))
+                "1q1kqq72cs7f5b17gzw7218mxs65hijzkll27mh51s02fpiw8c60"))))
     (build-system meson-build-system)
     (arguments
-     `(#:configure-flags
-       (list "-Dbackends=gtk4,gtk3,qt5"
-             "-Ddocs=false")))          ; requires unpackaged gi-docgen
+     (list
+      #:configure-flags
+      #~(list "-Ddocs=false")          ; requires unpackaged gi-docgen
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'check 'set-qt-environment-variables
+            (lambda* (#:key inputs #:allow-other-keys)
+              ;; Required for tests
+              (setenv "QT_QPA_PLATFORM" "offscreen"))))))
     (native-inputs
      (list pkg-config
            docbook-xsl
@@ -2574,15 +2769,16 @@ Currently supported:
 (define-public xdg-desktop-portal
   (package
     (name "xdg-desktop-portal")
-    (version "1.14.4")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/flatpak/xdg-desktop-portal/releases/download/"
-                    version "/xdg-desktop-portal-" version ".tar.xz"))
-              (sha256
-               (base32
-                "0wqc9x3k7lf3mig53i4rjazi0xi8bcykwaaw7r7prvnscnd1k405"))))
+    (version "1.16.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append
+             "https://github.com/flatpak/xdg-desktop-portal/releases/download/"
+             version "/xdg-desktop-portal-" version ".tar.xz"))
+       (sha256
+        (base32
+         "06cczlh39kc41rvav06v37sad827y61rffy3v29i918ibj8sahav"))))
     (build-system gnu-build-system)
     (native-inputs
      `(("pkg-config" ,pkg-config)
@@ -2601,8 +2797,8 @@ Currently supported:
        ("libportal" ,libportal)
        ("dbus" ,dbus)
        ("geoclue" ,geoclue)
-       ("pipewire" ,pipewire-0.3)
-       ("fuse" ,fuse-3)))
+       ("pipewire" ,pipewire)
+       ("fuse" ,fuse)))
     (arguments
      `(#:configure-flags
        (list "--with-systemd=no")
@@ -2637,7 +2833,7 @@ and others.")
 (define-public xdg-desktop-portal-gtk
   (package
     (name "xdg-desktop-portal-gtk")
-    (version "1.14.0")
+    (version "1.14.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -2645,7 +2841,7 @@ and others.")
                     version "/xdg-desktop-portal-gtk-" version ".tar.xz"))
               (sha256
                (base32
-                "0m29b4hm7lq06gcavxw7gdlgqiiy3vgv3v4yjqfq5kx92q3j28gn"))))
+                "002p19j1q3fc8x338ndzxnicwframpgafw31lwvv5avy329akqiy"))))
     (build-system glib-or-gtk-build-system)
     (arguments
      `(#:phases
@@ -2731,7 +2927,7 @@ for xdg-desktop-portal that is using Qt/KF5.")
 (define-public xdg-desktop-portal-wlr
   (package
     (name "xdg-desktop-portal-wlr")
-    (version "0.5.0")
+    (version "0.7.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -2740,7 +2936,7 @@ for xdg-desktop-portal that is using Qt/KF5.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1ipg35gv8ja39ijwbyi96qlyq2y1fjdggl40s38rv68bsya8zry1"))
+                "1b3hpp3ybjgnnmnwsyb5bsnvz9q5nr3zz0j1alh02g24f68lf00k"))
               (patches (search-patches "xdg-desktop-portal-wlr-harcoded-length.patch"))))
     (build-system meson-build-system)
     (arguments
@@ -2761,15 +2957,21 @@ for xdg-desktop-portal that is using Qt/KF5.")
                   (string-append "execl(\"" sh "\", \"" sh "\"")))
                (substitute* "src/screencast/screencast.c"
                  (("execvp\\(\"sh")
-                  (string-append "execvp(\"" sh)))))))))
+                  (string-append "execvp(\"" sh))))))
+         (add-after 'install 'install-documentation
+           (lambda* (#:key outputs #:allow-other-keys)
+             (install-file "../source/README.md"
+                           (string-append (assoc-ref outputs "out")
+                                          "/share/doc/" ,name)))))))
     (native-inputs
      (list cmake pkg-config))
     (inputs (list elogind
                   bash-minimal
                   grim
                   iniparser
+                  mesa
                   libinih
-                  pipewire-0.3
+                  pipewire
                   slurp
                   wayland
                   wayland-protocols))

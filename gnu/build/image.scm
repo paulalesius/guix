@@ -7,6 +7,7 @@
 ;;; Copyright © 2020 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2022 Pavel Shlyak <p.shlyak@pantherx.org>
 ;;; Copyright © 2022 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
+;;; Copyright © 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -111,13 +112,24 @@ turn doesn't take any constant overhead into account, force a 1-MiB minimum."
                            (if (eq? size 'guess)
                                (estimate-partition-size root)
                                size))
-                    (if (member 'esp flags) (list "-S" "1024") '()))
+                    ;; u-boot in particular needs the formatted block
+                    ;; size and the physical block size to be equal.
+                    ;; TODO: What about 4k blocks?
+                    (if (member 'esp flags) (list "-S" "512") '()))
     (for-each (lambda (file)
                 (unless (member file '("." ".."))
                   (invoke "mcopy" "-bsp" "-i" target
                           (string-append root "/" file)
                           (string-append "::" file))))
               (scandir root))))
+
+(define* (make-unformatted-image partition target)
+  "Make an unformatted partition of a certain size."
+  (let ((size (partition-size partition)))
+    ;; Create the file and then truncate it to the desired size.
+    (with-output-to-file target
+      (lambda _ (display "")))
+    (truncate-file target size)))
 
 (define* (make-partition-image partition-sexp target root)
   "Create and return the image of PARTITION-SEXP as TARGET.  Use the given
@@ -131,6 +143,8 @@ ROOT directory to populate the image."
       (make-vfat-image partition target root 16))
      ((string=? type "fat32")
       (make-vfat-image partition target root 32))
+     ((string=? type "unformatted")
+      (make-unformatted-image partition target))
      (else
       (raise (condition
               (&message

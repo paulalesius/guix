@@ -5,7 +5,7 @@
 ;;; Copyright © 2017 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2017, 2019, 2022 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2020 Guy Fleury Iteriteka <gfleury@disroot.org>
-;;; Copyright © 2021, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2021-2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;; Copyright © 2022 ( <paren@disroot.org>
 ;;; Copyright © 2022 Esther Flashner <esther@flashner.co.il>
@@ -137,7 +137,7 @@ to a minimal test case.")
                                    (dirname (search-input-file inputs "/bin/gdc"))
                                    "\";\n"))))))))
       (inputs
-       (list gdc-10 perl))
+       (list gdc-11 perl))
       (home-page "https://github.com/D-Programming-GDC/gdmd")
       (synopsis "DMD-like wrapper for GDC")
       (description "This package provides a DMD-like wrapper for the
@@ -149,17 +149,18 @@ to a minimal test case.")
 (define ldc-bootstrap
   (package
     (name "ldc")
-    (version "1.27.1")
+    (version "1.32.2")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/ldc-developers/ldc/releases"
                            "/download/v" version "/ldc-" version "-src.tar.gz"))
        (sha256
-        (base32 "1775001ba6n8w46ln530kb5r66vs935ingnppgddq8wqnc0gbj4k"))))
+        (base32 "15fdl7fy1ssjxpyb9g54ac4xzcirycly521whil142ijfkpam95z"))))
     (build-system cmake-build-system)
     (arguments
-     `(#:tests? #f                  ;skip in the bootstrap
+     `(#:disallowed-references (,tzdata-for-tests)
+       #:tests? #f                  ;skip in the bootstrap
        #:build-type "Release"
        #:configure-flags
         (list "-GNinja")
@@ -187,17 +188,14 @@ to a minimal test case.")
     (inputs
      `(("libconfig" ,libconfig)
        ("libedit" ,libedit)
-       ("tzdata" ,tzdata)
        ("zlib" ,zlib)))
     (native-inputs
-     ;; Importing (gnu packages commencement) would introduce a cycle.
-     `(("ld-gold-wrapper" ,(module-ref (resolve-interface
-                                        '(gnu packages commencement))
-                                       'ld-gold-wrapper))
-       ("llvm" ,llvm-11)
+     `(("lld-wrapper" ,(make-lld-wrapper lld-14 #:lld-as-ld? #t))
+       ("llvm" ,llvm-14)
        ("ldc" ,gdmd)
        ("ninja" ,ninja)
        ("python-wrapper" ,python-wrapper)
+       ("tzdata" ,tzdata-for-tests)
        ("unzip" ,unzip)))
     (home-page "http://wiki.dlang.org/LDC")
     (synopsis "LLVM-based compiler for the D programming language")
@@ -220,7 +218,8 @@ bootstrapping more recent compilers written in D.")
   (package
     (inherit ldc-bootstrap)
     (arguments
-     (substitute-keyword-arguments (package-arguments ldc-bootstrap)
+     (substitute-keyword-arguments
+       (strip-keyword-arguments '(#:tests?) (package-arguments ldc-bootstrap))
        ((#:make-flags _ #f)
         '(list "all"
                ;; Also build the test runner binaries.
@@ -229,7 +228,6 @@ bootstrapping more recent compilers written in D.")
         `(,@flags "-DBUILD_SHARED_LIBS=ON"
                   "-DLDC_LINK_MANUALLY=OFF"
                   "-DLDC_DYNAMIC_COMPILE=OFF"))
-       ((#:tests? _) #t)
        ((#:phases phases)
         `(modify-phases ,phases
            (add-after 'unpack 'fix-compiler-rt-library-discovery
@@ -260,17 +258,17 @@ bootstrapping more recent compilers written in D.")
                  ;; find the compiler-rt libraries they need to be linked with
                  ;; for the tests.
                  (substitute* (find-files "." "^ldc2.*\\.conf\\.in$")
-                   ((".*lib-dirs = \\[\n" all)
+                   ((".*LIB_SUFFIX.*" all)
                     (string-append all
                                    "        \"" clang-runtime
                                    "/lib/linux\",\n"))))))
            (add-after 'unpack 'patch-paths-in-tests
              (lambda _
-               (substitute* "tests/d2/dmd-testsuite/Makefile"
+               (substitute* "tests/dmd/Makefile"
                  (("/bin/bash") (which "bash")))
                (substitute* "tests/linking/linker_switches.d"
                  (("echo") (which "echo")))
-               (substitute* "tests/d2/dmd-testsuite/dshell/test6952.d"
+               (substitute* "tests/dmd/dshell/test6952.d"
                  (("/usr/bin/env bash")
                   (which "bash")))))
            (add-after 'unpack 'disable-problematic-tests
@@ -283,8 +281,9 @@ bootstrapping more recent compilers written in D.")
                  ((" unittest") " version(skipunittest) unittest"))
                ;; The following tests plugins we don't have.
                (delete-file "tests/plugins/addFuncEntryCall/testPlugin.d")
+               (delete-file "tests/plugins/addFuncEntryCall/testPluginLegacy.d")
                ;; The following tests requires AVX instruction set in the CPU.
-               (substitute* "tests/d2/dmd-testsuite/runnable/cdvecfill.sh"
+               (substitute* "tests/dmd/runnable/cdvecfill.sh"
                  (("^// DISABLED: ") "^// DISABLED: linux64 "))
                ;; This unit test requires networking, fails with
                ;; "core.exception.RangeError@std/socket.d(778): Range
@@ -294,12 +293,15 @@ bootstrapping more recent compilers written in D.")
                   ""))
                ;; The GDB tests suite fails; there are a few bug reports about
                ;; it upstream.
-               (for-each delete-file (find-files "tests" "gdb.*\\.(d|sh)$"))
-               (delete-file "tests/d2/dmd-testsuite/runnable/debug_info.d")
-               (delete-file "tests/d2/dmd-testsuite/runnable/b18504.d")
+               (for-each delete-file (find-files "tests" "gdb.*\\.(c|d|sh)$"))
+               (delete-file "tests/dmd/runnable/debug_info.d")
+               (delete-file "tests/dmd/runnable/b18504.d")
                (substitute* "runtime/druntime/test/exceptions/Makefile"
                  ((".*TESTS\\+=rt_trap_exceptions_drt_gdb.*")
                   ""))
+               ;; Drop gdb_dflags from the test suite.
+               (substitute* "tests/dmd/CMakeLists.txt"
+                 (("\\$\\{gdb_dflags\\}") ""))
                ;; The following tests fail on some systems, not all of
                ;; which are tested upstream.
                (with-directory-excursion "tests"
@@ -314,10 +316,10 @@ bootstrapping more recent compilers written in D.")
                                  "instrument/xray_simple_execution.d"
                                  "sanitizers/msan_noerror.d"
                                  "sanitizers/msan_uninitialized.d"
-                                 "d2/dmd-testsuite/runnable_cxx/cppa.d")))
+                                 "dmd/runnable_cxx/cppa.d")))
                    (,(target-aarch64?)
                      (for-each delete-file
-                               '("d2/dmd-testsuite/runnable/ldc_cabi1.d"
+                               '("dmd/runnable/ldc_cabi1.d"
                                  "sanitizers/fuzz_basic.d"
                                  "sanitizers/msan_noerror.d"
                                  "sanitizers/msan_uninitialized.d")))
@@ -346,7 +348,8 @@ bootstrapping more recent compilers written in D.")
                    (invoke "ctest" "--output-on-failure" "-j" job-count
                            "-R" "lit-tests")
                    (display "running the dmd test suite...\n")
-                   (invoke "ctest" "--output-on-failure" "-j" job-count
+                   ;; This test has a race condition so run it with 1 core.
+                   (invoke "ctest" "--output-on-failure" "-j" "1"
                            "-R" "dmd-testsuite")
                    (display "running the defaultlib unit tests and druntime \
 integration tests...\n")
@@ -356,7 +359,7 @@ integration tests...\n")
      (append (delete "llvm"
                      (alist-replace "ldc" (list ldc-bootstrap)
                                     (package-native-inputs ldc-bootstrap)))
-         `(("clang" ,clang-11)          ;propagates llvm and clang-runtime
+         `(("clang" ,clang-14)          ;propagates llvm and clang-runtime
            ("python-lit" ,python-lit))))))
 
 (define-public dub
@@ -412,27 +415,27 @@ needed.")
 (define-public gtkd
   (package
     (name "gtkd")
-    (version "3.9.0")
+    (version "3.10.0")
     (source
      (origin
       (method url-fetch/zipbomb)
       (uri (string-append "https://gtkd.org/Downloads/sources/GtkD-"
                           version ".zip"))
       (sha256
-       (base32 "0qv8qlpwwb1d078pnrf0a59vpbkziyf53cf9p6m8ms542wbcxllp"))))
+       (base32 "0vc5ssb3ar02mg2pngmdi1xg4qjaya8332a9mk0sv97x6b4ddy3g"))))
     (build-system gnu-build-system)
     (native-inputs
-     `(("unzip" ,unzip)
-       ("ldc" ,ldc)
-       ("pkg-config" ,pkg-config)
-       ("xorg-server-for-tests" ,xorg-server-for-tests)))
+     (list unzip
+           ldc
+           pkg-config
+           xorg-server-for-tests))
     (arguments
      `(#:test-target "test"
        #:make-flags
        `("DC=ldc2"
          ,(string-append "prefix=" (assoc-ref %outputs "out"))
-         ,(string-append "libdir=" (assoc-ref %outputs "out")
-                         "/lib"))
+         ,(string-append "libdir=" (assoc-ref %outputs "out") "/lib")
+         "pkgconfigdir=lib/pkgconfig")
        #:phases
        (modify-phases %standard-phases
          (delete 'configure)
@@ -443,13 +446,12 @@ needed.")
                (("default-goal: libs test") "default-goal: libs")
                (("all: libs shared-libs test") "all: libs shared-libs")
                ;; Work around upstream bug.
-               (("\\$\\(prefix\\)\\/\\$\\(libdir\\)") "$(libdir)"))
-             #t))
-         (add-before 'check 'prepare-x
+               (("\\$\\(prefix\\)\\/\\$\\(libdir\\)") "$(libdir)"))))
+         (add-before 'check 'pre-check
            (lambda _
              (system "Xvfb :1 &")
              (setenv "DISPLAY" ":1")
-             #t)))))
+             (setenv "CC" ,(cc-for-target)))))))
     (home-page "https://gtkd.org/")
     (synopsis "D binding and OO wrapper of GTK+")
     (description "This package provides bindings to GTK+ for D.")

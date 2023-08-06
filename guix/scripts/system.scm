@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2014-2022 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2014-2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2016 Alex Kost <alezost@gmail.com>
 ;;; Copyright © 2016, 2017, 2018 Chris Marusich <cmmarusich@gmail.com>
 ;;; Copyright © 2017, 2019 Mathieu Othacehe <m.othacehe@gmail.com>
@@ -55,20 +55,14 @@
   #:autoload   (guix scripts pull) (channel-commit-hyperlink)
   #:autoload   (guix graph) (export-graph node-type
                              graph-backend-name lookup-backend)
-  #:use-module (guix scripts graph)
   #:use-module (guix scripts system reconfigure)
   #:use-module (guix build utils)
   #:use-module (guix progress)
-  #:use-module ((guix build syscalls) #:select (terminal-columns))
   #:use-module (gnu build image)
   #:use-module (gnu build install)
   #:autoload   (gnu build file-systems)
                  (find-partition-by-label find-partition-by-uuid)
-  #:autoload   (gnu build linux-modules)
-                 (device-module-aliases matching-modules)
-  #:use-module (gnu system linux-initrd)
   #:use-module (gnu image)
-  #:use-module (guix platform)
   #:use-module (gnu system)
   #:use-module (gnu bootloader)
   #:use-module (gnu system file-systems)
@@ -81,7 +75,6 @@
   #:use-module (gnu services shepherd)
   #:use-module (gnu services herd)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-19)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-34)
@@ -633,9 +626,9 @@ any, are available.  Raise an error if they're not."
                              (G_ "device '~a' not found: ~a~%")
                              device (strerror errno))
                       (unless (string-prefix? "/" device)
-                        (display-hint (format #f (G_ "If '~a' is a file system
+                        (display-hint (G_ "If '~a' is a file system
 label, write @code{(file-system-label ~s)} in your @code{device} field.")
-                                              device device)))))))
+                                      device device))))))
               literal)
     (for-each (lambda (fs)
                 (let ((label (file-system-label->string
@@ -842,7 +835,10 @@ static checks."
     (check-mapped-devices os)
     (when (zero? (getuid))
       (check-file-system-availability (operating-system-file-systems os))
-      (check-initrd-modules os)))
+      (unless (%current-target-system)
+        ;; Skip the check if the user is making use of --target, as it cannot
+        ;; be checked against the running kernel.
+        (check-initrd-modules os))))
 
   (mlet* %store-monad
       ((sys       (system-derivation-for-action image action
@@ -1038,8 +1034,6 @@ Some ACTIONS support additional ARGS.\n"))
       --no-graphic       for 'vm', use the tty that we are started in for IO"))
   (display (G_ "
       --skip-checks      skip file system and initrd module safety checks"))
-  (display (G_ "
-      --target=TRIPLET   cross-build for TRIPLET--e.g., \"armel-linux-gnu\""))
   (display (G_ "
   -v, --verbosity=LEVEL  use the given verbosity LEVEL"))
   (newline)
@@ -1414,8 +1408,7 @@ argument list and OPTS is the option alist."
            (let ((hint (string-closest arg actions #:threshold 3)))
              (report-error (G_ "~a: unknown action~%") arg)
              (when hint
-               (display-hint
-                (format #f (G_ "Did you mean @code{~a}?~%") hint)))
+               (display-hint (G_ "Did you mean @code{~a}?~%") hint))
              (exit 1)))))
 
   (define (match-pair car)

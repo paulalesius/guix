@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2015 Andreas Enge <andreas@enge.fr>
-;;; Copyright © 2016, 2019, 2020, 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2015, 2023 Andreas Enge <andreas@enge.fr>
+;;; Copyright © 2016, 2019, 2020, 2022, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016-2019 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;; Copyright © 2016 David Craven <david@craven.ch>
 ;;; Copyright © 2017 Thomas Danckaert <post@thomasdanckaert.be>
@@ -31,7 +31,6 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system python)
   #:use-module (guix build-system qt)
-  #:use-module (guix build-system trivial)
   #:use-module (guix download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
@@ -41,6 +40,7 @@
   #:use-module (gnu packages acl)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages aidc)
+  #:use-module (gnu packages aspell)
   #:use-module (gnu packages attr)
   #:use-module (gnu packages avahi)
   #:use-module (gnu packages base)
@@ -64,13 +64,13 @@
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages gstreamer)
   #:use-module (gnu packages gtk)
+  #:use-module (gnu packages hunspell)
   #:use-module (gnu packages image)
   #:use-module (gnu packages iso-codes)
   #:use-module (gnu packages kerberos)
   #:use-module (gnu packages kde)
   #:use-module (gnu packages kde-plasma)
   #:use-module (gnu packages libcanberra)
-  #:use-module (gnu packages libreoffice)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages mp3)
   #:use-module (gnu packages openbox)
@@ -98,7 +98,7 @@
 (define-public extra-cmake-modules
   (package
     (name "extra-cmake-modules")
-    (version "5.98.0")
+    (version "5.104.0")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -107,7 +107,7 @@
                     name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0669m98vqy4hpacfjs7xpgjj1bns24kjybrjipxzp82092g8y69w"))))
+                "1nc5ynfz903jc87xawnww3pf1y73x9jvmxnbrj24nqv6vcgv57p4"))))
     (build-system cmake-build-system)
     (native-inputs
      ;; Add test dependency, except on armhf where building it is too
@@ -524,7 +524,7 @@ and the older vCalendar.")
 (define-public kcodecs
   (package
     (name "kcodecs")
-    (version "5.98.0")
+    (version "5.104.0")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -533,12 +533,10 @@ and the older vCalendar.")
                     name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0n10r7s9r25xp7vlym41qi421kld00niig73yark7yghj0r41jcz"))))
+                "0swxj2kr37pnwdxsipfii8q02g58lvm9lsh4kflqgfjyhvv0kjby"))))
     (build-system cmake-build-system)
-    (native-inputs
-     (list extra-cmake-modules gperf qttools-5))
-    (inputs
-     (list qtbase-5))
+    (native-inputs (list extra-cmake-modules gperf qttools-5))
+    (inputs (list qtbase-5))
     (home-page "https://community.kde.org/Frameworks")
     (synopsis "String encoding and manipulating library")
     (description "KCodecs provide a collection of methods to manipulate
@@ -1453,7 +1451,8 @@ system.")
     (native-inputs
      (list extra-cmake-modules pkg-config qttools-5))
     (inputs
-     (list hunspell
+     (list aspell
+           hunspell
            ;; TODO: hspell (for Hebrew), Voikko (for Finish)
            qtdeclarative-5
            qtbase-5))
@@ -1695,7 +1694,7 @@ application crashes.")
     (native-inputs
      (list extra-cmake-modules))
     (inputs
-     (list docbook-xml
+     (list docbook-xml-4.5
            docbook-xsl
            karchive
            ki18n
@@ -2435,38 +2434,6 @@ ini-style description files.")
 with su and ssh respectively.")
     (license license:lgpl2.1+)))
 
-(define-public kdewebkit
-  (package
-    (name "kdewebkit")
-    (version "5.98.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "mirror://kde/stable/frameworks/"
-                    (version-major+minor version) "/portingAids/"
-                    name "-" version ".tar.xz"))
-              (sha256
-               (base32
-                "03bwwgzh1xfj4w7q2cvr7712yrjgf9qhqkqgzypcdb49gpvaq164"))))
-    (build-system cmake-build-system)
-    (native-inputs
-     (list extra-cmake-modules qttools-5))
-    (inputs
-     (list kconfig
-           kcoreaddons
-           kio
-           kjobwidgets
-           kparts
-           kservice
-           kwallet
-           qtbase-5
-           qtwebkit))
-    (home-page "https://community.kde.org/Frameworks")
-    (synopsis "KDE Integration for QtWebKit")
-    (description "This library provides KDE integration of the HTML rendering
-engine WebKit via QtWebKit.")
-    (license license:lgpl2.1+)))
-
 (define-public kemoticons
   (package
     (name "kemoticons")
@@ -2703,51 +2670,58 @@ consumption.")
                   qtscript
                   qtx11extras
                   sonnet
-                  `(,util-linux "lib") ; libmount
+                  `(,util-linux "lib")  ; libmount
                   zlib))
     (arguments
-     (list #:phases
-       #~(modify-phases %standard-phases
-         (add-after 'unpack 'patch
-           (lambda _
-             ;; Better error message (taken from NixOS)
-             (substitute* "src/kiod/kiod_main.cpp"
-               (("(^\\s*qCWarning(KIOD_CATEGORY) << \"Error loading plugin:\")( << loader.errorString();)" _ a b)
-                (string-append a "<< name" b)))))
-         (replace 'check
-           (lambda* (#:key tests? #:allow-other-keys)
-             (when tests?
-               (setenv "HOME" (getcwd))
-               (setenv "XDG_RUNTIME_DIR" (getcwd))
-               (setenv "QT_QPA_PLATFORM" "offscreen")
-               (setenv "DBUS_FATAL_WARNINGS" "0")
-               (invoke "dbus-launch" "ctest"
-                       "-E" ; FIXME: 17/69 tests fail.
-                       (string-append "(kiocore-jobtest"
-                                      "|kiocore-kmountpointtest"
-                                      "|kiocore-kfileitemtest"
-                                      "|kiocore-ktcpsockettest"
-                                      "|kiocore-mimetypefinderjobtest"
-                                      "|kiocore-krecentdocumenttest"
-                                      "|kiocore-http_jobtest"
-                                      "|kiogui-openurljobtest"
-                                      "|applicationlauncherjob_forkingtest"
-                                      "|applicationlauncherjob_scopetest"
-                                      "|applicationlauncherjob_servicetest"
-                                      "|commandlauncherjob_forkingtest"
-                                      "|commandlauncherjob_scopetest"
-                                      "|commandlauncherjob_servicetest"
-                                      "|kiowidgets-kdirmodeltest"
-                                      "|kiowidgets-kurifiltertest-colon-separator"
-                                      "|kiowidgets-kurifiltertest-space-separator)")))))
-         (add-after 'install 'add-symlinks
-           ;; Some package(s) (e.g. bluedevil) refer to these service types by
-           ;; the wrong name.  I would prefer to patch those packages, but I
-           ;; cannot find the files!
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((kst5 (string-append #$output "/share/kservicetypes5/")))
-               (symlink (string-append kst5 "kfileitemactionplugin.desktop")
-                        (string-append kst5 "kfileitemaction-plugin.desktop"))))))))
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch
+            (lambda _
+              ;; Better error message (taken from NixOS)
+              (substitute* "src/kiod/kiod_main.cpp"
+                (("(^\\s*qCWarning(KIOD_CATEGORY) << \
+\"Error loading plugin:\")( << loader.errorString();)" _ a b)
+                 (string-append a "<< name" b)))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (setenv "HOME" (getcwd))
+                (setenv "XDG_RUNTIME_DIR" (getcwd))
+                (setenv "QT_QPA_PLATFORM" "offscreen")
+                (setenv "DBUS_FATAL_WARNINGS" "0")
+                (invoke "dbus-launch" "ctest"
+                        "--rerun-failed" "--output-on-failure"
+                        "-E"
+                        ;; The following tests fail or are flaky (see:
+                        ;; https://bugs.kde.org/show_bug.cgi?id=440721).
+                        (string-append "(kiocore-jobtest"
+                                       "|kiocore-kmountpointtest"
+                                       "|kiowidgets-kdirlistertest"
+                                       "|kiocore-kfileitemtest"
+                                       "|kiocore-ktcpsockettest"
+                                       "|kiocore-mimetypefinderjobtest"
+                                       "|kiocore-krecentdocumenttest"
+                                       "|kiocore-http_jobtest"
+                                       "|kiogui-openurljobtest"
+                                       "|kioslave-httpheaderdispositiontest"
+                                       "|applicationlauncherjob_forkingtest"
+                                       "|applicationlauncherjob_scopetest"
+                                       "|applicationlauncherjob_servicetest"
+                                       "|commandlauncherjob_forkingtest"
+                                       "|commandlauncherjob_scopetest"
+                                       "|commandlauncherjob_servicetest"
+                                       "|kiowidgets-kdirmodeltest"
+                                       "|kiowidgets-kurifiltertest-colon-separator"
+                                       "|kiowidgets-kurifiltertest-space-separator)")))))
+          (add-after 'install 'add-symlinks
+            ;; Some package(s) (e.g. bluedevil) refer to these service types by
+            ;; the wrong name.  I would prefer to patch those packages, but I
+            ;; cannot find the files!
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let ((kst5 (string-append #$output "/share/kservicetypes5/")))
+                (symlink (string-append kst5 "kfileitemactionplugin.desktop")
+                         (string-append kst5 "kfileitemaction-plugin.desktop"))))))))
     (home-page "https://community.kde.org/Frameworks")
     (synopsis "Network transparent access to files and data")
     (description "This framework implements a lot of file management functions.

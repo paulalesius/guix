@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2020-2022 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -57,7 +57,7 @@
 ;;; Code:
 
 (define %hurd-default-operating-system-kernel
-  (if (hurd-system?)
+  (if (system-hurd?)
       gnumach
       ;; A cross-built GNUmach does not work
       (with-parameters ((%current-system "i686-linux")
@@ -68,35 +68,37 @@
   ;; Note: the Shepherd comes before the Hurd, not just because its duty is to
   ;; shepherd the herd, but also because we want its 'halt' and 'reboot'
   ;; commands to take precedence.
-  (list shepherd hurd bash coreutils file findutils grep sed
+  (list shepherd-0.8 hurd netdde bash coreutils file findutils grep sed
         diffutils patch gawk tar gzip bzip2 xz lzip
         guile-3.0-latest guile-colorized guile-readline
         net-base inetutils less shadow sudo which
         info-reader))
 
 (define %base-services/hurd
-  (list (service hurd-console-service-type
-                 (hurd-console-configuration (hurd hurd)))
-        (service hurd-getty-service-type (hurd-getty-configuration
-                                          (tty "tty1")))
-        (service hurd-getty-service-type (hurd-getty-configuration
-                                          (tty "tty2")))
-        (service static-networking-service-type
-                 (list %loopback-static-networking
+  (append (list (service hurd-console-service-type
+                         (hurd-console-configuration (hurd hurd)))
+                (service static-networking-service-type
+                         (list %loopback-static-networking
 
-                       ;; QEMU user-mode networking.  To get "eth0", you need
-                       ;; QEMU to emulate a device for which Mach has an
-                       ;; in-kernel driver, for instance with:
-                       ;; --device rtl8139,netdev=net0 --netdev user,id=net0
-                       %qemu-static-networking))
-        (syslog-service)
-        (service guix-service-type
-                 (guix-configuration
-                  (extra-options '("--disable-chroot"
-                                   "--disable-deduplication"))))
-        (service special-files-service-type
-                 `(("/bin/sh" ,(file-append bash "/bin/sh"))
-                   ("/usr/bin/env" ,(file-append coreutils "/bin/env"))))))
+                               ;; QEMU user-mode networking.  To get "eth0", you need
+                               ;; QEMU to emulate a device for which Mach has an
+                               ;; in-kernel driver, for instance with:
+                               ;; --device rtl8139,netdev=net0 --netdev user,id=net0
+                               %qemu-static-networking))
+                (service guix-service-type
+                         (guix-configuration
+                          (extra-options '("--disable-chroot"
+                                           "--disable-deduplication"))))
+                (service special-files-service-type
+                         `(("/bin/sh" ,(file-append bash "/bin/sh"))
+                           ("/usr/bin/env" ,(file-append coreutils
+                                                         "/bin/env"))))
+                (service syslog-service-type))
+          (map (lambda (n)
+                 (service hurd-getty-service-type
+                          (hurd-getty-configuration
+                           (tty (string-append "tty" (number->string n))))))
+               (iota 6 1))))
 
 (define %setuid-programs/hurd
   ;; Default set of setuid-root programs.

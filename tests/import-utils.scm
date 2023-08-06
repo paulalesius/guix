@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2015, 2017, 2022 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2015, 2017, 2022, 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2016 Ben Woodcroft <donttrustben@gmail.com>
 ;;; Copyright © 2020 Martin Becze <mjbecze@riseup.net>
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
@@ -53,6 +53,14 @@ Differences are hard to spot, e.g. in CLOS vs. GOOPS."))
   "This @@ is not Texinfo syntax.  Neither is this %@@>%."
   (beautify-description "This @ is not Texinfo syntax.  Neither is this %@>%."))
 
+(test-equal "beautify-description: wrap PascalCase words in @code"
+  "The term @code{DelayedMatrix} refers to a class."
+  (beautify-description "The term DelayedMatrix refers to a class."))
+
+(test-equal "beautify-description: do not wrap acronyms in @code"
+  "The term API is not code, but @code{myAPI} might be."
+  (beautify-description "The term API is not code, but myAPI might be."))
+
 (test-equal "license->symbol"
   'license:lgpl2.0
   (license->symbol license:lgpl2.0))
@@ -67,12 +75,12 @@ Differences are hard to spot, e.g. in CLOS vs. GOOPS."))
                     #:repo 'repo
                     #:repo->guix-package
                     (match-lambda*
-                      (("foo" #:version #f #:repo 'repo)
+                      (("foo" #:repo 'repo . rest)
                        (values '(package
                                   (name "foo")
                                   (inputs `(("bar" ,bar))))
                                '("bar")))
-                      (("bar" #:version #f #:repo 'repo)
+                      (("bar" #:repo 'repo . rest)
                        (values '(package
                                   (name "bar"))
                                '())))
@@ -84,7 +92,7 @@ Differences are hard to spot, e.g. in CLOS vs. GOOPS."))
                     #:repo 'repo
                     #:repo->guix-package
                     (match-lambda*
-                      (("foo" #:version #f #:repo 'repo)
+                      (("foo" #:repo 'repo . rest)
                        (values #f '())))
                     #:guix-name identity))
 
@@ -96,12 +104,12 @@ Differences are hard to spot, e.g. in CLOS vs. GOOPS."))
                     #:repo 'repo
                     #:repo->guix-package
                     (match-lambda*
-                      (("foo" #:version #f #:repo 'repo)
+                      (("foo" #:repo 'repo . rest)
                        (values '(package
                                   (name "foo")
                                   (inputs `(("bar" ,bar))))
                                '("bar")))
-                      (("bar" #:version #f #:repo 'repo)
+                      (("bar" #:repo 'repo . rest)
                        (values #f '())))
                     #:guix-name identity))
 
@@ -141,7 +149,7 @@ Differences are hard to spot, e.g. in CLOS vs. GOOPS."))
          (license:license? (package-license pkg))
          (build-system? (package-build-system pkg))
          (origin? (package-source pkg))
-         (equal? (origin-sha256 (package-source pkg))
+         (equal? (content-hash-value (origin-hash (package-source pkg)))
                  (base32 "0ssi1wpaf7plaswqqjwigppsg5fyh99vdlb9kzl7c9lng89ndq1i")))))
 
 (test-equal "alist->package with false license"  ;<https://bugs.gnu.org/30470>

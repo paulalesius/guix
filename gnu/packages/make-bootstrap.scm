@@ -1,10 +1,10 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2012-2021, 2023 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017, 2021 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2018 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018, 2019 Mark H Weaver <mhw@netris.org>
-;;; Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2019, 2020 Marius Bakke <mbakke@fastmail.com>
+;;; Copyright © 2018, 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2020 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2021 Pierre Langlois <pierre.langlois@gmx.com>
 ;;;
@@ -53,8 +53,6 @@
             %glibc-bootstrap-tarball
             %gcc-bootstrap-tarball
             %guile-bootstrap-tarball
-            %mescc-tools-bootstrap-tarball
-            %mes-bootstrap-tarball
             %bootstrap-tarballs
 
             %guile-static-stripped))
@@ -75,8 +73,7 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
       (inherit base)
       (source (origin (inherit (package-source base))
                       (patches (append (search-patches
-                                        "glibc-bootstrap-system.patch"
-                                        "glibc-static-nss.patch")
+                                        "glibc-bootstrap-system.patch")
                                    (origin-patches (package-source base))))))
       (arguments
        (substitute-keyword-arguments (package-arguments base)
@@ -162,57 +159,55 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
 
 (define %static-inputs
   ;; Packages that are to be used as %BOOTSTRAP-INPUTS.
-  (let ((coreutils (package (inherit coreutils)
-                      (arguments
-                       `(#:configure-flags
-                         '("--disable-nls"
-                           "--disable-silent-rules"
-                           "--enable-no-install-program=stdbuf,libstdbuf.so"
-                           "CFLAGS=-Os -g0"        ; smaller, please
-                           "LDFLAGS=-static -pthread"
+  (let ((coreutils (package
+                     (inherit coreutils)
+                     (arguments
+                      (substitute-keyword-arguments
+                          (package-arguments coreutils)
+                        ((#:configure-flags _ #~'())
+                         #~'("--disable-nls"
+                             "--disable-silent-rules"
+                             "--enable-no-install-program=stdbuf,libstdbuf.so"
+                             "CFLAGS=-Os -g0"   ; smaller, please
+                             "LDFLAGS=-static -pthread"
 
-                           ;; Work around a cross-compilation bug whereby libcoreutils.a
-                           ;; would provide '__mktime_internal', which conflicts with the
-                           ;; one in libc.a.
-                           ,@(if (%current-target-system)
-                                 `("gl_cv_func_working_mktime=yes")
-                                 '()))
+                             ;; Work around a cross-compilation bug whereby libcoreutils.a
+                             ;; would provide '__mktime_internal', which conflicts with the
+                             ;; one in libc.a.
+                             #$@(if (%current-target-system)
+                                    #~("gl_cv_func_working_mktime=yes")
+                                    #~())))
+                        ((#:tests? _ #t)
+                         #f)))               ;signal-related Gnulib tests fail
 
-                         #:tests? #f   ; signal-related Gnulib tests fail
-                         ,@(package-arguments coreutils)))
-
-                      ;; Remove optional dependencies such as GMP.  Keep Perl
-                      ;; except if it's missing (which is the case when
-                      ;; cross-compiling).
-                      (inputs (match (assoc "perl" (package-inputs coreutils))
-                                (#f '())
-                                (x  (list x))))
+                      ;; Remove optional dependencies such as GMP.
+                      (inputs '())
 
                       ;; Remove the 'debug' output (see above for the reason.)
                       (outputs '("out"))))
-        (bzip2 (package (inherit bzip2)
+        (bzip2 (package
+                 (inherit bzip2)
                  (arguments
                   (substitute-keyword-arguments (package-arguments bzip2)
                     ((#:phases phases)
-                     `(modify-phases ,phases
-                        (add-before 'build 'dash-static
-                          (lambda _
-                            (substitute* "Makefile"
-                              (("^LDFLAGS[[:blank:]]*=.*$")
-                               "LDFLAGS = -static"))
-                            #t))))))))
-        (xz (package (inherit xz)
+                     #~(modify-phases #$phases
+                         (add-before 'build 'dash-static
+                           (lambda _
+                             (substitute* "Makefile"
+                               (("^LDFLAGS[[:blank:]]*=.*$")
+                                "LDFLAGS = -static"))))))))))
+        (xz (package
+              (inherit xz)
               (outputs '("out"))
               (arguments
-               `(#:strip-flags '("--strip-all")
-                 #:phases (modify-phases %standard-phases
-                            (add-before 'configure 'static-executable
-                              (lambda _
-                                ;; Ask Libtool for a static executable.
-                                (substitute* "src/xz/Makefile.in"
-                                  (("^xz_LDADD =")
-                                   "xz_LDADD = -all-static"))
-                                #t)))))))
+               (list #:strip-flags #~'("--strip-all")
+                     #:phases #~(modify-phases %standard-phases
+                                  (add-before 'configure 'static-executable
+                                    (lambda _
+                                      ;; Ask Libtool for a static executable.
+                                      (substitute* "src/xz/Makefile.in"
+                                        (("^xz_LDADD =")
+                                         "xz_LDADD = -all-static")))))))))
         (gawk (package
                 (inherit gawk)
                 (source (origin
@@ -228,45 +223,44 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
                                          (origin-patches
                                           (package-source gawk))))))
                 (arguments
-                 `(;; Starting from gawk 4.1.0, some of the tests for the
-                   ;; plug-in mechanism just fail on static builds:
-                   ;;
-                   ;; ./fts.awk:1: error: can't open shared library `filefuncs' for reading (No such file or directory)
-                   ;;
-                   ;; Therefore disable extensions support.
-                   #:configure-flags (list "--disable-extensions")
-
-                   ,@(substitute-keyword-arguments (package-arguments gawk)
-                       ((#:phases phases)
-                        `(modify-phases ,phases
-                           (add-before 'configure 'no-export-dynamic
-                             (lambda _
-                               ;; Since we use `-static', remove
-                               ;; `-export-dynamic'.
-                               (substitute* "configure"
-                                 (("-Wl,-export-dynamic") ""))
-                               #t)))))))
+                 (substitute-keyword-arguments (package-arguments gawk)
+                   ((#:configure-flags _ #~'())
+                    ;; Starting from gawk 4.1.0, some of the tests for the
+                    ;; plug-in mechanism just fail on static builds:
+                    ;;
+                    ;; ./fts.awk:1: error: can't open shared library `filefuncs' for reading (No such file or directory)
+                    ;;
+                    ;; Therefore disable extensions support.
+                    #~(list "--disable-extensions"))
+                   ((#:phases phases)
+                    #~(modify-phases #$phases
+                        (add-before 'configure 'no-export-dynamic
+                          (lambda _
+                            ;; Since we use `-static', remove
+                            ;; `-export-dynamic'.
+                            (substitute* "configure"
+                              (("-Wl,-export-dynamic") ""))))))))
                 (inputs (if (%current-target-system)
-                            `(("bash" ,static-bash))
+                            (list static-bash)
                             '()))))
-	(tar (package (inherit tar)
+	(tar (package
+               (inherit tar)
 	       (arguments
-                `(;; Work around a cross-compilation bug whereby libgnu.a would provide
-                  ;; '__mktime_internal', which conflicts with the one in libc.a.
-                  ,@(if (%current-target-system)
-                        `(#:configure-flags '("gl_cv_func_working_mktime=yes"))
-                        '())
-                  ,@(substitute-keyword-arguments (package-arguments tar)
-                      ((#:phases phases)
-                       `(modify-phases ,phases
-                          (replace 'set-shell-file-name
-                            (lambda _
-                              ;; Do not use "/bin/sh" to run programs; see
-                              ;; <http://lists.gnu.org/archive/html/guix-devel/2016-09/msg02272.html>.
-                              (substitute* "src/system.c"
-                                (("/bin/sh") "sh")
-                                (("execv ") "execvp "))
-                              #t)))))))))
+                (substitute-keyword-arguments (package-arguments tar)
+                  ((#:configure-flags flags #~'())
+                   ;; Work around a cross-compilation bug whereby libgnu.a
+                   ;; would provide '__mktime_internal', which conflicts
+                   ;; with the one in libc.a.
+                   #~'("gl_cv_func_working_mktime=yes"))
+                  ((#:phases phases)
+                   #~(modify-phases #$phases
+                       (replace 'set-shell-file-name
+                         (lambda _
+                           ;; Do not use "/bin/sh" to run programs; see
+                           ;; <http://lists.gnu.org/archive/html/guix-devel/2016-09/msg02272.html>.
+                           (substitute* "src/system.c"
+                             (("/bin/sh") "sh")
+                             (("execv ") "execvp "))))))))))
         ;; We don't want to retain a reference to /gnu/store in the bootstrap
         ;; versions of egrep/fgrep, so we remove the custom phase added since
         ;; grep@2.25. The effect is 'egrep' and 'fgrep' look for 'grep' in
@@ -388,6 +382,10 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
                                              (package-arguments binutils))
                                   ((#:configure-flags flags _ ...)
                                    flags)))
+       #:make-flags ,(match (memq #:make-flags (package-arguments binutils))
+                       ((#:make-flags flags _ ...)
+                        flags)
+                       (_ ''()))
        #:strip-flags '("--strip-all")
        #:phases (modify-phases %standard-phases
                   (add-before 'configure 'all-static
@@ -591,92 +589,6 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
                                               "--version"))
                                     '("gcc" "g++" "cpp"))))))))))
 
-;; Two packages: first build static, bare minimum content.
-(define %mescc-tools-static
-  ;; A statically linked MesCC Tools.
-  (package
-    (inherit mescc-tools)
-    (name "mescc-tools-static")
-    (arguments
-     `(#:system "i686-linux"
-       ,@(substitute-keyword-arguments (package-arguments mescc-tools)
-           ((#:make-flags flags)
-            `(cons "CC=gcc -static" ,flags)))))))
-
-;; ... next remove store references.
-(define %mescc-tools-static-stripped
-  ;; A statically linked Mescc Tools with store references removed, for
-  ;; bootstrap.
-  (package
-    (inherit %mescc-tools-static)
-    (name (string-append (package-name %mescc-tools-static) "-stripped"))
-    (build-system trivial-build-system)
-    (arguments
-     (list #:modules '((guix build utils))
-           #:builder
-           #~(begin
-               (use-modules (guix build utils))
-               (let* ((in  #$%mescc-tools-static)
-                      (out #$output)
-                      (bin (string-append out "/bin")))
-                 (mkdir-p bin)
-                 (for-each (lambda (file)
-                             (let ((target (string-append bin "/" file)))
-                               (format #t "copying `~a'...~%" file)
-                               (copy-file (string-append in "/bin/" file)
-                                          target)
-                               (remove-store-references target)))
-                           '( "M1" "blood-elf" "hex2"))))))))
-
-;; Two packages: first build static, bare minimum content.
-(define-public %mes-minimal
-  ;; A minimal Mes without documentation.
-  (package
-    (inherit mes)
-    (name "mes-minimal")
-    (native-inputs (list guile-3.0))
-    (arguments
-     `(#:system "i686-linux"
-       #:strip-binaries? #f
-       #:configure-flags '("--mes")
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'patch-shebangs)
-         (add-after 'install 'strip-install
-           (lambda _
-             (let* ((out (assoc-ref %outputs "out"))
-                    (share (string-append out "/share")))
-               (delete-file-recursively (string-append out "/lib/guile"))
-               (delete-file-recursively (string-append share "/guile"))
-
-               (for-each delete-file
-                         (find-files
-                          (string-append share "/mes/lib")
-                          "\\.(h|c)"))))))))))
-
-;; next remove store references.
-(define %mes-minimal-stripped
-  ;; A minimal Mes with store references removed, for bootstrap.
-  (package
-    (inherit %mes-minimal)
-    (name (string-append (package-name %mes-minimal) "-stripped"))
-    (build-system trivial-build-system)
-    (arguments
-     (list #:modules '((guix build utils))
-           #:allowed-references '()
-           #:builder
-           #~(begin
-               (use-modules (guix build utils))
-               (let ((in  #$%mes-minimal)
-                     (out #$output))
-
-                 (copy-recursively in out)
-                 (for-each (lambda (dir)
-                             (for-each remove-store-references
-                                       (find-files (string-append out "/" dir)
-                                                   ".*")))
-                           '("bin" "share/mes"))))))))
-
 (define* (make-guile-static guile patches)
   (package-with-relocatable-glibc
    (static-package
@@ -698,39 +610,47 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
 
       (propagated-inputs
        (modify-inputs (package-propagated-inputs guile)
-         (replace "bdw-gc" libgc/static-libs)))
+         (replace "libgc" libgc/static-libs)))
       (arguments
        (substitute-keyword-arguments (package-arguments guile)
-         ((#:configure-flags flags '())
+         ((#:configure-flags flags #~'())
           ;; When `configure' checks for ltdl availability, it
           ;; doesn't try to link using libtool, and thus fails
           ;; because of a missing -ldl.  Work around that.
-          `(list "LDFLAGS=-ldl" "--enable-mini-gmp"
-                 ,@(if (hurd-target?)
-                       '("--disable-jit")
-                       '())))
+          #~(list "LDFLAGS=-ldl" "--enable-mini-gmp"
+
+                  ;; Guile does an LTO build by default, but in 3.0.9 it
+                  ;; wrongfully picks 'ar' instead of 'gcc-ar', so work around
+                  ;; it (see <https://issues.guix.gnu.org/61086>).
+                  #$@(if (version-prefix? "3.0" (package-version guile))
+                         #~("AR=gcc-ar" "RANLIB=gcc-ranlib")
+                         #~())
+
+                  #$@(if (target-hurd?)
+                         #~("--disable-jit")
+                         #~())))
          ((#:phases phases '%standard-phases)
-          `(modify-phases ,phases
+          #~(modify-phases #$phases
 
-             ;; Do not record the absolute file name of 'sh' in
-             ;; (ice-9 popen).  This makes 'open-pipe' unusable in
-             ;; a build chroot ('open-pipe*' is fine) but avoids
-             ;; keeping a reference to Bash.
-             (delete 'pre-configure)
+              ;; Do not record the absolute file name of 'sh' in
+              ;; (ice-9 popen).  This makes 'open-pipe' unusable in
+              ;; a build chroot ('open-pipe*' is fine) but avoids
+              ;; keeping a reference to Bash.
+              (delete 'pre-configure)
 
-             (add-before 'configure 'static-guile
-               (lambda _
-                 (substitute* "libguile/Makefile.in"
-                   ;; Create a statically-linked `guile'
-                   ;; executable.
-                   (("^guile_LDFLAGS =")
-                    "guile_LDFLAGS = -all-static")
+              (add-before 'configure 'static-guile
+                (lambda _
+                  (substitute* "libguile/Makefile.in"
+                    ;; Create a statically-linked `guile'
+                    ;; executable.
+                    (("^guile_LDFLAGS =")
+                     "guile_LDFLAGS = -all-static")
 
-                   ;; Add `-ldl' *after* libguile-2.0.la.
-                   (("^guile_LDADD =(.*)$" _ ldadd)
-                    (string-append "guile_LDADD = "
-                                   (string-trim-right ldadd)
-                                   " -ldl\n")))))))
+                    ;; Add `-ldl' *after* libguile-2.0.la.
+                    (("^guile_LDADD =(.*)$" _ ldadd)
+                     (string-append "guile_LDADD = "
+                                    (string-trim-right ldadd)
+                                    " -ldl\n")))))))
          ((#:tests? _ #f)
           ;; There are uses of `dynamic-link' in
           ;; {foreign,coverage}.test that don't fly here.
@@ -747,6 +667,12 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
   (make-guile-static guile-2.0 '("guile-relocatable.patch"
                                  "guile-default-utf8.patch"
                                  "guile-linux-syscalls.patch")))
+
+(define %guile-static-3.0
+  (make-guile-static guile-3.0-latest
+                     '("guile-2.2-default-utf8.patch"
+                       "guile-3.0-linux-syscalls.patch"
+                       "guile-3.0-relocatable.patch")))
 
 (define* (make-guile-static-stripped static-guile)
   (package
@@ -796,11 +722,7 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
 (define %guile-static-stripped
   ;; A stripped static Guile 3.0 binary, for use in initrds
   ;; and during bootstrap.
-  (make-guile-static-stripped
-   (make-guile-static guile-3.0
-                      '("guile-2.2-default-utf8.patch"
-                        "guile-3.0-linux-syscalls.patch"
-                        "guile-3.0-relocatable.patch"))))
+  (make-guile-static-stripped %guile-static-3.0))
 
 (define (tarball-package pkg)
   "Return a package containing a tarball of PKG."
@@ -858,14 +780,6 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
   ;; A tarball with the statically-linked, relocatable Guile.
   (tarball-package %guile-static-stripped))
 
-(define %mescc-tools-bootstrap-tarball
-  ;; A tarball with statically-linked MesCC binary seed.
-  (tarball-package %mescc-tools-static-stripped))
-
-(define %mes-bootstrap-tarball
-  ;; A tarball with Mes binary seed.
-  (tarball-package %mes-minimal-stripped))
-
 (define %bootstrap-tarballs
   ;; A single derivation containing all the bootstrap tarballs, for
   ;; convenience.
@@ -899,9 +813,7 @@ for `sh' in $PATH, and without nscd, and with static NSS modules."
      (append (list %guile-bootstrap-tarball)
          (match (or (%current-target-system) (%current-system))
            ((or "i686-linux" "x86_64-linux")
-            (list %mescc-tools-bootstrap-tarball
-                  %mes-bootstrap-tarball
-                  %linux-libre-headers-bootstrap-tarball))
+            (list %linux-libre-headers-bootstrap-tarball))
            (_
             (list %gcc-bootstrap-tarball
                   %binutils-bootstrap-tarball

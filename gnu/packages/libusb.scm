@@ -12,6 +12,7 @@
 ;;; Copyright © 2020 Christopher Howard <christopher@librehacker.com>
 ;;; Copyright © 2021 Guillaume Le Vaillant <glv@posteo.net>
 ;;; Copyright © 2022 Jacob Hrbek <kreyren@rixotstudio.cz>
+;;; Copyright © 2023 Sharlatan Hellseher <sharlatanus@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -40,6 +41,7 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages compression)
@@ -51,6 +53,7 @@
   #:use-module (gnu packages mp3)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages readline)
   #:use-module (gnu packages tls)
@@ -59,7 +62,7 @@
 (define-public libusb
   (package
     (name "libusb")
-    (version "1.0.24")
+    (version "1.0.25")
     (source
      (origin
       (method url-fetch)
@@ -67,7 +70,7 @@
                           "releases/download/v" version
                           "/libusb-" version ".tar.bz2"))
       (sha256
-       (base32 "0amilbi5qncdnrds3ji21vbiz1wvdm1fwp5qrxnk49xkyy2jdzby"))))
+       (base32 "0j88ym7afy4wj3x789zzxsr04asyjy0mw29gf31blzkrg8cyya4a"))))
     (build-system gnu-build-system)
 
     ;; XXX: Enabling udev is now recommended, but eudev indirectly depends on
@@ -85,7 +88,7 @@ devices on various operating systems.")
 (define-public libusb-compat
   (package
     (name "libusb-compat")
-    (version "0.1.5")
+    (version "0.1.8")
     (source
      (origin
       (method url-fetch)
@@ -94,11 +97,13 @@ devices on various operating systems.")
                           "libusb-compat-" version "/"
                           "libusb-compat-" version ".tar.bz2"))
       (sha256
-       (base32
-        "0nn5icrfm9lkhzw1xjvaks9bq3w6mjg86ggv3fn7kgi4nfvg8kj0"))))
+       (base32 "09q8w00djrkaxbiklcgjwya1w0n3aqavsz06fl0ixv1x9x47d339"))))
     (build-system gnu-build-system)
+    (arguments
+     (list #:configure-flags
+           #~(list "--disable-static")))
     (native-inputs
-     (list pkg-config))
+     (list autoconf automake libtool pkg-config))
     (inputs
      (list libusb))
     (home-page "https://libusb.info")
@@ -228,14 +233,14 @@ implementing @code{javax.usb} (JSR-80).")
 (define-public python-libusb1
   (package
     (name "python-libusb1")
-    (version "2.0.1")
+    (version "3.0.0")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "libusb1" version))
        (sha256
         (base32
-         "0ikc7z7mdyr8pm0mk3ibab1hqrq4cpi9frmc3p94hsmbyzn85fnk"))))
+         "0f45rjgkq4wgyav6dz57ggj34p2l00c9n3d4639ia3z4zvgak4jp"))))
     (build-system python-build-system)
     (arguments
      '(#:modules ((srfi srfi-1)
@@ -269,14 +274,14 @@ wrapper for accessing libusb-1.0.")
 (define-public python-pyusb
   (package
     (name "python-pyusb")
-    (version "1.0.2")
+    (version "1.2.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "pyusb" version))
        (sha256
         (base32
-         "0qkk2jn270jwwl1x26hmdhb14m9kkbrzzwzizdjcl1a29b6756sf"))))
+         "1fg7knfzybzija2b01pzrzhzsj989scl12sb2ra4f503l8279k54"))))
     (build-system python-build-system)
     (arguments
      `(#:tests? #f                      ; no tests
@@ -297,6 +302,9 @@ wrapper for accessing libusb-1.0.")
                                    "^libusb-.*\\.so\\..*"))
                  "\"")))
              #t)))))
+
+    (native-inputs
+     (list python-setuptools-scm))
     (inputs
      (list libusb))
     (home-page "https://pyusb.github.io/pyusb/")
@@ -308,18 +316,28 @@ wrapper for accessing libusb-1.0.")
 (define-public python-capablerobot-usbhub
   (package
     (name "python-capablerobot-usbhub")
-    (version "0.2.7")
+    (version "0.5.0")
     (source
      (origin
-       (method url-fetch)
-       (uri (pypi-uri "capablerobot_usbhub" version))
+       ;; PyPI tarball fails to build.
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/CapableRobot/CapableRobot_USBHub_Driver")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
        (sha256
-        (base32
-         "1priic4iq2vn1rc711kzxwhxrwa508rkxrr193qdz2lw26kdhvix"))))
-    (build-system python-build-system)
+        (base32 "1nfd12612z9a9hby5dxg7lfqw5jcv3wcyqqagbg5izragni646mc"))))
+    (build-system pyproject-build-system)
     (arguments
-     `(#:phases
+     `(#:tests? #f ; No tests provided.
+       #:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'use-poetry-core
+           (lambda _
+             ;; Patch to use the core poetry API.
+             (substitute* "pyproject.toml"
+               (("poetry.masonry.api")
+                "poetry.core.masonry.api"))))
          (add-after 'install 'install-udev-rules
            (lambda* (#:key outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out")))
@@ -327,10 +345,11 @@ wrapper for accessing libusb-1.0.")
                (copy-file "50-capablerobot-usbhub.rules"
                           (string-append out
                                          "/lib/udev/rules.d/"
-                                         "50-capablerobot-usbhub.rules"))
-               #t))))))
+                                         "50-capablerobot-usbhub.rules"))))))))
+    (native-inputs
+     (list python-poetry-core))
     (propagated-inputs
-     (list python-click python-construct python-pyusb python-pyyaml))
+     (list python-click-7 python-construct python-pyusb python-pyyaml-5))
     (home-page
      "https://github.com/CapableRobot/CapableRobot_USBHub_Driver")
     (synopsis
@@ -504,7 +523,7 @@ music and video to the device.")
                (base32
                 "11wdv44qwia77sh38n36809ysaib52rwd4fvqwb5ybsbz4p70l1m"))))
     (inputs
-     (list fuse libimobiledevice))
+     (list fuse-2 libimobiledevice))
     (native-inputs
      (list pkg-config))
     (build-system gnu-build-system)
@@ -562,7 +581,7 @@ over USB.")
      (list #:configure-flags
            #~(list "--disable-static"
                    (string-append "--with-udev=" #$output "/lib/udev"))))
-    (home-page "http://libmtp.sourceforge.net/")
+    (home-page "https://libmtp.sourceforge.net/")
     (synopsis "Library implementing the Media Transfer Protocol")
     (description "Libmtp implements an MTP (Media Transfer Protocol)
 initiator, which means that it initiates MTP sessions with devices.  The
@@ -599,7 +618,7 @@ proposed for standardization.")
      (list gtk+ flac libvorbis libid3tag libmtp))
     (native-inputs
      (list pkg-config))
-    (home-page "http://gmtp.sourceforge.net/")
+    (home-page "https://gmtp.sourceforge.net/")
     (synopsis "Simple graphical MTP client")
     (description "gMTP is a simple graphical client for the Media Transfer Protocol
   (MTP), which allows media files to be transferred to and from many portable

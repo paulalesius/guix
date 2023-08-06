@@ -14,6 +14,8 @@
 ;;; Copyright © 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2022 Marcel Kupiec <formbi@protonmail.com>
 ;;; Copyright © 2022 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2022 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2023 Spencer Skylar Chan <schan12@umd.edu>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -42,6 +44,7 @@
   #:use-module (gnu packages cdrom)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages cmake)
   #:use-module (gnu packages cpp)
   #:use-module (gnu packages crypto)
   #:use-module (gnu packages cups)
@@ -58,15 +61,18 @@
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages haskell-xyz)
   #:use-module (gnu packages high-availability)
   #:use-module (gnu packages libusb)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages lua)
   #:use-module (gnu packages lxqt)
   #:use-module (gnu packages mtools)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages networking)
   #:use-module (gnu packages openldap)
+  #:use-module (gnu packages onc-rpc)
   #:use-module (gnu packages pciutils)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
@@ -79,6 +85,7 @@
   #:use-module (gnu packages qt)
   #:use-module (gnu packages scanner)
   #:use-module (gnu packages security-token)
+  #:use-module (gnu packages readline)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages video)
   #:use-module (gnu packages virtualization)
@@ -134,7 +141,7 @@ sets, and tools to deal with register databases.")
 (define-public hw-probe
   (package
     (name "hw-probe")
-    (version "1.6.4")
+    (version "1.6.5")
     (source
      (origin
        (method git-fetch)
@@ -144,7 +151,7 @@ sets, and tools to deal with register databases.")
          (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "028wnhrbn10lfxwmcpzdbz67ygldimv7z1k1bm64ggclykvg5aim"))))
+        (base32 "1sbp0scdi54zwgvb1s3ki3cw8xnxaxzm5cicq2nn3a2b6n1d4ljs"))))
     (build-system perl-build-system)
     (arguments
      (list
@@ -243,7 +250,7 @@ sets, and tools to deal with register databases.")
               ;; their references.
               ;; TODO: package edid-decode and add "bin/edid-decode" below:
               (define need-progs (list "sbin/dmidecode" "sbin/smartctl"
-                                       "sbin/lspci" "bin/lsusb"))
+                                       "bin/lspci" "bin/lsusb"))
               (wrap-script hw-probe
                 (list "PERL5LIB" 'prefix (list (getenv "PERL5LIB")))
                 (list "PATH" 'prefix
@@ -263,6 +270,7 @@ sets, and tools to deal with register databases.")
            ddcutil
            dmidecode
            dpkg
+           edac-utils
            edid-decode
            efibootmgr
            efivar
@@ -323,7 +331,7 @@ operability and find drivers.")
 (define-public hwinfo
   (package
     (name "hwinfo")
-    (version "21.82")
+    (version "23.2")
     (home-page "https://github.com/openSUSE/hwinfo")
     (source
      (origin
@@ -334,87 +342,77 @@ operability and find drivers.")
          (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1ih6vrgh64408cijywy9by2snynkw91p3h0ry5pzk3lyqsl0wnlh"))
+        (base32 "0d9nhhi64d3i9x1bh3ksj0h5z2p4pwa0z88bc0jra9s39nf6q230"))
        (modules
         '((guix build utils)))
        (snippet
-        `(begin
-           ;; Remove git2log program file.
-           (delete-file "git2log")
-           ;; Remove variables that depend on git2log.
-           (substitute* "Makefile"
-             (("GIT2LOG.*\\:=.*$") "")
-             (("GITDEPS.*\\:=.*$") "")
-             (("BRANCH.*\\:=.*$") ""))
-           ;; Create version file.
-           (call-with-output-file "VERSION"
-             (lambda (port)
-               (format port ,version)))))))
+        #~(begin
+            ;; Remove git2log program file.
+            (delete-file "git2log")
+            ;; Remove variables that depend on git2log.
+            (substitute* "Makefile"
+              (("GIT2LOG.*\\:=.*$") "")
+              (("GITDEPS.*\\:=.*$") "")
+              (("BRANCH.*\\:=.*$") ""))
+            ;; Create version file.
+            (call-with-output-file "VERSION"
+              (lambda (port) (format port #$version)))))))
     (build-system gnu-build-system)
     (outputs '("out" "lib" "doc"))
     (arguments
-     `(#:tests? #f                      ; no test-suite available
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'patch
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (lib (assoc-ref outputs "lib"))
-                    (doc (assoc-ref outputs "doc"))
-                    (incl-dir (string-append lib "/include"))
-                    (lib-dir (string-append lib "/lib"))
-                    (sbin-dir (string-append out "/sbin"))
-                    (share-dir (string-append out "/share"))
-                    (doc-dir (string-append doc "/share/doc")))
-               ;; Generate HTML documentation in the output "doc".
-               (mkdir-p doc-dir)
-               (substitute* "doc/libhd.doxy"
-                 (("OUTPUT_DIRECTORY.*=.*libhd")
-                  (string-append "OUTPUT_DIRECTORY = " doc-dir "/libhd")))
-               ;; Correct values of the version and install directories.
-               (substitute* "Makefile"
-                 (("VERSION.*\\:=.*$")
-                  (string-append "VERSION := " ,version "\n"))
-                 (("LIBDIR.*\\?=.*$")
-                  (string-append "LIBDIR ?= " lib-dir "\n"))
-                 (("/usr/include") incl-dir)
-                 (("/(usr|var)/(lib|lib64)") lib-dir)
-                 (("/usr/sbin") sbin-dir)
-                 (("/usr/share") share-dir)
-                 (("\\$\\(DESTDIR\\)/sbin ") ""))
-               ;; Add the "lib" output to the run-path.
-               (substitute* "Makefile.common"
-                 (("-Lsrc")
-                  (string-append "-Lsrc " "-Wl,-rpath=" lib-dir)))
-               ;; Correct program name of the lexical analyzer.
-               (substitute* "src/isdn/cdb/Makefile"
-                 (("lex isdn_cdb.lex") "flex isdn_cdb.lex"))
-               ;; Patch pkg-config file to point to the "lib" output.
-               (substitute* "hwinfo.pc.in"
-                 (("/usr") lib)))))
-         (delete 'configure)
-         (replace 'build
-           (lambda _
-             (setenv "CC" ,(cc-for-target))
-             (invoke "make" "shared")
-             (invoke "make" "doc")))
-         (add-after 'install 'install-manpages
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (man-dir (string-append out "/share/man"))
-                    (man1-dir (string-append man-dir "/man1"))
-                    (man8-dir (string-append man-dir "/man8")))
-               (for-each
-                (lambda (x) (install-file x man1-dir))
-                (find-files "doc" "\\.1$"))
-               (for-each
-                (lambda (y) (install-file y man8-dir))
-                (find-files "doc" "\\.8$"))))))))
+     (list
+      #:tests? #f                       ; no test-suite available
+      #:make-flags
+      #~(list (string-append "CC=" #$(cc-for-target))
+              (string-append "LIBDIR=" #$output:lib "/lib")
+              (string-append "VERSION=" #$version))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch
+            (lambda _
+              (let ((include (string-append #$output:lib "/include"))
+                    (lib (string-append #$output:lib "/lib"))
+                    (sbin (string-append #$output "/sbin"))
+                    (share (string-append #$output "/share"))
+                    (doc (string-append #$output:doc "/share/doc")))
+                ;; Generate HTML documentation in the "doc" output.
+                (mkdir-p doc)
+                (substitute* "doc/libhd.doxy"
+                  (("OUTPUT_DIRECTORY.*=.*libhd")
+                   (string-append "OUTPUT_DIRECTORY = " doc "/libhd")))
+                ;; Correct values of the version and install directories.
+                (substitute* "Makefile"
+                  (("/usr/include") include)
+                  (("/(usr|var)/(lib|lib64)") lib)
+                  (("/usr/sbin") sbin)
+                  (("/usr/share") share)
+                  (("\\$\\(DESTDIR\\)/sbin ") ""))
+                ;; Add the "lib" output to the run-path.
+                (substitute* "Makefile.common"
+                  (("-Lsrc")
+                   (string-append "-Lsrc " "-Wl,-rpath=" lib)))
+                ;; Correct program name of the lexical analyzer.
+                (substitute* "src/isdn/cdb/Makefile"
+                  (("lex isdn_cdb.lex") "flex isdn_cdb.lex"))
+                ;; Patch pkg-config file to point to the "lib" output.
+                (substitute* "hwinfo.pc.in"
+                  (("/usr") #$output:lib)))))
+          (delete 'configure)
+          (replace 'build
+            (lambda* (#:key make-flags #:allow-other-keys)
+              (apply invoke "make" "shared" make-flags)
+              (apply invoke "make" "doc" make-flags)))
+          (add-after 'install 'install-man-pages
+            (lambda _
+              (for-each
+               (lambda (file)
+                 (install-file file (string-append #$output "/share/man/man"
+                                                   (string-take-right file 1))))
+               (find-files "doc" "\\.[0-9]$")))))))
     (native-inputs
      (list doxygen flex perl pkg-config))
     (inputs
-     `(("libx86emu" ,libx86emu)
-       ("util-linux:lib" ,util-linux "lib")))
+     (list libx86emu `(,util-linux "lib")))
     (synopsis "Hardware information tool")
     (description "HwInfo is used to probe for the hardware present in the system.
 It can be used to generate a system overview log which can be later used for
@@ -480,14 +478,14 @@ RGB animations.")
 (define-public ddcutil
   (package
     (name "ddcutil")
-    (version "1.3.2")
+    (version "1.4.2")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://www.ddcutil.com/tarballs/"
                            "ddcutil-" version ".tar.gz"))
        (sha256
-        (base32 "0hm0cm4m4hk1jjy7kddg613mynvwlii3kp8al0j9v3c6mcx3p4mx"))))
+        (base32 "015l13j7fp9fmlc5d7m6nfjbzjbp8vc0g5py35ljw7li2xk16v60"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
@@ -496,9 +494,9 @@ RGB animations.")
            glib
            kmod
            i2c-tools
-           libdrm ; enhanced diagnostics
-           libusb ; support USB monitors
-           libx11 ; enhanced diagnostics
+           libdrm                       ;enhanced diagnostics
+           libusb                       ;support USB monitors
+           libx11                       ;enhanced diagnostics
            libxrandr
            zlib))
     (home-page "https://www.ddcutil.com/")
@@ -517,7 +515,11 @@ communicate over USB as per the USB Monitor Control Class Specification.
 One particular use case is in colour profile management.  Monitor calibration
 is relative to the monitor colour settings currently in effect, e.g. red gain.
 ddcutil allows colour-related settings to be saved at the time a monitor is
-calibrated, and restored when the calibration is applied.")
+calibrated, and restored when the calibration is applied.
+
+This package includes udev rules that can be used by adding this package to
+the @code{rules} field of the @code{udev-configuration} record.  It gives
+read/write access to i2c devices to users in the @samp{i2c} group.")
     (license (list license:bsd-3        ; FindDDCUtil.cmake
                    license:gpl2+))))    ; everything else
 
@@ -586,8 +588,6 @@ human-readable format and checks if it conforms to the standards.")
       (license license:expat))))
 
 (define-public h-client
-  ;; The Python 3 port hasn't yet been integrated into the main branch
-  ;; (currently lives in the 'python3-port' branch).
   (let ((commit "e6c78b16e034ccf78ae9cb4c29268c2f57a30bfc")
         (revision "1"))
     (package
@@ -597,7 +597,7 @@ human-readable format and checks if it conforms to the standards.")
        (origin
          (method git-fetch)
          (uri (git-reference
-               (url "https://git.savannah.gnu.org/git/h-client.git")
+               (url "https://git.savannah.gnu.org/git/h-client.git/")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
@@ -626,7 +626,7 @@ human-readable format and checks if it conforms to the standards.")
                   ;; Namespace GdkPixbuf not available".
                   `("GI_TYPELIB_PATH" = (,(getenv "GI_TYPELIB_PATH")))
                   `("PATH" = (,(dirname (search-input-file
-                                         inputs "sbin/lspci"))
+                                         inputs "bin/lspci"))
                               ,(dirname (search-input-file
                                          inputs "bin/lsusb"))))))))))
       (inputs
@@ -802,7 +802,7 @@ specific SMBIOS tables.")
 (define-public memtest86+
   (package
     (name "memtest86+")
-    (version "6.00")
+    (version "6.20")
     (source
      (origin
        (method git-fetch)
@@ -811,7 +811,7 @@ specific SMBIOS tables.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0fv605blaf4z0jyl1wp37x5x014dkp0z0a0fh114ws62fhnhdnlv"))
+        (base32 "1wsrdgpxi2nrcazihi1ghkn681iqkpwd8wnp533avcfg16n0jd17"))
        (patches
         (search-patches "memtest86+-build-reproducibly.patch"))))
     (build-system gnu-build-system)
@@ -875,15 +875,22 @@ can scan as much of your RAM as possible for hardware defects.")
 (define-public memtester
   (package
     (name "memtester")
-    (version "4.5.1")
+    (version "4.6.0")
     (source
      (origin
        (method url-fetch)
        ;; Even the latest release is available under 'old-versions/'.
-       (uri (string-append "http://pyropus.ca/software/memtester/old-versions/"
-                           "memtester-" version ".tar.gz"))
+       (uri (list
+             (string-append "https://pyropus.ca/software/memtester/old-versions/"
+                            "memtester-" version ".tar.gz")
+             ;; XXX ‘pyropus.ca’ redirects to ‘pyropus.ca.’.  Valid, but wreaks
+             ;; havoc with Guile's Web stack & TLS verification.
+             ;; Remove this random mirror when that changes.
+             (string-append "https://ftp.dimensiondata.com/mirrors/"
+                            "ftp.gentoo.org/distfiles/3e/"
+                            "memtester-" version ".tar.gz")))
        (sha256
-        (base32 "0issrasdihav8jgsqb49cfyj0v564z8k9lyg2jrq9h3n4lwc4pqw"))))
+        (base32 "0bmv7n7gj02pda8mwif08xk63xc20r65q1pr099fz30cx2vlxzn9"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags
@@ -998,7 +1005,7 @@ technology, such as head mounted displays with built in head tracking.")
 (define-public openrgb
   (package
     (name "openrgb")
-    (version "0.7")
+    (version "0.9")
     (source
      (origin
        (method git-fetch)
@@ -1007,15 +1014,25 @@ technology, such as head mounted displays with built in head tracking.")
              (commit (string-append "release_" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0xhfaz0b74nfnh7il2cz5c0338xlzay00g6hc2h3lsncarj8d5n7"))
+        (base32 "0rdh87w4j47dr0vakva94fhcbdc67d9aad0p3najg9zf8zhf64jw"))
        (patches
         (search-patches "openrgb-unbundle-hueplusplus.patch"))
        (modules '((guix build utils)))
        (snippet
         '(begin
-           ;; Delete the bundled hueplusplus and json libraries.
-           (delete-file-recursively "dependencies/hueplusplus-1.0.0")
-           (delete-file-recursively "dependencies/json")))))
+           ;; Delete many of the bundled libraries.
+           (for-each delete-file-recursively
+                     (list "dependencies/hidapi-win"
+                           "dependencies/hueplusplus-1.0.0"
+                           "dependencies/json"
+                           "dependencies/libusb-1.0.22"
+                           "dependencies/macUSPCIO"
+                           "dependencies/mbedtls-2.24.0"
+                           "dependencies/NVFC"
+                           "dependencies/openrazer-win32"
+                           "dependencies/winring0"
+                           ;; Some bundled appimages
+                           "scripts/tools"))))))
     (build-system cmake-build-system)
     (arguments
      (list
@@ -1031,7 +1048,7 @@ technology, such as head mounted displays with built in head tracking.")
                   (string-append #$(this-package-input "hueplusplus")
                                  "/include/hueplusplus"))
                  (("dependencies/json")
-                  (string-append #$(this-package-input "json-modern-cxx")
+                  (string-append #$(this-package-input "nlohmann-json")
                                  "/include/nlohmann")))))
            ;; Call qmake instead of configure to create a Makefile.
            (replace 'configure
@@ -1039,12 +1056,13 @@ technology, such as head mounted displays with built in head tracking.")
     (inputs
      (list hidapi
            hueplusplus
-           json-modern-cxx
+           nlohmann-json
            libusb
            mbedtls-apache
            qtbase-5))
     (native-inputs
-     (list pkg-config))
+     (list pkg-config
+           qttools-5))
     (synopsis "RGB lighting control")
     (description
      "OpenRGB is lighting control that doesn't depend on manufacturer software.
@@ -1121,7 +1139,14 @@ supported by the Linux kernel.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0zwrkqfxd671iy69v3q0844gfdpm1yk51i9qh2rqc969bd8glxga"))))
+          (base32 "0zwrkqfxd671iy69v3q0844gfdpm1yk51i9qh2rqc969bd8glxga"))
+         (snippet
+          #~(begin
+              ;; https://github.com/rockchip-linux/rkdeveloptool/pull/57
+              (use-modules (guix build utils))
+              (substitute* "main.cpp"
+                (("snprintf\\(buffer, sizeof\\(buffer\\), \"\\%s\", chip)")
+                 "memccpy(buffer, chip, '\\0', sizeof(buffer))"))))))
       (build-system gnu-build-system)
       (native-inputs
        (list autoconf automake pkg-config))
@@ -1277,6 +1302,37 @@ libtss2-esys, libtss2-sys, libtss2-mu, libtss2-tcti-device, libtss2-tcti-swtpm
 and libtss2-tcti-mssim.")
     (license license:bsd-2)))
 
+(define-public tpm2-tools
+  (package
+    (name "tpm2-tools")
+    (version "5.5")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://github.com/tpm2-software/tpm2-tools/"
+                           "releases/download/" version "/"
+                           "tpm2-tools-" version ".tar.gz"))
+       (sha256
+        (base32 "08y16q92dh7frsyw0zlm3q9gsfqyls0li248s2pgsysk633lknqz"))))
+    (build-system gnu-build-system)
+    (native-inputs
+     (list autoconf
+           automake
+           curl
+           libtool
+           gnu-gettext
+           openssl
+           pandoc
+           pkg-config
+           tpm2-tss))
+    (home-page "https://github.com/tpm2-software/tpm2-tools")
+    (synopsis "Tools for the Trusted Platform Module (TPM 2.0)")
+    (description
+     "This package provides user tools for the Trusted Computing Group's (TCG)
+TPM2 Software Stack (TSS).  These programs help with common tasks such as key
+management, attestation, encryption, and signing.")
+    (license license:bsd-3)))
+
 (define-public libcpuid
   ;; We need to remove blobs from the source, first we have to isolate the blob
   ;; source in build system.
@@ -1327,3 +1383,79 @@ and libtss2-tcti-mssim.")
 string, code name and other information from x86 CPU. This library is not to be
 confused with the @code{cpuid} command line utility from package @code{cpuid}.")
       (license license:bsd-2))))
+
+(define-public liblxi
+  (package
+    (name "liblxi")
+    (version "1.20")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/lxi-tools/liblxi")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1cc95ggs64jqq9lk5c8fm4nk6fdnv1x7lr3k4znamj0vv6w22bcd"))))
+    (build-system meson-build-system)
+    (native-inputs
+     (list cmake pkg-config))
+    (inputs
+     (list avahi libtirpc libxml2))
+    (home-page "https://lxi-tools.github.io/")
+    (synopsis "@acronym{LXI, LAN eXtensions for Instrumentation} library")
+    (description
+     "This library offers a simple API for communicating with instruments
+compatible with the @acronym{LXI, LAN eXtensions for Instrumentation} standard
+that defines communication protocols for instrumentation and data acquisition
+systems using Ethernet.  Applications can use liblxi to discover instruments on
+your network, send SCPI commands, and receive responses.")
+    (license license:bsd-3)))
+
+(define-public lxi-tools
+  (package
+    (name "lxi-tools")
+    (version "2.5")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/lxi-tools/lxi-tools")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "1xc99xhca386az73rpsrf3z0j7y0hrv0xcwj1dr2ahr7lhnjznqp"))))
+    (build-system meson-build-system)
+    (arguments
+     (list
+      #:glib-or-gtk? #true
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'skip-gtk-update-icon-cache
+            (lambda _
+              (substitute* "build-aux/meson/postinstall.py"
+                (("gtk-update-icon-cache") (which "true"))
+                (("update-desktop-database") (which "true"))))))))
+    (native-inputs
+     (list bash-completion
+           cmake
+           (list glib "bin")
+           pkg-config
+           python
+           readline))
+    (inputs
+     (list glib
+           gtk
+           gtksourceview
+           json-glib
+           libadwaita
+           liblxi
+           lua))
+    (home-page "https://lxi-tools.github.io/")
+    (synopsis "LAN eXtensions for Instrumentation tools")
+    (description
+     "This package provides tools for LAN eXtensions for Instrumentation based
+on the LXI Consortium standard which defines the communication protocols for
+modern instrumentation and data acquision systems using Ethernet.")
+    (license license:bsd-3)))

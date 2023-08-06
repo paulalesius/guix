@@ -48,8 +48,7 @@
       (list autoconf-wrapper
             automake
             libtool
-            ucd-next ; required for tests
-            ))
+            ucd))
     (arguments
      `(#:parallel-tests? #f  ; parallel tests cause non-deterministic
                              ; build failures
@@ -66,7 +65,7 @@
                        '("LineBreakTest.txt"
                          "WordBreakTest.txt"
                          "GraphemeBreakTest.txt")))))))
-    (home-page "http://vimgadgets.sourceforge.net/libunibreak/")
+    (home-page "https://vimgadgets.sourceforge.net/libunibreak/")
     (synopsis "Unicode line breaking and word breaking algorithms")
     (description
      "Libunibreak is an implementation of the line breaking and word
@@ -78,14 +77,14 @@ renderer.")
 (define-public ucd
   (package
     (name "ucd")
-    (version "14.0.0")
+    (version "15.0.0")
     (source
      (origin
        (method url-fetch/zipbomb)
        (uri (string-append "https://www.unicode.org/Public/zipped/" version
                            "/UCD.zip"))
        (sha256
-        (base32 "001nq9w52ijma0vps40xwy2q6ylpyf1393lzb128ibypnmv54fh3"))))
+        (base32 "133inqn33hcfvylmps63yjr6rrqrfq6x7a5hr5fd51z6yc0f9gaz"))))
     (build-system copy-build-system)
     (arguments
      '(#:install-plan
@@ -97,20 +96,6 @@ renderer.")
 files listing Unicode character properties and related data.  It also includes
 test data for conformance to several important Unicode algorithms.")
     (license unicode)))
-
-(define-public ucd-next
-  (package
-    (inherit ucd)
-    (name "ucd-next")
-    (version "14.0.0")
-    (source
-     (origin
-       (method url-fetch/zipbomb)
-       (uri (string-append "https://www.unicode.org/Public/zipped/" version
-                           "/UCD.zip"))
-       (sha256
-        (base32
-         "001nq9w52ijma0vps40xwy2q6ylpyf1393lzb128ibypnmv54fh3"))))))
 
 (define (unicode-emoji-file name version hash)
   (origin

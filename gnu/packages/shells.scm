@@ -12,14 +12,15 @@
 ;;; Copyright © 2019 Meiyo Peng <meiyo.peng@gmail.com>
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
-;;; Copyright © 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Brice Waegeneire <brice@waegenei.re>
 ;;; Copyright © 2020 Ryan Prior <rprior@protonmail.com>
-;;; Copyright © 2020 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2020, 2022 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2020, 2022 Marius Bakke <marius@gnu.org>
 ;;; Copyright © 2021, 2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2021, 2022 Felix Gruber <felgru@posteo.net>
 ;;; Copyright © 2022 Andrew Tropin <andrew@trop.in>
+;;; Copyright © 2023 Zheng Junjie <873216071@qq.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -84,14 +85,14 @@
 (define-public dash
   (package
     (name "dash")
-    (version "0.5.11.5")
+    (version "0.5.12")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "http://gondor.apana.org.au/~herbert/dash/files/"
                            "dash-" version ".tar.gz"))
        (sha256
-        (base32 "1g93w4lpn3jfwn2gaq17a1lxdig11x0j7gr9byc3fy8zi4882xyv"))
+        (base32 "12pjm2j0q0q88nvqbcyqjwr8s1c29ilxyq2cdj8k42wbdv24liva"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -99,8 +100,7 @@
            ;; This isn't the case on Guix or indeed most other GNU systems.
            (substitute* "src/dash.1"
              (("the standard command interpreter for the system")
-              "a command interpreter based on the original Bourne shell"))
-           #t))))
+              "a command interpreter based on the original Bourne shell"))))))
     (build-system gnu-build-system)
     (inputs
      (list libedit))
@@ -109,9 +109,9 @@
     (home-page "http://gondor.apana.org.au/~herbert/dash")
     (synopsis "POSIX-compliant shell optimised for size")
     (description
-     "dash is a POSIX-compliant @command{/bin/sh} implementation that aims to be
+     "Dash is a POSIX-compliant @command{/bin/sh} implementation that aims to be
 as small as possible, often without sacrificing speed.  It is faster than the
-GNU Bourne-Again Shell (@command{bash}) at most scripted tasks.  dash is a
+GNU Bourne-Again Shell (@command{bash}) at most scripted tasks.  Dash is a
 direct descendant of NetBSD's Almquist Shell (@command{ash}).")
     (license (list license:bsd-3
                    license:gpl2+))))    ; mksignames.c
@@ -119,7 +119,7 @@ direct descendant of NetBSD's Almquist Shell (@command{ash}).")
 (define-public fish
   (package
     (name "fish")
-    (version "3.5.1")
+    (version "3.6.1")
     (source
      (origin
        (method url-fetch)
@@ -127,15 +127,10 @@ direct descendant of NetBSD's Almquist Shell (@command{ash}).")
                            "releases/download/" version "/"
                            "fish-" version ".tar.xz"))
        (sha256
-        (base32 "0a39vf0wqq6asw5xcrwgdsc67h5bxkgxzy77f8bx6pd4qlympm56"))
-       (modules '((guix build utils)))
-       (snippet
-        '(begin
-           ;; Remove bundled software.
-           (delete-file-recursively "pcre2")))))
+        (base32 "1cj91fyba259vhbxvq55w2yf2p2vj201gr15pa59swx6gjs2nh2m"))))
     (build-system cmake-build-system)
     (inputs
-     (list fish-foreign-env ncurses pcre2 ; don't use the bundled PCRE2
+     (list fish-foreign-env ncurses pcre2
            python))  ; for fish_config and manpage completions
     (native-inputs
      (list doxygen groff ; for 'fish --help'
@@ -389,35 +384,45 @@ written by Paul Haahr and Byron Rakitzis.")
 (define-public tcsh
   (package
     (name "tcsh")
-    (version "6.22.03")
+    (version "6.24.01")
     (source (origin
               (method url-fetch)
               ;; Old tarballs are moved to old/.
-              (uri (list (string-append "ftp://ftp.astron.com/pub/tcsh/"
+              (uri (list (string-append "https://astron.com/pub/tcsh/"
                                         "tcsh-" version ".tar.gz")
-                         (string-append "ftp://ftp.astron.com/pub/tcsh/"
+                         (string-append "https://astron.com/pub/tcsh/"
                                         "old/tcsh-" version ".tar.gz")))
               (sha256
                (base32
-                "1dv24bsp6faayinvwds092ylk9sb6894rl9ddm87y31a7mjzsb5y"))
+                "0zhxp4m1fxyd3a2qyvs97gzlrb0h0ah1gjrqcbilgydiffws2nan"))
               (patches (search-patches "tcsh-fix-autotest.patch"))
               (patch-flags '("-p0"))))
     (build-system gnu-build-system)
     (native-inputs
-     (list autoconf perl))
+     (append (if (target-riscv64?)
+                 (list config)
+                 '())
+             (list autoconf perl)))
     (inputs
      (list ncurses))
     (arguments
-     `(#:phases
-        (modify-phases %standard-phases
-          ,@(if (%current-target-system)
-                '((add-before 'configure 'set-cross-cc
-                     (lambda _
-                       (substitute* "configure"
-                         (("CC_FOR_GETHOST=\"cc\"")
-                          "CC_FOR_GETHOST=\"gcc\""))
-                       #t)))
-                '())
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          #$@(if (%current-target-system)
+                 #~((add-before 'configure 'set-cross-cc
+                      (lambda _
+                        (substitute* "configure"
+                          (("CC_FOR_GETHOST=\"cc\"")
+                           "CC_FOR_GETHOST=\"gcc\"")))))
+                 #~())
+          #$@(if (system-hurd?)
+                 #~((add-after 'unpack 'skip-tests
+                      (lambda _
+                        (substitute* "tests/testsuite.at"
+                          (("m4_include\\(\\[subst.at\\]\\)" all)
+                           (string-append "# " all))))))
+                 #~())
           (add-before 'check 'patch-test-scripts
             (lambda _
               ;; Take care of pwd
@@ -444,15 +449,11 @@ written by Paul Haahr and Byron Rakitzis.")
               ;; This file is ISO-8859-1 encoded.
               (with-fluids ((%default-port-encoding #f))
                 (substitute* "tests/testsuite"
-                  (("/bin/sh") (which "sh"))))
-              #t))
+                  (("/bin/sh") (which "sh"))))))
           (add-after 'install 'post-install
-            (lambda* (#:key inputs outputs #:allow-other-keys)
-              (let* ((out (assoc-ref %outputs "out"))
-                     (bin (string-append out "/bin")))
-                (with-directory-excursion bin
-                  (symlink "tcsh" "csh"))
-                #t))))))
+            (lambda _
+              (with-directory-excursion (string-append #$output "/bin")
+                (symlink "tcsh" "csh")))))))
     (home-page "https://www.tcsh.org/")
     (synopsis "Unix shell based on csh")
     (description
@@ -466,7 +467,7 @@ history mechanism, job control and a C-like syntax.")
 (define-public zsh
   (package
     (name "zsh")
-    (version "5.8.1")
+    (version "5.9")
     (source (origin
               (method url-fetch)
               (uri (list (string-append
@@ -477,7 +478,8 @@ history mechanism, job control and a C-like syntax.")
                            ".tar.xz")))
               (sha256
                (base32
-                "06crvpqbpm8sq5c215f4b985z7npwnqnj0i0g53hnq6fp8h3b5xn"))))
+                "1mdc8lnq8qxq1ahxp8610n799pd7a9kqg3liy7xq2pjvvp71x3cv"))
+              (patches (search-patches "zsh-egrep-failing-test.patch"))))
     (build-system gnu-build-system)
     (arguments `(#:configure-flags
                  `("--with-tcsetpgrp"
@@ -540,14 +542,14 @@ ksh, and tcsh.")
 (define-public xonsh
   (package
     (name "xonsh")
-    (version "0.13.3")
+    (version "0.14.0")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "xonsh" version))
         (sha256
           (base32
-           "154s4lbda3n8kamiyblfrv8isn3hnqyxw2k99qicyfll02chpjzl"))
+           "1wcv1sk8igs5kb9fqb8njbxwiqbwzpn0kdx9xkaddq3wn6msma25"))
         (modules '((guix build utils)))
         (snippet
          #~(begin
@@ -585,6 +587,7 @@ ksh, and tcsh.")
     (inputs
      (list python-distro
            python-ply
+           python-prompt-toolkit
            python-pygments
            python-pyperclip
            python-setproctitle))
@@ -613,7 +616,8 @@ use of experts and novices alike.")
          (file-name (string-append name "-" version "-checkout"))
          (sha256
           (base32
-           "1ghk08akiz7hff1pndi8rmgamgcrn2mv9asbss9l79d3c2iaav3q"))))
+           "1ghk08akiz7hff1pndi8rmgamgcrn2mv9asbss9l79d3c2iaav3q"))
+         (patches (search-patches "scsh-nonstring-search-path.patch"))))
       (build-system gnu-build-system)
       (arguments
        `(#:test-target "test"
@@ -632,6 +636,11 @@ use of experts and novices alike.")
        (list scheme48 scheme48-rx))
       (native-inputs
        (list autoconf automake))
+      (native-search-paths
+       (list (search-path-specification
+               (variable "SCSH_LIB_DIRS")
+               (separator " ")
+               (files '("share/scsh-0.7")))))
       (home-page "https://github.com/scheme/scsh")
       (synopsis "Unix shell embedded in Scheme")
       (description
@@ -642,8 +651,8 @@ operating system.")
       (license license:bsd-3))))
 
 (define-public linenoise
-  (let ((commit "2105ce445821381cf1bca87b6d386d4ea88ee20d")
-        (revision "1"))
+  (let ((commit "93b2db9bd4968f76148dd62cdadf050ed50b84b3")
+        (revision "2"))
     (package
       (name "linenoise")
       (version (string-append "1.0-" revision "." (string-take commit 7)))
@@ -656,7 +665,7 @@ operating system.")
          (file-name (string-append name "-" version "-checkout"))
          (sha256
           (base32
-           "1z16qwix8z6a40fskdgxsibkqgdrp4q6ncp4n6hnv4r9iihy2d8r"))))
+           "102gwq6bzjq2b1lf55wrpgym58yfhry56hkajbj339m0bs1xijhs"))))
       (build-system gnu-build-system)
       (arguments
        `(#:tests? #f                    ; no tests are included
@@ -849,7 +858,7 @@ Shell (pdksh).")
 (define-public oil
   (package
     (name "oil")
-    (version "0.12.7")
+    (version "0.15.0")
     (source
      ;; oil's sources contain a modified version of CPython 2.7.13.
      ;; According to https://www.oilshell.org/blog/2017/05/05.html
@@ -862,7 +871,7 @@ Shell (pdksh).")
        (uri (string-append "https://www.oilshell.org/download/oil-"
                            version ".tar.gz"))
        (sha256
-        (base32 "02p8w2rpwb8i4lwl2ah5whchn0lihc6hgbmnp0yr0jv4f0r3mgby"))))
+        (base32 "1yy4523lbwkb0abnnvp4v08nv94isxb16wjryrp820idb90c1zfb"))))
     (build-system gnu-build-system)
     (arguments
      (list #:strip-binaries? #f         ; strip breaks the binary
@@ -897,29 +906,19 @@ scripts.")
 (define-public gash
   (package
     (name "gash")
-    (version "0.2.0")
+    (version "0.3.0")
     (source
      (origin (method url-fetch)
              (uri (string-append "mirror://savannah/gash/gash-"
                                  version ".tar.gz"))
              (sha256
               (base32
-               "13m0yz5h9nj3x40mr6wr5xcpq1lscndfwcicw3skrz801025hhgf"))
-             (modules '((guix build utils)))
-             (snippet
-              '(begin
-                 ;; Allow builds with Guile 3.0.
-                 (substitute* "configure"
-                   (("search=\"2\\.2 2\\.0\"")
-                    "search=\"3.0 2.2 2.0\""))
-                 #t))))
+               "1af2jz4a6rzsshi379wzw4b8d04zvfamdhfzip2pgmk821lyqsjl"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))
     (inputs
      (list guile-3.0))
-    (arguments
-     '(#:make-flags '("XFAIL_TESTS=tests/redirects.org")))
     (home-page "https://savannah.nongnu.org/projects/gash/")
     (synopsis "POSIX-compatible shell written in Guile Scheme")
     (description "Gash is a POSIX-compatible shell written in Guile
@@ -931,23 +930,14 @@ as part of the Guix bootstrap process.")
 (define-public gash-utils
   (package
     (name "gash-utils")
-    (version "0.1.0")
+    (version "0.2.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://savannah/gash/gash-utils-"
                                   version ".tar.gz"))
               (sha256
                (base32
-                "0ib2p52qmbac5n0s5bys4fiwim461ps546976l1n7pwbs0avh7fk"))
-              (patches (search-patches "gash-utils-ls-test.patch"))
-              (modules '((guix build utils)))
-              (snippet
-               '(begin
-                  ;; Allow builds with Guile 3.0.
-                  (substitute* "configure"
-                    (("search=\"2\\.2 2\\.0\"")
-                     "search=\"3.0 2.2 2.0\""))
-                  #t))))
+                "18ylb54l9lmaynapbncc1zhbsirhihznrxihhxgqrpqgyjkfbap6"))))
     (build-system gnu-build-system)
     (native-inputs
      (list pkg-config))

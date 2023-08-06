@@ -30,7 +30,6 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix gexp)
   #:use-module (guix build-system cmake)
-  #:use-module (guix build-system copy)
   #:use-module (guix build-system trivial)
   #:use-module (guix build-system qt)
   #:use-module (gnu packages)
@@ -993,7 +992,6 @@ basic needs and easy to configure for those who want special setups.")
            qtscript
            qtwebchannel-5
            qtwebengine-5
-           qtwebkit
            qtx11extras
            zlib))
     (build-system qt-build-system)
@@ -1055,7 +1053,7 @@ you login.")
            qtwayland-5
            kwayland
            wayland
-           wayland-protocols-next))
+           wayland-protocols))
     (arguments
      '(#:phases
        (modify-phases %standard-phases
@@ -1196,14 +1194,26 @@ KDE Frameworks components.")
                 (system "Xvfb :1 &")
                 (sleep 5)
                 (invoke "ctest" "-E"
-                        "(kwayland-testXdgDecoration|kwin-testLockScreen|kwin-testPointerInput|kwin-testXdgShellWindow|kwin-testXdgShellWindow-waylandonly|kwin-testSceneOpenGLES|kwin-testSceneOpenGLES-waylandonly|kwin-testInputMethod|kwin-testInputMethod-waylandonly|kwin-testNightColor|kwin-testNightColor-waylandonly|kwin-testPlasmaWindow|kwin-testSceneQPainter|kwin-testLibinputDevice)")))))))
+                        (string-join
+                          (list "kwayland-testXdgDecoration"
+                                "kwin-testXkb"
+                                "kwin-testPointerInput"
+                                "kwin-testXdgShellWindow"
+                                "kwin-testXdgShellWindow-waylandonly"
+                                "kwin-testSceneOpenGLES"
+                                "kwin-testSceneOpenGLES-waylandonly"
+                                "kwin-testNightColor"
+                                "kwin-testNightColor-waylandonly"
+                                "kwin-testSceneQPainter"
+                                "kwin-testLibinputDevice")
+                          "|"))))))))
     (native-inputs (list extra-cmake-modules
                          dbus
                          kdoctools
                          mesa-utils
                          pkg-config
                          qttools-5
-                         wayland-protocols-next
+                         wayland-protocols
                          xorg-server-for-tests))
     (inputs (list breeze
                   eudev
@@ -1243,7 +1253,7 @@ KDE Frameworks components.")
                   libglvnd ; For OpenGLES
                   libinput
                   libxkbcommon
-                  pipewire-0.3
+                  pipewire
                   plasma-framework
                   plasma-wayland-protocols
                   qtbase-5
@@ -1658,7 +1668,7 @@ the KDE Plasma 5 desktop.")
                   libxtst
                   networkmanager-qt
                   phonon
-                  pipewire-0.3
+                  pipewire
                   plasma-framework
                   plasma-wayland-protocols
                   pulseaudio
@@ -1837,7 +1847,7 @@ integration of Qt applications when running on a KDE Plasma workspace.")
     (version "5.24.3")
     (source (origin
               (method url-fetch)
-              (uri (string-append "https://download.kde.org/stable/plasma/"
+              (uri (string-append "mirror://kde/stable/plasma/"
                                   version "/plasma-nano-" version ".tar.xz"))
               (sha256
                (base32
@@ -1910,7 +1920,7 @@ connections.")
     (version "5.24.3")
     (source (origin
               (method url-fetch)
-              (uri (string-append "https://download.kde.org/stable/plasma/"
+              (uri (string-append "mirror://kde/stable/plasma/"
                                   version "/plasma-mobile-" version ".tar.xz"))
               (sha256
                (base32
@@ -2320,7 +2330,7 @@ sensors, process information and other system resources.")
                   libxtst
                   networkmanager-qt
                   phonon
-                  pipewire-0.3
+                  pipewire
                   plasma-framework
                   plasma-workspace-wallpapers
                   plasma-wayland-protocols
@@ -2332,7 +2342,7 @@ sensors, process information and other system resources.")
                   qtgraphicaleffects
                   qtx11extras
                   wayland
-                  wayland-protocols-next
+                  wayland-protocols
                   xcb-util
                   xcb-util-image
                   xcb-util-keysyms

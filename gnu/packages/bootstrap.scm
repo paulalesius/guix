@@ -2,7 +2,7 @@
 ;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2014, 2015, 2018, 2019 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2017, 2020 Efraim Flashner <efraim@flashner.co.il>
-;;; Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Carl Dong <contact@carldong.me>
 ;;; Copyright © 2019 Léo Le Bouter <lle-bout@zaclys.net>
 ;;; Copyright © 2020 Jakub Kądziołka <kuba@kadziolka.net>
@@ -30,7 +30,6 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system)
-  #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
   #:use-module ((guix store)
                 #:select (%store-monad interned-file text-file store-lift))
@@ -61,8 +60,6 @@
             %bootstrap-gcc
             %bootstrap-glibc
             %bootstrap-inputs
-            %bootstrap-mescc-tools
-            %bootstrap-mes
 
             %bootstrap-inputs-for-tests))
 
@@ -315,7 +312,8 @@ or false to signal an error."
                                  (%current-system))))
   "Return the name of Glibc's dynamic linker for SYSTEM."
   ;; See the 'SYSDEP_KNOWN_INTERPRETER_NAMES' cpp macro in libc.
-  (let ((platform (lookup-platform-by-system system)))
+  (let ((platform (false-if-platform-not-found
+                   (lookup-platform-by-system system))))
     (cond
      ((platform? platform)
       (platform-glibc-dynamic-linker platform))
@@ -327,14 +325,12 @@ or false to signal an error."
 
      ;; XXX: This one is used bare-bones, without a libc, so add a case
      ;; here just so we can keep going.
-     ((string=? system "arm-elf") "no-ld.so")
      ((string=? system "arm-eabi") "no-ld.so")
-     ((string=? system "xtensa-elf") "no-ld.so")
      ((string=? system "avr") "no-ld.so")
-     ((string=? system "propeller-elf") "no-ld.so")
      ((string=? system "i686-mingw") "no-ld.so")
+     ((string=? system "or1k-elf") "no-ld.so")
      ((string=? system "x86_64-mingw") "no-ld.so")
-     ((string=? system "vc4-elf") "no-ld.so")
+     ((string-suffix? "-elf" system) "no-ld.so")
 
      (else (error "dynamic linker name not known for this system"
                   system)))))
@@ -929,112 +925,12 @@ exec ~a/bin/.gcc-wrapped -B~a/lib \
     (home-page #f)
     (license gpl3+)))
 
-(define %bootstrap-mescc-tools
-  ;; The initial MesCC tools.  Uses binaries from a tarball typically built by
-  ;; %MESCC-TOOLS-BOOTSTRAP-TARBALL.
-  (package
-    (name "bootstrap-mescc-tools")
-    (version "0.5.2")
-    (source #f)
-    (build-system trivial-build-system)
-    (arguments
-     `(#:guile ,%bootstrap-guile
-       #:modules ((guix build utils))
-       #:builder
-       (begin
-         (use-modules (guix build utils)
-                      (ice-9 popen))
-         (let ((out     (assoc-ref %outputs "out"))
-               (tar     (assoc-ref %build-inputs "tar"))
-               (xz      (assoc-ref %build-inputs "xz"))
-               (tarball (assoc-ref %build-inputs "tarball")))
-
-           (mkdir out)
-           (copy-file tarball "binaries.tar.xz")
-           (invoke xz "-d" "binaries.tar.xz")
-           (let ((builddir (getcwd))
-                 (bindir   (string-append out "/bin")))
-             (with-directory-excursion out
-               (invoke tar "xvf"
-                       (string-append builddir "/binaries.tar"))))))))
-    (inputs
-     `(("tar" ,(bootstrap-executable "tar" (%current-system)))
-       ("xz"  ,(bootstrap-executable "xz" (%current-system)))
-       ("tarball"
-        ,(bootstrap-origin
-          (origin
-            (method url-fetch)
-            (uri (map
-                  (cute string-append <>
-                        "/i686-linux/20190815/"
-                        "mescc-tools-static-stripped-0.5.2-i686-linux.tar.xz")
-                  %bootstrap-base-urls))
-            (sha256
-             (base32
-              "0c3kklgghzh4q2dbpl6asb74cimp7hp6jscdwqwmzxbapgcl6582")))))))
-    (synopsis "Bootstrap binaries of MesCC Tools")
-    (description synopsis)
-    (home-page #f)
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (license gpl3+)))
-
-(define %bootstrap-mes
-  ;; The initial Mes.  Uses binaries from a tarball typically built by
-  ;; %MES-BOOTSTRAP-TARBALL.
-  (package
-    (name "bootstrap-mes")
-    (version "0")
-    (source #f)
-    (build-system trivial-build-system)
-    (arguments
-     `(#:guile ,%bootstrap-guile
-       #:modules ((guix build utils))
-       #:builder
-       (begin
-         (use-modules (guix build utils)
-                      (ice-9 popen))
-         (let ((out     (assoc-ref %outputs "out"))
-               (tar     (assoc-ref %build-inputs "tar"))
-               (xz      (assoc-ref %build-inputs "xz"))
-               (tarball (assoc-ref %build-inputs "tarball")))
-
-           (mkdir out)
-           (copy-file tarball "binaries.tar.xz")
-           (invoke xz "-d" "binaries.tar.xz")
-           (let ((builddir (getcwd))
-                 (bindir   (string-append out "/bin")))
-             (with-directory-excursion out
-               (invoke tar "xvf"
-                       (string-append builddir "/binaries.tar"))))))))
-    (inputs
-     `(("tar" ,(bootstrap-executable "tar" (%current-system)))
-       ("xz"  ,(bootstrap-executable "xz" (%current-system)))
-       ("tarball"
-        ,(bootstrap-origin
-          (origin
-            (method url-fetch)
-            (uri (map
-                  (cute string-append <>
-                        "/i686-linux/20190815/"
-                        "mes-minimal-stripped-0.19-i686-linux.tar.xz")
-                  %bootstrap-base-urls))
-            (sha256
-             (base32
-              "1q4xjpx6nbn44kxnilpgl12bhpmwy2bblzwszc2ci7xkf400jcpv")))))))
-    (supported-systems '("i686-linux" "x86_64-linux"))
-    (synopsis "Bootstrap binaries of Mes")
-    (description synopsis)
-    (home-page #f)
-    (license gpl3+)))
-
 (define (%bootstrap-inputs)
   ;; The initial, pre-built inputs.  From now on, we can start building our
   ;; own packages.
   (match (%current-system)
     ((or "i686-linux" "x86_64-linux")
-     `(("linux-libre-headers" ,%bootstrap-linux-libre-headers)
-       ("bootstrap-mescc-tools" ,%bootstrap-mescc-tools)
-       ("mes" ,%bootstrap-mes)))
+     `(("linux-libre-headers" ,%bootstrap-linux-libre-headers)))
     (_
      `(("libc" ,%bootstrap-glibc)
        ("gcc" ,%bootstrap-gcc)
@@ -1046,7 +942,7 @@ exec ~a/bin/.gcc-wrapped -B~a/lib \
 (define %bootstrap-inputs-for-tests
   ;; These are bootstrap inputs that are cheap to produce (no compilation
   ;; needed) and that are meant to be used for testing.  (These are those we
-  ;; used before the Mes-based reduced bootstrap.)
+  ;; used before the Mes-based full-source bootstrap.)
   `(("libc" ,%bootstrap-glibc)
     ("gcc" ,%bootstrap-gcc)
     ("binutils" ,%bootstrap-binutils)

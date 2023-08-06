@@ -5,15 +5,16 @@
 ;;; Copyright © 2015, 2020, 2021, 2022 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2016, 2017, 2019 Leo Famulari <leo@famulari.name>
 ;;; Copyright © 2017, 2019, 2020, 2022 Marius Bakke <marius@gnu.org>
-;;; Copyright © 2017 Efraim Flashner <efraim@flashner.co.il>
+;;; Copyright © 2017, 2023 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2017, 2018 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2018 Roel Janssen <roel@gnu.org>
 ;;; Copyright © 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2020 Jakub Kądziołka <kuba@kadziolka.net>
 ;;; Copyright © 2020 Dale Mellor <guix-devel-0brg6b@rdmp.org>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Jean-Baptiste Volatier <jbv@pm.me>
 ;;; Copyright © 2021 Felix Gruber <felgru@posteo.net>
+;;; Copyright © 2023 Sharlatan Hellseher <sharlatanus@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -62,126 +63,106 @@
 
 (define-public curl
   (package
-   (name "curl")
-   (version "7.79.1")
-   (replacement curl-7.84.0)
-   (source (origin
-             (method url-fetch)
-             (uri (string-append "https://curl.se/download/curl-"
-                                 version ".tar.xz"))
-             (sha256
-              (base32
-               "129n9hi7rbg3s112chyadhp4y27ppb5i65n12wm77aw2255zf1h6"))
-             (patches (search-patches "curl-use-ssl-cert-env.patch"))))
-   (build-system gnu-build-system)
-   (outputs '("out"
-              "doc"))                             ;1.2 MiB of man3 pages
-   (inputs (list gnutls libidn mit-krb5
-                 `(,nghttp2 "lib") zlib))
-   (native-inputs
-     `(("nghttp2" ,nghttp2)
-       ("perl" ,perl)
-       ("pkg-config" ,pkg-config)
-       ("python" ,python-minimal-wrapper)))
-   (native-search-paths
-    ;; These variables are introduced by curl-use-ssl-cert-env.patch.
-    (list $SSL_CERT_DIR
-          $SSL_CERT_FILE
-          ;; Note: This search path is respected by the `curl` command-line
-          ;; tool only.  Patching libcurl to read it too would bring no
-          ;; advantages and require maintaining a more complex patch.
-          (search-path-specification
-           (variable "CURL_CA_BUNDLE")
-           (file-type 'regular)
-           (separator #f)                         ;single entry
-           (files '("etc/ssl/certs/ca-certificates.crt")))))
-   (arguments
-    `(#:disallowed-references ("doc")
-      #:configure-flags (list "--with-gnutls"
-                              (string-append "--with-gssapi="
-                                             (assoc-ref %build-inputs "mit-krb5"))
-                              "--disable-static")
+    (name "curl")
+    (version "7.85.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://curl.se/download/curl-"
+                                  version ".tar.xz"))
+              (sha256
+               (base32
+                "1rjbn0h5rddclhvxb8p5gddxszcrpbf5cw1whx6wnj4s9dnlmdc8"))
+              (patches (search-patches "curl-use-ssl-cert-env.patch"))))
+    (build-system gnu-build-system)
+    (outputs '("out"
+               "doc"))                  ;1.2 MiB of man3 pages
+    (inputs
+     (list gnutls libidn mit-krb5 `(,nghttp2 "lib") zlib))
+    (native-inputs
+     (list nghttp2 perl pkg-config python-minimal-wrapper))
+    (native-search-paths
+     ;; These variables are introduced by curl-use-ssl-cert-env.patch.
+     (list $SSL_CERT_DIR
+           $SSL_CERT_FILE
+           ;; Note: This search path is respected by the `curl` command-line
+           ;; tool only.  Patching libcurl to read it too would bring no
+           ;; advantages and require maintaining a more complex patch.
+           (search-path-specification
+            (variable "CURL_CA_BUNDLE")
+            (file-type 'regular)
+            (separator #f)              ;single entry
+            (files '("etc/ssl/certs/ca-certificates.crt")))))
+    (arguments
+     (list
+      #:disallowed-references '("doc")
+      #:configure-flags
+      #~(list "--with-gnutls"
+              (string-append "--with-gssapi="
+                             (dirname (dirname
+                                       (search-input-file
+                                        %build-inputs "lib/libgssrpc.so"))))
+              "--disable-static")
       #:phases
-      (modify-phases %standard-phases
-        (add-after 'unpack 'do-not-record-configure-flags
-          (lambda _
-            ;; Do not save the configure options to avoid unnecessary references.
-            (substitute* "curl-config.in"
-              (("@CONFIGURE_OPTIONS@")
-               "\"not available\""))))
-        (add-after
-         'install 'move-man3-pages
-         (lambda* (#:key outputs #:allow-other-keys)
-           ;; Move section 3 man pages to "doc".
-           (let ((out (assoc-ref outputs "out"))
-                 (doc (assoc-ref outputs "doc")))
-             (mkdir-p (string-append doc "/share/man"))
-             (rename-file (string-append out "/share/man/man3")
-                          (string-append doc "/share/man/man3")))))
-        (replace 'check
-          (lambda* (#:key tests? #:allow-other-keys)
-            (substitute* "tests/runtests.pl"
-              (("/bin/sh") (which "sh")))
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'do-not-record-configure-flags
+            (lambda _
+              ;; Do not save the configure options to avoid unnecessary references.
+              (substitute* "curl-config.in"
+                (("@CONFIGURE_OPTIONS@")
+                 "\"not available\""))))
+          (add-after 'install 'move-man3-pages
+            (lambda _
+              ;; Move section 3 man pages to "doc".
+              (mkdir-p (string-append #$output:doc "/share/man"))
+              (rename-file (string-append #$output "/share/man/man3")
+                           (string-append #$output:doc "/share/man/man3"))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (substitute* "tests/runtests.pl"
+                (("/bin/sh") (which "sh")))
 
-            (when tests?
-              ;; The top-level "make check" does "make -C tests quiet-test", which
-              ;; is too quiet.  Use the "test" target instead, which is more
-              ;; verbose.
-              (invoke "make" "-C" "tests" "test")))))))
-   (synopsis "Command line tool for transferring data with URL syntax")
-   (description
-    "curl is a command line tool for transferring data with URL syntax,
+              (when tests?
+                ;; The top-level "make check" does "make -C tests quiet-test", which
+                ;; is too quiet.  Use the "test" target instead, which is more
+                ;; verbose.
+                (invoke "make" "-C" "tests" "test"))))
+          #$@(if (system-hurd?)
+                 #~((add-after 'unpack 'skip-tests
+                      (lambda _
+                        (let ((port (open-file "tests/data/DISABLED" "a")))
+                          (display "526\n" port)
+                          (display "527\n" port)
+                          (display "532\n" port)
+                          (display "533\n" port)
+                          (display "537\n" port)
+                          (display "546\n" port)
+                          (display "575\n" port)
+                          (display "1021\n" port)
+                          (display "1501\n" port)
+                          (close port)))))
+                 #~()))))
+    (synopsis "Command line tool for transferring data with URL syntax")
+    (description
+     "curl is a command line tool for transferring data with URL syntax,
 supporting DICT, FILE, FTP, FTPS, Gopher, HTTP, HTTPS, IMAP, IMAPS, LDAP,
 LDAPS, POP3, POP3S, RTMP, RTSP, SCP, SFTP, SMTP, SMTPS, Telnet and TFTP.
 curl supports SSL certificates, HTTP POST, HTTP PUT, FTP uploading, HTTP
 form based upload, proxies, cookies, file transfer resume, user+password
 authentication (Basic, Digest, NTLM, Negotiate, kerberos...), proxy
 tunneling, and so on.")
-   (license (license:non-copyleft "file://COPYING"
-                                  "See COPYING in the distribution."))
-   (home-page "https://curl.haxx.se/")))
-
-;; Replacement package with fixes for multiple vulnerabilities.
-;; See <https://curl.se/docs/security.html>.
-(define curl-7.84.0
-  (package
-    (inherit curl)
-    (version "7.84.0")
-    (source (origin
-              (inherit (package-source curl))
-              (uri (string-append "https://curl.se/download/curl-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "1f2xgj0wvys9xw50h7vcbaraavjr9rxx9n06x2xfbgs7ym1qn49d"))
-              (patches (append (origin-patches (package-source curl))
-                               (search-patches "curl-easy-lock.patch")))))
-    (arguments (substitute-keyword-arguments (package-arguments curl)
-                 ((#:phases phases)
-                  (cond
-                   ((not (target-64bit?))
-                    #~(modify-phases #$phases
-                        (add-after 'unpack 'tweak-lib3026-test
-                          (lambda _
-                            ;; Have that test create a hundred threads, not a
-                            ;; thousand.
-                            (substitute* "tests/libtest/lib3026.c"
-                              (("NUM_THREADS .*$")
-                               "NUM_THREADS 100\n"))))))
-                   (else phases)))))))
-
-(define-public curl-minimal
-  (deprecated-package "curl-minimal" curl))
+    (license (license:non-copyleft "file://COPYING"
+                                   "See COPYING in the distribution."))
+    (home-page "https://curl.haxx.se/")))
 
 (define-public curl-ssh
   (package/inherit curl
     (arguments
      (substitute-keyword-arguments (package-arguments curl)
        ((#:configure-flags flags)
-        `(cons "--with-libssh2" ,flags))))
+        #~(cons "--with-libssh2" #$flags))))
     (inputs
-     `(("libssh2" ,libssh2)
-       ,@(package-inputs curl)))
+     (modify-inputs (package-inputs curl)
+       (prepend libssh2)))
     (properties `((hidden? . #t)))))
 
 (define-public kurly
@@ -333,7 +314,7 @@ FILE and LDAP; in particular it supports HTTPS certificates, HTTP POST, HTTP
 PUT, FTP uploading, kerberos, HTTP form based upload, proxies, cookies,
 user+password authentication, file transfer resume, http proxy tunneling and
 more!")
-    (home-page "http://www.curlpp.org")
+    (home-page "https://www.curlpp.org")
     (license license:expat)))
 
 (define-public h2c
@@ -366,7 +347,7 @@ curl to obtain exactly that HTTP request.")
 (define-public coeurl
   (package
     (name "coeurl")
-    (version "0.2.0")
+    (version "0.3.0")
     (source
      (origin
        (method git-fetch)
@@ -375,8 +356,7 @@ curl to obtain exactly that HTTP request.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32
-         "0kbazvrb4hzc9jr7yywd36ack1yy7bh8sh1kc4jzv6jfzvxjb0i0"))))
+        (base32 "1b435c2szwibm4i4r7mh22klyv9ncdkwkiy95p4xjfalsx4ripxh"))))
     (build-system meson-build-system)
     (native-inputs
      (list doctest pkg-config))
@@ -405,8 +385,10 @@ asynchronously via cURL in C++.")
     (build-system go-build-system)
     (arguments
      `(#:import-path "github.com/rs/curlie"))
-    (inputs
-     (list curl go-golang-org-x-crypto go-golang-org-x-sys))
+    (inputs (list curl
+                  go-golang-org-x-crypto
+                  go-golang-org-x-sys
+                  go-golang-org-x-term))
     (home-page "https://curlie.io")
     (synopsis "The power of curl, the ease of use of httpie")
     (description "If you like the interface of HTTPie but miss the features of
@@ -415,3 +397,37 @@ curl, curlie is what you are searching for.  Curlie is a frontend to
 on features and performance.  All @code{curl} options are exposed with syntax
 sugar and output formatting inspired from @code{httpie}.")
     (license license:expat)))
+
+(define-public trurl
+  (package
+    (name "trurl")
+    (version "0.8")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/curl/trurl")
+             (commit (string-append name "-" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "19zdpjp01n7s7zgixq3irqfnx66dmqf8zyp0dlb6y7ga673lqwi8"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:test-target "test"
+      #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                           (string-append "PREFIX=" #$output))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure))))
+    (native-inputs (list python))
+    (inputs (list curl))
+    (home-page "https://curl.se/trurl/")
+    (synopsis "Command line tool for URL parsing and manipulation")
+    (description "@code{trurl} is a command line tool that parses and
+manipulates URLs, designed to help shell script authors everywhere.
+
+It is similar in spirit to @code{tr}.  Here, @code{tr} stands for translate or
+transpose.")
+   (license (license:non-copyleft "file://COPYING"
+                                  "See COPYING in the distribution."))))

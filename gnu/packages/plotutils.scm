@@ -1,9 +1,10 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2015 Eric Bavier <bavier@member.fsf.org>
-;;; Copyright © 2016-2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
+;;; Copyright © 2016-2023 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2018 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2020 Maxim Cournoyer <maxim.cournoyer@gmail.com>
+;;; Copyright © 2023 gemmaro <gemmaro.dev@gmail.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -28,12 +29,16 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system ruby)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages autotools)
+  #:use-module (gnu packages bash)
+  #:use-module (gnu packages bison)
   #:use-module (gnu packages bdw-gc)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages cmake)
   #:use-module (gnu packages emacs)
+  #:use-module (gnu packages flex)
   #:use-module (gnu packages xorg)
   #:use-module (gnu packages image)
   #:use-module (gnu packages ghostscript)
@@ -47,7 +52,9 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages readline)
+  #:use-module (gnu packages ruby)
   #:use-module (gnu packages qt)
+  #:use-module (gnu packages statistics)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages tex)
   #:use-module (gnu packages web)
@@ -191,7 +198,7 @@ went to university in the 1990s, this is the library for you.")
        (list autoconf automake texinfo pkg-config))
       (inputs (list guile-3.0))
       (propagated-inputs (list guile-cairo))
-      (home-page "http://wingolog.org/projects/guile-charting/")
+      (home-page "https://wingolog.org/projects/guile-charting/")
       (synopsis "Create charts and graphs in Guile")
       (description
        "Guile-Charting is a Guile Scheme library to create bar charts and graphs
@@ -256,7 +263,7 @@ using the Cairo drawing library.")
                           `("PLOTICUS_PREFABS" ":" = (,dir)))))))))
     (inputs
      (list libpng libx11 zlib))
-    (home-page "http://ploticus.sourceforge.net/")
+    (home-page "https://ploticus.sourceforge.net/")
     (synopsis "Command-line tool for producing plots and charts")
     (description
      "Ploticus is a non-interactive software package for producing plots,
@@ -269,14 +276,14 @@ colors, styles, options and details.")
 (define-public asymptote
   (package
     (name "asymptote")
-    (version "2.83")
+    (version "2.86")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "mirror://sourceforge/asymptote/"
                            version "/asymptote-" version ".src.tgz"))
        (sha256
-        (base32 "18w8nf0p1b3h74sk1b7w96kq5gcaq09idi4771ini7p594gsfg7y"))
+        (base32 "07y9yg7kdkgmz024qzny8xhjw3c367kxfpwzv19cxcy7qcgsvsy4"))
        (modules '((guix build utils)))
        (snippet
         ;; Remove bundled RapidJSON.
@@ -289,35 +296,32 @@ colors, styles, options and details.")
     (native-inputs
      (list autoconf
            automake
+           bison
            boost
            cmake
            emacs-minimal
+           flex
            ghostscript                  ;for tests
            perl
+           pkg-config
            rapidjson
            texinfo                      ;for generating documentation
            (texlive-updmap.cfg
-            (list texlive-amsfonts
-                  texlive-dvips-l3backend
-                  texlive-epsf
+            (list texlive-epsf
                   texlive-etoolbox
-                  texlive-fonts-ec
-                  texlive-generic-infwarerr
-                  texlive-generic-kvdefinekeys
-                  texlive-grfext
-                  texlive-hyperref
-                  texlive-latex-base
-                  texlive-latex-geometry
-                  texlive-latex-graphics
-                  texlive-latex-kvoptions
-                  texlive-latex-media9
-                  texlive-latex-ocgx2
-                  texlive-latex-pdftexcmds
-                  texlive-oberdiek      ;for ifluatex
-                  texlive-latex-parskip
-                  texlive-tex-texinfo))))
+                  texlive-hypdoc
+                  texlive-infwarerr
+                  texlive-kvdefinekeys
+                  texlive-kvoptions
+                  texlive-media9
+                  texlive-ocgx2
+                  texlive-parskip
+                  texlive-pdftexcmds
+                  texlive-texinfo))))
     (inputs
-     (list fftw
+     (list bash-minimal
+           eigen
+           fftw
            freeglut
            glew
            glm
@@ -393,7 +397,7 @@ colors, styles, options and details.")
             (lambda _
               (setenv "HOME" "/tmp")))
           (add-after 'install 'install-Emacs-data
-            (lambda* (#:key outputs #:allow-other-keys)
+            (lambda _
               ;; Install related Emacs libraries into an appropriate location.
               (let ((lisp-dir
                      (string-append #$output "/share/emacs/site-lisp")))
@@ -407,7 +411,7 @@ colors, styles, options and details.")
                 (wrap-program
                     (string-append #$output "/share/asymptote/GUI/xasy.py")
                   `("GUIX_PYTHONPATH" ":" prefix (,path)))))))))
-    (home-page "http://asymptote.sourceforge.net")
+    (home-page "https://asymptote.sourceforge.io")
     (synopsis "Script-based vector graphics language")
     (description
      "Asymptote is a powerful descriptive vector graphics language for
@@ -419,3 +423,54 @@ LaTeX does for scientific text.")
     ;; noted otherwise, are released under version 3 (or later) of the GNU
     ;; Lesser General Public License"
     (license license:lgpl3+)))
+
+(define-public ruby-unicode-plot
+  (package
+    (name "ruby-unicode-plot")
+    (version "0.0.5")
+    ;; Source at RubyGems.org doesn't have test fixtures.
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url
+                     "https://github.com/red-data-tools/unicode_plot.rb")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0g67brnb7zp1xx9cp1x7bmyxwnvi2i8gplw7p1j7cppzin4kr1vj"))))
+    (build-system ruby-build-system)
+    (native-inputs (list bundler ruby-rake ruby-test-unit ruby-yard))
+    (propagated-inputs (list ruby-enumerable-statistics))
+    (synopsis "Library to plot your data by Unicode characters")
+    (description "UnicodePlot provides the feature to make charts with Unicode
+characters.  Supported charts are: barplot, boxplot, densityplot,
+histogram, lineplot, and scatterplot.")
+    (home-page "https://github.com/red-data-tools/unicode_plot.rb")
+    (license license:expat)))
+
+(define-public youplot
+  (package
+    (name "youplot")
+    (version "0.4.5")
+    ;; Source at RubyGems.org doesn't have tests.
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/red-data-tools/YouPlot")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1y54apw7hx9mhjnf277w9wayvq954mdnip4dpajhc0qjg2464c2b"))))
+    (build-system ruby-build-system)
+    (native-inputs (list ruby-rake ruby-simplecov ruby-test-unit))
+    (propagated-inputs (list ruby-unicode-plot))
+    (synopsis "Command line tool that draw plots on the terminal")
+    (description
+     "YouPlot is a command line tool that draws plots on the terminal,
+powered by UnicodePlot gem.  It provides commands @command{youplot}
+and @command{uplot} (shorthand) are provided, and supports chart types
+of barplot, histogram, lineplot, scatter, density, boxplot, and count.")
+    (home-page "https://github.com/red-data-tools/YouPlot")
+    (license license:expat)))

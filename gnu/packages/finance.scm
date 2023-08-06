@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2015, 2016 Andreas Enge <andreas@enge.fr>
+;;; Copyright © 2015, 2016, 2023 Andreas Enge <andreas@enge.fr>
 ;;; Copyright © 2016, 2017, 2018 Efraim Flashner <efraim@flashner.co.il>
 ;;; Copyright © 2016 Alex Griffin <a@ajgrf.com>
 ;;; Copyright © 2016, 2020 Hartmut Goebel <h.goebel@crazy-compilers.com>
@@ -11,7 +11,7 @@
 ;;; Copyright © 2018 Adriano Peluso <catonano@gmail.com>
 ;;; Copyright © 2018-2022 Nicolas Goaziou <mail@nicolasgoaziou.fr>
 ;;; Copyright © 2018 Arun Isaac <arunisaac@systemreboot.net>
-;;; Copyright © 2019, 2020, 2021, 2022 Guillaume Le Vaillant <glv@posteo.net>
+;;; Copyright © 2019-2023 Guillaume Le Vaillant <glv@posteo.net>
 ;;; Copyright © 2019 Tanguy Le Carrour <tanguy@bioneland.org>
 ;;; Copyright © 2019, 2020 Martin Becze <mjbecze@riseup.net>
 ;;; Copyright © 2019 Sebastian Schott <sschott@mailbox.org>
@@ -32,6 +32,8 @@
 ;;; Copyright © 2022 Philip McGrath <philip@philipmcgrath.com>
 ;;; Copyright © 2022 Collin J. Doering <collin@rekahsoft.ca>
 ;;; Copyright © 2022 Justin Veilleux <terramorpha@cock.li>
+;;; Copyright © 2023 Frank Pursel <frank.pursel@gmail.com>
+;;; Copyright © 2023 Skylar Hill <stellarskylark@posteo.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -107,6 +109,7 @@
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages networking)
+  #:use-module (gnu packages pdf)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages popt)
   #:use-module (gnu packages protobuf)
@@ -118,7 +121,9 @@
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages readline)
+  #:use-module (gnu packages security-token)
   #:use-module (gnu packages sphinx)
+  #:use-module (gnu packages sqlite)
   #:use-module (gnu packages tex)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages textutils)
@@ -129,10 +134,12 @@
   #:use-module (gnu packages xml)
   #:use-module (gnu packages gnuzilla))
 
-(define-public bitcoin-core-0.21
+(define-public bitcoin-core
+  ;; The support lifetimes for bitcoin-core versions can be found in
+  ;; <https://bitcoincore.org/en/lifecycle/#schedule>.
   (package
     (name "bitcoin-core")
-    (version "0.21.2")
+    (version "25.0")
     (source (origin
               (method url-fetch)
               (uri
@@ -140,7 +147,7 @@
                               version "/bitcoin-" version ".tar.gz"))
               (sha256
                (base32
-                "17nvir1yc6mf4wr1fn4xsabw49cd5p9vig8wj77vv4anzi8zfij1"))))
+                "1hpbw6diyla75a6jrwsis9c5pnhpnnxwbznsik1s1fd35ks7rxjx"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf
@@ -156,7 +163,8 @@
            libevent
            miniupnpc
            openssl
-           qtbase-5))
+           qtbase-5
+           sqlite))
     (arguments
      `(#:configure-flags
        (list
@@ -207,67 +215,46 @@ of the bitcoin protocol.  This package provides the Bitcoin Core command
 line client and a client based on Qt.")
     (license license:expat)))
 
-(define-public bitcoin-core-0.20
+(define-public ghc-hledger
   (package
-    (inherit bitcoin-core-0.21)
-    (version "0.20.2")
+    (name "ghc-hledger")
+    (version "1.27.1")
     (source (origin
               (method url-fetch)
-              (uri
-               (string-append "https://bitcoincore.org/bin/bitcoin-core-"
-                              version "/bitcoin-" version ".tar.gz"))
+              (uri (hackage-uri "hledger" version))
               (sha256
                (base32
-                "14smp5vmh7baabl856wlg7w7y5910jhx6c02mlkm4hkywf3yylky"))))))
-
-;; The support lifetimes for bitcoin-core versions can be found in
-;; <https://bitcoincore.org/en/lifecycle/#schedule>.
-
-(define-public bitcoin-core bitcoin-core-0.21)
-
-(define-public hledger
-  (package
-    (name "hledger")
-    (version "1.21")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://hackage.haskell.org/package/hledger/hledger-"
-             version
-             ".tar.gz"))
-       (sha256
-        (base32
-         "07fcfkmv4cy92njnf2qc7jh0naz96q962hxldcd7hk4k7ddv0mss"))))
+                "0qdg87m7ys2ykqqq32p7h7aw827w4f5bcqx4dspxxq6zqlvzddqb"))))
     (build-system haskell-build-system)
-    (inputs
-     (list ghc-ansi-terminal
-           ghc-base-compat-batteries
-           ghc-cmdargs
-           ghc-data-default
-           ghc-decimal
-           ghc-diff
-           ghc-hashable
-           ghc-hledger-lib
-           ghc-lucid
-           ghc-math-functions
-           ghc-megaparsec
-           ghc-old-time
-           ghc-regex-tdfa
-           ghc-safe
-           ghc-aeson
-           ghc-extra
-           ghc-tasty
-           ghc-timeit
-           ghc-shakespeare
-           ghc-split
-           ghc-tabular
-           ghc-temporary
-           ghc-unordered-containers
-           ghc-utf8-string
-           ghc-utility-ht
-           ghc-wizards))
-    (home-page "https://hledger.org")
+    (properties '((upstream-name . "hledger")))
+    (inputs (list ghc-decimal
+                  ghc-diff
+                  ghc-aeson
+                  ghc-ansi-terminal
+                  ghc-breakpoint
+                  ghc-cmdargs
+                  ghc-data-default
+                  ghc-extra
+                  ghc-githash
+                  ghc-hashable
+                  ghc-hledger-lib
+                  ghc-lucid
+                  ghc-math-functions
+                  ghc-megaparsec
+                  ghc-microlens
+                  ghc-regex-tdfa
+                  ghc-safe
+                  ghc-shakespeare
+                  ghc-split
+                  ghc-tabular
+                  ghc-tasty
+                  ghc-temporary
+                  ghc-timeit
+                  ghc-unordered-containers
+                  ghc-utf8-string
+                  ghc-utility-ht
+                  ghc-wizards))
+    (home-page "http://hledger.org")
     (synopsis "Command-line interface for the hledger accounting system")
     (description
      "The command-line interface for the hledger accounting system.  Its basic
@@ -281,17 +268,34 @@ rewrite of Ledger, and one of the leading implementations of Plain Text
 Accounting.")
     (license license:gpl3)))
 
+(define-public hledger
+  (package
+    (inherit ghc-hledger)
+    (name "hledger")
+    (arguments
+     (list
+      #:haddock? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'install-doc
+            (lambda _
+              (install-file "hledger.info" (string-append #$output "/share/info"))
+              (install-file "hledger.1" (string-append #$output "/man/man1"))))
+           (add-after 'register 'remove-libraries
+             (lambda* (#:key outputs #:allow-other-keys)
+               (delete-file-recursively (string-append (assoc-ref outputs "out") "/lib")))))))))
+
 (define-public homebank
   (package
     (name "homebank")
-    (version "5.5.8")
+    (version "5.6.6")
     (source (origin
               (method url-fetch)
-              (uri (string-append "http://homebank.free.fr/public/homebank-"
-                                  version ".tar.gz"))
+              (uri (string-append "http://homebank.free.fr/public/sources/"
+                                  "homebank-" version ".tar.gz"))
               (sha256
                (base32
-                "11fgmdqsnxdqma1ffljbcl7w1ahx0s5p41hjy600f8zarsrmnyjh"))))
+                "03nwcpxmsw82gnhy1dialky1d9mfb2jqdzlgc79bxwhlhpqwsvv5"))))
     (build-system glib-or-gtk-build-system)
     (native-inputs
      (list pkg-config intltool))
@@ -308,7 +312,7 @@ and dynamically with report tools based on filtering and graphical charts.")
 (define-public ledger
   (package
     (name "ledger")
-    (version "3.2.1")
+    (version "3.3.2")
     (source
      (origin
        (method git-fetch)
@@ -317,14 +321,7 @@ and dynamically with report tools based on filtering and graphical charts.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0x6jxwss3wwzbzlwmnwb8yzjk8f9wfawif4f1b74z2qg6hc4r7f6"))
-       (snippet '(begin
-                   ;; Remove test that fails due to difference in
-                   ;; reported error message (missing leading "./" in the
-                   ;; file name); started some time after Guix commit
-                   ;; 727f05e1e285aa52f5a19ec923fdc2259859b4b1
-                   (delete-file "test/regress/BF3C1F82-2.test")
-                   #true))))
+        (base32 "0vchc97952w3fkkdn3v0nzjlgzg83cblwsi647jp3k9jq6rvhaak"))))
     (build-system cmake-build-system)
     (arguments
      `(#:modules (,@%cmake-build-system-modules
@@ -355,7 +352,8 @@ and dynamically with report tools based on filtering and graphical charts.")
              (let ((examples (string-append (assoc-ref outputs "out")
                                             "/share/doc/ledger/examples")))
                (install-file "test/input/sample.dat" examples)
-               (install-file "test/input/demo.ledger" examples))
+               (install-file "test/input/demo.ledger" examples)
+               (install-file "contrib/report" examples))
              #t))
          (add-after 'build 'build-doc
            (lambda _ (invoke "make" "doc")))
@@ -365,10 +363,6 @@ and dynamically with report tools based on filtering and graphical charts.")
              (setenv "TZDIR"
                      (search-input-directory inputs
                                              "share/zoneinfo"))
-             ;; Skip failing test BaselineTest_cmd-org.
-             ;; This is a known upstream issue. See
-             ;; https://github.com/ledger/ledger/issues/550
-             (setenv "ARGS" "-E BaselineTest_cmd-org")
              #t)))))
     (inputs
      (list boost
@@ -553,7 +547,7 @@ do so.")
 (define-public electrum
   (package
     (name "electrum")
-    (version "4.2.1")
+    (version "4.4.5")
     (source
      (origin
        (method url-fetch)
@@ -561,13 +555,12 @@ do so.")
                            version "/Electrum-"
                            version ".tar.gz"))
        (sha256
-        (base32 "0w41411zq07kx0351wxkmpn0wr42wd2nx0m6v0iwvpsggx654b6r"))
+        (base32 "1gifnb927b51947psbj58c7kdsgncn3d9j7rpk5mls678yf1qd5d"))
        (modules '((guix build utils)))
        (snippet
         '(begin
            ;; Delete the bundled dependencies.
-           (delete-file-recursively "packages")
-           #t))))
+           (delete-file-recursively "packages")))))
     (build-system python-build-system)
     (inputs
      (list libsecp256k1
@@ -591,31 +584,13 @@ do so.")
      `(#:tests? #f                      ; no tests
        #:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'fix-prefix
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               ;; setup.py installs to ~/.local/share if sys.prefix/share isn't
-               ;; writable.  sys.prefix points to Python's, not our, --prefix.
-               (mkdir-p (string-append out "/share"))
-               (substitute* "setup.py"
-                 (("sys\\.prefix")
-                  (format #f "\"~a\"" out)))
-               #t)))
-         (add-after 'unpack 'relax-dnspython-version-requirement
-           ;; The version requirement for dnspython>=2.0,<2.1 makes the
-           ;; sanity-check phase fail, but the application seems to be working
-           ;; fine with dnspython 2.1 (the version we have currently).
-           (lambda _
-             (substitute* "contrib/requirements/requirements.txt"
-               (("dnspython>=.*")
-                "dnspython"))))
          (add-after 'unpack 'use-libsecp256k1-input
            (lambda* (#:key inputs #:allow-other-keys)
              (substitute* "electrum/ecc_fast.py"
-               (("library_paths = .* 'libsecp256k1.so.0'.")
-                (string-append "library_paths = ('"
+               (("library_paths = \\[\\]")
+                (string-append "library_paths = ['"
                                (assoc-ref inputs "libsecp256k1")
-                               "/lib/libsecp256k1.so.0'"))))))))
+                               "/lib/libsecp256k1.so']"))))))))
     (home-page "https://electrum.org/")
     (synopsis "Bitcoin wallet")
     (description
@@ -628,7 +603,7 @@ other machines/servers.  Electrum does not download the Bitcoin blockchain.")
 (define-public electron-cash
   (package
     (name "electron-cash")
-    (version "4.2.11")
+    (version "4.3.1")
     (source
      (origin
        (method git-fetch)
@@ -637,7 +612,7 @@ other machines/servers.  Electrum does not download the Bitcoin blockchain.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1g0xnb63c52l379zrqkfhxlkg1d2hf2dgjs2swspa0vah845r282"))))
+        (base32 "0slx7hmlw2gpcqg951vwvnyl7j52pfzqyaldphghhfxbfzjs7v64"))))
     (build-system python-build-system)
     (arguments
      (list
@@ -658,11 +633,6 @@ other machines/servers.  Electrum does not download the Bitcoin blockchain.")
               (substitute* "electroncash/secp256k1.py"
                 (("libsecp256k1.so.0")
                  (search-input-file inputs "lib/libsecp256k1.so.0")))))
-          (add-after 'unpack 'relax-requirements
-            (lambda _
-              (substitute* "contrib/requirements/requirements.txt"
-                (("qdarkstyle==2\\.6\\.8")
-                 "qdarkstyle"))))
           (add-after 'install 'wrap-qt
             (lambda* (#:key outputs inputs #:allow-other-keys)
               (let ((out (assoc-ref outputs "out")))
@@ -709,7 +679,7 @@ blockchain.")
   ;; the system's dynamically linked library.
   (package
     (name "monero")
-    (version "0.18.1.2")
+    (version "0.18.2.2")
     (source
      (origin
        (method git-fetch)
@@ -727,7 +697,7 @@ blockchain.")
             delete-file-recursively
             '("external/miniupnp" "external/rapidjson"))))
        (sha256
-        (base32 "033hfc98gv28x05gc1ln6dmyc45cki4qdylmz35wh4dchyr74pf9"))))
+        (base32 "0hi6grf2xnnra60g3dzspahi0rwyiad6hc07n3pq3aknmz5xx8d4"))))
     (build-system cmake-build-system)
     (native-inputs
      (list doxygen
@@ -814,7 +784,7 @@ the Monero command line client and daemon.")
 (define-public monero-gui
   (package
     (name "monero-gui")
-    (version "0.18.1.2")
+    (version "0.18.2.2")
     (source
      (origin
        (method git-fetch)
@@ -830,7 +800,7 @@ the Monero command line client and daemon.")
            ;; See the 'extract-monero-sources' phase.
            (delete-file-recursively "monero")))
        (sha256
-        (base32 "1lwlkqj8liflk0jfzmlclm1xca0x3z8v3kcbzd671rgismm8v332"))))
+        (base32 "07gfvrxm3n0844ximm4rd3f3n0m125shpawdzg8blfjjbfr1k1ij"))))
     (build-system qt-build-system)
     (native-inputs
      `(,@(package-native-inputs monero)
@@ -886,9 +856,38 @@ the Monero command line client and daemon.")
                                      "\";")))))
                (replace 'install
                  (lambda _
-                   (let ((bin (string-append #$output "/bin")))
-                     (mkdir-p bin)
-                     (install-file "../build/bin/monero-wallet-gui" bin))))
+                   ;; Binary
+                   (let ((dir (string-append #$output "/bin")))
+                     (mkdir-p dir)
+                     (install-file "../build/bin/monero-wallet-gui" dir))
+                   ;; Icons
+                   (for-each
+                    (lambda (size)
+                      (let ((dir (string-append #$output
+                                                "/share/icons/hicolor/"
+                                                size
+                                                "/apps")))
+                        (mkdir-p dir)
+                        (copy-file (string-append "../source/images/appicons/"
+                                                  size ".png")
+                                   (string-append dir
+                                                  "/monero-gui.png"))))
+                    '("16x16" "24x24" "32x32" "48x48"
+                      "64x64" "96x96" "128x128" "256x256"))
+                   ;; Menu entry file
+                   (let ((dir (string-append #$output "/share/applications")))
+                     (mkdir-p dir)
+                     (call-with-output-file
+                         (string-append dir "/monero-gui.desktop")
+                       (lambda (port)
+                         (format port
+                                 "[Desktop Entry]~@
+                                  Type=Application~@
+                                  Name=Monero wallet~@
+                                  Exec=~a/bin/monero-wallet-gui~@
+                                  Icon=monero-gui~@
+                                  Categories=Office;Finance;~%"
+                                 #$output))))))
                (add-after 'qt-wrap 'install-monerod-link
                  ;; The monerod program must be available so that
                  ;; monero-wallet-gui can start a Monero daemon if necessary.
@@ -901,6 +900,23 @@ the Monero command line client and daemon.")
      "Monero is a secure, private, untraceable currency.  This package provides
 the Monero GUI client.")
     (license license:bsd-3)))
+
+(define-public python-bech32
+  (package
+    (name "python-bech32")
+    (version "1.2.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "bech32" version))
+              (sha256
+               (base32
+                "16fq5cfy5id9hp123ylhpl55pf38xwk0hv7sziqpig838qhvhvbx"))))
+    (build-system python-build-system)
+    (home-page "https://github.com/fiatjaf/bech32")
+    (synopsis "Reference implementation for Bech32 and Segwit addresses")
+    (description "This package provides a python reference implementation for
+Bech32 and segwit addresses.")
+    (license license:expat)))
 
 (define-public python-trezor-agent
   ;; It is called 'libagent' in pypi; i.e. this is the library as opposed to
@@ -999,25 +1015,51 @@ settings.")
 of Bitcoin BIP-0039.")
     (license license:expat)))
 
+(define-public python-u2flib-host
+  ;; The package is obsolete and superseded by python-fido2, but
+  ;; needed for python-ledgerblue@0.1.44.
+  (package
+    (name "python-u2flib-host")
+    (version "3.0.3")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "python-u2flib-host" version))
+              (sha256
+               (base32
+                "02pwafd5kyjpc310ys0pgnd0adff1laz18naxxwsfrllqafqnrxb"))))
+    (build-system python-build-system)
+    (propagated-inputs (list python-hidapi python-requests))
+    (native-inputs (list python-cryptography))
+    (home-page "https://github.com/Yubico/python-u2flib-host")
+    (synopsis "Python based U2F host library")
+    (description
+     "The package provides library functionality for communicating with a U2F device over USB.")
+    (license license:bsd-2)))
+
 (define-public python-ledgerblue
   (package
     (name "python-ledgerblue")
-    (version "0.1.16")
+    (version "0.1.44")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "ledgerblue" version))
         (sha256
           (base32
-            "010mghaqh1cmz3a0ifc3f40mmyplilwlw7kpha2mzyrrff46p9gb"))))
+            "0nbfa5i9ww7jsfc8cgy0r229pq2a1vj4xvn8mz0nxl7mx1wykqm4"))))
     (build-system python-build-system)
+    (arguments
+     `(#:tests? #f)) ; no tests
     (propagated-inputs
      (list python-ecpy
            python-future
            python-hidapi
            python-pillow
            python-protobuf
-           python-pycrypto))
+           python-pycryptodomex
+           python-pyscard
+           python-u2flib-host
+           python-websocket-client))
     (home-page "https://github.com/LedgerHQ/blue-loader-python")
     (synopsis "Python library to communicate with Ledger Blue/Nano S")
     (description "@code{ledgerblue} is a Python library to communicate with
@@ -1251,16 +1293,66 @@ agent.")
 agent.")
     (license license:lgpl3)))
 
+(define-public kitsas
+  (package
+    (name "kitsas")
+    (version "4.0.3")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/artoh/kitupiikki")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0hrbsqqm6v2pmjq17s7i4akjgclz3d051mg02vcykq80xgxvbkgf"))))
+    (build-system qt-build-system)
+    (inputs (list qtbase-5 libzip poppler-qt5 qtsvg-5))
+    (arguments
+     (list #:tests? #f               ;XXX: some tests fail and others segfault
+           #:test-target "check"
+           #:phases
+           #~(modify-phases %standard-phases
+               (replace 'configure
+                 (lambda* _
+                   (invoke "qmake" "kitsasproject.pro" "CONFIG+=release")))
+               (replace 'install
+                 (lambda* _
+                   (install-file "kitsas/kitsas"
+                                 (string-append #$output "/bin/"))
+                   (install-file "kitsas.png"
+                                 (string-append #$output "/share/icons/"))
+                   (install-file "kitsas.desktop"
+                                 (string-append #$output "/share/applications/")))))))
+    (home-page "https://kitsas.fi")
+    (synopsis "Finnish bookkeeping software for small organisations")
+    (description
+     "Kitsas is a Finnish accounting program with the following goals and
+features:
+
+@itemize @bullet
+@item Ease of use
+@item Digital management of documents
+@item Creating a digital archive
+@item Built-in invoicing
+@item Creating reports.
+@end itemize")
+    ;; GPLv3+ with additional terms:
+    ;; - Modified versions of this software should be clearly mentioned as modified
+    ;; - Kitsas Oy will not support any modified version of this software
+    ;; - The name Kitsas Oy should not be used in any modified version
+    (license license:gpl3+)))
+
 (define-public python-stdnum
   (package
     (name "python-stdnum")
-    (version "1.17")
+    (version "1.18")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "python-stdnum" version))
        (sha256
-        (base32 "0h4369b7gws5w5s2vhq590bk219y5k53zcmha2zwsb4i2dg2nkip"))))
+        (base32 "1h5y4qx75b6i2051ch8k0pcwkvhxzpaqd9mpsajkvqlsqkcn7ixw"))))
     (build-system python-build-system)
     (arguments
      '(#:phases (modify-phases %standard-phases
@@ -1509,7 +1601,7 @@ information.")
                            patch
                            pkg-config))
       (build-system glib-or-gtk-build-system)
-      (home-page "http://gbonds.sourceforge.net")
+      (home-page "https://gbonds.sourceforge.net")
       (synopsis "@acronym{U.S.} Savings Bond inventory program for GNOME")
       (description
        "GBonds is a @acronym{U.S.} Savings Bond inventory program for the
@@ -1572,76 +1664,10 @@ trezord as a regular user instead of needing to it run as root.")
 Trezor wallet.")
     (license license:lgpl3+)))
 
-(define-public bitcoin-abc
-  (package
-    (name "bitcoin-abc")
-    (version "0.21.12")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://download.bitcoinabc.org/"
-                                  version "/src/bitcoin-abc-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "1amzwy3gpl8ai90dsy7g0z51qq8vxfzbf642wn4bfynb8jmw3kx5"))))
-    (build-system cmake-build-system)
-    (native-inputs
-     (list pkg-config
-           python ; for the tests
-           util-linux ; provides the hexdump command for tests
-           qttools-5))
-    (inputs
-     (list bdb-5.3
-           boost
-           jemalloc
-           libevent
-           miniupnpc
-           openssl
-           protobuf
-           qrencode
-           qtbase-5
-           zeromq
-           zlib))
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'make-qt-deterministic
-           (lambda _
-             ;; Make Qt deterministic.
-             (setenv "QT_RCC_SOURCE_DATE_OVERRIDE" "1")
-             #t))
-         (add-before 'check 'set-home
-           (lambda _
-             (setenv "HOME" (getenv "TMPDIR")) ; tests write to $HOME
-             #t))
-         (add-after 'check 'check-functional
-           (lambda _
-             (invoke
-              "python3" "./test/functional/test_runner.py"
-              (string-append "--jobs=" (number->string (parallel-job-count)))
-              ;; TODO: find why the abc-miner-fund test fails.
-              "--exclude=abc-miner-fund")
-             #t)))))
-    (home-page "https://www.bitcoinabc.org/")
-    (synopsis "Bitcoin ABC peer-to-peer full node for the Bitcoin Cash protocol")
-    (description
-     "Bitcoin Cash brings sound money to the world, fulfilling the original
-promise of Bitcoin as Peer-to-Peer Electronic Cash.  Merchants and users are
-empowered with low fees and reliable confirmations is a digital currency that
-enables instant payments to anyone anywhere in the world.  It uses
-peer-to-peer technology to operate without central authority: managing
-transactions and issuing money are carried out collectively by the network.
-As a fork it implemented changes lowering the time between blocks and now
-offers confimations after less than 5 seconds and have significantly lower
-fees that BTC.  Bitcoin ABC is the reference implementation of the Bitcoin
-Cash protocol.  This package provides the Bitcoin Cash command line client and
-a client based on Qt.  This is a fork of Bitcoin Core.")
-    (license license:expat)))
-
 (define-public libofx
   (package
     (name "libofx")
-    (version "0.10.7")
+    (version "0.10.9")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -1650,13 +1676,14 @@ a client based on Qt.  This is a fork of Bitcoin Core.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1k3ygavyb9b3f1ra62dsa46iiia0a1588yn3zy7bh7w4vfcrbd6d"))))
+                "120hyhs4fkxrgpvd2p0hpf5v8dq0jjql2fzllk77m33m1c82pr18"))))
     (build-system gnu-build-system)
     (arguments
      (list
       #:parallel-build? #f              ;fails with -j64
       #:configure-flags
-      #~(list (string-append "--with-opensp-includes="
+      #~(list "--disable-static"
+              (string-append "--with-opensp-includes="
                              (search-input-directory %build-inputs
                                                      "include/OpenSP")))))
     (native-inputs
@@ -1686,7 +1713,7 @@ following three utilities are included with the library:
 (define-public bitcoin-unlimited
   (package
     (name "bitcoin-unlimited")
-    (version "1.10.0.0")
+    (version "2.0.0.0")
     (source
      (origin
        (method git-fetch)
@@ -1695,7 +1722,7 @@ following three utilities are included with the library:
              (commit (string-append "BCHunlimited" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "12yb2rbd6hsns43qyxc5dm7h5k4sph9sb64q7kkbqi3xhgrrsjdq"))))
+        (base32 "0s4iyjfhjx21xa3z7433m4skfr115565k0ckza87ha2d4nl8kz5h"))))
     (build-system gnu-build-system)
     (native-inputs
      (list autoconf
@@ -1742,6 +1769,16 @@ following three utilities are included with the library:
              ;; exist.
              (substitute* "src/Makefile.test.include"
                (("test/utilprocess_tests.cpp")
+                ""))
+             ;; Disable PaymentServer failing test because it's using
+             ;; an expired SSL certificate.
+             (substitute* "src/qt/test/test_main.cpp"
+               (("if \\(QTest::qExec\\(&test2\\) != 0\\)")
+                "if (QTest::qExec(&test2) == 0)"))
+             ;; The following test passes with OpenSSL 1.1, but fails with
+             ;; OpenSSL 3.
+             (substitute* "src/secp256k1/src/tests.c"
+               (("run_ecdsa_der_parse\\(\\);")
                 ""))))
          (add-before 'check 'set-home
            (lambda _
@@ -1901,8 +1938,8 @@ generate a variety of reports from them, and provides a web interface.")
 (define-public emacs-beancount
   ;; Note that upstream has not made any release since this project moved
   ;; into its own repository (it was originally part of beancount itself)
-  (let ((commit "dbafe6a73d90c1f64d457b356b9dbb43499f70d5")
-        (revision "0"))
+  (let ((commit "687775da63784d153a3c1cfee9801090c6b51842")
+        (revision "1"))
     (package
       (name "emacs-beancount")
       (version (git-version "0.0.0" revision commit))
@@ -1914,7 +1951,7 @@ generate a variety of reports from them, and provides a web interface.")
                (commit commit)))
          (sha256
           (base32
-           "0v9bws2gv5b00x829p7hrcxqgdp7iwxvv1vhfjka81qrw6w1fvjw"))
+           "08383yqqanx29al1hg1r6ndx3gwjg6fj7kl340f1zz9m9cfiyvg3"))
          (file-name (git-file-name name version))))
       (build-system emacs-build-system)
       (home-page "https://github.com/beancount/beancount-mode")
@@ -1926,59 +1963,68 @@ generate a variety of reports from them, and provides a web interface.")
 (define-public hledger-web
   (package
     (name "hledger-web")
-    (version "1.21")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "https://hackage.haskell.org/package/"
-                           "hledger-web/hledger-web-" version ".tar.gz"))
-       (sha256
-        (base32
-         "0ivszqcypw0j2wn4r7fv7dqm1pvr0b1y6rqpxagzyk8cxn3ic9g2"))))
+    (version "1.27.1")
+    (source (origin
+              (method url-fetch)
+              (uri (hackage-uri "hledger-web" version))
+              (sha256
+               (base32
+                "151dxci7dld8626dzw823sr3d9iaac92wfzbfcbdz4jh9f7n07wa"))))
     (build-system haskell-build-system)
+    (properties '((upstream-name . "hledger-web")))
+    (inputs (list ghc-decimal
+                  ghc-aeson
+                  ghc-base64
+                  ghc-blaze-html
+                  ghc-blaze-markup
+                  ghc-breakpoint
+                  ghc-case-insensitive
+                  ghc-clientsession
+                  ghc-cmdargs
+                  ghc-conduit
+                  ghc-conduit-extra
+                  ghc-data-default
+                  ghc-extra
+                  ghc-hjsmin
+                  ghc-hledger
+                  ghc-hledger-lib
+                  ghc-hspec
+                  ghc-http-client
+                  ghc-http-conduit
+                  ghc-http-types
+                  ghc-megaparsec
+                  ghc-network
+                  ghc-shakespeare
+                  ghc-unix-compat
+                  ghc-unordered-containers
+                  ghc-utf8-string
+                  ghc-wai
+                  ghc-wai-cors
+                  ghc-wai-extra
+                  ghc-wai-handler-launch
+                  ghc-warp
+                  ghc-yaml
+                  ghc-yesod
+                  ghc-yesod-core
+                  ghc-yesod-form
+                  ghc-yesod-static
+                  ghc-yesod-test))
     (arguments
-     `(#:tests? #f ; TODO: fail.
-       #:cabal-revision
-       ("1" "1hnw10ibhbafbsfj5lzlxwjg4cjnqr5bb51n6mqbi30qqabgq78x")))
-    (inputs
-     (list ghc-aeson
-           ghc-blaze-html
-           ghc-blaze-markup
-           ghc-case-insensitive
-           ghc-clientsession
-           ghc-cmdargs
-           ghc-conduit-extra
-           ghc-conduit
-           ghc-data-default
-           ghc-decimal
-           ghc-extra
-           ghc-hjsmin
-           ghc-hledger-lib
-           ghc-hspec
-           ghc-http-client
-           ghc-http-conduit
-           ghc-http-types
-           ghc-megaparsec
-           ghc-network
-           ghc-shakespeare
-           ghc-unix-compat
-           ghc-unordered-containers
-           ghc-utf8-string
-           ghc-wai-cors
-           ghc-wai-extra
-           ghc-wai
-           ghc-wai-handler-launch
-           ghc-warp
-           ghc-yaml
-           ghc-yesod-core
-           ghc-yesod-form
-           ghc-yesod
-           ghc-yesod-static
-           ghc-yesod-test
-           hledger))
-    (home-page "https://hledger.org")
+     (list
+      #:haddock? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; Tests write to $HOME.
+          (add-before 'check 'set-home
+            (lambda _
+              (setenv "HOME" "/tmp")))
+           (add-after 'register 'remove-libraries
+             (lambda* (#:key outputs #:allow-other-keys)
+               (delete-file-recursively (string-append (assoc-ref outputs "out") "/lib")))))))
+    (home-page "http://hledger.org")
     (synopsis "Web-based user interface for the hledger accounting system")
-    (description "This package provides a simple Web-based User
+    (description
+     "This package provides a simple Web-based User
 Interface (UI) for the hledger accounting system.  It can be used as a
 local, single-user UI, or as a multi-user UI for viewing, adding, and
 editing on the Web.")
@@ -2027,7 +2073,7 @@ trading, and risk management in real-life.")
      (list gsl gtk+ ncurses))
     (native-inputs
      (list pkg-config texinfo
-           (texlive-updmap.cfg (list texlive-epsf texlive-tex-texinfo))))
+           (texlive-updmap.cfg (list texlive-epsf texlive-texinfo))))
     (home-page "https://anthonybradford.github.io/optionmatrix/")
     (synopsis "Financial derivative calculator")
     (description
@@ -2134,7 +2180,7 @@ and manipulation.")
 (define-public xmrig
   (package
     (name "xmrig")
-    (version "6.18.0")
+    (version "6.20.0")
     (source
      (origin
        (method git-fetch)
@@ -2142,17 +2188,19 @@ and manipulation.")
              (url "https://github.com/xmrig/xmrig")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
-       (sha256 (base32 "1ncnfjpjwjdv29plyiam2nh01bfni49sgfi3qkijygi1450w71dx"))
+       (sha256 (base32 "02clipcixn0g4sm3b5r1cxx56ddhjkm8sqnq40jy1zm66ad5zhkj"))
        (modules '((guix build utils)))
        (snippet
         ;; TODO: Try to use system libraries instead of bundled ones in
         ;; "src/3rdparty/". It requires changes to some "cmake/..." scripts
         ;; and to some source files.
-        #~(substitute* "src/donate.h"
-            (("constexpr const int kDefaultDonateLevel = 1;")
-             "constexpr const int kDefaultDonateLevel = 0;")
-            (("constexpr const int kMinimumDonateLevel = 1;")
-             "constexpr const int kMinimumDonateLevel = 0;")))))
+        #~(begin
+            (delete-file-recursively "src/3rdparty/hwloc")
+            (substitute* "src/donate.h"
+              (("constexpr const int kDefaultDonateLevel = 1;")
+               "constexpr const int kDefaultDonateLevel = 0;")
+              (("constexpr const int kMinimumDonateLevel = 1;")
+               "constexpr const int kMinimumDonateLevel = 0;"))))))
     (build-system cmake-build-system)
     (inputs
      (list
@@ -2174,23 +2222,22 @@ and manipulation.")
     (home-page "https://xmrig.com/")
     (synopsis "Monero miner")
     (description
-     "XMRig is a high performance, cross platform RandomX, KawPow,
-CryptoNight, AstroBWT and GhostRider unified CPU/GPU miner and RandomX
-benchmark.
+     "XMRig is a high-performance, cross-platform RandomX, KawPow,
+CryptoNight and GhostRider unified CPU/GPU miner and RandomX benchmark.
 
 Warning: upstream, by default, receives a percentage of the mining time.  This
-anti-functionality has been neutralised in Guix, but possibly not in all other
+anti-functionality has been neutralized in Guix, but possibly not in all other
 distributions.
 
-Warning: this software, because of it's nature, has high energy consumption.
-Also, the energy expenses might be higher that the cryptocurrency gained by
+Warning: this software, because of its nature, has high energy consumption.
+Also, the energy expenses might be higher than the cryptocurrency gained by
 mining.")
     (license license:gpl3+)))
 
 (define-public p2pool
   (package
     (name "p2pool")
-    (version "2.2.1")
+    (version "3.5")
     (source
      (origin
        (method git-fetch)
@@ -2199,7 +2246,7 @@ mining.")
              (commit (string-append "v" version))
              (recursive? #t)))
        (file-name (git-file-name name version))
-       (sha256 (base32 "19pn7axj96yvza2x7678rs79c2vgmhl8d7f9ki72v2n6l2630fw8"))
+       (sha256 (base32 "1brv3lksajnmpf7g01jbx76nax6vlx8231sxb0s33yf76yc481xb"))
        (modules '((guix build utils)))
        (snippet
         #~(for-each delete-file-recursively
@@ -2213,13 +2260,24 @@ mining.")
     (inputs
      (list cppzmq curl gss libuv rapidjson zeromq))
     (arguments
-     (list
-      #:tests? #f
-      #:phases
-      #~(modify-phases %standard-phases
-          (replace 'install
-            (lambda _
-              (install-file "p2pool" (string-append #$output "/bin")))))))
+     (list ; FIXME: Linking fails when LTO is activated.
+           #:configure-flags #~(list "-DWITH_LTO=OFF")
+           #:phases
+           #~(modify-phases %standard-phases
+               (replace 'check
+                 (lambda* (#:key tests? #:allow-other-keys)
+                   (when tests?
+                     (mkdir-p "tests")
+                     (chdir "tests")
+                     (invoke "cmake" "../../source/tests")
+                     (invoke "make" "-j" (number->string (parallel-job-count)))
+                     (invoke "gzip" "-d" "sidechain_dump.dat.gz")
+                     (invoke "gzip" "-d" "sidechain_dump_mini.dat.gz")
+                     (invoke "./p2pool_tests")
+                     (chdir ".."))))
+               (replace 'install
+                 (lambda _
+                   (install-file "p2pool" (string-append #$output "/bin")))))))
     (home-page "https://p2pool.io/")
     (synopsis "Decentralized Monero mining pool")
     (description "Monero P2Pool is a peer-to-peer Monero mining pool.  P2Pool
@@ -2227,3 +2285,67 @@ combines the advantages of pool and solo mining; you still fully control your
 Monero node and what it mines, but you get frequent payouts like on a regular
 pool.")
     (license license:gpl3)))
+
+(define-public opentaxsolver
+  ;; The OTS version is formatted like tax-year_version. So, at time of
+  ;; writing, the version is 2022_20.00. Each part of this is used in
+  ;; different places in the source uri, so it's convenient to have them
+  ;; separately like this.
+  (let ((tax-year "2022")
+        (ots-version "20.00"))
+    (package
+      (name "opentaxsolver")
+      (version (string-append tax-year "_" ots-version))
+      (source
+       (origin
+         (method url-fetch)
+         (uri (string-append "mirror://sourceforge/opentaxsolver/OTS_"
+                             tax-year "/v" ots-version
+                             "_linux/OpenTaxSolver" version "_linux64.tgz"))
+         (sha256
+          (base32
+           "06k0a72bmwdmr71dvrp8b4vl8vilnggsh92hrp7wjdgcjj9m074w"))
+         (patches (search-patches "opentaxsolver-file-browser-fix.patch"))))
+      (build-system glib-or-gtk-build-system)
+      (arguments
+       (list
+        #:tests? #f                     ;no tests
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'configure)         ;no configure script
+            ;; OTS does provide a shellscript that does exactly this, but we
+            ;; need to do it ourselves to specify the correct compiler and to
+            ;; delete the GUI binaries.
+            (replace 'build
+              (lambda _
+                (delete-file "Run_taxsolve_GUI")
+                (delete-file-recursively "bin")
+                (mkdir "bin")
+                (chdir "src/Gui_gtk")
+                (invoke "make"
+                        (string-append "CC=" #$(cc-for-target)))
+                (chdir "..")
+                (invoke "make"
+                        (string-append "CC=" #$(cc-for-target)))))
+            ;; OTS doesn't provide a `make install` target, because it assumes
+            ;; it'll be run from the tarball. So, we do it ourselves, making
+            ;; sure to replicate the directory structure of the tarball.
+            (replace 'install
+              (lambda _
+                (copy-recursively "../bin"
+                                  (string-append #$output "/bin"))
+                (symlink (string-append #$output "/bin/ots_gui2")
+                         (string-append #$output "/bin/Run_taxsolve_GUI"))
+                (copy-recursively "../tax_form_files"
+                                  (string-append #$output "/tax_form_files"))
+                (copy-recursively "formdata"
+                                  (string-append #$output "/src/formdata")))))))
+      (native-inputs (list pkg-config))
+      (inputs (list gtk+-2))
+      (synopsis "Yearly tax preparation tool")
+      (description
+       "OpenTaxSolver is a program for calculating tax form entries for
+federal and state personal income taxes.  It automatically fills out and
+prints your forms for mailing.")
+      (home-page "https://opentaxsolver.sourceforge.net/")
+      (license license:gpl2+))))
