@@ -104,7 +104,7 @@
                                   version ".tar.xz"))
               (sha256
                (base32
-                "12144dcaihv2ymfm7g2vnvdl4h71hqnsz1mljzf34cpg6ci1h8gf"))
+                "009f7q08vg919b90k2jrsznq73s3n224avz80dd2y7i3rjjq3y6j"))
               (patches (search-patches "emacs-exec-path.patch"
                                        "emacs-fix-scheme-indent-function.patch"
                                        "emacs-source-date-epoch.patch"))
