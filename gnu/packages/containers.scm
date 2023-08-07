@@ -312,7 +312,7 @@ configure network interfaces in Linux containers.")
 (define-public podman
   (package
     (name "podman")
-    (version "4.4.1")
+    (version "4.6.0")
     (source
      (origin
        (method git-fetch)
