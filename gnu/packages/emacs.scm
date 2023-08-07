@@ -97,7 +97,7 @@
 (define-public emacs
   (package
     (name "emacs")
-    (version "28.2")
+    (version "29.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/emacs/emacs-"
