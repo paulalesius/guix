@@ -324,7 +324,8 @@ configure network interfaces in Linux containers.")
        (snippet '(substitute* "Makefile"
                    ((".*hack/btrfs.*") "")))
        (sha256
-        (base32 "0qbr6rbyig3c2hvdvmd94jjkg820hpdz6j7dgyv62dl6wfwvj5jj"))
+        (base32
+         "1x1iyjd3q2d8w3rqx7d5bv4n0pfk4ffj2abij2b90ir12rjc9izi"))
        (file-name (git-file-name name version))))
 
     (build-system gnu-build-system)
