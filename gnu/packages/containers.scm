@@ -120,7 +120,7 @@ Container Runtime fully written in C.")
              (url "https://github.com/containers/conmon")
              (commit (string-append "v" version))))
        (sha256
-        (base32 "1cxklcihb2i4ywli0fxafkp2gi1x831r37z7spnigaj6pzj1517w"))
+        (base32 "0yi6r4cxqhh7bjc2kiqjy66ry1k0n1xa3hmply1njgr8462ymaav"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (arguments
