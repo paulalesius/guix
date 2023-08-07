@@ -145,10 +145,15 @@
       #:tests? #f                      ; no check target
       #:modules (%emacs-modules build-system)
       #:configure-flags #~(list "--with-modules"
-                                "--with-cairo"
                                 "--with-native-compilation"
+				"--with-sound=no"
+				"--with-x-toolkit=no"
+				"--without-x"
+				"--without-cairo"
+				"--without-systemd"
+				"--without-gpm"
                                 "--disable-build-details")
-      #:make-flags #~(list "NATIVE_FULL_AOT=1")
+      #:make-flags #~(list "NATIVE_FULL_AOT=0")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'set-paths 'set-libgccjit-path
