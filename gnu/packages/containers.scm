@@ -55,7 +55,7 @@
   (let ((commit "c381048530aa750495cf502ddb7181f2ded5b400"))
     (package
       (name "crun")
-      (version "1.4.5")
+      (version "1.8.6")
       (source
        (origin
          (method git-fetch)
