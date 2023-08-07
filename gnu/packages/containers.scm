@@ -112,7 +112,7 @@ Container Runtime fully written in C.")
 (define-public conmon
   (package
     (name "conmon")
-    (version "2.0.31")
+    (version "2.1.7")
     (source
      (origin
        (method git-fetch)
