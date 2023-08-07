@@ -152,7 +152,7 @@
 				"--without-cairo"
 				"--without-systemd"
 				"--without-gpm"
-                                "--disable-build-details")
+                                "--disable-build-details=no")
       #:make-flags #~(list "NATIVE_FULL_AOT=0")
       #:phases
       #~(modify-phases %standard-phases
