@@ -261,7 +261,7 @@ network namespaces.")
 (define-public cni-plugins
   (package
     (name "cni-plugins")
-    (version "1.0.1")
+    (version "1.3.0")
     (source
      (origin
        (method git-fetch)
@@ -269,7 +269,7 @@ network namespaces.")
              (url "https://github.com/containernetworking/plugins")
              (commit (string-append "v" version))))
        (sha256
-        (base32 "1j91in0mg4nblpdccyq63ncbnn2pc2zzjp1fh3jy0bsndllgv0nc"))
+        (base32 "1s7vwbnhh8h2drsi82vs50xh47ab2akh1398ikyxxjdp0bvqdfbi"))
        (file-name (git-file-name name version))))
     (build-system go-build-system)
     (arguments
