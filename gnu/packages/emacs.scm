@@ -107,7 +107,8 @@
                 "009f7q08vg919b90k2jrsznq73s3n224avz80dd2y7i3rjjq3y6j"))
               (patches (search-patches "emacs-exec-path.patch"
                                        "emacs-fix-scheme-indent-function.patch"
-                                       "emacs-source-date-epoch.patch"))
+                                       ;; Does not apply to emacs 29.1 "emacs-source-date-epoch.patch"
+                                       ))
               (modules '((guix build utils)))
               (snippet
                '(with-directory-excursion "lisp"
