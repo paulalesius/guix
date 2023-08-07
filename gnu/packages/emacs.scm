@@ -145,14 +145,14 @@
       #:tests? #f                      ; no check target
       #:modules (%emacs-modules build-system)
       #:configure-flags #~(list "--with-modules"
-                                "--with-native-compilation"
+                                "--with-native-compilation=no"
 				"--with-sound=no"
 				"--with-x-toolkit=no"
 				"--without-x"
 				"--without-cairo"
 				"--without-systemd"
 				"--without-gpm"
-                                "--disable-build-details=no")
+                                "--disable-build-details")
       #:make-flags #~(list "NATIVE_FULL_AOT=0")
       #:phases
       #~(modify-phases %standard-phases
