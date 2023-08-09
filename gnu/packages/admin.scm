@@ -4023,11 +4023,15 @@ you are running, what theme or icon set you are using, etc.")
       #:phases
       #~(modify-phases %standard-phases
           (delete 'configure)
-          (add-before 'build 'path-source-paths
+          (add-before 'build 'patch-source-paths
             (lambda _
               (substitute* "uwufetch.c"
                 (("(/usr(/local)?)(.*;)" all _ _ rest)
-                 (string-append #$output rest))))))))
+                 (string-append #$output rest)))))
+          ;; TODO this will be fixed in the next release of uwufetch
+          (add-before 'install 'make-include-dir
+            (lambda _
+              (mkdir-p (string-append #$output "/include")))))))
     (inputs (list lshw
                   ;; viu XXX not yet packaged in Guix
                   xwininfo))

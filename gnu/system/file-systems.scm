@@ -447,11 +447,11 @@ TARGET in the other system."
 (define %control-groups
   ;; The cgroup2 file system.
   (list (file-system
-           (device "none")
-	   (mount-point "/sys/fs/cgroup")
-	   (type "cgroup2")
-	   (check? #f)
-	   (create-mount-point? #f))))
+          (device "none")
+	  (mount-point "/sys/fs/cgroup")
+	  (type "cgroup2")
+	  (check? #f)
+	  (create-mount-point? #f))))
 
 (define %elogind-file-systems
   ;; We don't use systemd, but these file systems are needed for elogind,

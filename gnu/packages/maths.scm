@@ -82,7 +82,6 @@
   #:use-module (ice-9 match)
   #:use-module (gnu packages)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
@@ -2667,7 +2666,7 @@ fixed point (16.16) format.")
        ("perl" ,perl)
        ("python" ,python-wrapper)))
     (home-page "https://github.com/flame/libflame")
-    (synopsis "High-performance object-based library for DLA computations")
+    (synopsis "High-performance library for @acronym{DLA, dense linear algebra} computations")
     (description "@code{libflame} is a portable library for dense matrix
 computations, providing much of the functionality present in LAPACK, developed
 by current and former members of the @acronym{SHPC, Science of High-Performance
@@ -4724,6 +4723,7 @@ library.")
     (build-system gnu-build-system)
     (arguments
      (list
+      #:configure-flags #~'("--enable-cblas")
       #:modules
       '((guix build gnu-build-system)
         (guix build utils)
