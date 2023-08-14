@@ -786,7 +786,6 @@ on memory usage on GNU/Linux systems.")
              `(,lm-sensors "lib")))
     (native-inputs
      (list autoconf automake python-minimal-wrapper))     ; for scripts/MakeHeader.py
-    (propagated-inputs (list lm-sensors))
     (home-page "https://htop.dev")
     (synopsis "Interactive process viewer")
     (description
