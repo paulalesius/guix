@@ -1330,6 +1330,33 @@ ligatures, but also offers additional control over them.")
 a given (Unicode) glyph.  It relies on Fontconfig.")
     (license license:bsd-3)))
 
+(define-public texlive-aleph
+  (package
+    (name "texlive-aleph")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/aleph/base/" "doc/man/man1/aleph.1"
+                   "doc/man/man1/aleph.man1.pdf")
+             (base32
+              "0b7dihilh2v8qcp4m8fblyc10jc5i4fhpj3pspzinag0pk66b7nb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:create-formats #~(list "aleph")))
+    (propagated-inputs
+     (list texlive-cm
+           texlive-hyphen-base
+           texlive-knuth-lib
+           texlive-lambda
+           texlive-latex
+           texlive-plain))
+    (home-page "https://ctan.org/pkg/aleph")
+    (synopsis "Extended TeX")
+    (description
+     "This package provides a development of Omega, using most of the
+extensions of TeX, itself developed for e-TeX.")
+    (license license:gpl3+)))
+
 (define-public texlive-alg
   (package
     (name "texlive-alg")
@@ -1722,6 +1749,42 @@ mocking nonsense phrases from the movie series @emph{Amici Miei} (``My
 friends'', in English), directed by Mario Monicelli.")
     (license license:lppl1.3c)))
 
+(define-public texlive-antomega
+  (package
+    (name "texlive-antomega")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/omega/antomega/" "omega/ocp/antomega/"
+                   "omega/otp/antomega/"
+                   "source/lambda/antomega/"
+                   "tex/lambda/antomega/")
+             (base32
+              "02pfjm9y33mjggn9w2lrk1fxfz3m72xgbvyvrq2iri9yf0hk33pf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-build
+            ;; This phase is necessary because the build phase is reluctant to
+            ;; generate "hyphen.cfg" since there is another one among the
+            ;; inputs already.
+            (lambda _
+              (substitute* "source/lambda/antomega/antomega.ins"
+                (("\\\\generateFile\\{hyphen\\.cfg\\}\\{t\\}")
+                 "\\generateFile{hyphen.cfg}{f}")))))))
+    (propagated-inputs (list texlive-omega))
+    (home-page "https://ctan.org/pkg/antomega")
+    (synopsis "Alternative language support for Omega and Lambda")
+    (description
+     "This package provides a language support package for Omega and Lambda.
+This replaces the original Omega package for use with Lambda, and provides
+extra facilities (including Babel-like language switching, which eases porting
+of LaTeX documents to Lambda).")
+    (license license:lppl)))
+
 (define-public texlive-apnum
   (package
     (name "texlive-apnum")
@@ -1907,6 +1970,29 @@ to get onto CTAN.")
 converted between Plain TeX and LaTeX by a simple editing action.")
     (license license:lppl1.3+)))
 
+(define-public texlive-auto-pst-pdf
+  (package
+    (name "texlive-auto-pst-pdf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/auto-pst-pdf/"
+                   "source/latex/auto-pst-pdf/"
+                   "tex/latex/auto-pst-pdf/")
+             (base32
+              "1lpjwqd0rhdzz3kywl54pjlpj1qsj7kflj0336vj2zb20rxl0hqp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-ifplatform texlive-iftex texlive-xkeyval))
+    (home-page "https://ctan.org/pkg/auto-pst-pdf")
+    (synopsis "Wrapper for @code{pst-pdf} (with some PSfrag features)")
+    (description
+     "The package uses @samp{--shell-escape} to execute @code{pst-pdf} when necessary.
+Wrappers are provided for various psfrag-related features so that Matlab
+figures via @code{laprint}, Mathematica figures via MathPSfrag, and regular
+PSfrag figures can all be input consistently and easily.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-autoaligne
   (package
     (name "texlive-autoaligne")
@@ -2090,6 +2176,25 @@ Basque according to the correct forms ruled by The Basque Language Academy
 (Euskaltzaindia).  The commands automatically solve the complex declination
 issues of numbers in Basque.")
     (license license:lppl1.2+)))
+
+(define-public texlive-bclogo
+  (package
+    (name "texlive-bclogo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bclogo/" "metapost/bclogo/"
+                   "tex/latex/bclogo/")
+             (base32
+              "1hdg99xkmdca23s7i63099r9jvgw2larv8aawjllj9mw18195jr9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bclogo")
+    (synopsis "Creating colourful boxes with logos")
+    (description
+     "The package facilitates the creation of colorful boxes with a title and logo.
+It may use either TikZ or PSTricks as graphics engine.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-begriff
   (package
@@ -2981,6 +3086,31 @@ leading journals.  It also provides some handy chemistry-related macros.")
 Interfaces for Plain TeX, ConTeXt and LaTeX are provided.")
     (license license:lppl1.3+)))
 
+(define-public texlive-churchslavonic
+  (package
+    (name "texlive-churchslavonic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/churchslavonic/"
+                   "tex/latex/churchslavonic/")
+             (base32
+              "1qyxyp0ckizrryvqyz8cz066g9vvz01ki6b50sm5hk44b6b4v3ri")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs
+     (list texlive-etoolbox
+           texlive-fonts-churchslavonic
+           texlive-hyphen-complete
+           texlive-oberdiek
+           texlive-xcolor))
+    (home-page "https://ctan.org/pkg/churchslavonic")
+    (synopsis "Typeset documents in Church Slavonic language using Unicode")
+    (description
+     "The package provides fonts, hyphenation patterns, and supporting macros
+to typeset Church Slavonic texts.")
+    (license license:expat)))
+
 (define-public texlive-clrscode
   (package
     (name "texlive-clrscode")
@@ -3625,6 +3755,29 @@ displaying one step in to the right.  The macros work equally well with Plain
 TeX and with LaTeX.")
     (license license:lppl)))
 
+(define-public texlive-disser
+  (package
+    (name "texlive-disser")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/disser/" "makeindex/disser/"
+                   "source/latex/disser/" "tex/latex/disser/")
+             (base32
+              "0sxvj4cka9xqzl2s3c465fm19lc1b8hyar1chjb51y42q4mx2bmg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/disser")
+    (synopsis "Class and templates for typesetting dissertations in Russian")
+    (description
+     "Disser comprises a document class and set of templates for typesetting
+dissertations in Russian.  One of its primary advantages is a simplicity of
+format specification for titlepage, headers and elements of automatically
+generated lists (table of contents, list of figures, etc).  Bibliography
+styles, that conform to the requirements of the Russian standard GOST
+R 7.0.11-2011, are provided.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-docbytex
   (package
     (name "texlive-docbytex")
@@ -3759,6 +3912,31 @@ BibLaTeX package, a practical example of french thesis document, and
 documentation.  The class assumes use of Biber and BibLaTeX.")
     (license license:lppl1.3+)))
 
+(define-public texlive-dsptricks
+  (package
+    (name "texlive-dsptricks")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/dsptricks/"
+                   "tex/latex/dsptricks/")
+             (base32
+              "03ykpbvmb95n6j5071c5hrja4x6x3cpdnmppj9gjjjh63ddv40m6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dsptricks")
+    (synopsis "Macros for Digital Signal Processing (DSP) plots")
+    (description
+     "The package provides a set of @code{LaTeX} macros (based on PSTricks)
+for plotting the kind of graphs and figures that are usually employed in
+digital signal processing publications.  DSPTricks provides facilities for
+standard discrete-time lollipop plots, continuous-time and frequency plots,
+and pole-zero plots.  The companion package
+DSPFunctions (@file{dspfunctions.sty}) provides macros for computing frequency
+responses and DFTs, while the package DSPBlocks (@file{dspblocks.sty})
+supports DSP block diagrams.")
+    (license license:lppl)))
+
 (define-public texlive-dyntree
   (package
     (name "texlive-dyntree")
@@ -3845,6 +4023,25 @@ related to the notation of vectors, matrices, sets, calligraphic and roman
 letters statistical distributions constants and symbols matrix operators and
 statistical operators.")
     (license license:lppl1.3+)))
+
+(define-public texlive-edmac
+  (package
+    (name "texlive-edmac")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/edmac/" "source/latex/edmac/"
+                   "tex/generic/edmac/")
+             (base32
+              "1pflqzrzfyw725ypc6lcryzzbizk13j69h4875r6q4fs763kv3w1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/edmac")
+    (synopsis "Typeset critical editions")
+    (description
+     "This is the type example package for typesetting scholarly critical
+editions.")
+    (license license:gpl2)))
 
 (define-public texlive-eltex
   (package
@@ -3971,6 +4168,54 @@ you use any special symbols inside your command.")
 @url{https://github.com/objectionary/sodg, SODG} graphs for the
 @url{https://www.eolang.org, EO} programming language.")
     (license license:expat)))
+
+(define-public texlive-eplain
+  (package
+    (name "texlive-eplain")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/eplain/"
+                   "doc/info/eplain.info"
+                   "doc/man/man1/eplain.1"
+                   "doc/man/man1/eplain.man1.pdf"
+                   "source/eplain/"
+                   "tex/eplain/")
+             (base32
+              "00nmqhfckrf8ygw6i93d5xnf85i8a88ryadb5ml73w4rllwjxr72")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:create-formats #~(list "eplain")))
+    (propagated-inputs
+     (list texlive-atbegshi
+           texlive-atveryend
+           texlive-babel
+           texlive-cm
+           texlive-everyshi
+           texlive-firstaid
+           texlive-hyphen-complete
+           texlive-knuth-lib
+           texlive-l3backend
+           texlive-l3kernel
+           texlive-l3packages
+           texlive-latex
+           texlive-latex-fonts
+           texlive-pdftex
+           texlive-plain
+           texlive-tex-ini-files
+           texlive-unicode-data))
+    (home-page "https://ctan.org/pkg/eplain")
+    (synopsis "Extended plain TeX macros")
+    (description
+     "This package provides an extended version of the plain TeX format,
+adding support for bibliographies, tables of contents, enumerated lists,
+verbatim input of files, numbered equations, tables, two-column output,
+footnotes, hyperlinks in PDF output and commutative diagrams.  Eplain can also
+load some of the more useful LaTeX packages, notably @code{graphics},
+@code{graphicx} (an extended version of graphics), @code{color},
+@code{autopict} (a package instance of the LaTeX picture code), @code{psfrag},
+and @code{url}.")
+    (license license:gpl2+)))
 
 (define-public texlive-epslatex-fr
   (package
@@ -4615,6 +4860,29 @@ package.  Its main features are:
 Polyglossia.")
     (license license:lppl1.3+)))
 
+(define-public texlive-gost
+  (package
+    (name "texlive-gost")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/gost/" "bibtex/csf/gost/"
+                   "doc/bibtex/gost/" "source/bibtex/gost/")
+             (base32
+              "0rsqk4r1r741ggvpgg7g51knlaqrrdq9g8yiix66vx3n5v1arp26")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gost")
+    (synopsis "BibTeX styles to format according to GOST")
+    (description
+     "This package provides BibTeX styles to format bibliographies in English,
+Russian or Ukrainian according to GOST 7.0.5-2008 or GOST 7.1-2003.  Both
+8-bit and Unicode (UTF-8) versions of each @code{BibTeX} style, in each case
+offering a choice of sorted and unsorted.  Further, a set of three
+styles (which do not conform to current standards) are retained for backwards
+compatibility.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-gotoh
   (package
     (name "texlive-gotoh")
@@ -4933,6 +5201,60 @@ The class is based on @code{scrbook}, from the KOMA-Script bundle.")
 adds a collection of useful @acronym{HEP, High Energy Physics} units to the
 existing SIunits set.")
     (license license:lppl)))
+
+(define-public texlive-hitex
+  (package
+    (name "texlive-hitex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/hitex/base/"
+                   "doc/man/man1/hishrink.1"
+                   "doc/man/man1/hishrink.man1.pdf"
+                   "doc/man/man1/histretch.1"
+                   "doc/man/man1/histretch.man1.pdf"
+                   "doc/man/man1/hitex.1"
+                   "doc/man/man1/hitex.man1.pdf"
+                   "makeindex/hitex/"
+                   "tex/hitex/base/")
+             (base32
+              "19q0sd0mhsamns9i7gr85n2n0jjc6p2n2xcc7s9b65hz8zp0bdbk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:create-formats #~(list "hilatex" "hitex")))
+    (propagated-inputs
+     (list texlive-atbegshi
+           texlive-atveryend
+           texlive-babel
+           texlive-cm
+           texlive-etex
+           texlive-everyshi
+           texlive-firstaid
+           texlive-hyphen-base
+           texlive-knuth-lib
+           texlive-l3backend
+           texlive-l3kernel
+           texlive-l3packages
+           texlive-latex
+           texlive-latex-fonts
+           texlive-plain
+           texlive-tex-ini-files
+           texlive-unicode-data))
+    (home-page "https://ctan.org/pkg/hitex")
+    (synopsis "TeX extension writing HINT output for on-screen reading")
+    (description
+     "This package provides a TeX extension that generates HINT output.  The
+HINT file format is an alternative to the DVI and PDF formats which was
+designed specifically for on-screen reading of documents.  Especially on
+mobile devices, reading DVI or PDF documents can be cumbersome.  Mobile
+devices are available in a large variety of sizes but typically are not large
+enough to display documents formated for a4/letter-size paper.  To compensate
+for the limitations of a small screen, users are used to alternating between
+landscape (few long lines) and portrait (more short lines) mode.  The HINT
+format supports variable and varying screen sizes, leveraging the ability of
+TeX to format a document for nearly-arbitrary values of @code{\\hsize} and
+@code{\\vsize}.")
+    (license license:x11)))
 
 (define-public texlive-hrlatex
   (package
@@ -5552,6 +5874,21 @@ practical guide to LaTeX2e by Mark Trettin.  It focuses on obsolete packages
 and commands.")
     (license license:public-domain)))
 
+(define-public texlive-lambda
+  (package
+    (name "texlive-lambda")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "tex/lambda/base/" "tex/lambda/config/")
+             (base32
+              "1ajx5g5cd5s9jqr4b196689k7zmlxmhhksly88qps31s7lzaprvn")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lambda")
+    (synopsis "LaTeX for Omega and Aleph")
+    (description "This is LaTeX for Omega and Aleph.")
+    (license license:lppl1.0+)))
+
 (define-public texlive-latex2e-help-texinfo-fr
   (package
     (name "texlive-latex2e-help-texinfo-fr")
@@ -5753,6 +6090,29 @@ proofs and boxes.  It creates proofs in a style similar to that used in
 @emph{Logic in Computer Science} by Huth and Ryan.")
     (license license:lppl1.3+)))
 
+(define-public texlive-lollipop
+  (package
+    (name "texlive-lollipop")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/otherformats/lollipop/" "tex/lollipop/")
+             (base32
+              "0xdldlnhsr2n8544j9vd6gllin8bfkpcbhlpmxlhrvjl5bdg0rjp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:create-formats #~(list "lollipop")))
+    (propagated-inputs (list texlive-cm texlive-hyphen-base))
+    (home-page "https://ctan.org/pkg/lollipop")
+    (synopsis "TeX made easy")
+    (description
+     "Lollipop is a macro package that functions as a toolbox for writing TeX
+macros.  Its main aim is to make macro writing so easy that implementing
+a fully new layout in TeX would become a matter of less than an hour for an
+average document.  The aim is that such a task could be accomplished by
+someone with only a very basic training in TeX programming.")
+    (license license:gpl3)))
+
 (define-public texlive-longdivision
   (package
     (name "texlive-longdivision")
@@ -5825,6 +6185,25 @@ Fitch style, with subproofs indented and offset by scope lines.  The proofs
 from use of the package are in the format used in the textbook @emph{Language,
 Proof, and Logic} by Dave Barker-Plummer, Jon Barwise, and John Etchemendy.")
     (license license:lppl1.3+)))
+
+(define-public texlive-lshort-bulgarian
+  (package
+    (name "texlive-lshort-bulgarian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lshort-bulgarian/")
+             (base32
+              "0qg23asq2i5mqhp9xblv5hm3qxmd5886d5x0gq1fkdbyy9gsawi3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lshort-bulgarian")
+    (synopsis
+     "Bulgarian translation of the @emph{Short Introduction to LaTeX2e}")
+    (description
+     "This package includes the source files, PostScript and PDF files of the
+Bulgarian translation of the @emph{Short Introduction to LaTeX2e}.")
+    (license license:public-domain)))
 
 (define-public texlive-lshort-czech
   (package
@@ -5974,6 +6353,24 @@ to LaTeX2e: LaTeX2e-Kurzbeschreibung}.")
 to LaTeX2e.}")
     (license license:gpl3+)))
 
+(define-public texlive-lshort-mongol
+  (package
+    (name "texlive-lshort-mongol")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lshort-mongol/")
+             (base32
+              "153k4dzia30fpx847wli7i5p407a808gmj3p7jifq5bpx479qg1g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lshort-mongol")
+    (synopsis "Short introduction to LaTeX, in Mongolian")
+    (description
+     "This package provides a translation of Oetiker's @emph{(Not so) short
+introduction to LaTeX2e}.")
+    (license license:lppl)))
+
 (define-public texlive-lshort-polish
   (package
     (name "texlive-lshort-polish")
@@ -6009,6 +6406,23 @@ to LaTeX2e}.")
      "This is the Portuguese translation of a @emph{(Not So) Short
 Introduction to LaTeX2e}.")
     (license license:public-domain)))
+
+(define-public texlive-lshort-russian
+  (package
+    (name "texlive-lshort-russian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lshort-russian/")
+             (base32
+              "02abh69xl43p56fcciyan4j0z4mqq2j7ynwazq1nywhz37d6zn7y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lshort-russian")
+    (synopsis "Russian introduction to LaTeX")
+    (description "This package provides the Russian version of the @emph{Short
+Introduction to LaTeX2e}.")
+    (license license:gpl3+)))
 
 (define-public texlive-lshort-slovak
   (package
@@ -6081,6 +6495,24 @@ Introduction to LaTeX2e}.")
      "This package provides a Turkish translation of Oetiker's @emph{(Not so)
 short introduction to LaTeX2e}.")
     (license license:public-domain)))
+
+(define-public texlive-lshort-ukr
+  (package
+    (name "texlive-lshort-ukr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lshort-ukr/")
+             (base32
+              "1nsah1h3z3sy96a9x0mfdwby7pvvjwq7zxfv2s8nvsbvnn1al17s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lshort-ukr")
+    (synopsis "Ukrainian version of the LaTeX introduction")
+    (description
+     "This package provides the Ukrainian version of the @emph{Short
+Introduction to LaTeX2e}.")
+    (license license:gpl2+)))
 
 (define-public texlive-lstbayes
   (package
@@ -6733,6 +7165,45 @@ systems of equations and small matrices, @code{displaymath} in double columns
 for long calculations.")
     (license license:lppl1.3+)))
 
+(define-public texlive-mltex
+  (package
+    (name "texlive-mltex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mltex/" "tex/latex/mltex/"
+                   "tex/mltex/config/")
+             (base32
+              "1ip0q5kqj6bg4jkginzljknbrd74ss4iky2gvlmf8nnrq06n89my")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:create-formats #~(list "mllatex" "mltex")))
+    (propagated-inputs
+     (list texlive-atbegshi
+           texlive-atveryend
+           texlive-babel
+           texlive-cm
+           texlive-everyshi
+           texlive-firstaid
+           texlive-hyphen-complete
+           texlive-knuth-lib
+           texlive-l3backend
+           texlive-l3kernel
+           texlive-l3packages
+           texlive-latex
+           texlive-latex-fonts
+           texlive-latexconfig
+           texlive-plain
+           texlive-tex-ini-files
+           texlive-unicode-data))
+    (home-page "https://ctan.org/pkg/mltex")
+    (synopsis "The MLTeX system")
+    (description
+     "MLTeX is a modification of TeX that allows the hyphenation of words with
+accented letters using ordinary Computer Modern (CM) fonts.  The system is
+distributed as a TeX change file.")
+    (license license:knuth)))
+
 (define-public texlive-multiobjective
   (package
     (name "texlive-multiobjective")
@@ -6781,6 +7252,31 @@ and for TOC), new environments @code{itemize*} and @code{enumerate*} for lists
 with long items, page styles have variants for normal, opening, closing, and
 blank pages.")
     (license license:lppl1.2+)))
+
+(define-public texlive-mxedruli
+  (package
+    (name "texlive-mxedruli")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/mxedruli/"
+                   "fonts/afm/public/mxedruli/"
+                   "fonts/map/dvips/mxedruli/"
+                   "fonts/source/public/mxedruli/"
+                   "fonts/tfm/public/mxedruli/"
+                   "fonts/type1/public/mxedruli/"
+                   "tex/latex/mxedruli/")
+             (base32
+              "070lfw12mfimcwhkgb1hh092p8npmhpmba28rzzwfl1kmsmk99q5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/mxedruli")
+    (synopsis "Pair of fonts for different Georgian alphabets")
+    (description
+     "This package provides two Georgian fonts, in both Metafont and Type
+1 formats, which cover the Mxedruli and the Xucuri alphabets.")
+    (license license:lppl)))
 
 (define-public texlive-naive-ebnf
   (package
@@ -7072,6 +7568,81 @@ mathematical function values.")
      "The package will typeset both Z and Object-Z specifications.")
     (license license:lppl)))
 
+(define-public texlive-omega
+  (package
+    (name "texlive-omega")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/omega/base/"
+                   "dvips/omega/"
+                   "fonts/afm/public/omega/"
+                   "fonts/map/dvips/omega/"
+                   "fonts/ofm/public/omega/"
+                   "fonts/ovf/public/omega/"
+                   "fonts/ovp/public/omega/"
+                   "fonts/tfm/public/omega/"
+                   "fonts/type1/public/omega/"
+                   "omega/ocp/char2uni/"
+                   "omega/ocp/misc/"
+                   "omega/ocp/omega/"
+                   "omega/ocp/uni2char/"
+                   "omega/otp/char2uni/"
+                   "omega/otp/misc/"
+                   "omega/otp/omega/"
+                   "omega/otp/uni2char/"
+                   "tex/generic/encodings/"
+                   "tex/generic/omegahyph/"
+                   "tex/plain/omega/")
+             (base32
+              "1gma5angnq5wdxianz0ml7y9jh04lsq9ksspykan06p0cp1bnmjc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/omega")
+    (synopsis "Wide-character-set extension of TeX")
+    (description
+     "This package provides a development of TeX, which deals in multi-octet
+Unicode characters, to enable native treatment of a wide range of languages
+without changing character-set.  Work on Omega has ceased; its compatible
+successor is Aleph, which is itself also in major maintenance mode only.
+Ongoing projects developing Omega (and Aleph) ideas include Omega-2 and
+LuaTeX.")
+    (license license:gpl3+)))
+
+(define-public texlive-omegaware
+  (package
+    (name "texlive-omegaware")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/man/man1/odvicopy.1"
+                   "doc/man/man1/odvicopy.man1.pdf"
+                   "doc/man/man1/odvitype.1"
+                   "doc/man/man1/odvitype.man1.pdf"
+                   "doc/man/man1/ofm2opl.1"
+                   "doc/man/man1/ofm2opl.man1.pdf"
+                   "doc/man/man1/opl2ofm.1"
+                   "doc/man/man1/opl2ofm.man1.pdf"
+                   "doc/man/man1/otangle.1"
+                   "doc/man/man1/otangle.man1.pdf"
+                   "doc/man/man1/otp2ocp.1"
+                   "doc/man/man1/otp2ocp.man1.pdf"
+                   "doc/man/man1/outocp.1"
+                   "doc/man/man1/outocp.man1.pdf"
+                   "doc/man/man1/ovf2ovp.1"
+                   "doc/man/man1/ovf2ovp.man1.pdf"
+                   "doc/man/man1/ovp2ovf.1"
+                   "doc/man/man1/ovp2ovf.man1.pdf")
+             (base32
+              "06kzz0342h6vvc32ydrzgpqsdqv5l0jbd5finr43fmzqi5jnswil")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/omega")
+    (synopsis "Documentation for Omega executables")
+    (description
+     "This package provides the documentation for Omega executables.")
+    (license license:gpl3+)))
+
 (define-public texlive-oplotsymbl
   (package
     (name "texlive-oplotsymbl")
@@ -7135,6 +7706,34 @@ The LaTeX source is visually very similar to a formatted tableau, which makes
 working with the source code painless (well, less painful).  A variety of
 stylistic variants are available to suit personal taste.")
     (license license:lppl1.3+)))
+
+(define-public texlive-otibet
+  (package
+    (name "texlive-otibet")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/otibet/"
+                   "fonts/ofm/public/otibet/"
+                   "fonts/ovf/public/otibet/"
+                   "fonts/ovp/public/otibet/"
+                   "fonts/source/public/otibet/"
+                   "fonts/tfm/public/otibet/"
+                   "omega/ocp/otibet/"
+                   "omega/otp/otibet/"
+                   "source/latex/otibet/"
+                   "tex/latex/otibet/")
+             (base32
+              "0cman22brlm8qklb60mzq8f6c9kmdspv3zfg4s5p0lj9sf03bb6c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/otibet")
+    (synopsis "Support for Tibetan using Omega")
+    (description "This package provides support for Tibetan using Omega.")
+    ;; Per "unidoc.tex": "this package is freely distributable under the GPL
+    ;; Version~?.? or any later one."
+    (license license:gpl1+)))
 
 (define-public texlive-oubraces
   (package
@@ -7616,6 +8215,28 @@ elements such as keywords, identifiers, and comments.")
 algorithms in a natural manner.")
     (license license:lppl)))
 
+(define-public texlive-psizzl
+  (package
+    (name "texlive-psizzl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/otherformats/psizzl/base/"
+                   "source/psizzl/base/" "tex/psizzl/base/"
+                   "tex/psizzl/config/")
+             (base32
+              "07h8raq2k80ycvsaaaxaaczwwnhkxdbnvnr52mihr8dyih5s7jns")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/psizzl")
+    (synopsis "TeX format for physics papers")
+    (description
+     "PSIZZL is a TeX format for physics papers written at SLAC and used at
+several other places.  It dates from rather early in the development of TeX82;
+as a result, some of the descriptions of limitations look rather quaint to
+modern eyes.")
+    (license license:lppl)))
+
 (define-public texlive-pythonhighlight
   (package
     (name "texlive-pythonhighlight")
@@ -7940,6 +8561,83 @@ LaTeX documents.  This may be particularly useful for Math Teachers and IT
 specialists.")
     (license license:lppl1.3c)))
 
+(define-public texlive-serbian-apostrophe
+  (package
+    (name "texlive-serbian-apostrophe")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/serbian-apostrophe/"
+                   "tex/latex/serbian-apostrophe/")
+             (base32
+              "0hkgm4q74kn172nr5whlwjq88sfqm66cvnsv7nidcqssybnn5891")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/serbian-apostrophe")
+    (synopsis "Commands for Serbian words with apostrophes")
+    (description
+     "The package provides a collection of commands (whose names are Serbian
+words) whose expansion is the Serbian word with appropriate apostrophes.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-serbian-date-lat
+  (package
+    (name "texlive-serbian-date-lat")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/serbian-date-lat/"
+                   "tex/latex/serbian-date-lat/")
+             (base32
+              "1m23r2i2dxw4xnxih94iyiwk4a5ggvn7wkqhp8ai5va5grp36kfk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/serbian-date-lat")
+    (synopsis "Updated date typesetting for Serbian")
+    (description
+     "Babel defines dates for Serbian texts, in Latin script.  The style it
+uses does not match current practices.  The present package defines
+a @code{\\date} command that solves the problem.")
+    (license license:gpl2)))
+
+(define-public texlive-serbian-def-cyr
+  (package
+    (name "texlive-serbian-def-cyr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/serbian-def-cyr/"
+                   "tex/latex/serbian-def-cyr/")
+             (base32
+              "116sgzxvny1hbkfc5s8bxirk9zshyv8qdd2fdr8iwqjfd7lhx03i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/serbian-def-cyr")
+    (synopsis "Serbian Cyrillic localization")
+    (description
+     "This package provides abstract, chapter, title, date etc, for Serbian
+language in Cyrillic scripts in T2A encoding and CP1251 code pages.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-serbian-lig
+  (package
+    (name "texlive-serbian-lig")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/serbian-lig/"
+                   "tex/latex/serbian-lig/")
+             (base32
+              "1vq33mr8br7z7y5ayb5wmhy0ralgx6alb9kmhaahdx8a105dl81b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/serbian-lig")
+    (synopsis "Control ligatures in Serbian")
+    (description
+     "The package suppresses @samp{fi} and @samp{fl} (and other ligatures) in
+Serbian text written using Roman script.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-sesamanuel
   (package
     (name "texlive-sesamanuel")
@@ -8215,6 +8913,27 @@ especially when this includes drawing graphics.  In the field of structural
 engineering, those small structures are a key part for teaching.  This package
 permits to create such 2D and 3D structures in a very fast and simple way.")
     (license (list license:gpl3+ license:lppl1.3+))))
+
+(define-public texlive-startex
+  (package
+    (name "texlive-startex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/otherformats/startex/"
+                   "makeindex/startex/"
+                   "source/startex/startex/" "tex/startex/")
+             (base32
+              "06hyz1bwzvabavkl6j9588skjwx8hc5dmiv8z9n7gr1w9aa9zm7x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/startex")
+    (synopsis "XML-inspired format for student use")
+    (description
+     "This package provides a TeX format designed to help students write short
+reports and essays.  It provides the user with a suitable set of commands for
+such a task.  It is also more robust than plain TeX and LaTeX.")
+    (license license:public-domain)))
 
 (define-public texlive-statex
   (package
@@ -8547,6 +9266,34 @@ including emTeX drivers, dviwin, xdvi and dvips, and (using some code from
 ConTeXt) it may also be used with pdfLaTeX.")
     (license license:gpl3+)))
 
+(define-public texlive-t2
+  (package
+    (name "texlive-t2")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/t2/" "fonts/enc/t2/"
+                   "tex/generic/t2/cyrfinst/" "tex/latex/t2/")
+             (base32
+              "058j3bpv03d9nb0nxal1vjpliqqibv6hsjl1qlbgnndm95xd5n1a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/t2")
+    (synopsis "Support for using T2 encoding")
+    (description
+     "The T2 bundle provides a variety of separate support functions for using
+Cyrillic characters in LaTeX:
+@itemize
+@item the @code{mathtext} package, for using Cyrillic letters
+transparently in formulae;
+@item the @code{citehack} package, for using Cyrillic (or indeed any
+non-ASCII) characters in citation keys;
+@item support for Cyrillic in BibTeX;
+@item support for Cyrillic in Makeindex;
+@item and various items of font support.
+@end itemize")
+    (license license:lppl)))
+
 (define-public texlive-tablor
   (package
     (name "texlive-tablor")
@@ -8693,6 +9440,54 @@ that support calculational proofs and Dijkstra's guarded command language.")
 about TeX and Co.  It contains information for beginners, LaTeX packages,
 descriptions, etc.")
     (license license:fdl1.3+)))
+
+(define-public texlive-texsis
+  (package
+    (name "texlive-texsis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/texsis/"
+                   "doc/man/man1/texsis.1"
+                   "doc/man/man1/texsis.man1.pdf"
+                   "doc/otherformats/texsis/base/"
+                   "tex/texsis/base/"
+                   "tex/texsis/config/")
+             (base32
+              "1vdywyg03ab5w50370ml8hwiidim2sy7hhygmz917rnhsnm87lnv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:create-formats #~(list "texsis")))
+    (propagated-inputs
+     (list texlive-cm
+           texlive-hyphen-base
+           texlive-knuth-lib
+           texlive-plain
+           texlive-tex))
+    (home-page "https://ctan.org/pkg/texsis")
+    (synopsis "Plain TeX macros for Physicists")
+    (description
+     "TeXsis is a TeX macro package which provides useful features for
+typesetting research papers and related documents.  For example, it includes
+support specifically for:
+
+@itemize
+@item automatic numbering of equations, figures, tables and references;
+@item simplified control of type sizes, line spacing, footnotes, running
+headlines and footlines, and tables of contents, figures and tables;
+@item specialized document formats for research papers, preprints and
+e-prints, conference proceedings, theses, books, referee reports, letters, and
+memoranda;
+@item simplified means of constructing an index for a book or thesis;
+@item easy to use double column formatting;
+@item specialized environments for lists, theorems and proofs, centered or
+non-justified text, and listing computer code;
+@item specialized macros for easily constructing ruled tables.
+@end itemize
+
+TeXsis was originally developed for physicists, but others may also find it
+useful.  It is completely compatible with Plain TeX.")
+    (license license:lppl)))
 
 (define-public texlive-textgreek
   (package
@@ -9007,6 +9802,29 @@ but gives the possibility to draw arrows on the right side of the alignment.
 These arrows are usually used to give explanations concerning the mathematical
 calculus presented.")
     (license license:lppl1.3+)))
+
+(define-public texlive-xecyrmongolian
+  (package
+    (name "texlive-xecyrmongolian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xecyrmongolian/"
+                   "source/latex/xecyrmongolian/"
+                   "tex/latex/xecyrmongolian/")
+             (base32
+              "0097l8vx76sqpimljwxw194yg6drxzagjxflq3y99n0a0yisax05")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xecyrmongolian")
+    (synopsis
+     "Basic support for Cyrillic Mongolian documents using (Xe|Lua)LaTeX")
+    (description
+     "The @code{xecyrmongolian} package can be used to produce documents in
+Cyrillic Mongolian using either XeLaTeX or LuaLaTeX.  The command
+@code{\\setlanguage} can be used to load alternative hyphenation patterns so
+to be able to create multilingual documents.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-xymtex
   (package
@@ -10912,6 +11730,63 @@ a division operation without destroying the values of the counters containing
 the dividend and divisor.")
     (license license:lppl1.3c)))
 
+(define-public texlive-mongolian-babel
+  (package
+    (name "texlive-mongolian-babel")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mongolian-babel/"
+                   "source/latex/mongolian-babel/"
+                   "tex/latex/mongolian-babel/")
+             (base32
+              "12kzips0jmjahrrfaripglg203dvvr408v5qxjvnrnxqzb8d1i2w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mongolian-babel")
+    (synopsis "Language definition file for Mongolian in Babel")
+    (description
+     "This package provides support for Mongolian in a Cyrillic
+alphabet.  (The work derives from the earlier Russian work for Babel.)")
+    (license license:lppl)))
+
+(define-public texlive-montex
+  (package
+    (name "texlive-montex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/montex/"
+                   "fonts/map/dvips/montex/"
+                   "fonts/source/public/montex/"
+                   "fonts/tfm/public/montex/"
+                   "fonts/type1/public/montex/"
+                   "tex/latex/montex/")
+             (base32
+              "01rbzw0kbiy3wig2mrdclygx7a71dckq9rhqj8jpdnbjyhm9jw35")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (propagated-inputs (list texlive-cbfonts))
+    (home-page "https://ctan.org/pkg/montex")
+    (synopsis "Mongolian LaTeX")
+    (description
+     "MonTeX provides Mongolian and Manju support for the TeX and LaTeX community.
+It provides all necessary characters for writing standard Mongolian in
+Cyrillic and Classical (aka Traditional or Uighur) writing, and Manju as well
+as transliterated Tibetan texts, for which purpose a number of additional
+characters was created.
+
+In MonTeX, both Mongolian and Manju are entered in romanized form.  The
+retransliteration (from Latin input to Mongolian and Manju output) is
+completely realized in TeX and Metafont so that no external preprocessor is
+required.  Please note that most of the enhanced functions of MonTeX require
+a working e-LaTeX environment.  This is especially true when compiling
+documents with Mongolian or Manju as the main document language.  It is
+recommended to choose pdfLaTeX as the resulting PDF files are truly portable.
+Vertical text generated by MonTeX is not supported in DVI.")
+    (license license:gpl3+)))
+
 (define-public texlive-moreverb
   (package
     (name "texlive-moreverb")
@@ -10934,6 +11809,25 @@ package.  The package is formed from a series of small pieces, and is somewhat
 unstructured.  The user who looks for thought-through verbatim facilities is
 advised to consider using the @code{fancyvrb} package in place of
 @code{moreverb}.")
+    (license license:lppl)))
+
+(define-public texlive-mpman-ru
+  (package
+    (name "texlive-mpman-ru")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/metapost/mpman-ru/")
+             (base32
+              "1x3drpi21zcmkhkscvl4l7805wskqa4zskydb33i0asss5p62396")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mpman-ru")
+    (synopsis "Russian translation of the MetaPost manual")
+    (description
+     "This package provides a translation of the MetaPost user manual, as
+distributed with MetaPost itself.")
+    ;; Explicitly use the same license as MetaPost.
     (license license:lppl)))
 
 (define-public texlive-namedef
@@ -11000,6 +11894,25 @@ and use raw PDF objects.")
     ;; License is almost Knuth's, but requires marking modifications
     ;; explicitly instead of simply renaming the file.
     (license (license:fsf-free "file://doc/plain/newsletr/read.me"))))
+
+(define-public texlive-numnameru
+  (package
+    (name "texlive-numnameru")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/numnameru/"
+                   "tex/latex/numnameru/")
+             (base32
+              "1il8qn9wkdk554r4a8h5vmdmwcvgwygcx58zwnqxflz6hqsxdjmx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/numnameru")
+    (synopsis "Converts a number to the Russian spelled out name")
+    (description
+     "This package converts a numerical number to the Russian spelled out name
+of the number.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-ofs
   (package
@@ -12065,6 +12978,48 @@ addressee for a bug report.  The LaTeX team asks that it will be loaded in any
 test file that is intended to be sent to the LaTeX bug database as part of
 a bug report.")
     (license license:lppl1.3c)))
+
+(define-public texlive-lcyw
+  (package
+    (name "texlive-lcyw")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lcyw/" "source/latex/lcyw/"
+                   "tex/latex/lcyw/")
+             (base32
+              "1yijk9l2ls6sq45ifx6m9d7xxk0ysrnn1y3fjz8wxwgwxp88x9fh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lcyw")
+    (synopsis "Make classic Cyrillic CM fonts accessible in LaTeX")
+    (description
+     "The package makes the classic CM Cyrillic fonts accessible for use with
+LaTeX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-lhcyr
+  (package
+    (name "texlive-lhcyr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "source/latex/lhcyr/" "tex/latex/lhcyr/")
+             (base32
+              "09cg2hs5g20axbfpv2k6df5pi3xm0aywcswhnknllykr6z0ip2zw")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lhcyr")
+    (synopsis "Non-standard Cyrillic input scheme")
+    (description
+     "This package provides a collection of three LaTeX2e styles intended for
+typesetting Russian and bilingual English-Russian documents, using the
+@code{lh} fonts and without the benefit of Babel's language-switching
+mechanisms.  The packages (@code{hcyralt} and @code{hcyrwin} for use under
+emTeX, and @code{hcyrkoi} for use under teTeX} provide mappings between the
+input encoding and the font encoding, which is described as OT1.  The way this
+is done does not match the way @code{inputenc} would do the job, for output
+via fontenc to one of the T2 series of font encodings.")
+    (license license:knuth)))
 
 (define-public texlive-luafindfont
   (package
@@ -14058,6 +15013,32 @@ mathematical fonts in a range of styles, based on Monotype Modern 8A.")
 
 (define-deprecated-package texlive-fonts-cm texlive-cm)
 
+(define-public texlive-cmcyr
+  (package
+    (name "texlive-cmcyr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cmcyr/"
+                   "fonts/map/dvips/cmcyr/"
+                   "fonts/source/public/cmcyr/"
+                   "fonts/tfm/public/cmcyr/"
+                   "fonts/type1/public/cmcyr/"
+                   "fonts/vf/public/cmcyr/")
+             (base32
+              "0mmlb3ky6cakwg8nsgkdkpc52ni2jf2w7nz5bfiyxhvy6mx1c64b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/cmcyr")
+    (synopsis "Computer Modern fonts with Cyrillic extensions")
+    (description
+     "These are the Computer Modern fonts extended with Russian letters, in
+Metafont sources and ATM Compatible Type 1 format.  The fonts are provided in
+KOI-7, but virtual fonts are available to recode them to three other Russian
+8-bit encodings.")
+    (license license:public-domain)))
+
 (define-public texlive-cmextra
   (package
     (name "texlive-cmextra")
@@ -14314,6 +15295,32 @@ Levy/Knuth CWEB 3.64c.  TeX macros, CWEB macros, and NLS catalogs are included
 for German, French (partially), and Italian program documentation on any
 machine.")
     (license license:knuth)))
+
+(define-public texlive-cyrplain
+  (package
+    (name "texlive-cyrplain")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "tex/plain/cyrplain/")
+             (base32
+              "1wdcibxs0g53warxs6vz39s3chldzh05p7v1ksskppghg5qzgh8z")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/t2")
+    (synopsis "Support for using T2 encoding")
+    (description
+     "The T2 bundle provides a variety of separate support functions for using
+Cyrillic characters in LaTeX:
+@itemize
+@item the @code{mathtext} package, for using Cyrillic letters transparently in
+formulae;
+@item the @code{citehack} package, for using Cyrillic (or indeed any
+non-ASCII) characters in citation keys;
+@item support for Cyrillic in BibTeX;
+@item support for Cyrillic in Makeindex;
+@item various items of font support.
+@end itemize")
+    (license license:lppl)))
 
 (define-public texlive-tex-gyre
   (package
@@ -21122,6 +22129,25 @@ a means of defining generic functions using a key-value syntax, and
 
 (define-deprecated-package texlive-latex-l3packages texlive-l3packages)
 
+(define-public texlive-fonts-churchslavonic
+  (package
+    (name "texlive-fonts-churchslavonic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fonts-churchslavonic/"
+                   "fonts/opentype/public/fonts-churchslavonic/")
+             (base32
+              "0yv3n8m6wcd6jk68fwlaiszv96lbax5rcv1j0wgam4dgpqqmacm4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fonts-churchslavonic")
+    (synopsis "Fonts for typesetting in Church Slavonic language")
+    (description
+     "The package provides Unicode-encoded OpenType fonts for Church Slavonic
+which are intended for Unicode TeX engines only.")
+    (license license:silofl1.1)))
+
 (define-public texlive-fontspec
   (package
     (name "texlive-fontspec")
@@ -22176,6 +23202,26 @@ Babel system).")
     (description "The package establishes Basque conventions in a document.")
     (license license:lppl1.3+)))
 
+(define-public texlive-babel-belarusian
+  (package
+    (name "texlive-babel-belarusian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/babel-belarusian/"
+                   "source/generic/babel-belarusian/"
+                   "tex/generic/babel-belarusian/")
+             (base32
+              "1055gyy9hab9whnr5c2p4i4yczkn5pwm0n54ylnnsl8wg8q58w1z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/babel-belarusian")
+    (synopsis "Babel support for Belarusian")
+    (description
+     "The package provides support for use of Babel in documents written in
+Belarusian.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-babel-bosnian
   (package
     (name "texlive-babel-bosnian")
@@ -22215,6 +23261,26 @@ Bosnian with Babel.")
      "Breton (being, principally, a spoken language) does not have typographic
 rules of its own; this package provides an appropriate selection of French and
 British typographic rules.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-babel-bulgarian
+  (package
+    (name "texlive-babel-bulgarian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/babel-bulgarian/"
+                   "source/generic/babel-bulgarian/"
+                   "tex/generic/babel-bulgarian/")
+             (base32
+              "065j31rl7r4x8krkwxhq0lwdkmbq90jr8666if4br36kw0g3kzv3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/babel-bulgarian")
+    (synopsis "Babel contributed support for Bulgarian")
+    (description
+     "The package provides support for documents in Bulgarian (or simply
+containing some Bulgarian text).")
     (license license:lppl1.3+)))
 
 (define-public texlive-babel-catalan
@@ -22680,6 +23746,27 @@ provided.")
 Romansh either with Babel or with Polyglossia.")
     (license license:lppl1.3+)))
 
+(define-public texlive-babel-russian
+  (package
+    (name "texlive-babel-russian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/babel-russian/"
+                   "source/generic/babel-russian/"
+                   "tex/generic/babel-russian/")
+             (base32
+              "0sy3b7qx5l6smpixa9896zqqrh6ymrz31pd4026f815jy78k3cfb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/babel-russian")
+    (synopsis "Russian language module for Babel")
+    (description
+     "The package provides support for use of Babel in documents written in
+Russian (in both traditional and modern forms).  The support is adapted for
+use both under traditional TeX engines, and under XeTeX and LuaTeX.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-babel-samin
   (package
     (name "texlive-babel-samin")
@@ -22723,6 +23810,46 @@ names.")
      "The package provides the language definition file for support of Gaidhlig
 (Scottish Gaelic) in Babel.  Some shortcuts are defined, as well as
 translations of standard LaTeX names.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-babel-serbian
+  (package
+    (name "texlive-babel-serbian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/babel-serbian/"
+                   "source/generic/babel-serbian/"
+                   "tex/generic/babel-serbian/")
+             (base32
+              "089w8phd1pyzh8dmn4v2bspnmx4hqi63mby1yn7xk596qxi3nqrz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/babel-serbian")
+    (synopsis "Babel and Polyglossia support for Serbian")
+    (description
+     "The package provides support for Serbian documents written in Latin, in
+Babel.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-babel-serbianc
+  (package
+    (name "texlive-babel-serbianc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/babel-serbianc/"
+                   "source/generic/babel-serbianc/"
+                   "tex/generic/babel-serbianc/")
+             (base32
+              "1ji77vlb10vxdka5bsnqkrlf34c4qhpl162xizrzxf11z6099wng")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/babel-serbianc")
+    (synopsis "Babel module to support Serbian Cyrillic")
+    (description
+     "The package provides support for Serbian documents written in Cyrillic,
+in Babel.")
     (license license:lppl1.3+)))
 
 (define-public texlive-babel-slovak
@@ -22825,6 +23952,27 @@ provided for those who wish to typeset Spanish as written in Mexico.")
     (description
      "The package provides support, within Babel, of the Turkish language.")
     (license license:lppl1.3+)))
+
+(define-public texlive-babel-ukrainian
+  (package
+    (name "texlive-babel-ukrainian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/babel-ukrainian/"
+                   "source/generic/babel-ukrainian/"
+                   "tex/generic/babel-ukrainian/")
+             (base32
+              "1nz8yzpc5khyv6wgm5ndwfdxx591wqlg311crzxk08ardg8zwvgs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/babel-ukrainian")
+    (synopsis "Babel support for Ukrainian")
+    (description
+     "The package provides support for use of babel in documents written in
+Ukrainian.  The support is adapted for use under legacy TeX engines as well as
+XeTeX and LuaTeX.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-babel-welsh
   (package
@@ -27802,6 +28950,45 @@ via one of the packages @code{calrsfs} and @code{mathrsfs}.")
 readable copies of the FAQ from the Spanish TeX users group.")
     (license license:lppl)))
 
+(define-public texlive-eskd
+  (package
+    (name "texlive-eskd")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/eskd/" "source/latex/eskd/"
+                   "tex/latex/eskd/")
+             (base32
+              "1q83pvycckrmyaiwwg3mcl77jy5wrcy8jy7kz004x7asq2p0a2ls")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/eskd")
+    (synopsis "Modern Russian typesetting")
+    (description
+     "The class offers modern Russian text formatting, in accordance with
+accepted design standards.  Fonts not (apparently) available on CTAN are
+required for use of the class.")
+    (license license:lppl)))
+
+(define-public texlive-eskdx
+  (package
+    (name "texlive-eskdx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/eskdx/" "tex/latex/eskdx/")
+             (base32
+              "07c9gbvgr4455s5sfsdjxbbdllx2lhmb5d1c2sdk7rpkvjh64lv8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/eskdx")
+    (synopsis "Modern Russian typesetting")
+    (description
+     "Eskdx is a collection of LaTeX classes and packages to typeset textual
+and graphical documents in accordance with Russian (and probably post USSR)
+standards for designers.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-eso-pic
   (package
     (name "texlive-eso-pic")
@@ -32239,6 +33426,1905 @@ and with colour support.  There are macros for colouring or shading the cells
 of tables.")
     (license license:lppl1.3+)))
 
+(define-public texlive-pst-2dplot
+  (package
+    (name "texlive-pst-2dplot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-2dplot/"
+                   "tex/latex/pst-2dplot/")
+             (base32
+              "1lq39hdlqf4af16lx7qrs6x2hj10rsashgd3yl8659346a2mq75a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-2dplot")
+    (synopsis "PSTricks package for drawing 2D curves")
+    (description
+     "Pst-2dplot is a PSTricks package that offers an intuitive tool for
+plotting 2-d curves.  It defines an environment with commands similar to
+MATLAB for plotting.")
+    (license license:lppl)))
+
+(define-public texlive-pst-3d
+  (package
+    (name "texlive-pst-3d")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-3d/" "dvips/pst-3d/"
+                   "source/generic/pst-3d/"
+                   "tex/generic/pst-3d/" "tex/latex/pst-3d/")
+             (base32
+              "12gpsg14glcjavlwsb7g0dkxcax89z2adkx7p29cpzvssnimdj50")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-3d")
+    (synopsis "PSTricks package for tilting and other pseudo-3D tricks")
+    (description
+     "The package provides basic macros that use PSTricks for shadows, tilting
+and three dimensional representations of text or graphical objects.")
+    (license license:lppl)))
+
+(define-public texlive-pst-3dplot
+  (package
+    (name "texlive-pst-3dplot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-3dplot/"
+                   "dvips/pst-3dplot/"
+                   "tex/generic/pst-3dplot/"
+                   "tex/latex/pst-3dplot/")
+             (base32
+              "0k49c4kc126zacv2p2crdv00l50cg6kfpdnsa9m223naigifzf22")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-3dplot")
+    (synopsis "Draw 3D objects in parallel projection, using PSTricks")
+    (description
+     "This package provides a package using PSTricks to draw a large variety
+of graphs and plots, including 3D maths functions.  Data can be read from
+external data files, making this package a generic tool for graphing within
+TeX or LaTeX, without the need for external tools.")
+    (license license:lppl)))
+
+(define-public texlive-pst-abspos
+  (package
+    (name "texlive-pst-abspos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-abspos/"
+                   "source/generic/pst-abspos/"
+                   "tex/generic/pst-abspos/"
+                   "tex/latex/pst-abspos/")
+             (base32
+              "12k786hfhp8vrq4a6a6caf6fi1p16hd79r3lf19d5vcyykppdcm8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-abspos")
+    (synopsis "Put objects at an absolute position")
+    (description
+     "This PSTricks package provides a command @code{\\pstPutAbs(x,y)} to put
+an object at an arbitrary absolute (or even a relative) position on the
+page.")
+    (license license:lppl)))
+
+(define-public texlive-pst-am
+  (package
+    (name "texlive-pst-am")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-am/"
+                   "source/generic/pst-am/" "tex/latex/pst-am/")
+             (base32
+              "1dyhjycy6ccamxcp65761gbszxpvxdsiirqbpljkywsbynwfcn6q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-am")
+    (synopsis "Simulation of modulation and demodulation")
+    (description
+     "The package allows the simulation of the modulated and demodulated
+amplitude of radio waves.  The user may plot curves of modulated signals, wave
+carrier, signal modulation, signal recovery and signal demodulation.")
+    (license license:lppl)))
+
+(define-public texlive-pst-antiprism
+  (package
+    (name "texlive-pst-antiprism")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-antiprism/"
+                   "dvips/pst-antiprism/"
+                   "tex/generic/pst-antiprism/"
+                   "tex/latex/pst-antiprism/")
+             (base32
+              "158691m8i8zd0w7d7vsbmkjm4y1ixfvj4j7bxszcw67cz2q2cmyi")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-antiprism")
+    (synopsis "PSTricks related package which draws an antiprism")
+    (description
+     "@code{pst-antiprism} is a PSTricks related package which draws an antiprism,
+which is a semiregular polyhedron constructed with 2-gons and triangles.")
+    (license license:lppl)))
+
+(define-public texlive-pst-arrow
+  (package
+    (name "texlive-pst-arrow")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-arrow/"
+                   "tex/generic/pst-arrow/"
+                   "tex/latex/pst-arrow/")
+             (base32
+              "1z216b5189f390mdzxxcc240i0iav13nicqjqwcn31f4j4wclpzj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-arrow")
+    (synopsis "Special arrows for PSTricks")
+    (description
+     "This package has all the code from the package @code{pstricks-add},
+which was related to arrows, like multiple arrows and so on.")
+    (license license:lppl)))
+
+(define-public texlive-pst-asr
+  (package
+    (name "texlive-pst-asr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-asr/"
+                   "tex/generic/pst-asr/" "tex/latex/pst-asr/")
+             (base32
+              "0hxp905d2r4j2z8hfbl9v45xid20lm41k8xy52fdj5grpshhg2z1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-asr")
+    (synopsis "Typeset autosegmental representations for linguists")
+    (description
+     "The package allows the user to typeset autosegmental representations.")
+    (license license:lppl)))
+
+(define-public texlive-pst-bar
+  (package
+    (name "texlive-pst-bar")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-bar/" "dvips/pst-bar/"
+                   "tex/generic/pst-bar/" "tex/latex/pst-bar/")
+             (base32
+              "19x8a3r09m28g6mpa98rz94274yahajznkkqarzwh1n8v54bb7hd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-bar")
+    (synopsis "Produces bar charts using PSTricks")
+    (description
+     "The package uses PSTricks to draw bar charts from data stored in
+a comma-delimited file.  Several types of bar charts may be drawn, and the
+drawing parameters are highly customizable.")
+    (license license:lppl)))
+
+(define-public texlive-pst-barcode
+  (package
+    (name "texlive-pst-barcode")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-barcode/"
+                   "dvips/pst-barcode/"
+                   "tex/generic/pst-barcode/"
+                   "tex/latex/pst-barcode/")
+             (base32
+              "10990hhhj961rizfffplx8v3rhnv7knm8nz2zd1aqp686fr3fkgv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-barcode")
+    (synopsis "Print barcodes using PostScript")
+    (description
+     "The @code{pst-barcode} package allows printing of barcodes, in a huge
+variety of formats, including quick-response (QR) codes.  As a PSTricks
+package, the package requires pstricks.  The package uses @code{PostScript}
+for calculating the bars.  For PDF output use a multi-pass mechansism such as
+@code{pst-pdf}.")
+    (license license:lppl)))
+
+(define-public texlive-pst-bezier
+  (package
+    (name "texlive-pst-bezier")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-bezier/"
+                   "dvips/pst-bezier/"
+                   "tex/generic/pst-bezier/"
+                   "tex/latex/pst-bezier/")
+             (base32
+              "181232snaqfjdc5mzazsdgjvmjn27pcfx45mydkk0cpp61kdr9yk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-bezier")
+    (synopsis "Draw Bezier curves")
+    (description
+     "The package provides a macro @code{\\psbcurve} for drawing a Bezier curve.
+Provision is made for full control of over all the control points of the
+curve.")
+    (license license:lppl)))
+
+(define-public texlive-pst-blur
+  (package
+    (name "texlive-pst-blur")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-blur/" "dvips/pst-blur/"
+                   "source/generic/pst-blur/"
+                   "tex/generic/pst-blur/"
+                   "tex/latex/pst-blur/")
+             (base32
+              "1zz5ixznkl3i59zlv9lxz7f1cfqwbar3qjy5x4323gmzjw2k9f8m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-blur")
+    (synopsis "PSTricks package for blurred shadows")
+    (description
+     "Pst-blur is a package built for use with PSTricks.  It provides macros
+that apply blurring to the normal shadow function of PSTricks.")
+    (license license:lppl)))
+
+(define-public texlive-pst-bspline
+  (package
+    (name "texlive-pst-bspline")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-bspline/"
+                   "dvips/pst-bspline/"
+                   "tex/generic/pst-bspline/"
+                   "tex/latex/pst-bspline/")
+             (base32
+              "0djf1izf9779lgmbw5zhcz7k5hf8ay96nlgdgpsm1zj4ncwkpibg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-bspline")
+    (synopsis "Draw cubic Bspline curves and interpolations")
+    (description
+     "The package draws uniform, cubic B-spline curves, open and closed, based
+on a sequence of B-spline control points.  There is also code which permits
+drawing the open or closed cubic Bspline curve interpolating a sequence of
+points.  Graphical output is created using PStricks.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pst-calculate
+  (package
+    (name "texlive-pst-calculate")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-calculate/"
+                   "tex/latex/pst-calculate/")
+             (base32
+              "19yi0n8p4gj2p16nsk8f3i02a9adlqssyv57r67dc0qh6a0ipa9k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-calculate")
+    (synopsis "Support for floating point operations at LaTeX level")
+    (description
+     "This package provides an interface to the LaTeX3 floating point unit,
+mainly used for PSTricks related packages to allow math expressions at LaTeX
+level.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pst-calendar
+  (package
+    (name "texlive-pst-calendar")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-calendar/"
+                   "tex/latex/pst-calendar/")
+             (base32
+              "07vc1jxrr0n0iwjx6qjww53xji1pv42dvlc2ghi1r14nypgm8j5n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-calendar")
+    (synopsis "Plot calendars in fancy ways")
+    (description
+     "The package draws tabular calendars, or calendars on dodecahedra with
+a month to each face.  The package works for years 2000--2099, and has options
+for calendars in French German and English, but the documentation is not
+available in English.")
+    (license license:lppl)))
+
+(define-public texlive-pst-cie
+  (package
+    (name "texlive-pst-cie")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-cie/" "dvips/pst-cie/"
+                   "tex/generic/pst-cie/" "tex/latex/pst-cie/")
+             (base32
+              "0g5yry8m935idznwn486gn75vjyhbdzs2w99l0szh95026kd4f0a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-cie")
+    (synopsis "CIE color space")
+    (description
+     "pst-cie is a PSTricks related package to show the different CIE color
+spaces: Adobe, CIE, ColorMatch, NTSC, Pal-Secam, ProPhoto, SMPTE, and sRGB.")
+    (license license:lppl)))
+
+(define-public texlive-pst-circ
+  (package
+    (name "texlive-pst-circ")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-circ/" "dvips/pst-circ/"
+                   "tex/generic/pst-circ/"
+                   "tex/latex/pst-circ/")
+             (base32
+              "0255xcjhm0jcgw352cmdn8d8062g2mihfzhii20zh4j0zznmk7hj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-circ")
+    (synopsis "PSTricks package for drawing electric circuits")
+    (description
+     "The package can easily draw current 2-terminal devices and some 3- and
+4-terminal devices used in electronic or electric theory.  The package's
+macros are designed with a view to logical representation of circuits, as far
+as possible, so as to relieve the user of purely graphical considerations when
+expressing a circuit.")
+    (license license:lppl)))
+
+(define-public texlive-pst-coil
+  (package
+    (name "texlive-pst-coil")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-coil/" "dvips/pst-coil/"
+                   "tex/generic/pst-coil/"
+                   "tex/latex/pst-coil/")
+             (base32
+              "0d3wqrv19zc9qwp3gbr32siad408z4g23k5861p0hqy2hw8f908q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-coil")
+    (synopsis "PSTricks package for coils, etc")
+    (description
+     "Pst-coil is a PSTricks based package for coils and zigzags and for coil
+and zigzag node connections.")
+    (license license:lppl)))
+
+(define-public texlive-pst-contourplot
+  (package
+    (name "texlive-pst-contourplot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-contourplot/"
+                   "tex/generic/pst-contourplot/"
+                   "tex/latex/pst-contourplot/")
+             (base32
+              "00nqg59x1x3nh30cclqjdyyyjzinyl9czjfywznh68dzari1fvqk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-contourplot")
+    (synopsis
+     "Draw implicit functions using the marching squares algorithm")
+    (description
+     "This package allows to draw implicit functions @samp{f(x,y) = 0} with
+options for coloring the inside of the surfaces, for marking the points and
+arrowing the curve at points chosen by the user.  The package uses the
+marching squares algorithm.")
+    (license license:lppl)))
+
+(define-public texlive-pst-cox
+  (package
+    (name "texlive-pst-cox")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-cox/" "dvips/pst-cox/"
+                   "tex/generic/pst-cox/" "tex/latex/pst-cox/")
+             (base32
+              "1bw2qmsc735q3ji4h7l166s37wcpd6s4fvi98ggagndm29mcbia3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-cox")
+    (synopsis "Drawing regular complex polytopes with PSTricks")
+    (description
+     "Pst-cox is a PSTricks package for drawing 2-dimensional projections of
+complex regular polytopes (after the work of Coxeter).  The package consists
+of a macro library for drawing the projections.  The complex polytopes appear
+in the study of the root systems and play a crucial role in many domains
+related to mathematics and physics.  These polytopes have been completely
+described by Coxeter in his book @emph{Regular Complex Polytopes}.  There
+exist only a finite numbers of exceptional regular complex polytopes (for
+example the icosahedron) and some infinite series (for example, one can
+construct a multi-dimensional analogue of the hypercube in any finite
+dimension).
+
+The library contains two packages.  The first, @code{pst-coxcoor}, is devoted
+to the exceptional complex regular polytopes whose coordinates have been
+pre-computed.  The second, @code{pst-coxeterp}, is devoted to the infinite
+series.")
+    (license license:lgpl3+)))
+
+(define-public texlive-pst-dart
+  (package
+    (name "texlive-pst-dart")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-dart/"
+                   "tex/generic/pst-dart/"
+                   "tex/latex/pst-dart/")
+             (base32
+              "1834hxlg4hfqmrl6k5i2c1jimzd0lcdi6x82b8lfj8dhnddlbgzr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-dart")
+    (synopsis "Plotting dart boards")
+    (description
+     "@code{pst-dart} is a PSTricks related package and draws dart boards.
+Optional arguments are the unit and the fontsize.")
+    (license license:lppl)))
+
+(define-public texlive-pst-dbicons
+  (package
+    (name "texlive-pst-dbicons")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-dbicons/"
+                   "source/generic/pst-dbicons/"
+                   "tex/latex/pst-dbicons/")
+             (base32
+              "0pzfahir5vvxw28095myqppfpyik7agzncm9vm42gvldw45byr4q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-dbicons")
+    (synopsis "Support for drawing ER diagrams")
+    (description
+     "The package provides some useful macros in the database area.  The
+package focusses on typesetting ER-Diagrams in a declarative style, i.e., by
+positioning some nodes and defining the position of all other nodes relative
+to them by using the standard database terminology.")
+    (license license:lppl)))
+
+(define-public texlive-pst-diffraction
+  (package
+    (name "texlive-pst-diffraction")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-diffraction/"
+                   "source/generic/pst-diffraction/"
+                   "tex/generic/pst-diffraction/"
+                   "tex/latex/pst-diffraction/")
+             (base32
+              "1wi67md3046nj0arqi1wmbgdhdrsnfqgmmb0ayk2iswfhvx32myr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-diffraction")
+    (synopsis "Print diffraction patterns from various apertures")
+    (description
+     "The package enables the user to draw (using PSTricks) the diffraction
+patterns for different geometric forms of apertures for monochromatic light.
+The aperture stops can have rectangular, circular or triangular openings.  The
+view of the diffraction may be planar, or three-dimensional.  Options
+available are the dimensions of the aperture under consideration and of the
+particular optical setting, e.g., the radius in case of an circular opening.
+Moreover one can choose the wavelength of the light (the associated color will
+be calculated by the package).")
+    (license license:lppl)))
+
+(define-public texlive-pst-electricfield
+  (package
+    (name "texlive-pst-electricfield")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-electricfield/"
+                   "dvips/pst-electricfield/"
+                   "source/generic/pst-electricfield/"
+                   "tex/generic/pst-electricfield/"
+                   "tex/latex/pst-electricfield/")
+             (base32
+              "1awc5nqp7giqmczx1xd1y78j5vgsw7y8m767mbhgs5j12j3yl4yd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-electricfield")
+    (synopsis "Draw electric field and equipotential lines with PSTricks")
+    (description
+     "The package provides macros to plot electric field and equipotential
+lines using PStricks.  There may be any number of charges which can be placed
+in a cartesian coordinate system.")
+    (license license:lppl)))
+
+(define-public texlive-pst-eps
+  (package
+    (name "texlive-pst-eps")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-eps/"
+                   "source/generic/pst-eps/"
+                   "tex/generic/pst-eps/" "tex/latex/pst-eps/")
+             (base32
+              "1lf106rw3w6gicn6021jpj4bgbpgjyixp64l9aqqxn6ip6vm4yh3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-eps")
+    (synopsis "Create EPS files from PSTricks figures")
+    (description
+     "Pst-eps is a PSTricks-based package for exporting PSTricks images on the
+fly to encapsulated PostScript (EPS) image files, which can then be read into
+a document in the usual way.")
+    (license license:lppl)))
+
+(define-public texlive-pst-eucl
+  (package
+    (name "texlive-pst-eucl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-eucl/" "dvips/pst-eucl/"
+                   "tex/generic/pst-eucl/"
+                   "tex/latex/pst-eucl/")
+             (base32
+              "070f7chfvj65mhhdnghblhlq0ywvy76bw17dcb8519ixra6p4f4d")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-eucl")
+    (synopsis "Euclidian geometry with PSTricks")
+    (description
+     "The package allows the drawing of Euclidean geometric figures using TeX
+PSTricks macros for specifying mathematical constraints.  It is thus possible
+to build point using common transformations or intersections.  The use of
+coordinates is limited to points which controlled the figure.")
+    (license license:lppl)))
+
+(define-public texlive-pst-eucl-translation-bg
+  (package
+    (name "texlive-pst-eucl-translation-bg")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-eucl-translation-bg/")
+             (base32
+              "06c9ajnfl01sl81z5r8a5lzmaygq9rdmgym2v40y7xp7z033gwwv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-eucl-translation-bg")
+    (synopsis "Bulgarian translation of the @code{pst-eucl} documentation")
+    (description
+     "The package provides the @code{pst-eucl} package documentation in
+Bulgarian language.")
+    (license license:lppl)))
+
+(define-public texlive-pst-exa
+  (package
+    (name "texlive-pst-exa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-exa/" "tex/latex/pst-exa/")
+             (base32
+              "1jbkk5nircdv0mas1vbydqhca1r5vcmrxyyi5xwzi1qhfbw3xa8g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-exa")
+    (synopsis "Typeset PSTricks examples, with code")
+    (description
+     "The (PSTricks-related) package provides an environment @code{PSTexample}
+to put code and output side by side or one above the other.")
+    (license license:lppl)))
+
+(define-public texlive-pst-feyn
+  (package
+    (name "texlive-pst-feyn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-feyn/" "dvips/pst-feyn/"
+                   "tex/generic/pst-feyn/"
+                   "tex/latex/pst-feyn/")
+             (base32
+              "08m8pwl5kk2rs835pnksap8ld6ir0chlbswchgpvks229i6gkrj0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-feyn")
+    (synopsis "Draw graphical elements for Feynman diagrams")
+    (description
+     "@code{pst-feyn} is a set of drawing graphical elements which are used
+for Feynman diagrams.")
+    (license license:lppl)))
+
+(define-public texlive-pst-fill
+  (package
+    (name "texlive-pst-fill")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-fill/"
+                   "tex/generic/pst-fill/"
+                   "tex/latex/pst-fill/")
+             (base32
+              "0anzq671nsprckhy92ybp2y93g5f2z1s0qja9wx2mrjpb4xq8ng0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-fill")
+    (synopsis "Fill or tile areas with PSTricks")
+    (description
+     "Pst-fill is a PSTricks-based package for filling and tiling areas or
+characters.")
+    (license license:lppl)))
+
+(define-public texlive-pst-fit
+  (package
+    (name "texlive-pst-fit")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-fit/"
+                   "tex/generic/pst-fit/" "tex/latex/pst-fit/")
+             (base32
+              "0w2vnd6zb9vdrqbk256ynr7lg7p9ps53rrdq9l999bw8f8vip1as")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-fit")
+    (synopsis "Macros for curve fitting")
+    (description
+     "The package uses PSTricks to fit curves to: linear functions; power
+functions; exp function; logarithm functions; Recip; Kings Law data; Gaussian;
+and fourth order polynomials.")
+    (license license:lppl)))
+
+(define-public texlive-pst-flags
+  (package
+    (name "texlive-pst-flags")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-flags/"
+                   "tex/latex/pst-flags/")
+             (base32
+              "13078q4mg1r8hg5zvywfasfz26phcr9dvsw4s05spc116b8fz9gn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-flags")
+    (synopsis "Draw flags of countries using PSTricks")
+    (description
+     "This package provides a number of macros for rendering flags of
+countries and their associated artefacts using PSTricks.  Formatting of the
+resulting drawings is entirely controlled by TeX macros.  A good working
+knowledge of LaTeX should be sufficient to design flags of sovereign countries
+and adapt them to create new designs.  Features such as color or shape
+customisation and dynamic modifications are possible by cleverly adjusting the
+options supplied to the TeX macros.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-pst-fr3d
+  (package
+    (name "texlive-pst-fr3d")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-fr3d/"
+                   "source/generic/pst-fr3d/"
+                   "tex/generic/pst-fr3d/"
+                   "tex/latex/pst-fr3d/")
+             (base32
+              "0y8xsq6wklpygzf0lfdy683vkdrglw5jl00qyfwk6rl08wb4l17y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-fr3d")
+    (synopsis "Draw 3-dimensional framed boxes using PSTricks")
+    (description
+     "This package provides a package using PSTricks to draw three dimensional
+framed boxes using a macro @code{\\PstFrameBoxThreeD}.  The macro is
+especially useful for drawing 3D-seeming buttons.")
+    (license license:lppl)))
+
+(define-public texlive-pst-fractal
+  (package
+    (name "texlive-pst-fractal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-fractal/"
+                   "dvips/pst-fractal/"
+                   "tex/generic/pst-fractal/"
+                   "tex/latex/pst-fractal/")
+             (base32
+              "0jc9zwjp23l6njr7y63jh0xv4a6qy2610bb88fdiwdsqnh70gs72")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-fractal")
+    (synopsis "Draw fractal sets using PSTricks")
+    (description
+     "The package uses PSTricks to draw the Julia and Mandelbrot sets, the
+Sierpinski triangle, Koch flake, and Apollonius Circle as well as fractal
+trees (which need not be balanced) with a variety of different
+parameters (including varying numbers of iterations).")
+    (license license:lppl)))
+
+(define-public texlive-pst-fun
+  (package
+    (name "texlive-pst-fun")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-fun/" "dvips/pst-fun/"
+                   "source/generic/pst-fun/"
+                   "tex/generic/pst-fun/" "tex/latex/pst-fun/")
+             (base32
+              "070nv0yv0rcfvx36xmya953pk89whrr26irvy0ccb41k66fvw5j1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-fun")
+    (synopsis "Draw funny objects with PSTricks")
+    (description
+     "This is a PSTricks related package for drawing funny objects, like ant, bird,
+fish, kangaroo, etc.  Such objects may be useful for testing other PSTricks
+macros and/or packages. (Or they can be used for fun...)")
+    (license license:lppl)))
+
+(define-public texlive-pst-func
+  (package
+    (name "texlive-pst-func")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-func/" "dvips/pst-func/"
+                   "tex/generic/pst-func/"
+                   "tex/latex/pst-func/")
+             (base32
+              "01ibjcyb71l5wqm0x2vq3i4by7q0hp6jmghyw9gkrapmdlwqig5q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-func")
+    (synopsis "PSTricks package for plotting mathematical functions")
+    (description
+     "The package is built for use with PSTricks.  It provides macros for
+plotting and manipulating various mathematical functions:
+
+@itemize
+@item polynomials and their derivatives,
+@item Fourier sums,
+@item the Bessel function defined by its order;
+@item the Gauss function defined by sigma and mu,
+@item Bezier curves from order 1 (two control points) to order 9 (10 control
+points),
+@item the superellipse function (the Lame curve),
+@item Chebyshev polynomials of the first and second kind,
+@item the Thomae (or popcorn) function,
+@item the Weierstrass function,
+@item various integration-derived functions: normal, binomial, poisson, gamma,
+chi-squared, student's t, F, beta, Cauchy and Weibull distribution functions
+and the Lorenz curve,
+@item the zeroes of a function, or the intermediate point of two functions,
+@item the Vasicek function for describing the evolution of interest rates,
+@item implicit functions.
+@end itemize
+
+The plots may be generated as volumes of rotation about the X-axis, as well.")
+    (license license:lppl)))
+
+(define-public texlive-pst-gantt
+  (package
+    (name "texlive-pst-gantt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-gantt/"
+                   "tex/generic/pst-gantt/"
+                   "tex/latex/pst-gantt/")
+             (base32
+              "1ziahdc0r8pkxxn6p6ijrx1diihkbbrmwbbc1pzi1sddqg05l5sc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-gantt")
+    (synopsis "Draw GANTT charts with PSTricks")
+    (description
+     "The package uses PSTricks to draw GANTT charts, which are a kind of bar
+chart that displays a project schedule.")
+    (license license:lppl)))
+
+(define-public texlive-pst-geo
+  (package
+    (name "texlive-pst-geo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-geo/" "dvips/pst-geo/"
+                   "tex/generic/pst-geo/" "tex/latex/pst-geo/")
+             (base32
+              "1zqmjjg9zmmzjqmhx2jwcc761f1rrxcchsnrd5s686f9p6z4w7c6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-geo")
+    (synopsis "Geographical projections")
+    (description
+     "The package offers a set of PSTricks related packages for various
+cartographic projections of the terrestrial sphere.  The package
+@code{pst-map2d} provides conventional projections such as Mercator, Lambert,
+cylindrical, etc.  The package @code{pst-map3d} treats representation in three
+dimensions of the terrestrial sphere.  Packages @code{pst-map2dII} and
+@code{pst-map3dII} allow use of the CIA World DataBank II. Various parameters
+of the packages allow for choice of the level of the detail and the layouts
+possible (cities, borders, rivers etc).  Substantial data files are provided,
+in an (internally) compressed format.  Decompression happens on-the-fly as
+a document using the data is displayed, printed or converted to PDF format.
+A Perl script is provided for the user to do the decompression, if the need
+should arise.")
+    (license license:lppl)))
+
+(define-public texlive-pst-geometrictools
+  (package
+    (name "texlive-pst-geometrictools")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-geometrictools/"
+                   "tex/generic/pst-geometrictools/"
+                   "tex/latex/pst-geometrictools/")
+             (base32
+              "14mhyjq8w3llkyjij274n5sdwbp3ak2xi6q6ggqdakgn032a7yhn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-geometrictools")
+    (synopsis "PSTricks package to draw geometric tools")
+    (description
+     "This PSTricks package facilitates the drawing of protractors, rulers,
+compasses and pencils.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-pst-gr3d
+  (package
+    (name "texlive-pst-gr3d")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-gr3d/"
+                   "source/latex/pst-gr3d/"
+                   "tex/generic/pst-gr3d/"
+                   "tex/latex/pst-gr3d/")
+             (base32
+              "0pppd4l4yrdgy0vss8l2kndd0cg9nxip7d7vcyrfr0cz9kw0z45n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-gr3d")
+    (synopsis "Three dimensional grids with PSTricks")
+    (description
+     "This PSTricks package provides a command @code{\\PstGridThreeD} that
+will draw a three dimensional grid, offering a number of options for its
+appearance.")
+    (license license:lppl)))
+
+(define-public texlive-pst-grad
+  (package
+    (name "texlive-pst-grad")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-grad/" "dvips/pst-grad/"
+                   "tex/generic/pst-grad/"
+                   "tex/latex/pst-grad/")
+             (base32
+              "10b8b7mb6c1kkwvwrq31zwmn184qprd69ckypp0gs5s1nz9klc4l")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-grad")
+    (synopsis "Filling with colour gradients, using PSTricks")
+    (description
+     "The package fills with colour gradients, using PSTricks.  The RGB, CMYK
+and HSB models are supported.  Other colour gradient mechanisms are to be
+found in package @code{pst-slpe}.")
+    (license license:lppl)))
+
+(define-public texlive-pst-graphicx
+  (package
+    (name "texlive-pst-graphicx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-graphicx/"
+                   "tex/generic/pst-graphicx/")
+             (base32
+              "0x1053a92hi1msbmw7s0222k0vfg28172qrinz3hdv94igaxi38q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-graphicx")
+    (synopsis "PSTricks-compatible @code{graphicx} for use with Plain TeX")
+    (description
+     "The package provides a version of @code{graphicx} that avoids loading
+the graphics bundle's (original) @code{keyval} package, which clashes with
+PSTricks use of @code{xkeyval}.")
+    (license license:lppl)))
+
+(define-public texlive-pst-hsb
+  (package
+    (name "texlive-pst-hsb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-hsb/"
+                   "tex/generic/pst-hsb/" "tex/latex/pst-hsb/")
+             (base32
+              "0cv81bbkg2yhszjs2y7b5vs241y272by5mcb7adg347jzyrs8s74")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-hsb")
+    (synopsis "Curves with continuous colours")
+    (description
+     "This is a PSTricks-related package.  It can plot lines and/or curves
+with continuous colours.  Only colours defined in the HSB model are
+supported.")
+    (license license:lppl)))
+
+(define-public texlive-pst-infixplot
+  (package
+    (name "texlive-pst-infixplot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-infixplot/"
+                   "tex/generic/pst-infixplot/"
+                   "tex/latex/pst-infixplot/")
+             (base32
+              "07yqjzznayk3pjbsaxjz5b63hiabmkdywv2h6kshpjqmh2q1zi6w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-infixplot")
+    (synopsis "Use PSTricks plotting capacities with infix expressions")
+    (description
+     "Plotting functions with pst-plot is very powerful but sometimes
+difficult to learn since the syntax of @code{\\psplot} and
+@code{\\parametricplot} requires some PostScript knowledge.  The infix-RPN and
+@code{pst-infixplot} styles simplify the usage of @code{pst-plot} for the
+beginner, providing macro commands that convert natural mathematical
+expressions to PostScript syntax.")
+    (license license:lppl)))
+
+(define-public texlive-pst-intersect
+  (package
+    (name "texlive-pst-intersect")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-intersect/"
+                   "dvips/pst-intersect/"
+                   "source/latex/pst-intersect/"
+                   "tex/generic/pst-intersect/"
+                   "tex/latex/pst-intersect/")
+             (base32
+              "157yqj923kikm8abiv3giyf9rrr6cw0jwqj37ri5ya5iyxlfvmmv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-intersect")
+    (synopsis "Compute intersections of arbitrary curves")
+    (description
+     "The package computes the intersections between arbitrary PostScript
+paths or Bezier curves, using the Bezier clipping algorithm.")
+    (license license:lppl)))
+
+(define-public texlive-pst-jtree
+  (package
+    (name "texlive-pst-jtree")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-jtree/"
+                   "tex/generic/pst-jtree/"
+                   "tex/latex/pst-jtree/")
+             (base32
+              "07vzx418syv1v04z1552k9iwjz4b4kmw7g2m1i4nqdfg2lvina8s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-jtree")
+    (synopsis "Typeset complex trees for linguists")
+    (description
+     "jTree uses PSTricks to enable linguists to typeset complex trees.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pst-knot
+  (package
+    (name "texlive-pst-knot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-knot/" "dvips/pst-knot/"
+                   "tex/generic/pst-knot/"
+                   "tex/latex/pst-knot/")
+             (base32
+              "1b69m4qwd37vd3x734r4hp4wzsirsp6k5m87yqmxlhlkrf0wmrwc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-knot")
+    (synopsis "PSTricks package for displaying knots")
+    (description
+     "The package can produce a fair range of knot shapes, with all the
+standard graphics controls one expects.")
+    (license license:lppl)))
+
+(define-public texlive-pst-labo
+  (package
+    (name "texlive-pst-labo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-labo/"
+                   "tex/generic/pst-labo/"
+                   "tex/latex/pst-labo/")
+             (base32
+              "10c2qv2fpijb49yn7p00b116icimhiva5kq0bfgj2975y90fncjb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-labo")
+    (synopsis "Draw objects for Chemistry laboratories")
+    (description
+     "Pst-labo is a PSTricks related package for drawing basic and complex
+chemical objects.  The documentation of the package is illuminated with plenty
+of illustrations together with their source code, making it an easy read.")
+    (license license:lppl)))
+
+(define-public texlive-pst-layout
+  (package
+    (name "texlive-pst-layout")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-layout/"
+                   "tex/latex/pst-layout/")
+             (base32
+              "1f07j551kiajqyrfjlsj7xk40zv18ik2b3fih5iyzkf4zk4f650r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-layout")
+    (synopsis "Page layout macros based on PSTricks packages")
+    (description
+     "The package provides a means of creating elaborate (``pseudo-tabular'')
+layouts of material, typically to be overlaid on an included graphic.")
+    (license license:lppl)))
+
+(define-public texlive-pst-lens
+  (package
+    (name "texlive-pst-lens")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-lens/"
+                   "source/generic/pst-lens/"
+                   "tex/generic/pst-lens/"
+                   "tex/latex/pst-lens/")
+             (base32
+              "0h2930i4izgfjk96445yiwsk6x8cg5cl4zlqrg5rsv7nr2k8njy3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-lens")
+    (synopsis "Lenses with PSTricks")
+    (description
+     "This PSTricks package provides a really rather simple command
+@code{\\PstLens} that will draw a lens.  Command parameters provide
+a remarkable range of effects.")
+    (license license:lppl)))
+
+(define-public texlive-pst-light3d
+  (package
+    (name "texlive-pst-light3d")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-light3d/"
+                   "dvips/pst-light3d/"
+                   "source/generic/pst-light3d/"
+                   "tex/generic/pst-light3d/"
+                   "tex/latex/pst-light3d/")
+             (base32
+              "0kwdbf64m2kmplk4r7ifxckajh3d5sgjini70fmababnrp1g8nzf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-light3d")
+    (synopsis "Three dimensional lighting effects (PSTricks)")
+    (description
+     "This package provides a PSTricks package for three dimensional lighting
+effects on characters and PSTricks graphics, like lines, curves, plots, ...")
+    (license license:lppl)))
+
+(define-public texlive-pst-lsystem
+  (package
+    (name "texlive-pst-lsystem")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-lsystem/"
+                   "dvips/pst-lsystem/"
+                   "tex/generic/pst-lsystem/"
+                   "tex/latex/pst-lsystem/")
+             (base32
+              "1k3krdcfqa5cyzaq0jp8dzil6arfvs5ah2mp87460pl2wvfza0lr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-lsystem")
+    (synopsis "Create images based on a L-system")
+    (description
+     "@code{pst-lsystem} is a PSTricks based package for creating images based
+on a L-system.  A L-system (Lindenmayer system) is a set of rules which can be
+used to model the morphology of a variety of organisms or fractals like the
+Kochflake or Hilbert curve.")
+    (license license:lppl)))
+
+(define-public texlive-pst-magneticfield
+  (package
+    (name "texlive-pst-magneticfield")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-magneticfield/"
+                   "dvips/pst-magneticfield/"
+                   "tex/generic/pst-magneticfield/"
+                   "tex/latex/pst-magneticfield/")
+             (base32
+              "0gxz7yfj16b23lwn5pq68r8yb6klm7xhmq5m0addmrq1dvb3id5n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-magneticfield")
+    (synopsis "Plotting a magnetic field with PSTricks")
+    (description
+     "@code{pst-magneticfield} is a PSTricks related package to draw the
+magnetic field lines of Helmholtz coils in a two or three dimensional view.
+There are several parameters to create a different output.")
+    (license license:lppl)))
+
+(define-public texlive-pst-marble
+  (package
+    (name "texlive-pst-marble")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-marble/"
+                   "dvips/pst-marble/"
+                   "tex/generic/pst-marble/"
+                   "tex/latex/pst-marble/")
+             (base32
+              "1j5jags1m4wwwfkd25n57q49ggdwc7b9qjp8da4q255yf0i54w91")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-marble")
+    (synopsis "PSTricks package to draw marble-like patterns")
+    (description "This is a PSTricks package to draw marble-like patterns.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-pst-math
+  (package
+    (name "texlive-pst-math")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-math/" "dvips/pst-math/"
+                   "tex/generic/pst-math/"
+                   "tex/latex/pst-math/")
+             (base32
+              "1h9fg3wz7k28kgmlanli8jzz8kqif11lf0y50w5wxrnaasdmh1ib")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-math")
+    (synopsis "Enhancement of PostScript math operators to use with PSTricks")
+    (description
+     "PostScript lacks a lot of basic operators such as tan, acos, asin, cosh,
+sinh, tanh, acosh, asinh, atanh, exp (with e base).  Also (oddly) cos and sin
+use arguments in degrees.  Pst-math provides all those operators in a header
+file @file{pst-math.pro} with wrappers @file{pst-math.sty} and
+@file{pst-math.tex}.  In addition, sinc, gauss, gammaln and bessel are
+implemented (only partially for the latter).  The package is designed
+essentially to work with @code{pst-plot} but can be used in whatever PS code.
+The package also provides a routine SIMPSON for numerical integration and
+a solver of linear equation systems.")
+    (license license:lppl)))
+
+(define-public texlive-pst-mirror
+  (package
+    (name "texlive-pst-mirror")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-mirror/"
+                   "dvips/pst-mirror/"
+                   "tex/generic/pst-mirror/"
+                   "tex/latex/pst-mirror/")
+             (base32
+              "0b2q1islf9mwphzcs6g04vq69hlmyisx4rb5fb77yiw3na5xlnq0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-mirror")
+    (synopsis "Images on a spherical mirror")
+    (description
+     "The package provides commands and supporting PostScript material for
+drawing images as if reflected by a spherical mirror.")
+    (license license:lppl)))
+
+(define-public texlive-pst-moire
+  (package
+    (name "texlive-pst-moire")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-moire/" "dvips/pst-moire/"
+                   "tex/generic/pst-moire/"
+                   "tex/latex/pst-moire/")
+             (base32
+              "0i2p5b2cfhnbmszcs5ydlk4nfxhwgl84kq148kpg6cx07gg8rr6l")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-moire")
+    (synopsis "PSTricks package to draw moiré patterns")
+    (description "This is a PSTricks package to draw moiré patterns.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-pst-node
+  (package
+    (name "texlive-pst-node")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-node/" "dvips/pst-node/"
+                   "tex/generic/pst-node/"
+                   "tex/latex/pst-node/")
+             (base32
+              "0w9j1l5hlid98sp6hm7ny0z3nh6jcccvxglprq0wr08w89zb7dmz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-node")
+    (synopsis "Nodes and node connections in PSTricks")
+    (description
+     "The package enables the user to connect information, and to place labels,
+without knowing (in advance) the actual positions of the items to be
+connected, or where the connecting line should go.  The macros are useful for
+making graphs and trees, mathematical diagrams, linguistic syntax diagrams,
+and so on.")
+    (license license:lppl)))
+
+(define-public texlive-pst-ob3d
+  (package
+    (name "texlive-pst-ob3d")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-ob3d/"
+                   "source/generic/pst-ob3d/"
+                   "tex/generic/pst-ob3d/"
+                   "tex/latex/pst-ob3d/")
+             (base32
+              "1j6y3v4x5gkshzxnmklwl2hqbz7nr904v1qa1dr9l4m814p2jhcc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-ob3d")
+    (synopsis "Three dimensional objects using PSTricks")
+    (description
+     "The package uses PSTricks to provide basic three-dimensional objects.
+As yet, only cubes (which can be deformed to rectangular parallelipipeds) and
+dies (which are only a special kind of cubes) are defined.")
+    (license license:lppl)))
+
+(define-public texlive-pst-ode
+  (package
+    (name "texlive-pst-ode")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-ode/" "dvips/pst-ode/"
+                   "tex/generic/pst-ode/" "tex/latex/pst-ode/")
+             (base32
+              "0mx6wsdl4m0nr6848qpyfi6rn7x1nsqljnflsp0yk010r0vsmid5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-ode")
+    (synopsis
+     "Solve initial value problems for sets of Ordinary Differential
+Equations")
+    (description
+     "The package defines @code{\\pstODEsolve} for solving initial value
+problems for sets of Ordinary Differential Equations (ODE) using the
+Runge-Kutta-Fehlberg (RKF45) method with automatic step size adjustment.  The
+result is stored as a PostScript object and may be plotted later using macros
+from other PSTricks packages, such as @code{\\listplot} (from @code{pst-plot})
+and @code{\\listplotThreeD} (from @code{pst-3dplot}), or may be further
+processed by user-defined PostScript procedures.  Optionally, the computed
+state vectors can be written as a table to a text file.")
+    (license license:lppl)))
+
+(define-public texlive-pst-optexp
+  (package
+    (name "texlive-pst-optexp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-optexp/" "dvips/pst-optexp/"
+                   "makeindex/pst-optexp/"
+                   "source/latex/pst-optexp/"
+                   "tex/latex/pst-optexp/")
+             (base32
+              "0m835c700a6bxd8r8m84injzz862j1xdxbbh8waxh97yrfwmhp45")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-optexp")
+    (synopsis "Drawing optical experimental setups")
+    (description
+     "The package is a collection of optical components that facilitate easy
+sketching of optical experimental setups.  The package uses PSTricks for its
+output.  A wide range of free-ray and fibre components is provided, the
+alignment, positioning and labelling of which can be achieved in very simple
+and flexible ways.  The components may be connected with fibers or beams, and
+realistic raytraced beam paths are also possible.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pst-optic
+  (package
+    (name "texlive-pst-optic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-optic/"
+                   "tex/generic/pst-optic/"
+                   "tex/latex/pst-optic/")
+             (base32
+              "1qgxqygcfv3v6wkf6igkyp5aimp9f9nvfyizcwlxlxr32mjvvbly")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-optic")
+    (synopsis "Drawing optics diagrams")
+    (description
+     "This package provides a package for drawing both reflective and
+refractive optics diagrams.")
+    (license license:lppl)))
+
+(define-public texlive-pst-osci
+  (package
+    (name "texlive-pst-osci")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-osci/"
+                   "tex/generic/pst-osci/"
+                   "tex/latex/pst-osci/")
+             (base32
+              "0h7wnpm26z8v904yj0wvadrjsh3j5fsn73ihilxhb4zd88zqib99")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-osci")
+    (synopsis "Oscgons with PSTricks")
+    (description
+     "This PSTricks package enables you to produce oscilloscope screen shots.
+Three channels can be used to represent the most common signals (damped or
+not): namely sinusoidal, rectangular, triangular, dog's tooth (left and right
+oriented).  The third channel allows you to add, to subtract or to multiply
+the two other signals.  Lissajous diagrams (XY-mode) can also be obtained.")
+    (license license:lppl)))
+
+(define-public texlive-pst-ovl
+  (package
+    (name "texlive-pst-ovl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-ovl/" "dvips/pst-ovl/"
+                   "tex/generic/pst-ovl/" "tex/latex/pst-ovl/")
+             (base32
+              "0v9f4k475cm922y7i2x6w6p1w3nnbaw69rniznwap9bhliv0ynfg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-ovl")
+    (synopsis "Create and manage graphical overlays")
+    (description
+     "The package is useful when building an image from assorted material, as
+in the slides of a projected presentation.")
+    (license license:lppl)))
+
+(define-public texlive-pst-pad
+  (package
+    (name "texlive-pst-pad")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-pad/"
+                   "source/generic/pst-pad/"
+                   "tex/generic/pst-pad/" "tex/latex/pst-pad/")
+             (base32
+              "1vvgjf2g9dynjg1y6dm1d47v40sga4a34ngyy3h5lfmy58860jri")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-pad")
+    (synopsis "Draw simple attachment systems with PSTricks")
+    (description
+     "The package collects a set of graphical elements based on PStricks that
+can be used to facilitate display of attachment systems such as two
+differently shaped surfaces with or without a fluid wedged in between.  These
+macros ease the display of wet adhesion models and common friction systems
+such as boundary lubrication, elastohydrodynamic lubrication and hydrodynamic
+lubrication.")
+    (license license:lppl)))
+
+(define-public texlive-pst-pdf
+  (package
+    (name "texlive-pst-pdf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-pdf/" "scripts/pst-pdf/"
+                   "source/latex/pst-pdf/" "tex/latex/pst-pdf/")
+             (base32
+              "1as5q9p6z9y3ps3hm8v8par18xmxmhrcxmknpl6rhjq0wbyjlj26")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "ps4pdf")))
+    (home-page "https://ctan.org/pkg/pst-pdf")
+    (synopsis "Make PDF versions of graphics by processing between runs")
+    (description
+     "The package @code{pst-pdf} simplifies the use of graphics from PSTricks
+and other PostScript code in PDF documents.  As in building a bibliography
+with BibTeX, additional external programmes are invoked.  In this case they
+are used to create a PDF file that will contain all the graphics material.  In
+the final document these contents will be inserted instead of the original
+PostScript code.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-pst-pdgr
+  (package
+    (name "texlive-pst-pdgr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-pdgr/"
+                   "source/generic/pst-pdgr/"
+                   "tex/generic/pst-pdgr/"
+                   "tex/latex/pst-pdgr/")
+             (base32
+              "08v28601j7ygp7d8xliwhfbrl2gh93ikf6kbl4p86wfxsbxlhg0c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-pdgr")
+    (synopsis "Draw medical pedigrees using PSTricks")
+    (description
+     "The package provides a set of macros based on PSTricks to draw medical
+pedigrees according to the recommendations for standardized human pedigree
+nomenclature.  The drawing commands place the symbols on a @code{pspicture}
+canvas.  An interface for making trees is also provided.  The package may be
+used both with LaTeX and PlainTeX.  A separate Perl program for generating TeX
+files from spreadsheets is available.")
+    (license license:lppl)))
+
+(define-public texlive-pst-perspective
+  (package
+    (name "texlive-pst-perspective")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-perspective/"
+                   "tex/generic/pst-perspective/"
+                   "tex/latex/pst-perspective/")
+             (base32
+              "0dm7qqar0kjnc68xwhp7vn4m8bcsmzcs6qzh61ainbls7gni5aq8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-perspective")
+    (synopsis "Draw perspective views using PSTricks")
+    (description
+     "The package provides the means to draw an orthogonal parallel projection
+with an arbitrarily chosen angle and a variable shortening factor.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pst-platon
+  (package
+    (name "texlive-pst-platon")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-platon/"
+                   "source/generic/pst-platon/"
+                   "tex/latex/pst-platon/")
+             (base32
+              "0a4w47varc1i22h5iwd49c0clwb2k8hdlva5l6nfmc889wgwp0d7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-platon")
+    (synopsis "Platonic solids in PSTricks")
+    (description
+     "The package adds to PSTricks the ability to draw 3-dimensional views of
+the five Platonic solids.")
+    (license license:lppl)))
+
+(define-public texlive-pst-plot
+  (package
+    (name "texlive-pst-plot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-plot/"
+                   "tex/generic/pst-plot/"
+                   "tex/latex/pst-plot/")
+             (base32
+              "12jrn04nxfhw07y86pjkr6bbvdvwcnhfxr6aj9ni13383dxcwl7j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-plot")
+    (synopsis "Plot data using PSTricks")
+    (description
+     "The package provides plotting of data (typically from external files),
+using PSTricks.  Plots may be configured using a wide variety of parameters.")
+    (license license:lppl)))
+
+(define-public texlive-pst-poker
+  (package
+    (name "texlive-pst-poker")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-poker/"
+                   "tex/latex/pst-poker/")
+             (base32
+              "0c1v75rxw717hvjgzb4i0ahk7acmqpgl9czaihvw36r9yaicsm5n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-poker")
+    (synopsis "Drawing poker cards")
+    (description
+     "This PSTricks related package can create poker cards in various
+manners.")
+    (license license:lgpl3)))
+
+(define-public texlive-pst-poly
+  (package
+    (name "texlive-pst-poly")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-poly/"
+                   "tex/generic/pst-poly/"
+                   "tex/latex/pst-poly/")
+             (base32
+              "1fasd2y6vv28id1w858kq4rc3qd46rkds9z7vi8k102aqvv9as8n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-poly")
+    (synopsis "Polygons with PSTricks")
+    (description
+     "This PSTricks package provides a really rather simple command
+@code{\\PstPolygon} that will draw various regular and non-regular
+polygons (according to command parameters); various shortcuts to commonly-used
+polygons are provided, as well as a command @code{\\pspolygonbox} that frames
+text with a polygon.")
+    (license license:lppl)))
+
+(define-public texlive-pst-pulley
+  (package
+    (name "texlive-pst-pulley")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-pulley/"
+                   "tex/generic/pst-pulley/"
+                   "tex/latex/pst-pulley/")
+             (base32
+              "1n1kv743vxjw8b6nqrlivb3m3pg3z9kw56bzxij438p5him3sdaa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-pulley")
+    (synopsis "Plot pulleys, using PSTricks")
+    (description
+     "The package enables the user to draw pulley systems with up to 6 pulleys.
+The pulley diagrams are labelled with the physical properties of the system.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pst-qtree
+  (package
+    (name "texlive-pst-qtree")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-qtree/"
+                   "tex/generic/pst-qtree/"
+                   "tex/latex/pst-qtree/")
+             (base32
+              "1hdmv4lar1hdg9bh049kmsjqd14rdv2066qrcaacwmd39nh816z5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-qtree")
+    (synopsis "Simple syntax for trees")
+    (description "The package provides a Qtree-like front end for PSTricks.")
+    (license license:gpl3+)))
+
+(define-public texlive-pst-rputover
+  (package
+    (name "texlive-pst-rputover")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-rputover/"
+                   "tex/generic/pst-rputover/"
+                   "tex/latex/pst-rputover/")
+             (base32
+              "1d25sdhvira5vlibgv3r51dk64jplqbpf4fdimh2l1flq5h0d9dw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-rputover")
+    (synopsis "Place text over objects without obscuring background colors")
+    (description
+     "This is a PSTricks package which allows to place text over objects
+without obscuring background colors.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-pst-rubans
+  (package
+    (name "texlive-pst-rubans")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-rubans/"
+                   "source/generic/pst-rubans/"
+                   "tex/generic/pst-rubans/"
+                   "tex/latex/pst-rubans/")
+             (base32
+              "1izpw60jm4w8xgd5aiqc7qxhjd0js1g9k9anwbpni9sn1qma66zs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-rubans")
+    (synopsis "Draw three-dimensional ribbons")
+    (description
+     "The package uses PStricks and @code{pst-solides3d} to draw three
+dimensional ribbons on a cylinder, torus, sphere, cone or paraboloid.  The
+width of the ribbon, the number of turns, the colour of the outer and the
+inner surface of the ribbon may be set.  In the case of circular and conical
+helices, one may also choose the number of ribbons.")
+    (license license:lppl)))
+
+(define-public texlive-pst-shell
+  (package
+    (name "texlive-pst-shell")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-shell/" "dvips/pst-shell/"
+                   "source/generic/pst-shell/"
+                   "tex/generic/pst-shell/"
+                   "tex/latex/pst-shell/")
+             (base32
+              "18w5csarnjv3ws554vjw2zlmpc5mcd03fc8fircv0pbxxl53l11r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-shell")
+    (synopsis "Plotting sea shells")
+    (description
+     "@code{pst-shell} is a PSTricks related package to draw seashells in 3D
+view: Argonauta, Epiteonium, Lyria, Turritella, Tonna, Achatina, Oxystele,
+Conus, Ammonite, Codakia, Escalaria, Helcion, Natalina, Planorbis, and
+Nautilus, all with different parameters.")
+    (license license:lppl)))
+
+(define-public texlive-pst-sigsys
+  (package
+    (name "texlive-pst-sigsys")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-sigsys/"
+                   "tex/generic/pst-sigsys/"
+                   "tex/latex/pst-sigsys/")
+             (base32
+              "18g1s1afh3lnkb3993k1ypkzbb4a88jw5paclwgyn59yqjq8x737")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-sigsys")
+    (synopsis "Support of signal processing-related disciplines")
+    (description
+     "The package offers a collection of useful macros for disciplines related
+to signal processing.  It defines macros for plotting a sequence of numbers,
+drawing the pole-zero diagram of a system, shading the region of convergence,
+creating an adder or a multiplier node, placing a framed node at a given
+coordinate, creating an up-sampler or a down-sampler node, drawing the block
+diagram of a system, drawing adaptive systems, sequentially connecting a list
+of nodes, and connecting a list of nodes using any node-connecting macro.")
+    (license license:lppl)))
+
+(define-public texlive-pst-slpe
+  (package
+    (name "texlive-pst-slpe")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-slpe/" "dvips/pst-slpe/"
+                   "source/generic/pst-slpe/"
+                   "tex/generic/pst-slpe/"
+                   "tex/latex/pst-slpe/")
+             (base32
+              "12m6iss3hqsngq2dk7n3d1zz6z2rq4j2w1di9l26hpzly2mdp26n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-slpe")
+    (synopsis "Sophisticated colour gradients")
+    (description
+     "This PStricks package covers all the colour gradient functionality of
+@code{pst-grad} (part of the base PSTricks distribution), and provides the
+following facilities:
+
+@itemize
+@item it permits the user to specify an arbitrary number of colours, along
+with the points at which they are to be reached;
+@item it converts between RGB and HSV behind the scenes;
+@item it provides concentric and radial gradients;
+@item it provides a command @code{\\psBall} that generates bullets with
+a three-dimensional appearance.
+@end itemize")
+    (license license:lppl)))
+
+(define-public texlive-pst-solarsystem
+  (package
+    (name "texlive-pst-solarsystem")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-solarsystem/"
+                   "dvips/pst-solarsystem/"
+                   "tex/generic/pst-solarsystem/"
+                   "tex/latex/pst-solarsystem/")
+             (base32
+              "147mbrir52fl1ra3qqwlmmgk7789nrpr9hh015kc07mx10zfmc5x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-solarsystem")
+    (synopsis "Plot the solar system for a specific date")
+    (description
+     "The package uses PSTricks to produce diagrams of the visible planets,
+projected on the plane of the ecliptic.  It is not possible to represent all
+the planets in their real proportions, so only Mercury, Venus, Earth and Mars
+have their orbits in correct proportions and their relative sizes are
+observed.  Saturn and Jupiter are in the right direction, but not in the
+correct size.")
+    (license license:lppl)))
+
+(define-public texlive-pst-solides3d
+  (package
+    (name "texlive-pst-solides3d")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-solides3d/"
+                   "dvips/pst-solides3d/"
+                   "tex/generic/pst-solides3d/"
+                   "tex/latex/pst-solides3d/")
+             (base32
+              "1w6qpaw5k6x5c90k15q3r397f3ai7fd443yzwif2fhkqb2wjv3k8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-solides3d")
+    (synopsis "Draw perspective views of 3D solids")
+    (description
+     "The package is designed to draw solids in 3d perspective.  Its features
+include:
+@itemize
+@item create primitive solids;
+@item create solids by including a list of its vertices and faces;
+@item faces of solids and surfaces can be colored by choosing from a very
+large palette of colors;
+@item draw parametric surfaces in algebraic and reverse polish notation;
+@item create explicit and parameterized algebraic functions drawn in 2 or
+3 dimensions;
+@item project text onto a plane or onto the faces of a solid;
+@item support for including external database files.
+@end itemize")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pst-soroban
+  (package
+    (name "texlive-pst-soroban")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-soroban/"
+                   "source/generic/pst-soroban/"
+                   "tex/latex/pst-soroban/")
+             (base32
+              "1cpmqgaj1h2dh3acypm9xkjinmlw9wd40n1s2vdab5ascvprbr6n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-soroban")
+    (synopsis "Draw a soroban using PSTricks")
+    (description
+     "The package uses PSTricks to draw a Japanese abacus, or soroban.  The
+soroban is still used in Japan today.")
+    (license license:lppl)))
+
+(define-public texlive-pst-spectra
+  (package
+    (name "texlive-pst-spectra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-spectra/"
+                   "dvips/pst-spectra/"
+                   "tex/generic/pst-spectra/"
+                   "tex/latex/pst-spectra/")
+             (base32
+              "0l88wag5i1jy6pd1lx3s9cijiymzdgwvl52hkarc84d8qpn53wcw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-spectra")
+    (synopsis "Draw continuum, emission and absorption spectra with PSTricks")
+    (description
+     "The package is a PSTricks extension, based on a NASA lines database.  It
+allows you to draw continuum, emission and absorption spectra.  A Total of 16
+880 visible lines from 99 elements can be displayed.")
+    (license license:lppl)))
+
+(define-public texlive-pst-spinner
+  (package
+    (name "texlive-pst-spinner")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-spinner/"
+                   "dvips/pst-spinner/"
+                   "tex/generic/pst-spinner/"
+                   "tex/latex/pst-spinner/")
+             (base32
+              "0fm70v1kgjs32pvyvcnh2j47clqgdr4hll4j7fr935584d604g49")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-spinner")
+    (synopsis "Drawing a fidget spinner")
+    (description
+     "This package aims to propose a model of the fidget spinner gadget.  It
+exists under different forms with 2, 3 poles and even more.  We chose the most
+popular model: the triple fidget spinner.")
+    (license license:lppl)))
+
+(define-public texlive-pst-stru
+  (package
+    (name "texlive-pst-stru")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-stru/"
+                   "tex/generic/pst-stru/"
+                   "tex/latex/pst-stru/")
+             (base32
+              "1zxf0bj43picgd86bwgc38d8valpx0fn0pr3pgfv2kn42r2pampj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-stru")
+    (synopsis "Civil engineering diagrams, using PSTricks")
+    (description
+     "This PSTricks-based package provides facilities to draw structural
+schemes in civil engineering analysis, for beams, portals, arches and piles.")
+    (license license:lppl)))
+
+(define-public texlive-pst-support
+  (package
+    (name "texlive-pst-support")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-support/")
+             (base32
+              "1470n03zanpw35dnfzyjqm7d5lgddrimypz28x0zsk9nqpamnqnv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-support")
+    (synopsis "Assorted support files for use with PSTricks")
+    (description
+     "This package provides an appropriate set of job options, together with
+process scripts for use with TeXnicCenter.")
+    (license license:lppl)))
+
 (define-public texlive-pst-text
   (package
     (name "texlive-pst-text")
@@ -32258,6 +35344,280 @@ of tables.")
     (description "Pst-text is a PSTricks based package for plotting text along
 a different path and manipulating characters.  It includes the functionality
 of the old package @code{pst-char}.")
+    (license license:lppl)))
+
+(define-public texlive-pst-thick
+  (package
+    (name "texlive-pst-thick")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-thick/"
+                   "source/generic/pst-thick/"
+                   "tex/generic/pst-thick/"
+                   "tex/latex/pst-thick/")
+             (base32
+              "1clg9ahhg3zg91phlp2ni1j5m6pb68bdk74glh398r8y2gj2b5fb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-thick")
+    (synopsis "Drawing very thick lines and curves")
+    (description
+     "The package supports drawing of very thick lines and curves in PSTricks,
+with various fillings for the body of the lines.")
+    (license license:lppl)))
+
+(define-public texlive-pst-tools
+  (package
+    (name "texlive-pst-tools")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-tools/" "dvips/pst-tools/"
+                   "tex/generic/pst-tools/"
+                   "tex/latex/pst-tools/")
+             (base32
+              "1ws149np6121mc7msw32wkc6pn528ldsd5g95w4n4vcm6r54pmgq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-tools")
+    (synopsis "PSTricks support functions")
+    (description
+     "The package provides helper functions for other PSTricks related
+packages.")
+    (license license:lppl)))
+
+(define-public texlive-pst-tree
+  (package
+    (name "texlive-pst-tree")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-tree/"
+                   "tex/generic/pst-tree/"
+                   "tex/latex/pst-tree/")
+             (base32
+              "1vznc4qyjpnni3smdxlpqi7h3qxd13kv5pigvlly0zq676n6gw8n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-tree")
+    (synopsis "Trees, using PSTricks")
+    (description
+     "@code{pst-tree} defines a macro \\pstree that offers a structured way of
+joining nodes created using @code{pst-node} in order to draw trees.")
+    (license license:lppl)))
+
+(define-public texlive-pst-turtle
+  (package
+    (name "texlive-pst-turtle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-turtle/"
+                   "dvips/pst-turtle/"
+                   "tex/generic/pst-turtle/"
+                   "tex/latex/pst-turtle/")
+             (base32
+              "0mgpjs9jkgfx0hbd9l5jw60rf0vpdkv933ksjlwcjlh98y9gay4c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-turtle")
+    (synopsis "Commands for Turtle operations")
+    (description
+     "This is a PSTricks related package for creating Turtle graphics.")
+    (license license:lppl)))
+
+(define-public texlive-pst-tvz
+  (package
+    (name "texlive-pst-tvz")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-tvz/"
+                   "source/generic/pst-tvz/"
+                   "tex/generic/pst-tvz/" "tex/latex/pst-tvz/")
+             (base32
+              "1xpzvfgngv5r5cdnvip87wr1i0pmrc6ibwi5gzmibfzl64w7vkqr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-tvz")
+    (synopsis "Draw trees with more than one root node, using PSTricks")
+    (description
+     "The package uses PSTricks to draw trees with more than one root node.
+It is similar to @code{pst-tree}, though it uses a different placement
+algorithm.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pst-uml
+  (package
+    (name "texlive-pst-uml")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-uml/"
+                   "source/generic/pst-uml/"
+                   "tex/latex/pst-uml/")
+             (base32
+              "0sgsyg9gk4wxgz7r44h6a7f5f7gl5b522f864n0kv35cgmwnzyr7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-multido))
+    (home-page "https://ctan.org/pkg/pst-uml")
+    (synopsis "UML diagrams with PSTricks")
+    (description
+     "This a PSTricks package that provides support for drawing moderately
+complex UML (Universal Modelling Language) diagrams.  (The PDF documentation
+is written in French.)")
+    (license license:lppl)))
+
+(define-public texlive-pst-vectorian
+  (package
+    (name "texlive-pst-vectorian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-vectorian/"
+                   "dvips/pst-vectorian/"
+                   "tex/latex/pst-vectorian/")
+             (base32
+              "0knvzl4gqz79jzvb4w7a9ka1iiz5f3pjivnwvwmd1kmibykqwb67")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-vectorian")
+    (synopsis "Printing ornaments")
+    (description
+     "The package uses PSTricks to draw ornaments (a substantial repertoire of
+ornaments is provided).")
+    (license license:lppl)))
+
+(define-public texlive-pst-vehicle
+  (package
+    (name "texlive-pst-vehicle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-vehicle/"
+                   "tex/generic/pst-vehicle/"
+                   "tex/latex/pst-vehicle/")
+             (base32
+              "1b0s5fy4w4k2q486sdwlrh649n99k9s5hy5m2v01lh7qnjl1z4c3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-vehicle")
+    (synopsis "Rolling vehicles on graphs of mathematical functions")
+    (description
+     "This package permits to represent vehicles rolling without slipping on
+mathematical curves.  Different types of vehicles are proposed, the shape of
+the curve is to be defined by its equation in algebraic notation.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-pst-venn
+  (package
+    (name "texlive-pst-venn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pst-venn/"
+                   "tex/latex/pst-venn/")
+             (base32
+              "0gz7sxwycqd71yy8jln7h3v064mrzhh1852fc7b785v55x8kna2n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-venn")
+    (synopsis "PSTricks package for drawing Venn sets")
+    (description
+     "This is a PSTricks related package for drawing Venn diagrams with three
+circles.")
+    (license license:lppl)))
+
+(define-public texlive-pst-vowel
+  (package
+    (name "texlive-pst-vowel")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pst-vowel/"
+                   "tex/latex/pst-vowel/")
+             (base32
+              "0p0qnfbmd1lh21nk6xq246xr6y50q0y55rdcq3i9vkg4j7kkkfy6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pst-vowel")
+    (synopsis "Enable arrows showing diphthongs on vowel charts")
+    (description
+     "The package extends the @code{vowel} package (distributed as part of the
+@code{tipa} bundle) by allowing the user to draw arrows between vowels to show
+relationships such as diphthong membership.")
+    (license license:lppl)))
+
+(define-public texlive-pst2pdf
+  (package
+    (name "texlive-pst2pdf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/pst2pdf/" "scripts/pst2pdf/")
+             (base32
+              "0yihyrnwwpad5hf8yrjqljpwsnj6kcbb6y6cfnxwxbi1c5pf1jk9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "pst2pdf.pl")))
+    (inputs (list perl))
+    (home-page "https://ctan.org/pkg/pst2pdf")
+    (synopsis "Script to compile PSTricks documents via pdfTeX")
+    (description
+     "The script extracts the preamble of the document and runs all
+@code{\\begin@{postscript@}...\\end@{postscript@}},
+@code{\\begin@{pspicture@}...\\end@{pspicture@}} and
+@code{\\pspicture...\\endpspicture} separately through LaTeX with the same
+preamble as the original document; thus it creates EPS, PNG and PDF files of
+these snippets.  In a final pdfLaTeX run the script replaces the environments
+with @code{\\includegraphics} to include the processed snippets.")
+    (license license:gpl2)))
+
+(define-public texlive-pstricks-add
+  (package
+    (name "texlive-pstricks-add")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pstricks-add/"
+                   "dvips/pstricks-add/"
+                   "tex/generic/pstricks-add/"
+                   "tex/latex/pstricks-add/")
+             (base32
+              "18khs28v3dg5z7215k0yv7hxna9x5nh09hlrw2fc4nhmzymy2kjg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pstricks-add")
+    (synopsis "Collection of add-ons and bugfixes for PSTricks")
+    (description
+     "This package collects together examples that have been posted to the
+PSTricks mailing list, together with many additional features for the basic
+@code{pstricks}, @code{pst-plot} and @code{pst-node}, including: bugfixes; new
+options for the pspicture environment; arrows; braces as node
+connection/linestyle; extended axes for plots (e.g., logarithm axes); polar
+plots; plotting tangent lines of curves or functions; solving and printing
+differential equations; box plots; matrix plots; and pie charts.")
+    (license license:lppl)))
+
+(define-public texlive-pstricks-calcnotes
+  (package
+    (name "texlive-pstricks-calcnotes")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pstricks_calcnotes/")
+             (base32
+              "00vgcdf73p4143dfjcvs4b5v4phvisv76ink3iiijl6s6f9zbmy3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pstricks-calcnotes")
+    (synopsis "Use of PSTricks in calculus lecture notes")
+    (description
+     "The bundle shows the construction of PSTricks macros to draw Riemann
+sums of an integral and to draw the vector field of an ordinary differential
+equation.  The results are illustrated in a fragment of lecture notes.")
     (license license:lppl)))
 
 (define-public texlive-marginnote
@@ -32301,6 +35661,71 @@ frames made with the @code{framed} package.")
 sort of tabular, and an environment @code{longtabu} which provides the
 facilities of @code{tabu} in a modified @code{longtable} environment.")
     (license license:lppl1.3+)))
+
+(define-public texlive-uml
+  (package
+    (name "texlive-uml")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uml/" "source/latex/uml/"
+                   "tex/latex/uml/")
+             (base32
+              "039kg3xk03cm4xfsaj33kx1j5hjqy9330zxamqyzs1jnp8xgcfdz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uml")
+    (synopsis "UML diagrams in LaTeX")
+    (description
+     "This package provides a PSTricks related package for writing
+UML (Unified Modelling Language) diagrams in LaTeX.  Currently, it implements
+a subset of class diagrams, and some extra constructs as well.  The package
+cannot be used together with @code{pst-uml}.")
+    (license license:lppl)))
+
+(define-public texlive-vaucanson-g
+  (package
+    (name "texlive-vaucanson-g")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/vaucanson-g/"
+                   "tex/generic/vaucanson-g/")
+             (base32
+              "18ig6kszjr2jfr3hvq18clq8ccxbv2zw280pw20mphfjh6rjwbrj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/vaucanson-g")
+    (synopsis "PSTricks macros for drawing automata")
+    (description
+     "VauCanSon-G is a package that enables the user to draw automata within
+texts written using LaTeX.  The package macros make use of commands of
+PSTricks.")
+    (license license:lppl)))
+
+(define-public texlive-vocaltract
+  (package
+    (name "texlive-vocaltract")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/vocaltract/"
+                   "tex/latex/vocaltract/")
+             (base32
+              "072b712bhfxq429jh4r9d786nwpdyl8rlbm6ds4nf9asxg2lg9wr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/vocaltract")
+    (synopsis "Visualise the vocal tract using LaTeX and PSTricks")
+    (description
+     "The package enables the user to visualise the vocal tract.  The vocal
+tract (in the package) is manipulated by a vector of articulation parameters
+according to the S. Maeda model.  Animation may be achieved by providing
+a sequence of vectors over time (e.g., from Matlab).  A sequence of vectors
+for certain German phonemes is embedded in the package, which allows for
+animation when no other vector is available.  The package's graphics are
+produced using PSTricks.")
+    (license license:lppl)))
 
 (define-public texlive-xkeyval
   (package
@@ -34296,6 +37721,97 @@ manipulation, mft, fontinst, etc.  Manipulating OpenType, TrueType, Type 1,and
 for manipulation of PostScript and other image formats.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
+(define-public texlive-collection-formatsextra
+  (package
+    (name "texlive-collection-formatsextra")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-aleph
+           texlive-antomega
+           texlive-collection-basic
+           texlive-collection-latex
+           texlive-edmac
+           texlive-eplain
+           texlive-hitex
+           texlive-jadetex
+           texlive-lambda
+           texlive-lollipop
+           texlive-mltex
+           texlive-mxedruli
+           texlive-omega
+           texlive-omegaware
+           texlive-otibet
+           texlive-passivetex
+           texlive-psizzl
+           texlive-startex
+           texlive-texsis
+           texlive-xmltex
+           texlive-xmltexconfig))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Additional TeX formats")
+    (description
+     "This is a collection of TeX formats, i.e., large-scale macro packages
+designed to be dumped into @file{.fmt} files --- excluding the most common
+ones, such as LaTeX and ConTeXt, which have their own package(s).  It also
+includes the Aleph engine and related Omega formats and packages, and the
+HiTeX engine and related.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-langcyrillic
+  (package
+    (name "texlive-collection-langcyrillic")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-babel-belarusian
+           texlive-babel-bulgarian
+           texlive-babel-russian
+           texlive-babel-serbian
+           texlive-babel-serbianc
+           texlive-babel-ukrainian
+           texlive-churchslavonic
+           texlive-cmcyr
+           texlive-collection-basic
+           texlive-collection-latex
+           texlive-cyrillic
+           texlive-cyrillic-bin
+           texlive-cyrplain
+           texlive-disser
+           texlive-eskd
+           texlive-eskdx
+           texlive-gost
+           texlive-hyphen-complete
+           texlive-lcyw
+           texlive-lh
+           texlive-lhcyr
+           texlive-lshort-bulgarian
+           texlive-lshort-mongol
+           texlive-lshort-russian
+           texlive-lshort-ukr
+           texlive-mongolian-babel
+           texlive-montex
+           texlive-mpman-ru
+           texlive-numnameru
+           texlive-pst-eucl-translation-bg
+           texlive-russ
+           texlive-serbian-apostrophe
+           texlive-serbian-date-lat
+           texlive-serbian-def-cyr
+           texlive-serbian-lig
+           texlive-t2
+           texlive-xecyrmongolian))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Support for Cyrillic scripts")
+    (description
+     "This collection provides packages supporting Cyrillic scripts (Bulgarian,
+Russian, Serbian, Ukrainian), even if Latin alphabets may also be used.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
 (define-public texlive-collection-langczechslovak
   (package
     (name "texlive-collection-langczechslovak")
@@ -35669,6 +39185,134 @@ PStricks are separate.")
     (description
      "This consist of add-on packages and macros that work with plain TeX,
 often LaTeX, and occasionally other formats.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-pstricks
+  (package
+    (name "texlive-collection-pstricks")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-auto-pst-pdf
+           texlive-bclogo
+           texlive-collection-basic
+           texlive-collection-plaingeneric
+           texlive-dsptricks
+           texlive-luapstricks
+           texlive-makeplot
+           texlive-pdftricks
+           texlive-pdftricks2
+           texlive-pedigree-perl
+           texlive-psbao
+           texlive-pst-2dplot
+           texlive-pst-3d
+           texlive-pst-3dplot
+           texlive-pst-abspos
+           texlive-pst-am
+           texlive-pst-antiprism
+           texlive-pst-arrow
+           texlive-pst-asr
+           texlive-pst-bar
+           texlive-pst-barcode
+           texlive-pst-bezier
+           texlive-pst-blur
+           texlive-pst-bspline
+           texlive-pst-calculate
+           texlive-pst-calendar
+           texlive-pst-cie
+           texlive-pst-circ
+           texlive-pst-coil
+           texlive-pst-contourplot
+           texlive-pst-cox
+           texlive-pst-dart
+           texlive-pst-dbicons
+           texlive-pst-diffraction
+           texlive-pst-electricfield
+           texlive-pst-eps
+           texlive-pst-eucl
+           texlive-pst-exa
+           texlive-pst-feyn
+           texlive-pst-fill
+           texlive-pst-fit
+           texlive-pst-flags
+           texlive-pst-fr3d
+           texlive-pst-fractal
+           texlive-pst-fun
+           texlive-pst-func
+           texlive-pst-gantt
+           texlive-pst-geo
+           texlive-pst-geometrictools
+           texlive-pst-gr3d
+           texlive-pst-grad
+           texlive-pst-graphicx
+           texlive-pst-hsb
+           texlive-pst-infixplot
+           texlive-pst-intersect
+           texlive-pst-jtree
+           texlive-pst-knot
+           texlive-pst-labo
+           texlive-pst-layout
+           texlive-pst-lens
+           texlive-pst-light3d
+           texlive-pst-lsystem
+           texlive-pst-magneticfield
+           texlive-pst-marble
+           texlive-pst-math
+           texlive-pst-mirror
+           texlive-pst-moire
+           texlive-pst-node
+           texlive-pst-ob3d
+           texlive-pst-ode
+           texlive-pst-optexp
+           texlive-pst-optic
+           texlive-pst-osci
+           texlive-pst-ovl
+           texlive-pst-pad
+           texlive-pst-pdf
+           texlive-pst-pdgr
+           texlive-pst-perspective
+           texlive-pst-platon
+           texlive-pst-plot
+           texlive-pst-poker
+           texlive-pst-poly
+           texlive-pst-pulley
+           texlive-pst-qtree
+           texlive-pst-rputover
+           texlive-pst-rubans
+           texlive-pst-shell
+           texlive-pst-sigsys
+           texlive-pst-slpe
+           texlive-pst-solarsystem
+           texlive-pst-solides3d
+           texlive-pst-soroban
+           texlive-pst-spectra
+           texlive-pst-spinner
+           texlive-pst-stru
+           texlive-pst-support
+           texlive-pst-text
+           texlive-pst-thick
+           texlive-pst-tools
+           texlive-pst-tree
+           texlive-pst-turtle
+           texlive-pst-tvz
+           texlive-pst-uml
+           texlive-pst-vectorian
+           texlive-pst-vehicle
+           texlive-pst-venn
+           texlive-pst-vowel
+           texlive-pst2pdf
+           texlive-pstricks
+           texlive-pstricks-add
+           texlive-pstricks-calcnotes
+           texlive-uml
+           texlive-vaucanson-g
+           texlive-vocaltract))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "PSTricks core and add-ons")
+    (description
+     "This collection provides PSTricks core and all add-on packages.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
 (define-public texlive-collection-xetex
@@ -39290,6 +42934,29 @@ to load external Lua modules, including modules installed via LuaRocks.")
 cells using LaTeX macros.")
     (license license:expat)))
 
+(define-public texlive-luapstricks
+  (package
+    (name "texlive-luapstricks")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/lualatex/luapstricks/"
+                   "fonts/opentype/public/luapstricks/"
+                   "tex/lualatex/luapstricks/")
+             (base32
+              "160y66x93rcm0zpjscxyqbfkhbl0yypv0gyixm6vjwcm50vi2w5k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/luapstricks")
+    (synopsis "PSTricks backend for LuaLaTeX")
+    (description
+     "This package enables the use of PSTricks directly in LuaLaTeX documents,
+without invoking external programmes, by implementing a PostScript interpreter
+in Lua.  Therefore it does not require shell escape to be enabled or special
+environments, and instead allows PSTricks to be used exactly like in Dvips
+based documents.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-luaquotes
   (package
     (name "texlive-luaquotes")
@@ -39483,6 +43150,26 @@ LuaLaTeX and offers the ability to combine the facilities of multirow and
 makecell with an easy to use syntax.  It also adds some enhanced rules for the
 @code{booktabs} package.")
     (license license:expat)))
+
+(define-public texlive-makeplot
+  (package
+    (name "texlive-makeplot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/makeplot/"
+                   "source/latex/makeplot/"
+                   "tex/latex/makeplot/")
+             (base32
+              "1w34508lvb6rjhp41k78ph2p609mk03n8sp4mfgmhdpay0qxyjz5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/makeplot")
+    (synopsis "Easy plots from Matlab in LaTeX")
+    (description
+     "Makeplot is a LaTeX package that uses the PSTricks @code{pst-plot}
+functions to plot data that it takes from Matlab output files.")
+    (license license:lppl)))
 
 (define-public texlive-minim
   (package
@@ -39870,6 +43557,94 @@ integrated into the LaTeX kernel (or in parts into permanent support
 packages), and the current testphase bundle will be removed.")
     (license license:lppl1.3c)))
 
+(define-public texlive-pdftricks
+  (package
+    (name "texlive-pdftricks")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pdftricks/"
+                   "tex/latex/pdftricks/")
+             (base32
+              "07vr97rgn0n73zb2b3sb3wkwxl0p6nbnjk0cgxd05drf1k8shxnp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pdftricks")
+    (synopsis "Support for PSTricks in pdfTeX")
+    (description
+     "The PSTricks macros cannot be used (directly) with pdfTeX, since
+PSTricks uses PostScript arithmetic, which isn't part of PDF.  This package
+circumvents this limitation so that the extensive facilities offered by the
+powerful PSTricks package can be made use of in a pdfTeX document.  This is
+done using the shell escape function available in current TeX implementations.
+The package may also be used in support of other PostScript-output-only
+packages, such as PSfrag.")
+    (license license:gpl3+)))
+
+(define-public texlive-pdftricks2
+  (package
+    (name "texlive-pdftricks2")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pdftricks2/"
+                   "tex/latex/pdftricks2/")
+             (base32
+              "0znq52nzknv0x16cqbpfi90gz89frzk74ww3sg7ibjacmbpfl3j0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pdftricks2")
+    (synopsis "Use PSTricks in pdfTeX")
+    (description
+     "The package provides the means of processing documents that contain
+PSTricks graphics specifications.  The package is inspired by
+@code{pdftricks}.")
+    (license license:gpl2)))
+
+(define-public texlive-pedigree-perl
+  (package
+    (name "texlive-pedigree-perl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/man/man1/pedigree.1"
+                   "doc/man/man1/pedigree.man1.pdf"
+                   "doc/support/pedigree-perl/"
+                   "scripts/pedigree-perl/"
+                   "source/latex/pedigree-perl/")
+             (base32
+              "0s2186j4hx5v12g5r8admif2ysi6nnm8d0xxpwq26brfcjrbbh7r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "pedigree.pl")))
+    (inputs (list perl))
+    (home-page "https://ctan.org/pkg/pedigree-perl")
+    (synopsis "Generate TeX pedigree files from CSV files")
+    (description
+     "This program generates TeX commands to typeset pedigrees --- either TeX
+fragments or full LaTeX files, to be processed by the @code{pst-pdgr} package.
+The program has support for multilanguage pedigrees (at the present moment the
+English and Russian languages are supported).")
+    (license license:gpl2)))
+
+(define-public texlive-psbao
+  (package
+    (name "texlive-psbao")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/psbao/" "tex/latex/psbao/")
+             (base32
+              "11gfnjvhrgic18s45pj6hn8slj9kmrmsrh4kqn83sfdxy2mr2y32")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/psbao")
+    (synopsis "Draw Bao diagrams")
+    (description
+     "The package draws Bao diagrams in LaTeX.  The package is a development
+of @code{psgo}, and uses PSTricks to draw the diagrams.")
+    (license license:lppl)))
+
 (define-public texlive-pslatex
   (package
     (name "texlive-pslatex")
@@ -40089,6 +43864,27 @@ to the @code{xr} package for external document references.")
 a number of @code{\\magsteps} to change size; from this are defined commands
 @code{\\larger}, @code{\\smaller}, @code{\\textlarger}, etc.")
     (license license:public-domain)))
+
+(define-public texlive-russ
+  (package
+    (name "texlive-russ")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/russ/" "tex/latex/russ/")
+             (base32
+              "0ixvdjvgrqn5z8glvbr1i9k4yw00n260d11n034x6j67srxph3rb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/russ")
+    (synopsis "LaTeX in Russian, without Babel")
+    (description
+     "The package aims to facilitate Russian typesetting (based on input using
+MicroSoft Code Page 1251).  Russian hyphenation is selected, and various
+mathematical commands are set up in Russian style.  Furthermore all Cyrillic
+letters catcodes are set to @samp{letter}, so that commands with Cyrillic
+letters in their names may be defined.")
+    (license license:lppl)))
 
 (define-public texlive-everypage
   (package
