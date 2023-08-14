@@ -780,8 +780,10 @@ on memory usage on GNU/Linux systems.")
         (base32 "0cyaprgnhfrc7rqq053903bjylaplvxkb65b04bsxmiva09lvf9s"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
-    (inputs
-     (list ncurses))
+    ;; Add lm-sensors for temperature reading in htop
+    (inputs (list
+             ncurses
+             `(,lm-sensors "lib")))
     (native-inputs
      (list autoconf automake python-minimal-wrapper))     ; for scripts/MakeHeader.py
     (home-page "https://htop.dev")
