@@ -1892,7 +1892,16 @@ Extensions, Shortcuts, File browser mode and Custom Color Themes.")
                                   version "/rofi-" version ".tar.xz"))
               (sha256
                (base32
-                "138c4bl60p7namsb2pk8q5cdlxbdkli7zny192vk5jv5s5kczzya"))))
+                "138c4bl60p7namsb2pk8q5cdlxbdkli7zny192vk5jv5s5kczzya"))
+              (snippet
+               #~(begin
+                   ;; Delete pre-generated files.
+                   (for-each delete-file
+                             (list "lexer/theme-lexer.c"
+                                   "lexer/theme-parser.c"
+                                   "lexer/theme-parser.h"
+                                   "resources/resources.c"
+                                   "resources/resources.h"))))))
     (build-system gnu-build-system)
     (native-inputs
      (list bison
@@ -1904,7 +1913,7 @@ Extensions, Shortcuts, File browser mode and Custom Color Themes.")
      (list cairo
            glib
            libjpeg-turbo
-           librsvg
+           (librsvg-for-system)
            libxcb
            libxkbcommon
            pango
@@ -2023,7 +2032,7 @@ natural language input and provide results.")
     (inputs
      (list gtk+
            imlib2
-           librsvg
+           (librsvg-for-system)
            libxcomposite
            libxdamage
            libxft
@@ -3162,7 +3171,7 @@ using @command{dmenu}.")
                   fontconfig
                   libpng
                   libxkbcommon
-                  librsvg ;if librsvg is not used, bundled nanosvg is used
+                  (librsvg-for-system) ;if librsvg is not used, bundled nanosvg is used
                   pixman
                   wayland
                   wayland-protocols))
@@ -3216,7 +3225,7 @@ such as sway, similar to @command{rofi}.")
                 "0hq2qiqxvrw3g515ywcb676ljc8mdw3pyslgxr3vahizfljah1pv"))))
     (build-system meson-build-system)
     (native-inputs (list nlohmann-json pkg-config))
-    (inputs (list gtk-layer-shell gtkmm-3 librsvg))
+    (inputs (list gtk-layer-shell gtkmm-3 (librsvg-for-system)))
     (home-page "https://github.com/nwg-piotr/nwg-launchers")
     (synopsis "Application launchers for wlroots")
     (description

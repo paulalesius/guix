@@ -192,7 +192,8 @@ rest are the arguments passed to the function.  Every function returns the
 last evaluated expression as its return value.
 
 @item
-Anonymous functions are declared with the @code{lambda} term:
+Anonymous functions---@dfn{procedures} in Scheme parlance---are declared
+with the @code{lambda} term:
 
 @lisp
 (lambda (x) (* x x))
@@ -207,6 +208,9 @@ which can in turn be applied to an argument:
 ((lambda (x) (* x x)) 3)
 @result{} 9
 @end lisp
+
+Procedures are regular values just like numbers, strings, Booleans, and
+so on.
 
 @item
 Anything can be assigned a global name with @code{define}:
@@ -232,6 +236,30 @@ A list structure can be created with the @code{list} procedure:
 (list 2 a 5 7)
 @result{} (2 3 5 7)
 @end lisp
+
+@item
+Standard procedures are provided by the @code{(srfi srfi-1)} module to
+create and process lists (@pxref{SRFI-1, list processing,, guile, GNU
+Guile Reference Manual}).  Here are some of the most useful ones in
+action:
+
+@lisp
+(use-modules (srfi srfi-1))  ;import list processing procedures
+
+(append (list 1 2) (list 3 4))
+@result{} (1 2 3 4)
+
+(map (lambda (x) (* x x)) (list 1 2 3 4))
+@result{} (1 4 9 16)
+
+(delete 3 (list 1 2 3 4))        @result{} (1 2 4)
+(filter odd? (list 1 2 3 4))     @result{} (1 3)
+(remove even? (list 1 2 3 4))    @result{} (1 3)
+(find number? (list "a" 42 "b")) @result{} 42
+@end lisp
+
+Notice how the first argument to @code{map}, @code{filter},
+@code{remove}, and @code{find} is a procedure!
 
 @item
 @cindex S-expression
@@ -280,6 +308,9 @@ they provide code to be executed during the package build process.  They
 look like this:
 
 @lisp
+(use-modules (guix gexp)           ;so we can write gexps
+             (gnu packages base))  ;for 'coreutils'
+
 ;; Below is a G-expression representing staged code.
 #~(begin
     ;; Invoke 'ls' from the package defined by the 'coreutils'
@@ -347,6 +378,9 @@ defines the module @code{guix build-system ruby} which must be located in
 @file{guix/build-system/ruby.scm} somewhere in the Guile load path.  It
 depends on the @code{(guix store)} module and it exports two variables,
 @code{ruby-build} and @code{ruby-build-system}.
+
+@xref{Package Modules,,, guix, GNU Guix Reference Manual}, for info on
+modules that define packages.
 @end itemize
 
 @quotation Going further

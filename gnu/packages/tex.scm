@@ -2196,6 +2196,28 @@ issues of numbers in Basque.")
 It may use either TikZ or PSTricks as graphics engine.")
     (license license:lppl1.3+)))
 
+(define-public texlive-begingreek
+  (package
+    (name "texlive-begingreek")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/begingreek/"
+                   "source/latex/begingreek/"
+                   "tex/latex/begingreek/")
+             (base32
+              "1amzzc96pqxjicrgl4fnl2j7b65vvpxl32ckl308nbwfhd56fz6l")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/begingreek")
+    (synopsis "Greek environment to be used with pdfLaTeX only")
+    (description
+     "This simple package defines a greek environment to be used with pdfLaTeX
+only, that accepts an optional Greek font family name to type its contents
+with.  A similar @code{\\greektxt} command does a similar action for shorter
+texts.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-begriff
   (package
     (name "texlive-begriff")
@@ -2213,6 +2235,27 @@ It may use either TikZ or PSTricks as graphics engine.")
      "The package defines maths mode commands for typesetting Frege's
 @emph{Begriffschrift}.")
     (license license:gpl3+)))
+
+(define-public texlive-betababel
+  (package
+    (name "texlive-betababel")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/betababel/"
+                   "tex/latex/betababel/")
+             (base32
+              "1lck0wighndd3qrhcks6amc6gm5y50f6a61nfcz31j087r3a7liv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/betababel")
+    (synopsis "Insert ancient greek text coded in Beta Code")
+    (description
+     "The @code{betababel} package extends the Babel @samp{polutonikogreek}
+option to provide a simple way to insert ancient Greek texts with diacritical
+characters into your document using the commonly used Beta Code
+transliteration.")
+    (license license:lppl)))
 
 (define-public texlive-bib-fr
   (package
@@ -11366,6 +11409,61 @@ invented by Gottlob Frege in 1879 for his books @emph{Begriffsschrift} and
 books are supported.")
     (license license:gpl3)))
 
+(define-public texlive-gfsbaskerville
+  (package
+    (name "texlive-gfsbaskerville")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfsbaskerville/"
+                   "fonts/afm/public/gfsbaskerville/"
+                   "fonts/enc/dvips/gfsbaskerville/"
+                   "fonts/map/dvips/gfsbaskerville/"
+                   "fonts/opentype/public/gfsbaskerville/"
+                   "fonts/tfm/public/gfsbaskerville/"
+                   "fonts/type1/public/gfsbaskerville/"
+                   "fonts/vf/public/gfsbaskerville/"
+                   "tex/latex/gfsbaskerville/")
+             (base32
+              "0hf2nr0y1l9wzxvk0s2ajy3g80fcc02avr2fqrnss23c1a0jhr8q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfsbaskerville")
+    (synopsis "Greek font, from one such by Baskerville")
+    (description
+     "The font is a digital implementation of Baskerville's classic Greek font,
+provided by the Greek Font Society.  The font covers Greek only, and LaTeX
+support provides for the use of LGR encoding.")
+    (license (list license:lppl1.0+ license:silofl1.1))))
+
+(define-public texlive-gfsporson
+  (package
+    (name "texlive-gfsporson")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfsporson/"
+                   "fonts/afm/public/gfsporson/"
+                   "fonts/enc/dvips/gfsporson/"
+                   "fonts/map/dvips/gfsporson/"
+                   "fonts/opentype/public/gfsporson/"
+                   "fonts/tfm/public/gfsporson/"
+                   "fonts/type1/public/gfsporson/"
+                   "fonts/vf/public/gfsporson/"
+                   "tex/latex/gfsporson/")
+             (base32
+              "11m9f3vh41w8gbla62219vf2djc5kl9i4kpg6i1iiixwrhi56smc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfsporson")
+    (synopsis "Greek font, originally from Porson")
+    (description
+     "Porson is an elegant Greek font, originally cut at the turn of the 19th
+Century in England.  The present version has been provided by the Greek Font
+Society.  The font supports the Greek alphabet only.  LaTeX support is
+provided, using the LGR encoding.")
+    (license (list license:lppl1.0+ license:silofl1.1))))
+
 (define-public texlive-gobble
   (package
     (name "texlive-gobble")
@@ -11417,6 +11515,95 @@ those packages provided by @code{miniltx}.  The bundle also contains a file
 @file{picture.tex}, which is a wrapper around the @file{autopict.sty}, and
 provides the LaTeX picture mode to Plain TeX users.")
     (license license:lppl1.0+)))
+
+(define-public texlive-greek-inputenc
+  (package
+    (name "texlive-greek-inputenc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/greek-inputenc/"
+                   "tex/latex/greek-inputenc/")
+             (base32
+              "1vifrgxwx92c44vmic9x7y65fl6lcmlavqq63dakl922ijlssrb1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/greek-inputenc")
+    (synopsis "Greek encoding support for @code{inputenc}")
+    (description
+     "The bundle provides UTF-8, Macintosh Greek encoding and ISO 8859-7
+definition files for use with @code{inputenc}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-greekdates
+  (package
+    (name "texlive-greekdates")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/greekdates/"
+                   "source/latex/greekdates/"
+                   "tex/latex/greekdates/")
+             (base32
+              "1hwjskdllwxa14l12d0fn850sll3i9yihxlpjp2fk62v3iwkrq4r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/greekdates")
+    (synopsis "Provides ancient Greek day and month names, dates, etc")
+    (description
+     "The package provides easy access to ancient Greek names of days and
+months of various regions of Greece.  In case the historical information about
+a region is not complete, we use the Athenian name of the month.  Moreover
+commands and options are provided, in order to completely switch to the
+ancient way, such as @code{\\today}.")
+    (license license:lppl)))
+
+(define-public texlive-greektex
+  (package
+    (name "texlive-greektex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/greektex/" "tex/latex/greektex/")
+             (base32
+              "0zs3kakr7k261j876r1xpynvnmjjdn5rky0acfbcjxp7mmsqpmzn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/greektex")
+    (synopsis "Fonts for typesetting Greek/English documents")
+    (description
+     "The fonts are based on Silvio Levy's classical Greek fonts; macros and
+Greek hyphenation patterns for the fonts encoding are also provided.")
+    (license license:public-domain)))
+
+(define-public texlive-greektonoi
+  (package
+    (name "texlive-greektonoi")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/greektonoi/"
+                   "fonts/map/dvips/greektonoi/"
+                   "tex/latex/greektonoi/")
+             (base32
+              "14phabwakq87qgh3jxs95gk1w2q3aw29vhy441538y4fxvskqhrw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/greektonoi")
+    (synopsis "Facilitates writing/editing of multiaccented Greek")
+    (description
+     "The @code{greektonoi} mapping extends the @code{betababel} package or
+the Babel @samp{polutonikogreek} option to provide a simple way to insert
+ancient Greek texts with diacritical characters into your document using
+a similar method to the commonly used Beta Code transliteration, but with much
+more freedom.  It is designed especially for the XeTeX engine and it could
+also be used for fast and easy modification of monotonic Greek texts to
+polytonic.  The output text is natively encoded in Unicode, so it can be
+reused in any possible way.  The @code{greektonoi} package provides, in
+addition to inserting Greek accents and breathings, many other symbols used in
+Greek numbers and arithmetic or in the Greek archaic period.  It could be used
+with @code{greektonoi} mapping or indepedently.")
+    (license license:lgpl3)))
 
 (define-public texlive-gtl
   (package
@@ -11476,6 +11663,58 @@ languages and/or dialects, and to select them or switch between them while
 typesetting.")
     (license license:public-domain)))
 
+(define-public texlive-ibycus-babel
+  (package
+    (name "texlive-ibycus-babel")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ibycus-babel/"
+                   "source/latex/ibycus-babel/"
+                   "tex/latex/ibycus-babel/")
+             (base32
+              "1lwf28h6lzlblg7s7bx2dhqprxvjj78a8rlljhk9kw5pf065c7aj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ibycus-babel")
+    (synopsis "Use the Ibycus 4 Greek font with Babel")
+    (description
+     "The package allows you to use the Ibycus 4 font for ancient Greek with
+Babel.  It uses a Perl script to generate hyphenation patterns for Ibycus from
+those for the ordinary Babel encoding, @samp{cbgreek}.  It sets up
+@code{ibycus} as a pseudo-language you can specify in the normal Babel
+manner.")
+    (license license:lppl)))
+
+(define-public texlive-ibygrk
+  (package
+    (name "texlive-ibygrk")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ibygrk/"
+                   "fonts/afm/public/ibygrk/"
+                   "fonts/enc/dvips/ibygrk/"
+                   "fonts/map/dvips/ibygrk/"
+                   "fonts/source/public/ibygrk/"
+                   "fonts/tfm/public/ibygrk/"
+                   "fonts/type1/public/ibygrk/"
+                   "tex/generic/ibygrk/")
+             (base32
+              "14a1hqqwz3pfpz5rz9k8finxnlan4a3l8a0brgs98p6mdp9xl3q1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-levy texlive-metafont))
+    (home-page "https://ctan.org/pkg/ibygrk")
+    (synopsis "Fonts and macros to typeset ancient Greek")
+    (description
+     "Ibycus is a Greek typeface, based on Silvio Levy's realisation of
+a classic Didot cut of Greek type from around 1800.  The fonts are available
+both as Metafont source and in Adobe Type 1 format.  This distribution of
+@code{ibycus} is accompanied by a set of macro packages to use it with Plain
+TeX or LaTeX, but for use with Babel, see the @code{ibycus-babel} package.")
+    (license license:gpl3+)))
+
 (define-public texlive-inputnormalization
   (package
     (name "texlive-inputnormalization")
@@ -11532,6 +11771,36 @@ primitive.  This is a TeX package.")
 for short verbatim; @file{xfig.tex}, for including xfig/transfig output in
 a TeX document; and @file{cassette.tex} for setting cassette labels.")
     (license license:public-domain)))
+
+(define-public texlive-kerkis
+  (package
+    (name "texlive-kerkis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/kerkis/"
+                   "fonts/afm/public/kerkis/"
+                   "fonts/enc/dvips/kerkis/"
+                   "fonts/map/dvips/kerkis/"
+                   "fonts/opentype/public/kerkis/"
+                   "fonts/tfm/public/kerkis/"
+                   "fonts/type1/public/kerkis/"
+                   "fonts/vf/public/kerkis/"
+                   "tex/latex/kerkis/")
+             (base32
+              "1mkrnydgc05k2n6mrz6i3ichigf0bmy465s2vg514m7ma399khi9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/kerkis")
+    (synopsis "Kerkis (Greek) font family")
+    (description
+     "This package provides sans-serif Greek fonts to match the URW Bookman
+set (which are distributed with Kerkis).  The Kerkis font set has some support
+for mathematics as well as other glyphs missing from the base URW Bookman
+fonts.  Macros are provided to use the fonts in OT1, T1 (only NG/ng glyphs
+missing) and LGR encodings, as well as in mathematics; small caps and
+old-style number glyphs are also available.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-lambda-lists
   (package
@@ -11634,6 +11903,67 @@ to make the text fit the box.  Note that letterspacing is not ordinarily
 considered acceptable in modern typesetting of English.")
     (license license:knuth)))
 
+(define-public texlive-levy
+  (package
+    (name "texlive-levy")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/levy/"
+                   "fonts/source/public/levy/"
+                   "fonts/tfm/public/levy/" "tex/generic/levy/")
+             (base32
+              "1nkfsq5k2rysgsplv6rhvx8fimd7999dylzd2khvw7flryig32nv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/levy-font")
+    (synopsis "Fonts for typesetting classical Greek")
+    (description
+     "These fonts are derivatives of Kunth's CM fonts.  Macros for use with
+Plain TeX are included in the package; for use with LaTeX, see @code{lgreek}
+(with English documentation) or @code{levy} (with German documentation).")
+    (license license:gpl2)))
+
+(define-public texlive-lgreek
+  (package
+    (name "texlive-lgreek")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lgreek/" "tex/latex/lgreek/")
+             (base32
+              "1wa8d5mlk6jkx3m1rfddasw169sc6l6p8n4axh6i0np1imgsxx2b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lgreek")
+    (synopsis "LaTeX macros for using Silvio Levy's Greek fonts")
+    (description
+     "This package provides a conversion of Silvio Levy's Plain TeX macros for
+use with LaTeX.")
+    (license license:gpl2)))
+
+(define-public texlive-lgrmath
+  (package
+    (name "texlive-lgrmath")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lgrmath/" "source/latex/lgrmath/"
+                   "tex/latex/lgrmath/")
+             (base32
+              "0lj4jdzwykqz1hkv2s6y2ghf1zlalx27gd6kfpbnignxmh63cpkb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lgrmath")
+    (synopsis "Use LGR-encoded fonts in math mode")
+    (description
+     "The @code{lgrmath} package is a LaTeX package which sets the Greek
+letters in math mode to use glyphs from the LGR-encoded font of one's choice.
+The documentation includes a rather extensive list of the available font
+family names on typical LaTeX installations.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-localloc
   (package
     (name "texlive-localloc")
@@ -11706,6 +12036,29 @@ of TeX and one of Metafont are needed.")
     ;; requirements about documentation and references to the original source
     ;; when modified.
     (license (license:fsf-free "file://tex/generic/midnight/border.tex"))))
+
+(define-public texlive-mkgrkindex
+  (package
+    (name "texlive-mkgrkindex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/mkgrkindex/"
+                   "makeindex/mkgrkindex/"
+                   "scripts/mkgrkindex/")
+             (base32
+              "0bj35wdxn0xllpqzf8lrd00b5rmyy9fws84avz3ijk4k8rvfz8gk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "mkgrkindex")))
+    (home-page "https://ctan.org/pkg/greek-makeindex")
+    (synopsis "MakeIndex working with Greek")
+    (description
+     "MakeIndex is resolutely stuck with Latin-based alphabets, so will not
+deal with Greek indexes, unaided.  This package provides a Perl script that
+will transmute the index of a Greek document in such a way that MakeIndex will
+sort the entries according to the rules of the Greek alphabet.")
+    (license license:lppl)))
 
 (define-public texlive-modulus
   (package
@@ -12487,6 +12840,27 @@ required.")
 position is already further along, @code{\\tabto} starts a new line.")
     (license license:public-domain)))
 
+(define-public texlive-talos
+  (package
+    (name "texlive-talos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/talos/"
+                   "fonts/opentype/public/talos/")
+             (base32
+              "1m656d4lkc9ikp7gb91yna4323lip3xcr6n3kqh1j4sqvp4rkm61")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/talos")
+    (synopsis "Greek cult font from the eighties")
+    (description
+     "This package provides a cult Greek font from the eighties, used at the
+University of Crete, Greece.  It belonged to the first TeX installation in
+a Greek University and most probably the first TeX installation that supported
+the Greek language.")
+    (license license:gfl1.0)))
+
 (define-public texlive-termmenu
   (package
     (name "texlive-termmenu")
@@ -12508,6 +12882,27 @@ a list of options or actions.  The user is then expected to select one of
 these options for the program to process.  @code{termmenu} provides this
 mechanism for TeX.")
     (license license:lppl1.3+)))
+
+(define-public texlive-teubner
+  (package
+    (name "texlive-teubner")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/teubner/" "source/latex/teubner/"
+                   "tex/latex/teubner/")
+             (base32
+              "1wlp2hv1xsn7z1d42y01mwp4yq06w1j9p3fgk2vvi4ca20rgg7pk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/teubner")
+    (synopsis "Philological typesetting of classical Greek")
+    (description
+     "This package provides an extension to Babel @samp{greek} option for
+typesetting classical Greek with a philological approach.  The package works
+with the author's greek fonts using the Lispiakos font shape derived from that
+of the fonts used in printers shops in Lispia.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-tex
   (package
@@ -12751,6 +13146,32 @@ a size-change macro.  Note that @file{10point.tex} is by convention called by
 one of the other files, so that there's always a way back.")
     (license license:public-domain)))
 
+(define-public texlive-xgreek
+  (package
+    (name "texlive-xgreek")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xgreek/" "source/latex/xgreek/"
+                   "tex/latex/xgreek/")
+             (base32
+              "0hmy7s53bi9szvp13zcg6hk23s8mr2ssbnmq9cw5sb8ggz8icywa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xgreek")
+    (synopsis "Greek language support for XeLaTeX and LuaLaTeX")
+    (description
+     "This package has been designed so to allow people to typeset Greek
+language documents using XeLaTeX or LuaLaTeX.  Practically, it provides all
+the capabilities of the @samp{greek} option of the Babel package.
+
+The package can be invoked with any of the following options:
+@samp{monotonic} (for typesetting modern monotonic Greek),
+@samp{polytonic} (for typesetting modern polytonic Greek), and
+@samp{ancient} (for typesetting ancient texts).  The default option is
+@samp{monotonic}.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-xii
   (package
     (name "texlive-xii")
@@ -12832,6 +13253,29 @@ in-line or as in school (using French school conventions).  Many other
 features allow to deal with numbers (tests, display, some high level
 operations, etc.)")
     (license license:lppl1.3+)))
+
+(define-public texlive-yannisgr
+  (package
+    (name "texlive-yannisgr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/yannisgr/"
+                   "fonts/source/public/yannisgr/"
+                   "fonts/tfm/public/yannisgr/")
+             (base32
+              "0s5cfid1r6jn34kzvmxwxyxpvyb0rayn80x3n7k515p1plqmmrnq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-levy texlive-metafont))
+    (home-page "https://ctan.org/pkg/yannisgr")
+    (synopsis "Greek fonts by Yannis Haralambous")
+    (description
+     "This package provides a family of 7-bit fonts with a code table designed
+for setting modern polytonic Greek.  The fonts are provided as Metafont
+source; macros to produce a Greek variant of Plain TeX (including
+a hyphenation table adapted to the fonts code table) are provided.")
+    (license license:gpl2)))
 
 (define-public texlive-zztex
   (package
@@ -23454,6 +23898,27 @@ German.")
     (license license:lppl1.3+)))
 
 (define-deprecated-package texlive-generic-babel-german texlive-babel-german)
+
+(define-public texlive-babel-greek
+  (package
+    (name "texlive-babel-greek")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/babel-greek/"
+                   "source/generic/babel-greek/"
+                   "tex/generic/babel-greek/")
+             (base32
+              "116nifgjwx588f63fwkyny36i8p7i9prsz785m81hwnhylii2fhj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/babel-greek")
+    (synopsis "Babel support for documents written in Greek")
+    (description
+     "The file provides modes for monotonic (single-diacritic) and polytonic
+(multiple-diacritic) modes of writing.  Provision is made for Greek function
+names in mathematics, and for classical-era symbols.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-babel-hungarian
   (package
@@ -38097,6 +38562,44 @@ simply on the size of the support.")
     (home-page "https://www.tug.org/texlive/")
     (synopsis "Support for German")
     (description "This collection provides support packages for German.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-langgreek
+  (package
+    (name "texlive-collection-langgreek")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-babel-greek
+           texlive-begingreek
+           texlive-betababel
+           texlive-cbfonts
+           texlive-cbfonts-fd
+           texlive-collection-basic
+           texlive-gfsbaskerville
+           texlive-gfsporson
+           texlive-greek-fontenc
+           texlive-greek-inputenc
+           texlive-greekdates
+           texlive-greektex
+           texlive-greektonoi
+           texlive-hyphen-complete
+           texlive-ibycus-babel
+           texlive-ibygrk
+           texlive-kerkis
+           texlive-levy
+           texlive-lgreek
+           texlive-lgrmath
+           texlive-mkgrkindex
+           texlive-talos
+           texlive-teubner
+           texlive-xgreek
+           texlive-yannisgr))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Support for Greek")
+    (description "This collection provides support for Greek.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
 (define-public texlive-collection-langitalian

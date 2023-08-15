@@ -3046,7 +3046,7 @@ format is also supported.")
       (propagated-inputs
        (list guile-cairo guile-rsvg))
       (native-inputs
-       (list autoconf automake librsvg pkg-config texinfo))
+       (list autoconf automake (librsvg-for-system) pkg-config texinfo))
       (home-page "https://git.elephly.net/software/guile-picture-language.git")
       (synopsis "Picture language for Guile")
       (description
@@ -5345,7 +5345,7 @@ GitLab instance.")
 (define-public guile-smc
   (package
     (name "guile-smc")
-    (version "0.6.1")
+    (version "0.6.2")
     (source
      (origin
        (method git-fetch)
@@ -5355,7 +5355,7 @@ GitLab instance.")
        (file-name (string-append name "-" version))
        (sha256
         (base32
-         "02729gkywzimmdlmnwzclvs3wl92f9mvp5dmcbp75kmwibxly288"))))
+         "11083lj048ab5zsdgwpkshxi8v5nfdr7kvmmslszbi7lq2pwfqig"))))
     (build-system gnu-build-system)
     (arguments
      `(#:make-flags '("GUILE_AUTO_COMPILE=0")     ;to prevent guild warnings
