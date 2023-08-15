@@ -780,6 +780,15 @@ on memory usage on GNU/Linux systems.")
         (base32 "0cyaprgnhfrc7rqq053903bjylaplvxkb65b04bsxmiva09lvf9s"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
+    (arguments
+     (list #:tests? #f
+           #:phases #~(modify-phases %standard-phases
+                        (add-after 'install 'wrap-executable
+                          (lambda* (#:key inputs outputs #:allow-other-keys)
+                            (let ((out (assoc-ref outputs "out"))
+                                  (lm-sensors (assoc-ref inputs "lm-sensors")))
+                              (wrap-program (string-append out "/bin/htop")
+                                `("LD_LIBRARY_PATH" ":" = (,(string-append lm-sensors "/lib"))))))))))
     ;; Add lm-sensors for temperature reading in htop
     (inputs (list
              ncurses
