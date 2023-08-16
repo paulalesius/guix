@@ -588,7 +588,6 @@ GNU_SYSTEM_MODULES =				\
   %D%/packages/squirrel.scm			\
   %D%/packages/ssh.scm				\
   %D%/packages/sssd.scm				\
-  %D%/packages/stalonetray.scm			\
   %D%/packages/statistics.scm			\
   %D%/packages/stb.scm				\
   %D%/packages/stenography.scm			\
@@ -770,6 +769,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/tests.scm					\
   %D%/tests/audio.scm				\
   %D%/tests/base.scm				\
+  %D%/tests/cachefilesd.scm			\
   %D%/tests/ci.scm				\
   %D%/tests/cups.scm				\
   %D%/tests/databases.scm			\
