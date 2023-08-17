@@ -2801,6 +2801,31 @@ and Metafont sources for fonts.")
 of mathematical disciplines.")
     (license license:lppl1.3+)))
 
+(define-public texlive-bartel-chess-fonts
+  (package
+    (name "texlive-bartel-chess-fonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/bartel-chess-fonts/"
+                   "fonts/source/public/bartel-chess-fonts/"
+                   "fonts/tfm/public/bartel-chess-fonts/")
+             (base32
+              "1gg7g2gb5j0g0ig4190260zlpnyfmdzcqn7dsw5kp9p5pbn5hbhf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    ;; FIXME: Font metrics generation fails with "! Strange path (turning
+    ;; number is zero)." error.
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'generate-font-metrics))))
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/bartel-chess-fonts")
+    (synopsis "Set of fonts supporting chess diagrams")
+    (description "This package provides fonts supporting chess diagrams.")
+    (license license:gpl3+)))
+
 (define-public texlive-basque-book
   (package
     (name "texlive-basque-book")
@@ -4168,6 +4193,98 @@ formatting chemistry documents according to the conventions of a number of
 leading journals.  It also provides some handy chemistry-related macros.")
     (license license:lppl1.3+)))
 
+(define-public texlive-chess
+  (package
+    (name "texlive-chess")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/chess/"
+                   "fonts/source/public/chess/"
+                   "fonts/tfm/public/chess/" "tex/latex/chess/")
+             (base32
+              "079naqw9bd5da3c2bsa0322kdjrfpwa35inrfznzgrfdk1w0irs7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/chess")
+    (synopsis "Fonts for typesetting chess boards")
+    (description
+     "This is the original, and somewhat dated, TeX chess font package.
+Potential users should consider @code{skak} (for alternative fonts, and
+notation support), @code{texmate} (for alternative notation support), or
+@code{chessfss} (for flexible font choices).")
+    (license license:public-domain)))
+
+(define-public texlive-chess-problem-diagrams
+  (package
+    (name "texlive-chess-problem-diagrams")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chess-problem-diagrams/"
+                   "source/latex/chess-problem-diagrams/"
+                   "tex/latex/chess-problem-diagrams/")
+             (base32
+              "0m32dhwdfrgy1r3lq8j7hdaa79kniwwq3lanbkkn32dhybwa0b61")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chess-problem-diagrams")
+    (synopsis "Package for typesetting chess problem diagrams")
+    (description
+     "This package provides macros to typeset chess problem diagrams including
+fairy chess problems (mostly using rotated images of pieces) and other
+boards.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-chessboard
+  (package
+    (name "texlive-chessboard")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chessboard/"
+                   "source/latex/chessboard/"
+                   "tex/latex/chessboard/")
+             (base32
+              "1nz66h6baz5m2jfzjzyccw0rcpkc6rfbq9cc759y875b47j8pkhx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chessboard")
+    (synopsis "Print chess boards")
+    (description
+     "This package offers commands to print chessboards.  It can print partial
+boards, hide pieces and fields, color the boards and put various marks on the
+board.  It has a lot of options to place pieces on the board.  Using exotic
+pieces (e.g., for fairy chess) is possible.")
+    (license license:lppl)))
+
+(define-public texlive-chessfss
+  (package
+    (name "texlive-chessfss")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chessfss/"
+                   "fonts/enc/dvips/chessfss/"
+                   "source/latex/chessfss/"
+                   "tex/latex/chessfss/")
+             (base32
+              "1l51famz3zx9v4v0mdxwk51xhaidwgfplf268q2f1ipif9h6ma5d")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chessfss")
+    (synopsis "Package to handle chess fonts")
+    (description
+     "This package offers commands to use and switch between chess fonts.
+It uses the LaTeX font selection scheme (nfss).  The package doesn't parse,
+format and print PGN input like e.g., the packages @code{skak} or
+@code{texmate}; the aim of the package is to offer writers of chess packages
+a bundle of commands for fonts, so that they don't have to implement all these
+commands for themselves.  A normal user can use the package to print
+e.g,. single chess symbols and simple diagrams.")
+    (license license:lppl)))
+
 (define-public texlive-chhaya
   (package
     (name "texlive-chhaya")
@@ -4189,6 +4306,25 @@ given by Mumbai University.")
                    ;; Aalok (आलोक) copyleft license v1.0+.
                    (license:fsf-free "file://doc/latex/aalok/README.txt")
                    license:fdl1.3+))))
+
+(define-public texlive-chinesechess
+  (package
+    (name "texlive-chinesechess")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chinesechess/"
+                   "tex/latex/chinesechess/")
+             (base32
+              "15sszrrv1viaa74i57a81xhybhjq2vaxb188wl728hjzm8d0n0wm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chinesechess")
+    (synopsis "Typeset Chinese chess with @code{l3draw}")
+    (description
+     "This LaTeX3 package based on @code{l3draw} provides macros and an
+environment for Chinese chess manual writing.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-chordbars
   (package
@@ -4811,6 +4947,65 @@ with a wide array of formats.  For the moment, it works out of the box with
 ConTeXt and LaTeX.")
     (license (list license:gpl3+ license:fdl1.3+))))
 
+(define-public texlive-crossword
+  (package
+    (name "texlive-crossword")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/crossword/"
+                   "source/latex/crossword/"
+                   "tex/latex/crossword/")
+             (base32
+              "1yxjhni6jw7j7wnz6g6d1bmri8afvqsj58bar0aqliyfhr55xzai")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/crossword")
+    (synopsis "Typeset crossword puzzles")
+    (description
+     "This is an extended grid-based puzzle package, designed to take all
+input (both grid and clues) from the same file.  The package can
+typeset grids with holes in them, and can deal with several sorts of
+puzzle:
+@itemize
+
+@item the classical puzzle contains numbers for the words and clues
+for the words to be filled in;
+
+@item the numbered puzzle contains numbers in each cell where
+identical numbers represent identical letters; the goal is to find out
+which number corresponds to which letter;
+
+@item the fill-in type of puzzle consists of a grid and a list of
+words; the goal is to place all words in the grid;
+
+@item Sudoku and Kakuro puzzles involve filling in grids of numbers
+according to their own rules; format may be block-separated, or
+separated by thick lines.
+
+@end itemize")
+    (license license:expat)))
+
+(define-public texlive-crosswrd
+  (package
+    (name "texlive-crosswrd")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/crosswrd/"
+                   "source/latex/crosswrd/"
+                   "tex/latex/crosswrd/")
+             (base32
+              "0yhsrfn49wj579ms3smd1z97rjqnsi1wrsgrjs570bllgf09bcir")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/crosswrd")
+    (synopsis "Macros for typesetting crossword puzzles")
+    (description
+     "The package provides a LaTeX method of typesetting crosswords, and
+assists the composer ensure that the grid all goes together properly.")
+    (license license:lppl)))
+
 (define-public texlive-cryptocode
   (package
     (name "texlive-cryptocode")
@@ -4859,6 +5054,28 @@ computer science, but easily extensible to other fields.  It provides macros
 for structuring exercises, aggregating points, and displaying a grading table,
 as well as several macros for easier math mode usage.")
     (license license:expat)))
+
+(define-public texlive-customdice
+  (package
+    (name "texlive-customdice")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/customdice/"
+                   "source/latex/customdice/"
+                   "tex/latex/customdice/")
+             (base32
+              "0jwhvg13rla5pav0z4wns4s0x25myiqcinv592g6kqnbgwzj4q7g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/customdice")
+    (synopsis "Simple commands for drawing customisable dice")
+    (description
+     "The @code{customdice} package for LaTeX, LuaLaTeX and XeTeX that
+provides functionality for drawing dice.  The aim is to provide
+highly-customisable but simple-to-use commands, allowing: adding custom text
+to dice faces; control over colouring; control over sizing.")
+    (license license:cc-by-sa4.0)))
 
 (define-public texlive-cvss
   (package
@@ -5589,6 +5806,24 @@ order that one would expect.")
      "This is the type example package for typesetting scholarly critical
 editions.")
     (license license:gpl2)))
+
+(define-public texlive-egameps
+  (package
+    (name "texlive-egameps")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/egameps/" "tex/latex/egameps/")
+             (base32
+              "1wlki6y54czvvq7cvs7pvsvl1fhd8laaj5j52jv1v8w1msh5mlpr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/egameps")
+    (synopsis "LaTeX package for typesetting extensive games")
+    (description
+     "The style is intended to have enough features to draw any extensive game
+with relative ease.  The facilities of PSTricks are used for graphics.")
+    (license license:lppl)))
 
 (define-public texlive-eledform
   (package
@@ -6444,6 +6679,56 @@ products and convergence with some object oriented flavor (it gives the
 possibility to override the standard behavior of norms, ...).")
     (license license:lppl)))
 
+(define-public texlive-gamebook
+  (package
+    (name "texlive-gamebook")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gamebook/"
+                   "source/latex/gamebook/"
+                   "tex/latex/gamebook/")
+             (base32
+              "0ksyr0hb1bfhc1lbbnzlj7ih8xw516djkn0lddnn07sb6hpzl8x4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gamebook")
+    (synopsis "Typeset gamebooks and other interactive novels")
+    (description
+     "This package provides the means in order to lay-out gamebooks with LaTeX.
+A simple gamebook example is included with the package, and acts as
+a tutorial.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-gamebooklib
+  (package
+    (name "texlive-gamebooklib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gamebooklib/"
+                   "source/latex/gamebooklib/"
+                   "tex/latex/gamebooklib/")
+             (base32
+              "1zw1l4a6wqrqpfmvxj404lf8z559hm7sgw8cwxn04g6pk72jycdl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gamebooklib")
+    (synopsis "Macros for setting numbered entries in shuffled order")
+    (description
+     "This package provides macros and environments to allow the user to
+typeset a series of cross-referenced, numbered entries, shuffled into random
+order, to produce an interactive novel or @dfn{gamebook}.  This allows entries
+to be written in natural order and shuffled automatically into a repeatable
+non-linear order.  Limited support is provided for footnotes to appear at the
+natural position: the end of each entry, or the end of each page, whichever is
+closest to the footnote mark.
+
+This is unrelated to the @code{gamebook} package which is more concerned with
+the formatting of entries rather than their order.  The two packages can be
+used together or separately.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-gastex
   (package
     (name "texlive-gastex")
@@ -6631,6 +6916,27 @@ make the @code{\\\\} command optional for line ends and to give it
 a possibility of optical centering and right-hanging alignment of lines broken
 because of length.")
     (license license:lppl)))
+
+(define-public texlive-go
+  (package
+    (name "texlive-go")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/go/" "fonts/source/public/go/"
+                   "fonts/tfm/public/go/" "source/fonts/go/"
+                   "tex/latex/go/")
+             (base32
+              "1cvxfz9m7fx62iiz00f7qlywrmwwnpk0xzlyv63c90ji9xzfawcv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/go")
+    (synopsis "Fonts and macros for typesetting go games")
+    (description
+     "The macros provide for nothing more complicated than the standard
+19x19 board; the fonts are written in Metafont.")
+    (license license:public-domain)))
 
 (define-public texlive-gost
   (package
@@ -6885,6 +7191,24 @@ programs are provided as sources, not installed in the @file{bin}
 directories.")
     (license license:public-domain)))
 
+(define-public texlive-hanoi
+  (package
+    (name "texlive-hanoi")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "tex/plain/hanoi/")
+             (base32
+              "09a7cv76naxzdach5507wdqnjp12amvlia7kw0jh224ydmkzfx9x")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hanoi")
+    (synopsis "Tower of Hanoi in TeX")
+    (description
+     "The Plain TeX program (typed in the shape of the towers of Hanoi) serves
+both as a game and as a TeX programming exercise.  As a game, it will solve
+the towers with (up to) 15 discs.")
+    (license license:public-domain)))
+
 (define-public texlive-happy4th
   (package
     (name "texlive-happy4th")
@@ -6946,6 +7270,26 @@ be used as a utility for learning to write and pronounce Chinese characters,
 for Chinese character learning plans, presentations, exercise booklets and
 other documentation work.")
     (license license:lppl1.3c)))
+
+(define-public texlive-havannah
+  (package
+    (name "texlive-havannah")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/havannah/"
+                   "source/latex/havannah/"
+                   "tex/latex/havannah/")
+             (base32
+              "0kw71rr5jhn0gx89jynwxxgd6ddzpmr0wb5qnsh0drljmacq49ai")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/havannah")
+    (synopsis "Diagrams of board positions in the games of Havannah and Hex")
+    (description
+     "This package defines macros for typesetting diagrams of board positions
+in the games of Havannah and Hex.")
+    (license license:lppl1.2+)))
 
 (define-public texlive-helmholtz-ellis-ji-notation
   (package
@@ -7126,6 +7470,45 @@ adds a collection of useful @acronym{HEP, High Energy Physics} units to the
 existing SIunits set.")
     (license license:lppl)))
 
+(define-public texlive-hexboard
+  (package
+    (name "texlive-hexboard")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/hexboard/"
+                   "source/latex/hexboard/"
+                   "tex/latex/hexboard/")
+             (base32
+              "04z0qhajbjn55mqax4kaw53h7s6g84iy1yh0pfhzj3ib7gd4cpw4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hexboard")
+    (synopsis "For drawing Hex boards and games")
+    (description
+     "@code{hexboard} is a package for LaTeX that should also work with LuaTeX
+and XeTeX, that provides functionality for drawing Hex boards and games.")
+    (license license:cc-by-sa4.0)))
+
+(define-public texlive-hexgame
+  (package
+    (name "texlive-hexgame")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/hexgame/" "tex/latex/hexgame/")
+             (base32
+              "1qr9v7225k6xzykw3rdsxf2sa3b5asvmd767i88jwimmacwi2cp1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hexgame")
+    (synopsis "Provide an environment to draw a hexgame-board")
+    (description
+     "Hex is a mathematical game invented by the Danish mathematician Piet
+Hein and independently by the mathematician John Nash.  This package defines
+an environment that enables the user to draw such a game in a trivial way.")
+    (license license:lppl)))
+
 (define-public texlive-hitex
   (package
     (name "texlive-hitex")
@@ -7179,6 +7562,52 @@ format supports variable and varying screen sizes, leveraging the ability of
 TeX to format a document for nearly-arbitrary values of @code{\\hsize} and
 @code{\\vsize}.")
     (license license:x11)))
+
+(define-public texlive-hmtrump
+  (package
+    (name "texlive-hmtrump")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/lualatex/hmtrump/"
+                   "fonts/truetype/public/hmtrump/"
+                   "tex/lualatex/hmtrump/")
+             (base32
+              "03r1f784ipr2j38y2xy8agl94xwcmyv4pxd0l42iclmx08rczb9q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hmtrump")
+    (synopsis "Describe card games")
+    (description
+     "This package provides a font with LuaLaTeX support for describing
+card games.")
+    (license
+     (list (license:fsf-free
+            "doc/lualatex/hmtrump/nkd04_playing_cards_index/LICENSE")
+           license:cc-by-sa4.0))))
+
+(define-public texlive-horoscop
+  (package
+    (name "texlive-horoscop")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/horoscop/"
+                   "source/latex/horoscop/"
+                   "tex/latex/horoscop/")
+             (base32
+              "08acv1sg37qzq3h14kxv62xhrzrv4psgpychshj3gmzvp4vz0jsn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/horoscop")
+    (synopsis "Generate astrological charts in LaTeX")
+    (description
+     "The @code{horoscop} package provides a unified interface for
+astrological font packages; typesetting with @code{pict2e} of standard wheel
+charts and some variations, in PostScript- and PDF-generating TeX engines; and
+access to external calculation software (Astrolog and Swiss Ephemeris) for
+computing object positions.")
+    (license license:public-domain)))
 
 (define-public texlive-hrlatex
   (package
@@ -7554,6 +7983,30 @@ digit form.  This package provides support for spelling out numbers in Italian
 words, both in cardinal and in ordinal form.")
     (license license:lppl)))
 
+(define-public texlive-jeuxcartes
+  (package
+    (name "texlive-jeuxcartes")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jeuxcartes/"
+                   "tex/latex/jeuxcartes/")
+             (base32
+              "0imwfdwpap755id1k3cqk2p71nqsddc7g8kp3cc8376j4nc34c8a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jeuxcartes")
+    (synopsis "Macros to insert playing cards")
+    (description
+     "This package provides macros to insert playing cards, single, or
+hand, or random-hand, Poker or French Tarot or Uno, from PNG files.")
+    (license
+     (list license:cc-by-sa4.0
+           license:expat
+           license:lgpl2.1
+           license:lppl1.3c
+           license:public-domain))))
+
 (define-public texlive-jfmutil
   (package
     (name "texlive-jfmutil")
@@ -7582,6 +8035,25 @@ a counterpart to the @code{vftovp} and @code{vptovf} programs.
 format, which is a subset of the ZVP format.
 @end itemize")
     (license license:expat)))
+
+(define-public texlive-jigsaw
+  (package
+    (name "texlive-jigsaw")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jigsaw/" "tex/latex/jigsaw/")
+             (base32
+              "0qpbsff6saxv2qp4fzyqrprxjy2434ylm11snyc3d59imdmksq0b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jigsaw")
+    (synopsis "Draw jigsaw pieces with TikZ")
+    (description
+     "This is a small LaTeX package to draw jigsaw pieces with TikZ.  It is
+possible to draw individual pieces and adjust their shape, create tile
+patterns or automatically generate complete jigsaws.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-jkmath
   (package
@@ -8089,6 +8561,26 @@ practical guide to LaTeX2e by Mark Trettin.  It focuses on obsolete packages
 and commands.")
     (license license:public-domain)))
 
+(define-public texlive-labyrinth
+  (package
+    (name "texlive-labyrinth")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/labyrinth/"
+                   "tex/latex/labyrinth/")
+             (base32
+              "0i4w3dmfjq9vp6m82p4afplca0pdvk36g2h1yskmwbis07bykdgp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/labyrinth")
+    (synopsis "Draw labyrinths and solution paths")
+    (description
+     "The @code{labyrinth} package provides code and an environment for
+typesetting simple labyrinths with LaTeX, and generating an automatic or
+manual solution path.")
+    (license license:lppl)))
+
 (define-public texlive-lambda
   (package
     (name "texlive-lambda")
@@ -8567,6 +9059,90 @@ a statement and a justification, and subproofs within a larger proof have
 boxes around them.  The package provides environments for typesetting such
 proofs and boxes.  It creates proofs in a style similar to that used in
 @emph{Logic in Computer Science} by Huth and Ryan.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-logicpuzzle
+  (package
+    (name "texlive-logicpuzzle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/logicpuzzle/"
+                   "scripts/logicpuzzle/"
+                   "tex/latex/logicpuzzle/")
+             (base32
+              "1m2yrizdj76gywxkcfz90by2qwx8pq8akacj5qmsin095hnyskfh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/logicpuzzle")
+    (synopsis "Typeset (grid-based) logic puzzles")
+    (description
+     "The package allows the user to typeset various logic puzzles.  At the
+moment the following puzzles are supported:
+
+@itemize
+
+@item 2D-Sudoku (aka Magiequadrat, Diagon, ...),
+
+@item Battleship (aka Bimaru, Marinespiel, Batalla Naval, ...),
+
+@item Bokkusu (aka Kakurasu, Feldersummenratsel, ...),
+
+@item Bridges (akak Bruckenbau, Hashi, ...),
+
+@item Chaos Sudoku,
+
+@item Four Winds (aka Eminent Domain, Lichtstrahl, ...),
+
+@item Hakyuu (aka Seismic, Ripple Effect, ...),
+
+@item Hitori,
+
+@item Kakuro,
+
+@item Kendoku (aka Mathdoku, Calcudoku, Basic, MiniPlu, Ken Ken, Square
+Wisdom, Sukendo, Caldoku, ...),
+
+@item Killer Sudoku (aka Samunapure, Sum Number Place, Sumdoku, Gebietssummen,
+...),
+
+@item Laser Beam (aka Laserstrahl, ...),
+
+@item Magic Labyrinth (aka Magic Spiral, Magisches Labyrinth, ...),
+
+@item Magnets (aka Magnetplatte, Magnetfeld, ...),
+
+@item Masyu (aka Mashi, White or Black Pearls, ...),
+
+@item Minesweeper (aka Minensuche, ...),
+
+@item Nonogram (aka Griddlers, Hanjie, Tsunami, Logic Art, Logimage, ...),
+
+@item Number Link (aka Alphabet Link, Arukone, Buchstabenbund, ...),
+
+@item Resuko,
+
+@item Schatzsuche,
+
+@item Skyline (aka Skycrapers, Wolkenkratzer, Hochhauser, ...), including
+Skyline Sudoku and Skyline Sudou (N*N) variants,
+
+@item Slitherlink (aka Fences, Number Line, Dotty Dilemma, Sli-Lin, Takegaki,
+Great Wall of China, Loop the Loop, Rundweg, Gartenzaun, ...),
+
+@item Star Battle (aka Sternenschlacht, ...),
+
+@item Stars and Arrows (aka Sternenhimmel, ...),
+
+@item Sudoku,
+
+@item Sun and Moon (aka Sternenhaufen, Munraito, ...),
+
+@item Tents and Trees (aka Zeltlager, Zeltplatz, Camping, ...),
+
+@item and Tunnel.
+
+@end itemize")
     (license license:lppl1.3+)))
 
 (define-public texlive-lollipop
@@ -9209,6 +9785,30 @@ classes, @code{fiche} and @code{cours}, useful to create short high school
 documents such as tests or lessons.  The documentation is in French.")
     (license license:gpl3+)))
 
+(define-public texlive-mahjong
+  (package
+    (name "texlive-mahjong")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mahjong/" "source/latex/mahjong/"
+                   "tex/latex/mahjong/")
+             (base32
+              "1nkj6kri9dpk3gkms4raldzkj3dhsf54vggivb6nh169s7a16m7q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mahjong")
+    (synopsis "Typeset mahjong tiles using MPSZ Notation")
+    (description
+     "The @code{mahjong} package provides a LaTeX interface for typesetting
+mahjong tiles using an extended version of MPSZ algebraic notation.  Its
+features include spaces, rotated, blank, and concealed tiles, as well as red
+fives.  The size of the mahjong tiles can be controlled using a package option
+and an optional argument of @code{\\mahjong}.  It is primarily aimed at
+Riichi (aka Japanese) Mahjong but can be used to typeset any style of
+mahjong.")
+    (license (list license:expat license:cc-by4.0))))
+
 (define-public texlive-matapli
   (package
     (name "texlive-matapli")
@@ -9479,6 +10079,25 @@ rows and columns for easy styling.")
 vectors and tensors as used in the engineering community for the
 representation of common vectors and tensors such as forces, velocities,
 moments of inertia, etc.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-maze
+  (package
+    (name "texlive-maze")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/maze/" "tex/latex/maze/")
+             (base32
+              "0dwsv62rpyll1cfh1qpz6msmypc1a61b1pb0a7lm89ks1cj42zmg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/maze")
+    (synopsis "Generate random mazes")
+    (description
+     "This package can generate random square mazes of a specified size.
+The mazes generated by this package are natural and their solution is not too
+obvious.  The output it based on the @code{picture} environment.")
     (license license:lppl1.3c)))
 
 (define-public texlive-mecaso
@@ -9945,6 +10564,24 @@ package, where the symbols are taken from the MusiXTeX fonts.  But it provides
 a larger range of symbols and a more flexible, user-friendly interface.")
     (license license:lppl1.3+)))
 
+(define-public texlive-musikui
+  (package
+    (name "texlive-musikui")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/musikui/" "tex/latex/musikui/")
+             (base32
+              "1r5ygiavq51sj0l2jcn8jzc1jafach05a3pz2xvzxmxsxdjgzf02")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/musikui")
+    (synopsis "Easy creation of ``arithmetical restoration'' puzzles")
+    (description
+     "This package permits to easily typeset arithmetical restorations using
+LaTeX.")
+    (license license:lppl)))
+
 (define-public texlive-musixguit
   (package
     (name "texlive-musixguit")
@@ -10358,6 +10995,30 @@ the columns; tools to color rows and columns with a good PDF result; blocks of
 cells; etc.")
     (license license:lppl1.3+)))
 
+(define-public texlive-nimsticks
+  (package
+    (name "texlive-nimsticks")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/nimsticks/"
+                   "source/latex/nimsticks/"
+                   "tex/latex/nimsticks/")
+             (base32
+              "0y7v01a02lz6mj1fdyrqzgz7kf7y4m3jarkr3sdyid25k0zx9dbj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nimsticks")
+    (synopsis "Draws sticks for games of multi-pile nim")
+    (description
+     "This LaTeX package provides commands @code{\\drawnimstick} to draw
+a single nim stick and @code{\\nimgame} which represents games of multi-pile
+Nim.  Nim sticks are drawn with a little random wobble so they look thrown
+together and not too regular.  The package also provides options to customise
+the size and colour of the sticks, and flexibility to draw heaps of different
+objects.")
+    (license license:expat)))
+
 (define-public texlive-nnext
   (package
     (name "texlive-nnext")
@@ -10702,6 +11363,51 @@ working with the source code painless (well, less painful).  A variety of
 stylistic variants are available to suit personal taste.")
     (license license:lppl1.3+)))
 
+(define-public texlive-othello
+  (package
+    (name "texlive-othello")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/othello/"
+                   "fonts/source/public/othello/"
+                   "fonts/tfm/public/othello/"
+                   "tex/latex/othello/")
+             (base32
+              "0ijb2giry6bjvx6ll51n9c8fqy1kmwgrwvrg21mxnj9xc4gkdjrh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/othello")
+    (synopsis "Create othello boards")
+    (description
+     "This package can be used to create othello boards.  It includes also
+fonts, as Metafont source.")
+    (license license:gpl3+)))
+
+(define-public texlive-othelloboard
+  (package
+    (name "texlive-othelloboard")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/othelloboard/"
+                   "tex/latex/othelloboard/")
+             (base32
+              "1kaj01bn4828261n8s761qcv7hg6a5aqi577rqglbkjg9grdh1s6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/othelloboard")
+    (synopsis
+     "Typeset othello (Reversi) diagrams of any size, with annotations")
+    (description
+     "The package enables the user to generate high-quality othello (also
+known as Reversi) board diagrams of any size.  The diagrams support
+annotations, including full game transcripts.  Automated board or transcript
+creation, from plain text formats standard to WZebra (and other programs) is
+also supported.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-otibet
   (package
     (name "texlive-otibet")
@@ -10834,6 +11540,26 @@ have value when comparing any two texts.")
     (description
      "This package can be used for typesetting translated text and the
 original source, parallel on the same page, one above the other.")
+    (license license:lppl)))
+
+(define-public texlive-pas-crosswords
+  (package
+    (name "texlive-pas-crosswords")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pas-crosswords/"
+                   "tex/latex/pas-crosswords/")
+             (base32
+              "1masrs2ywyxa9rfw7vz9j9jw0b1hhkd5fin2rg7rd2x1qb305q5w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pas-crosswords")
+    (synopsis "Creating crossword grids, using TikZ")
+    (description
+     "The package produces crossword grids, using a wide variety of colours
+and decorations of the grids and the text in them.  The package uses TikZ for
+its graphical output.")
     (license license:lppl)))
 
 (define-public texlive-pascaltriangle
@@ -11533,6 +12259,23 @@ elements such as keywords, identifiers, and comments.")
 algorithms in a natural manner.")
     (license license:lppl)))
 
+(define-public texlive-psgo
+  (package
+    (name "texlive-psgo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/psgo/" "tex/latex/psgo/")
+             (base32
+              "0ki49zbdn0qvzsz7h53vqwpf4rmiiranq52lh344z7wypznddi28")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/psgo")
+    (synopsis "Typeset go diagrams with PSTricks")
+    (description
+     "This packages can be used to typeset go diagrams with PSTricks.")
+    (license license:lppl)))
+
 (define-public texlive-psizzl
   (package
     (name "texlive-psizzl")
@@ -11675,6 +12418,26 @@ systems, with Weyl chambers, weight lattices, and parabolic subgroups.")
 for typesetting homework assignments, and formula cheat sheets for exams.")
     (license license:lppl1.3c)))
 
+(define-public texlive-realtranspose
+  (package
+    (name "texlive-realtranspose")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/realtranspose/"
+                   "source/latex/realtranspose/"
+                   "tex/latex/realtranspose/")
+             (base32
+              "0ar1yisx6pq8qjhsvb406l5j06y9jkyxvvgq9s1sg15nk9sjzy1r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/realtranspose")
+    (synopsis "The ``real'' way to transpose a matrix")
+    (description
+     "With @code{realtranspose} you can notate the transposition of a matrix
+by rotating the symbols 90 degrees.")
+    (license license:expat)))
+
 (define-public texlive-rec-thy
   (package
     (name "texlive-rec-thy")
@@ -11792,6 +12555,28 @@ method description path parameter request body and content type response body,
 content type and status code.")
     (license license:lppl1.3c)))
 
+(define-public texlive-reverxii
+  (package
+    (name "texlive-reverxii")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/reverxii/"
+                   "source/generic/reverxii/"
+                   "tex/generic/reverxii/")
+             (base32
+              "1gg8qbc8ll3n6rfp3pjshbbjd30s4n3yk219y6qcmz1nv66fp1qq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (native-inputs (list (texlive-updmap.cfg)))
+    (home-page "https://ctan.org/pkg/reverxii")
+    (synopsis "Playing Reversi in TeX")
+    (description
+     "Following the lead of @file{xii.tex}, this little program plays
+Reversi.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-revquantum
   (package
     (name "texlive-revquantum")
@@ -11903,6 +12688,46 @@ German lawyers.  Now in the early beginning it only contains @code{rtklage},
 a class to make lawsuits.")
     (license license:lppl)))
 
+(define-public texlive-rubik
+  (package
+    (name "texlive-rubik")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/rubik/"
+                   "doc/man/man1/rubikrotation.1"
+                   "doc/man/man1/rubikrotation.man1.pdf"
+                   "scripts/rubik/"
+                   "source/latex/rubik/"
+                   "tex/latex/rubik/")
+             (base32
+              "0v7j88d72acgrj24x8g859k7q6qd47pjy3wdqfvrqq3y39x48011")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "rubikrotation.pl")))
+    (inputs (list perl))
+    (home-page "https://ctan.org/pkg/rubik")
+    (synopsis "Document Rubik cube configurations and rotation sequences")
+    (description
+     "The bundle provides four packages:
+@itemize
+
+@item @code{rubikcube} provides commands for typesetting Rubik cubes
+and their transformations,
+
+@item @code{rubiktwocube} provides commands for typesetting Rubik
+twocubes and their transformations,
+
+@item @code{rubikrotation} can process a sequence of Rubik rotation
+moves, with the help of a Perl package executed via
+@code{\\write18} (shell escape) commands,
+
+@item @code{rubikpatterns} is a collection of well known patterns and
+their associated rotation sequences.
+
+@end itemize")
+    (license license:lppl1.3+)))
+
 (define-public texlive-sankey
   (package
     (name "texlive-sankey")
@@ -11943,6 +12768,27 @@ permits statisticians and others to import source code and the results of
 their calculations or simulations into LaTeX projects.  The package is also
 capable of overloading the Sweave User Manual and SASweave packages.")
     (license license:lppl1.3+)))
+
+(define-public texlive-schwalbe-chess
+  (package
+    (name "texlive-schwalbe-chess")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/schwalbe-chess/"
+                   "source/latex/schwalbe-chess/"
+                   "tex/latex/schwalbe-chess/")
+             (base32
+              "1i68bl4hb7cagwwb4lyihvdnwgd0irgqp7344m5kmsdxy7z94fmr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/schwalbe-chess")
+    (synopsis "Typeset the German chess magazine @emph{Die Schwalbe}")
+    (description
+     "The package is used to typeset the German chess magazine @emph{Die
+Schwalbe}.  It is based on @code{chess-problem-diagrams}, which in its turn
+has a dependency on the @code{bartel-chess-fonts}.")
+    (license license:lppl1.2+)))
 
 (define-public texlive-sciposter
   (package
@@ -11986,6 +12832,24 @@ any editing (save reducing the size).")
 effortless pretty-printing of SuperCollider source code in documents typeset
 with LaTeX and friends.")
     (license license:lppl1.3+)))
+
+(define-public texlive-scrabble
+  (package
+    (name "texlive-scrabble")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/scrabble/" "tex/latex/scrabble/")
+             (base32
+              "1wr85x1kh6457sr61cq6mx8z6zrf61c9659a941wakc610sbqlsx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/scrabble")
+    (synopsis "Commands for Scrabble boards")
+    (description
+     "This package provides some commands (in English and in French) to work
+with a Scrabble board.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-scratchx
   (package
@@ -12163,6 +13027,27 @@ book.")
 electrical and electronics engineers and graph theorists.")
     (license license:lppl)))
 
+(define-public texlive-sgame
+  (package
+    (name "texlive-sgame")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sgame/" "tex/latex/sgame/")
+             (base32
+              "0kzrimwmgwa3f61vawc1fq5vvgx4pxa2586wqhd4cf66ywdikn0v")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sgame")
+    (synopsis "LaTeX style for typesetting strategic games")
+    (description
+     "This package can be used to format strategic games.  For a 2x2 game,
+for example, the input: @samp{\\begin@{game@}{2}{2} &$L$ &$M$\\\\ $T$ &$2,2$
+&$2,0$\\\\ $B$ &$3,0$ &$0,9$ \\end@{game@}} produces output with (a) boxes
+around the payoffs, (b) payoff columns of equal width, and (c) payoffs
+vertically centered within the boxes.")
+    (license license:lppl)))
+
 (define-public texlive-shuffle
   (package
     (name "texlive-shuffle")
@@ -12331,6 +13216,54 @@ International System of Units (SI).  Note that the package is now superseded
 by @code{siunitx}; @code{siunits} has maintenance-only support, now.")
     (license license:lppl1.3+)))
 
+(define-public texlive-skak
+  (package
+    (name "texlive-skak")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/skak/"
+                   "fonts/source/public/skak/"
+                   "fonts/tfm/public/skak/" "tex/latex/skak/")
+             (base32
+              "12fbzvyz40fnb9v5y80wkmv1fmvi7frbyv28k68lagdalm7mwp3b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/skak")
+    (synopsis "Fonts and macros for typesetting chess games")
+    (description
+     "This package provides macros and fonts in Metafont format which can be
+used to typeset chess games using PGN, and to show diagrams of the current
+board in a document.  An Adobe Type 1 implementation of skak's fonts is
+available as package @code{skaknew}; an alternative chess notational scheme is
+available in package @code{texmate}, and a general mechanism for selecting
+chess fonts is provided in @code{chessfss}.")
+    (license license:lppl)))
+
+(define-public texlive-skaknew
+  (package
+    (name "texlive-skaknew")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/skaknew/"
+                   "fonts/afm/public/skaknew/"
+                   "fonts/map/dvips/skaknew/"
+                   "fonts/opentype/public/skaknew/"
+                   "fonts/tfm/public/skaknew/"
+                   "fonts/type1/public/skaknew/")
+             (base32
+              "1jpm36qb65jbsrhq1yqhwajqz3jg35wid0wlav9hk7q4hd58qi4r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/skaknew")
+    (synopsis "The @code{skak} chess fonts redone in Adobe Type 1")
+    (description
+     "This package offers Adobe Type 1 versions of the fonts provided as
+Metafont source by the @code{skak} bundle.")
+    (license license:lppl)))
+
 (define-public texlive-skmath
   (package
     (name "texlive-skmath")
@@ -12431,6 +13364,28 @@ scripture references);
 @item and projector-style output generation, for interactive use.
 @end itemize")
     (license license:gpl2)))
+
+(define-public texlive-soup
+  (package
+    (name "texlive-soup")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/soup/" "source/latex/soup/"
+                   "tex/latex/soup/")
+             (base32
+              "04lpc3nn45i66cwnjn0sycdpfaynzkb19djyfi8ca3ppb1sn79z6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/soup")
+    (synopsis "Generate alphabet soup puzzles")
+    (description
+     "This package generates alphabet soup puzzles (aka word search puzzles),
+and variations using numbers or other symbols.  It provides macros to generate
+an alphabet soup style puzzle (also known as word search puzzles or
+find-the-word puzzles).  It also allows creating number soup and soups with
+custom symbol sets.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-spalign
   (package
@@ -12770,6 +13725,51 @@ mode by providing an optional argument to @samp{_}.  This is implemented by
 using the @code{\\text@{@}} command from the @code{amstext} package.")
     (license license:gpl3)))
 
+(define-public texlive-sudoku
+  (package
+    (name "texlive-sudoku")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sudoku/" "source/latex/sudoku/"
+                   "tex/latex/sudoku/")
+             (base32
+              "14g1kkxinp9l57yvdpbdx4wclgka71gilcbxl1dc6sdj4cmw7mbz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sudoku")
+    (synopsis "Create sudoku grids")
+    (description
+     "The @code{sudoku} package provides an environment for typesetting sudoku
+grids.")
+    (license license:lppl)))
+
+(define-public texlive-sudokubundle
+  (package
+    (name "texlive-sudokubundle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sudokubundle/"
+                   "source/latex/sudokubundle/"
+                   "tex/latex/sudokubundle/")
+             (base32
+              "1swsx8r0chgxv8h27syj4h5cf7lnj6mxvwhhzixbkjg6scrvd8kw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sudokubundle")
+    (synopsis "A set of sudoku-related packages")
+    (description
+     "The bundle provides three packages: @code{printsudoku}, which provides
+a command @code{\\sudoku} whose argument is the name of a file containing
+a puzzle specification; @code{solvesudoku}, which attempts to find a solution
+to the puzzle in the file named in the argument; and @code{createsudoku},
+which uses the @code{random} package to generate a puzzle according to a bunch
+of parameters that the user sets via macros.
+
+The bundle comes with a set of ready-prepared puzzle files.")
+    (license license:lppl)))
+
 (define-public texlive-susy
   (package
     (name "texlive-susy")
@@ -12945,6 +13945,27 @@ package requires that shell escape be enabled.")
      "This LaTeX package is meant to ease the typesetting of tables showing
 variations of functions as they are used in France.")
     (license license:lppl1.3+)))
+
+(define-public texlive-tangramtikz
+  (package
+    (name "texlive-tangramtikz")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tangramtikz/"
+                   "tex/latex/tangramtikz/")
+             (base32
+              "18n67k7ggqh3mvp8iqyp44d70gh3s8jfbwbp3ympv2ff5drjjb3l")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tangramtikz")
+    (synopsis "Tangram puzzles, with TikZ")
+    (description
+     "This package provides some commands (with English and French keys) to
+work with tangram puzzles: @code{\\begin{EnvTangramTikz}} and
+@code{\\PieceTangram} to position a piece, @code{\\TangramTikz} to display
+a predefined tangram.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-tdsfrmath
   (package
@@ -13702,6 +14723,32 @@ bundle, for which map files are available to provide a Vietnamese version.")
     (license (list license:lppl1.3+
                    (license:fsf-free "file://source/generic/vntex/LICENSE-utopia.txt")))))
 
+(define-public texlive-wargame
+  (package
+    (name "texlive-wargame")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/wargame/" "source/latex/wargame/"
+                   "tex/latex/wargame/")
+             (base32
+              "1j56fnq5m298ly650v0k7qla15kiwcwswsd7454wqv9f191gmhhh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/wargame")
+    (synopsis "LaTeX package to prepare hex'n'counter wargames")
+    (description
+     "This package can help make classic Hex'n'Counter wargames using LaTeX.
+The package provide tools for generating Hex maps and boards Counters for
+units, markers, and so on Counter sheets Order of Battle charts Illustrations
+in the rules using the defined maps and counters The result will often be
+a PDF (or set of PDFs) that contain everything one will need for
+a game (rules, charts, boards, counter sheets).  The package uses NATO App6
+symbology for units.  The package uses NATO App6 symbology for units.  The
+package uses TikZ for most things.  The package support exporting the game to
+a VASSAL module.")
+    (license license:cc-by-sa4.0)))
+
 (define-public texlive-witharrows
   (package
     (name "texlive-witharrows")
@@ -13830,6 +14877,47 @@ Cyrillic Mongolian using either XeLaTeX or LuaLaTeX.  The command
 @code{\\setlanguage} can be used to load alternative hyphenation patterns so
 to be able to create multilingual documents.")
     (license license:lppl1.3c)))
+
+(define-public texlive-xq
+  (package
+    (name "texlive-xq")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/xq/" "fonts/source/public/xq/"
+                   "fonts/tfm/public/xq/" "tex/latex/xq/")
+             (base32
+              "1g9j4vdlcnidv247bmagqd7q357h6fkg3b5cx1765n38k1bx8ikx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/xq")
+    (synopsis "Support for writing about xiangqi")
+    (description
+     "The package is for writing about xiangqi or chinese chess.  You can
+write games or parts of games and show diagrams with special positions.")
+    (license license:lppl)))
+
+(define-public texlive-xskak
+  (package
+    (name "texlive-xskak")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xskak/" "source/latex/xskak/"
+                   "tex/latex/xskak/")
+             (base32
+              "0b17y5i24adpb7f8jxf3lc5zwb1q4yf3w2vx9ql73xpi39xg6mcj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xskak")
+    (synopsis "Extension to the @code{skak} package for chess typesetting")
+    (description
+     "Xskak, as its prime function, saves information about a chess game for
+later use (e.g., to loop through a game to make an animated board).  The
+package also extends the input that the parsing commands can handle and offers
+an interface to define and switch between indefinite levels of styles.")
+    (license license:lppl)))
 
 (define-public texlive-xyling
   (package
@@ -37577,267 +38665,6 @@ documents as well as DVI output.")
 
 (define-deprecated-package texlive-generic-pdftex texlive-pdftex)
 
-(define texlive-bin-full
-  (package/inherit texlive-bin
-    (name "texlive-bin-full")
-    (arguments
-     (substitute-keyword-arguments (package-arguments texlive-bin)
-       ((#:configure-flags _)
-        #~(let ((kpathsea #$(this-package-input "texlive-libkpathsea")))
-            (list "--with-banner-add=/GNU Guix"
-                  "--enable-shared"
-                  "--disable-native-texlive-build"
-                  "--disable-static"
-                  "--disable-kpathsea"
-                  "--with-system-cairo"
-                  "--with-system-freetype2"
-                  "--with-system-gd"
-                  "--with-system-gmp"
-                  "--with-system-graphite2"
-                  "--with-system-harfbuzz"
-                  "--with-system-icu"
-                  "--with-system-libgs"
-                  "--with-system-libpaper"
-                  "--with-system-libpng"
-                  "--with-system-mpfr"
-                  "--with-system-pixman"
-                  "--with-system-potrace"
-                  "--with-system-teckit"
-                  "--with-system-zlib"
-                  "--with-system-zziplib"
-                  ;; Help locating external kpathsea.  For some reason
-                  ;; PKG-CONFIG is unable to find it.
-                  "--with-system-kpathsea"
-                  (format #f "--with-kpathsea-includes=~a/include" kpathsea)
-                  (format #f "--with-kpathsea-lib=~a/lib" kpathsea)
-                  ;; LuaJIT is not ported to some architectures yet.
-                  #$@(if (or (target-ppc64le?)
-                             (target-riscv64?))
-                         '("--disable-luajittex"
-                           "--disable-luajithbtex"
-                           "--disable-mfluajit")
-                         '()))))
-       ((#:phases phases)
-        #~(modify-phases #$phases
-            (add-after 'install 'symlink-kpathsea-binaries
-              (lambda _
-                (let ((bin (string-append
-                            #$(this-package-input "texlive-libkpathsea")
-                            "/bin"))
-                      (files
-                       '("kpseaccess" "kpsereadlink" "kpsestat" "kpsewhich")))
-                  (with-directory-excursion (string-append #$output "/bin")
-                    (for-each (lambda (b) (symlink (string-append bin "/" b) b))
-                              files)))))
-            (add-after 'install 'merge-core-scripts
-              (lambda* (#:key inputs native-inputs #:allow-other-keys)
-                (let ((texlive-scripts
-                       (dirname
-                        (dirname
-                         (search-input-file (or native-inputs inputs)
-                                            "tlpkg/texlive.tlpdb"))))
-                      (tlpkg (string-append #$output "/share/tlpkg")))
-                  ;; "tlpkg" directory is neither provided by texlive-bin nor
-                  ;; by texlive-texmf.
-                  (mkdir-p tlpkg)
-                  (copy-recursively (string-append texlive-scripts "/tlpkg")
-                                    tlpkg)
-                  ;; texlive-bin source doesn't provide this Perl script.
-                  ;; Yet, it is referenced in "fmtutil.pl" so we need to move
-                  ;; it here too.
-                  (install-file
-                   (string-append texlive-scripts
-                                  "/texmf-dist/scripts/texlive/mktexlsr.pl")
-                   (string-append #$output
-                                  "/share/texmf-dist/scripts/texlive")))))
-            (add-after 'merge-core-scripts 'patch-core-scripts
-              (lambda _
-                (with-directory-excursion
-                    (string-append #$output "/share/texmf-dist/scripts/texlive")
-                  ;; Make sure that fmtutil can find its Perl modules.
-                  (substitute* "fmtutil.pl"
-                    (("\\$TEXMFROOT/")
-                     (string-append #$output "/share/")))
-                  ;; Likewise for updmap.pl.
-                  (substitute* "updmap.pl"
-                    (("\\$TEXMFROOT/tlpkg")
-                     (string-append #$output "/share/tlpkg")))
-                  ;; Likewise for the tlmgr.
-                  (substitute* "tlmgr.pl"
-                    ((".*\\$::installerdir = \\$Master.*" all)
-                     (format #f "  $Master = ~s;~%~a"
-                             (string-append #$output "/share")
-                             all))))))
-            (add-after 'patch-core-scripts 'patch-shell-scripts
-              (lambda _
-                (with-directory-excursion
-                    (string-append #$output "/share/texmf-dist/scripts")
-                  ;; First patch shell scripts with ".sh" extension.
-                  (let* ((scripts (find-files "." "\\.sh$"))
-                         (commands '("awk" "basename" "cat" "grep" "mkdir" "rm"
-                                     "sed" "sort" "uname"))
-                         (command-regexp
-                          (format #f "\\b(~a)\\b" (string-join commands "|")))
-                         (iso-8859-1-encoded-scripts
-                          '("./texlive-extra/rubibtex.sh"
-                            "./texlive-extra/rumakeindex.sh")))
-                    (define (substitute-commands scripts)
-                      (substitute* scripts
-                        ((command-regexp dummy command)
-                         (which command))))
-                    (substitute-commands
-                     (lset-difference string= scripts iso-8859-1-encoded-scripts))
-                    (with-fluids ((%default-port-encoding "ISO-8859-1"))
-                      (substitute-commands iso-8859-1-encoded-scripts)))
-                  ;; Then patch scripts without such extension.
-                  (let ((dirs (map (compose dirname which)
-                                   (list "awk" "cat" "grep" "sed"))))
-                    (substitute* (find-files "texlive" "^mktex(mf|pk|tfm)$")
-                      (("^version=" m)
-                       (format #false "PATH=\"~{~a:~}$PATH\"; export PATH~%~a"
-                               dirs m)))))))))))
-    (native-inputs
-     (modify-inputs (package-native-inputs texlive-bin)
-       (append (package-source texlive-scripts))))
-    (inputs
-     (modify-inputs (package-inputs texlive-bin)
-       (append texlive-libkpathsea)))
-    (propagated-inputs '())))
-
-(define texlive-texmf
-  (package
-    (name "texlive-texmf")
-    (version (package-version texlive-bin))
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "ftp://tug.org/historic/systems/texlive/"
-                                  (string-take version 4)
-                                  "/texlive-" version "-texmf.tar.xz"))
-              (sha256
-               (base32
-                "0lqjm11pr9vasvivaci3k9xcmdyd08ldnh31zf8avjjs09xcfkac"))))
-    (build-system copy-build-system)
-    (arguments
-     (list
-      #:modules '((guix build copy-build-system)
-                  (guix build utils)
-                  (srfi srfi-1)
-                  (srfi srfi-26))
-      ;; This package takes 4 GiB, which we can't afford to distribute from
-      ;; our servers.
-      #:substitutable? #f
-      #:install-plan #~'(("texmf-dist/" "share/texmf-dist"))
-      #:phases
-      #~(modify-phases %standard-phases
-          (add-after 'install 'texmf-config
-            (lambda* (#:key inputs native-inputs  #:allow-other-keys)
-              (let* ((share (string-append #$output "/share"))
-                     (texmf-dist (string-append share "/texmf-dist"))
-                     (web2c (string-append texmf-dist "/web2c"))
-                     (fmtutil.cnf (string-append web2c "/fmtutil.cnf"))
-                     (texlive-bin
-                      #$(this-package-native-input "texlive-bin-full")))
-                ;; LuaJIT is not ported to powerpc64* yet.
-                (if #$(target-ppc64le?)
-                    (substitute* fmtutil.cnf
-                      (("^(luajittex|luajithbtex|mfluajit)" m)
-                       (string-append "#! " m))))
-                ;; Register paths in texmfcnf.lua, needed for context.
-                (substitute* (string-append web2c "/texmfcnf.lua")
-                  (("selfautodir:") #$output)
-                  (("selfautoparent:") (string-append share "/")))
-                ;; Set path to TeXLive Perl modules
-                (setenv "PERL5LIB"
-                        (string-append (getenv "PERL5LIB") ":"
-                                       (string-append texlive-bin
-                                                      "/share/tlpkg")))
-                ;; Configure the texmf-dist tree.
-                (setenv "GUIX_TEXMF" texmf-dist)
-                (setenv "PATH"
-                        (string-append (getenv "PATH") ":" texlive-bin "/bin:"))
-                (let ((updmap.cfg (string-append web2c "/updmap.cfg")))
-                  (invoke (string-append texlive-bin "/bin/updmap-sys")
-                          "--nohash" "--syncwithtrees"
-                          (string-append "--cnffile=" updmap.cfg)))
-                (invoke (string-append texlive-bin "/bin/fmtutil-sys")
-                        "--cnffile" fmtutil.cnf
-                        "--all"
-                        "--fmtdir" web2c)))))))
-    (native-inputs (list texlive-bin-full))
-    (inputs (list lua perl python-wrapper ruby tcsh))
-    (properties `((max-silent-time . 9600))) ; don't time out while grafting
-    (synopsis "TeX Live, a package of the TeX typesetting system")
-    (description
-     "TeX Live provides a comprehensive TeX document production system.
-It includes all the major TeX-related programs, macro packages, and fonts
-that are free software, including support for many languages around the
-world.
-
-This package contains the complete tree of texmf-dist data.")
-    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))
-    (home-page "https://www.tug.org/texlive/")))
-
-(define-public texlive
-  (package
-    (name "texlive")
-    (version (package-version texlive-bin))
-    (source #f)
-    (build-system trivial-build-system)
-    (arguments
-     (list
-      #:modules '((guix build utils))
-      #:builder
-      ;; Build the union of texlive-bin-full and texlive-texmf, but take the
-      ;; conflicting subdirectory share/texmf-dist from texlive-texmf.
-      #~(begin
-          (use-modules (guix build utils))
-          (let ((bin #$(this-package-input "texlive-bin-full"))
-                (texmf #$(this-package-input "texlive-texmf")))
-            (mkdir #$output)
-            (with-directory-excursion #$output
-              ;; "include/" and "lib/" directories.
-              (for-each
-               (lambda (name)
-                 (symlink (string-append bin "/" name) name))
-               '("include" "lib"))
-              ;; "bin/" directory.
-              (mkdir "bin")
-              (with-directory-excursion "bin"
-                (for-each
-                 (lambda (name) (symlink name (basename name)))
-                 (find-files (string-append bin "/bin/") "")))
-              ;; "share/info", "share/man", share/texmf-dist/" and
-              ;; "share/tlpkg/" directories.
-              (mkdir "share")
-              (with-directory-excursion "share"
-                (for-each
-                 (lambda (name)
-                   (symlink (string-append bin "/share/" name) name))
-                 '("info" "man" "tlpkg"))
-                (symlink (string-append texmf "/share/texmf-dist")
-                         "texmf-dist"))
-              ;; Now everything is in place, generate ls-R file.
-              (setenv "PATH"
-                      (string-append
-                       (getenv "PATH") ":"
-                       #$(this-package-input "texlive-bin-full") "/bin"))
-              (invoke (string-append bin "/bin/mktexlsr")))))))
-    (inputs (list texlive-bin-full texlive-texmf))
-    (propagated-inputs (list texlive-libkpathsea))
-    (native-search-paths
-     (list (search-path-specification
-            (variable "TEXMFLOCAL")
-            (files '("share/texmf-local")))))
-    (synopsis "TeX Live, a package of the TeX typesetting system")
-    (description
-     "TeX Live provides a comprehensive TeX document production system.
-It includes all the major TeX-related programs, macro packages, and fonts that
-are free software, including support for many languages around the world.
-
-This package contains the complete TeX Live distribution.")
-    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))
-    (home-page "https://www.tug.org/texlive/")))
-
 (define-public texlive-biber
   (package
     (name "texlive-biber")
@@ -44937,6 +45764,69 @@ designed to be dumped into @file{.fmt} files --- excluding the most common
 ones, such as LaTeX and ConTeXt, which have their own package(s).  It also
 includes the Aleph engine and related Omega formats and packages, and the
 HiTeX engine and related.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-games
+  (package
+    (name "texlive-collection-games")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-bartel-chess-fonts
+           texlive-chess
+           texlive-chess-problem-diagrams
+           texlive-chessboard
+           texlive-chessfss
+           texlive-chinesechess
+           texlive-collection-latex
+           texlive-crossword
+           texlive-crosswrd
+           texlive-customdice
+           texlive-egameps
+           texlive-gamebook
+           texlive-gamebooklib
+           texlive-go
+           texlive-hanoi
+           texlive-havannah
+           texlive-hexboard
+           texlive-hexgame
+           texlive-hmtrump
+           texlive-horoscop
+           texlive-jeuxcartes
+           texlive-jigsaw
+           texlive-labyrinth
+           texlive-logicpuzzle
+           texlive-mahjong
+           texlive-maze
+           texlive-musikui
+           texlive-nimsticks
+           texlive-onedown
+           texlive-othello
+           texlive-othelloboard
+           texlive-pas-crosswords
+           texlive-psgo
+           texlive-realtranspose
+           texlive-reverxii
+           texlive-rubik
+           texlive-schwalbe-chess
+           texlive-scrabble
+           texlive-sgame
+           texlive-skak
+           texlive-skaknew
+           texlive-soup
+           texlive-sudoku
+           texlive-sudokubundle
+           texlive-tangramtikz
+           texlive-wargame
+           texlive-xq
+           texlive-xskak))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Games typesetting")
+    (description
+     "This collection includes setups for typesetting various games,
+including chess.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
 (define-public texlive-collection-humanities
