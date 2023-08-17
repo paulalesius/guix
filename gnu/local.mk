@@ -1056,7 +1056,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/dbus-c++-gcc-compat.patch		\
   %D%/packages/patches/dbus-c++-threading-mutex.patch		\
   %D%/packages/patches/dbxfs-remove-sentry-sdk.patch		\
-  %D%/packages/patches/ddclient-skip-test.patch			\
   %D%/packages/patches/debops-constants-for-external-program-names.patch \
   %D%/packages/patches/debops-debops-defaults-fall-back-to-less.patch \
   %D%/packages/patches/dee-vapi.patch			\
@@ -1089,7 +1088,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/elm-ghc9.2.patch	\
   %D%/packages/patches/elm-offline-package-registry.patch	\
   %D%/packages/patches/elm-reactor-static-files.patch		\
-  %D%/packages/patches/elogind-revert-polkit-detection.patch	\
+  %D%/packages/patches/elogind-fix-rpath.patch			\
   %D%/packages/patches/emacs-deferred-fix-number-of-arguments.patch	\
   %D%/packages/patches/emacs-exec-path.patch			\
   %D%/packages/patches/emacs-ess-fix-obsolete-function-alias.patch	\
@@ -1781,6 +1780,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/plib-CVE-2011-4620.patch		\
   %D%/packages/patches/plib-CVE-2012-4552.patch		\
   %D%/packages/patches/plotutils-spline-test.patch		\
+  %D%/packages/patches/po4a-partial-texinfo-menu-fix.patch	\
   %D%/packages/patches/polkit-disable-systemd.patch		\
   %D%/packages/patches/portaudio-audacity-compat.patch		\
   %D%/packages/patches/portmidi-modular-build.patch		\

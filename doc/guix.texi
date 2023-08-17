@@ -5070,6 +5070,23 @@ opens the door to security vulnerabilities.  @xref{Invoking guix pull,
 @option{--allow-downgrades}}.
 @end quotation
 
+Due to @command{guix time-machine} relying on the ``inferiors''
+mechanism (@pxref{Inferiors}), the oldest commit it can travel to is
+commit @samp{6298c3ff} (``v1.0.0''), dated May 1@sup{st}, 2019, which is
+the first release that included the inferiors mechanism.  An error is
+returned when attempting to navigate to older commits.
+
+@quotation Note
+Although it should technically be possible to travel to such an old
+commit, the ease to do so will largely depend on the availability of
+binary substitutes.  When traveling to a distant past, some packages may
+not easily build from source anymore.  One such example are old versions
+of Python 2 which had time bombs in its test suite, in the form of
+expiring SSL certificates.  This particular problem can be worked around
+by setting the hardware clock to a value in the past before attempting
+the build.
+@end quotation
+
 The general syntax is:
 
 @example
@@ -25179,6 +25196,20 @@ There is no need to add this field for contrib extensions such as hstore or
 dblink as they are already loadable by postgresql.  This field is only
 required to add extensions provided by other packages.
 
+@item @code{create-account?} (default: @code{#t})
+Whether or not the @code{postgres} user and group should be created.
+
+@item @code{uid} (default: @code{#f})
+Explicitly specify the UID of the @code{postgres} daemon account.
+You normally do not need to specify this, in which case a free UID will
+be automatically assigned.
+
+One situation where this option might be useful is if the @var{data-directory}
+is located on a mounted network share.
+
+@item @code{gid} (default: @code{#f})
+Explicitly specify the GID of the @code{postgres} group.
+
 @end table
 @end deftp
 
@@ -32548,113 +32579,6 @@ network or obtained a DHCP lease from dnsmasq.
 
 @end table
 @end deftp
-
-@subsubheading ddclient Service
-
-@cindex ddclient
-The ddclient service described below runs the ddclient daemon, which takes
-care of automatically updating DNS entries for service providers such as
-@uref{https://dyn.com/dns/, Dyn}.
-
-The following example show instantiates the service with its default
-configuration:
-
-@lisp
-(service ddclient-service-type)
-@end lisp
-
-Note that ddclient needs to access credentials that are stored in a
-@dfn{secret file}, by default @file{/etc/ddclient/secrets} (see
-@code{secret-file} below).  You are expected to create this file manually, in
-an ``out-of-band'' fashion (you @emph{could} make this file part of the
-service configuration, for instance by using @code{plain-file}, but it will be
-world-readable @i{via} @file{/gnu/store}).  See the examples in the
-@file{share/ddclient} directory of the @code{ddclient} package.
-
-@c %start of fragment
-
-Available @code{ddclient-configuration} fields are:
-
-@deftypevr {@code{ddclient-configuration} parameter} package ddclient
-The ddclient package.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} integer daemon
-The period after which ddclient will retry to check IP and domain name.
-
-Defaults to @samp{300}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} boolean syslog
-Use syslog for the output.
-
-Defaults to @samp{#t}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} string mail
-Mail to user.
-
-Defaults to @samp{"root"}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} string mail-failure
-Mail failed update to user.
-
-Defaults to @samp{"root"}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} string pid
-The ddclient PID file.
-
-Defaults to @samp{"/var/run/ddclient/ddclient.pid"}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} boolean ssl
-Enable SSL support.
-
-Defaults to @samp{#t}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} string user
-Specifies the user name or ID that is used when running ddclient
-program.
-
-Defaults to @samp{"ddclient"}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} string group
-Group of the user who will run the ddclient program.
-
-Defaults to @samp{"ddclient"}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} string secret-file
-Secret file which will be appended to @file{ddclient.conf} file.  This
-file contains credentials for use by ddclient.  You are expected to
-create it manually.
-
-Defaults to @samp{"/etc/ddclient/secrets.conf"}.
-
-@end deftypevr
-
-@deftypevr {@code{ddclient-configuration} parameter} list extra-options
-Extra options will be appended to @file{ddclient.conf} file.
-
-Defaults to @samp{'()}.
-
-@end deftypevr
-
-
-@c %end of fragment
 
 @node VNC Services
 @subsection VNC Services

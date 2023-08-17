@@ -1381,6 +1381,24 @@ adaptation for working with Babel.")
 controlling the searches that the package does.")
     (license license:lppl)))
 
+(define-public texlive-adtrees
+  (package
+    (name "texlive-adtrees")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/adtrees/" "tex/latex/adtrees/")
+             (base32
+              "0ypb609wvw3mvs7bf2mwa7r7v4frxjhfll8d1sqfry3dv3kr13pq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/adtrees")
+    (synopsis "Macros for drawing adpositional trees")
+    (description
+     "This package provides a means to write adpositional trees, a formalism
+devoted to representing natural language expressions.")
+    (license license:gpl3+)))
+
 (define-public texlive-adobemapping
   (package
     (name "texlive-adobemapping")
@@ -2353,6 +2371,27 @@ LuaLaTeX are provided by the @code{arphic-ttf} package.")
     ;; non-GNU FTP site, using the license below.
     (license license:arphic-1999)))
 
+(define-public texlive-arphic-ttf
+  (package
+    (name "texlive-arphic-ttf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/arphic-ttf/"
+                   "fonts/truetype/public/arphic-ttf/")
+             (base32
+              "141hsz7lhqpbz3k10kl57bg21yslrb562alk1a6q129i56zb7jby")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/arphic-ttf")
+    (synopsis "TrueType version of Chinese Arphic fonts")
+    (description
+     "This package provides TrueType versions of the Chinese Arphic fonts for
+use with XeLaTeX and LuaLaTeX.  Type1 versions of these fonts, for use with
+pdfLaTeX and the @code{cjk} package, are provided by the @code{arphic}
+package.")
+    (license license:arphic-1999)))
+
 (define-public texlive-ascii-chart
   (package
     (name "texlive-ascii-chart")
@@ -2370,6 +2409,102 @@ LuaLaTeX are provided by the @code{arphic-ttf} package.")
      "This package contains an ASCII wall chart.  The document may be
 converted between Plain TeX and LaTeX by a simple editing action.")
     (license license:lppl1.3+)))
+
+(define-public texlive-ascmac
+  (package
+    (name "texlive-ascmac")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ascmac/"
+                   "fonts/map/dvips/ascmac/"
+                   "fonts/source/public/ascmac/"
+                   "fonts/tfm/public/ascmac/"
+                   "fonts/type1/public/ascmac/"
+                   "source/latex/ascmac/"
+                   "tex/latex/ascmac/")
+             (base32
+              "1d388nqyjipqsgd0pd4zrskaf3wddacg6rrmy3q1n8pvmna4gmz1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/ascmac")
+    (synopsis "Boxes and picture macros with Japanese vertical writing support")
+    (description
+     "The bundle provides boxes and picture macros with Japanese vertical
+writing support.  It uses only native picture macros and fonts for drawing
+boxes and is thus driver independent.")
+    (license license:bsd-3)))
+
+(define-public texlive-asternote
+  (package
+    (name "texlive-asternote")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/asternote/"
+                   "tex/latex/asternote/")
+             (base32
+              "1a53pmw237lm1yjx55qwq3fq6jq34vlw03w62vrq3ksw9346dg5r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/asternote")
+    (synopsis "Annotation symbols enclosed in square brackets with an asterisk")
+    (description
+     "This LaTeX package can output annotation symbols enclosed in square
+brackets and marked with an asterisk.")
+    (license license:expat)))
+
+(define-public texlive-asymptote-by-example-zh-cn
+  (package
+    (name "texlive-asymptote-by-example-zh-cn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/asymptote-by-example-zh-cn/")
+             (base32
+              "0854pbh3rm21rzzbhai7xijzw26qawffj4wd3mrwbva1406106ff")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/asymptote-by-example-zh-cn")
+    (synopsis "Asymptote by example")
+    (description "This is an Asymptote tutorial written in Simplified
+Chinese.")
+    (license license:gpl3+)))
+
+(define-public texlive-asymptote-faq-zh-cn
+  (package
+    (name "texlive-asymptote-faq-zh-cn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/asymptote-faq-zh-cn/")
+             (base32
+              "0z09f5as68dz66dlj370xfx593bv50ihxx10zxmm9lk27ymr52hb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/asymptote-faq-zh-cn")
+    (synopsis "Asymptote FAQ (Chinese translation)")
+    (description "This is a Chinese translation of the Asymptote FAQ.")
+    (license license:lppl)))
+
+(define-public texlive-asymptote-manual-zh-cn
+  (package
+    (name "texlive-asymptote-manual-zh-cn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/asymptote-manual-zh-cn/")
+             (base32
+              "047l3bh8vvk185wkazyfw4dm6893xpa2ksn5vfc57r5rv4x16wmb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/asymptote-manual-zh-cn")
+    (synopsis "Chinese translation of the Asymptote manual")
+    (description
+     "This is an (incomplete, simplified) Chinese translation of the Asymptote
+manual.")
+    (license license:lgpl3+)))
 
 (define-public texlive-auto-pst-pdf
   (package
@@ -2515,6 +2650,26 @@ the pdf code inserted in the output file.  The processing involves a run of
 formatted lists of productions, with numbers if required.  It can also print
 in-line BNF expressions using math mode.")
     (license license:lppl1.3c)))
+
+(define-public texlive-baekmuk
+  (package
+    (name "texlive-baekmuk")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/baekmuk/"
+                   "fonts/truetype/public/baekmuk/")
+             (base32
+              "0nc6sfjbimh1g8zhcl58ag6kqskhwd3h0m68y7k2v3v5i9n5g5yr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/baekmuk")
+    (synopsis "Baekmuk Korean TrueType fonts")
+    (description
+     "This bundle consists of four Korean fonts: @file{batang.ttf} (serif),
+@file{dotum.ttf} (sans-serif), @file{gulim.ttf} (sans-serif rounded) and
+@file{hline.ttf} (headline).")
+    (license license:expat)))
 
 (define-public texlive-bangla
   (package
@@ -2742,6 +2897,26 @@ transliteration.")
 files.")
     (license license:lppl)))
 
+(define-public texlive-bibleref
+  (package
+    (name "texlive-bibleref")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bibleref/"
+                   "source/latex/bibleref/"
+                   "tex/latex/bibleref/")
+             (base32
+              "1fgb6lljdsdvkbs4i7yvwvgjbpbc8vnki0wv3gdi9yq6s5j6lzv5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bibleref")
+    (synopsis "Format @emph{Bible} citations")
+    (description
+     "The bibleref package offers consistent formatting of references to parts
+of the Christian @emph{Bible}, in a number of well-defined formats.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-bibleref-french
   (package
     (name "texlive-bibleref-french")
@@ -2781,6 +2956,73 @@ conventions for use of @code{bibleref} in French.")
 @code{bibleref} in German documents.  The German naming of the Bible books
 complies with the @emph{Loccumer Richtlinien} (Locum guidelines).  In
 addition, the Vulgate (Latin Bible) is supported.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-bibleref-lds
+  (package
+    (name "texlive-bibleref-lds")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bibleref-lds/"
+                   "source/latex/bibleref-lds/"
+                   "tex/latex/bibleref-lds/")
+             (base32
+              "0wqmpzml3yyhzv7bx5wkfl2ni0qinz0kjzdanh6rx0bczp29dlfh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bibleref-lds")
+    (synopsis
+     "Bible references, including scriptures of the Church of Jesus Christ of
+Latter Day Saints")
+    (description
+     "The package extends the @code{bibleref-mouth} package to support
+references to the scriptures of The Church of Jesus Christ of Latter-day
+Saints (LDS).")
+    (license license:lppl1.3+)))
+
+(define-public texlive-bibleref-mouth
+  (package
+    (name "texlive-bibleref-mouth")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bibleref-mouth/"
+                   "source/latex/bibleref-mouth/"
+                   "tex/latex/bibleref-mouth/")
+             (base32
+              "0dakbx8rnjs9yjnn1xal9y0bmh165lqhbjj3bns974vkyb7nla4m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bibleref-mouth")
+    (synopsis "Consistent formatting of @emph{Bible} references")
+    (description
+     "The package allows @emph{Bible} references to be formatted in
+a consistent way.  It is similar to the @code{bibleref} package, except that
+the formatting macros are all purely expandable --- that is, they are all
+implemented in TeX's mouth.  This means that they can be used in any
+expandable context, such as an argument to a @code{\\url} command.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-bibleref-parse
+  (package
+    (name "texlive-bibleref-parse")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bibleref-parse/"
+                   "tex/latex/bibleref-parse/")
+             (base32
+              "01jhic1idgjgv9hsx5gih4230krfqm8pc3j7f4kn22w2jnw7fs68")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bibleref-parse")
+    (synopsis "Specify @emph{Bible} passages in human-readable format")
+    (description
+     "The package parses @emph{Bible} passages that are given in human
+readable format.  It accepts a wide variety of formats.  This allows for
+a simpler and more convenient interface to the functionality of the
+@code{bibleref} package.")
     (license license:lppl1.3+)))
 
 (define-public texlive-bidihl
@@ -3145,6 +3387,214 @@ macros.")
 @file{bussproofs.sty}; specifically, it allows for typesetting of
 entire (sub)deductions.")
     (license license:lppl1.3c)))
+
+(define-public texlive-bxbase
+  (package
+    (name "texlive-bxbase")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxbase/" "tex/latex/bxbase/")
+             (base32
+              "19zhvwj55lihlj11mk322735z595al847wsg3p0s3a9zm17b0skk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxbase")
+    (synopsis "BX bundle base components")
+    (description
+     "The main purpose of this bundle is to serve as an underlying library for
+other packages created by the same author.  However @code{bxbase} package
+contains a few user-level commands and is of some use by itself.")
+    (license license:expat)))
+
+(define-public texlive-bxcjkjatype
+  (package
+    (name "texlive-bxcjkjatype")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxcjkjatype/"
+                   "tex/latex/bxcjkjatype/")
+             (base32
+              "1cnh1xdqcapahixzfxrrmadplkfrljh1vcdq7i3p4xdaclrbhzds")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxcjkjatype")
+    (synopsis "Typeset Japanese with pdfLaTeX and CJK")
+    (description
+     "The package provides a working configuration of the CJK package,
+suitable for Japanese typesetting of moderate quality.  Moreover, it
+facilitates use of the CJK package for pLaTeX users, by providing commands
+that are similar to those used by the pLaTeX kernel and some other packages
+used with it.")
+    (license license:expat)))
+
+(define-public texlive-bxghost
+  (package
+    (name "texlive-bxghost")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxghost/" "tex/latex/bxghost/")
+             (base32
+              "11hnnyd6h3r5fl9p23qj1zspwzgnamfah7xqj7l1prp6ygb322mn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxghost")
+    (synopsis "Ghost insertion for proper @code{xkanjiskip}")
+    (description
+     "The package provides two commands to help authors for documents in
+Japanese to insert proper @code{xkanjiskips}.  It supports LuaTeX, XeTeX,
+pTeX, upTeX, and ApTeX (pTeX-ng).")
+    (license license:expat)))
+
+(define-public texlive-bxjaholiday
+  (package
+    (name "texlive-bxjaholiday")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxjaholiday/"
+                   "tex/latex/bxjaholiday/")
+             (base32
+              "1n0h9g5lgaz00gn8wjai8w3pbg7bs02aaw7zi7h8l01i4lc8l1r1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxjaholiday")
+    (synopsis "Support for Japanese holidays")
+    (description
+     "This LaTeX package provides a command to convert dates to names of
+Japanese holidays.  Another command, converting dates to the day of the week
+in Japanese, is available as a free gift.")
+    (license license:expat)))
+
+(define-public texlive-bxjalipsum
+  (package
+    (name "texlive-bxjalipsum")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxjalipsum/"
+                   "tex/latex/bxjalipsum/")
+             (base32
+              "1d71l9mrqc2lwzri5p97rfy0rdvj6jv2jpfm10grfpbwpln7big8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxjalipsum")
+    (synopsis "Dummy text in Japanese")
+    (description
+     "This package enables users to print some Japanese text that can be used
+as dummy text.  It is a Japanese counterpart of the @code{lipsum} package.
+Since there is no well-known nonsense text like Lipsum in the Japanese
+language, the package uses some real text in public domain.")
+    (license license:expat)))
+
+(define-public texlive-bxjaprnind
+  (package
+    (name "texlive-bxjaprnind")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxjaprnind/"
+                   "tex/latex/bxjaprnind/")
+             (base32
+              "0j2k06y63c7dgpcflrfrjy82g2746fnmpf8dk445lbqkbn1jypr5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxjaprnind")
+    (synopsis "Adjust the position of parentheses at paragraph head")
+    (description
+     "In Japanese typesetting, opening parentheses placed at the beginning of
+paragraphs or lines are treated specially.  This package adjusts the position
+of parentheses accordingly.")
+    (license license:expat)))
+
+(define-public texlive-bxjatoucs
+  (package
+    (name "texlive-bxjatoucs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxjatoucs/"
+                   "fonts/tfm/public/bxjatoucs/"
+                   "tex/latex/bxjatoucs/")
+             (base32
+              "1032lfp9qy4arzy06s5hkqlva7y182763wxfdql93yn68hcn85vd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxjatoucs")
+    (synopsis "Convert Japanese character code to Unicode")
+    (description
+     "This package is meant for macro or package developers: it provides
+function-like macros that convert a character code value in one of several
+Japanese encodings to a Unicode value.  Supported source encodings are:
+ISO-2022-JP (jis), EUC-JP (euc), Shift_JIS (sjis), and the Adobe-Japan1 glyph
+set.")
+    (license license:expat)))
+
+(define-public texlive-bxjscls
+  (package
+    (name "texlive-bxjscls")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxjscls/" "source/latex/bxjscls/"
+                   "tex/latex/bxjscls/")
+             (base32
+              "0bm9ab1j949v3ygnml8w0isx7yydq6jfq4ws3i0pf1rhs56m6rm0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxjscls")
+    (synopsis "Japanese document class collection for all major engines")
+    (description
+     "This package provides an extended version of the Japanese document class
+collection provided by @code{jsclasses}.  While the original version supports
+only pLaTeX and upLaTeX, the extended version also supports pdfLaTeX, XeLaTeX
+and LuaLaTeX, with the aid of suitable packages that provide capability of
+Japanese typesetting.")
+    (license license:bsd-2)))
+
+(define-public texlive-bxorigcapt
+  (package
+    (name "texlive-bxorigcapt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxorigcapt/"
+                   "tex/latex/bxorigcapt/")
+             (base32
+              "1gj61hjmyxsbfkrs1sh604b6dfl00kp39fcamlfzb8s197wsl9fv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxorigcapt")
+    (synopsis "Retain the original caption names when using Babel")
+    (description
+     "This package forces the caption names declared by the document class in
+use to be used as the caption names for a specific language introduced by the
+Babel package.")
+    (license license:expat)))
+
+(define-public texlive-bxwareki
+  (package
+    (name "texlive-bxwareki")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bxwareki/" "tex/latex/bxwareki/")
+             (base32
+              "0qy1nsxi8ihhxdz5grp3nymsm2lfj5gf6wmky30fxizxya92ml2b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bxwareki")
+    (synopsis "Convert dates from Gregorian to Japanese calender")
+    (description
+     "This LaTeX package provides commands to convert from the Gregorian
+calendar to the Japanese rendering of the Japanese calendar.  You can choose
+whether the numbers are written in Western numerals or kanji numerals.  Note
+that the package only deals with dates in the year 1873 or later, where the
+Japanese calendar is really a Gregorian calendar with a different notation of
+years.")
+    (license license:expat)))
 
 (define-public texlive-bytefield
   (package
@@ -3803,6 +4253,27 @@ privileges, a run without arguments should result in a complete setup of
 Ghostscript.")
     (license license:gpl3)))
 
+(define-public texlive-cjk-ko
+  (package
+    (name "texlive-cjk-ko")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cjk-ko/" "tex/latex/cjk-ko/")
+             (base32
+              "0z94rrbr56kybvxx37hpncc0rj4v4i44kyb9nc42nb7854y8zl0a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-cjk))
+    (home-page "https://ctan.org/pkg/cjk-ko")
+    (synopsis "Extension of the CJK package for Korean typesetting")
+    (description
+     "The package supports typesetting UTF-8-encoded modern Korean documents
+with the help of the LaTeX2e CJK package.  It provides some enhanced features
+focused on Korean typesetting culture, one of them being allowing line-break
+between Latin and CJK characters.")
+    (license (list license:gpl3+ license:lppl license:public-domain))))
+
 (define-public texlive-cjkpunct
   (package
     (name "texlive-cjkpunct")
@@ -4134,6 +4605,27 @@ systems of continued equalities (or inequalities).  Several variant layouts of
 the equalities are provided, and the user may define their own.")
     (license license:lppl1.3+)))
 
+(define-public texlive-convbkmk
+  (package
+    (name "texlive-convbkmk")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/convbkmk/" "scripts/convbkmk/")
+             (base32
+              "0w4fm4az1smrw002sqjkiiz94x01z6jkrb0mf9wb8qxdwrxriql9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "convbkmk.rb")))
+    (inputs (list ruby))
+    (home-page "https://ctan.org/pkg/convbkmk")
+    (synopsis
+     "Correct pLaTeX/upLaTeX bookmarks in PDF created with @code{hyperref}")
+    (description
+     "The package provides a small Ruby script that corrects bookmarks in PDF
+files created by pLaTeX or upLaTeX, using @code{hyperref}.")
+    (license license:expat)))
+
 (define-public texlive-correctmathalign
   (package
     (name "texlive-correctmathalign")
@@ -4152,6 +4644,26 @@ the equalities are provided, and the user may define their own.")
      "This package realigns the horizontal spacing of the alignments in some
 mathematical environments.")
     (license license:bsd-2)))
+
+(define-public texlive-covington
+  (package
+    (name "texlive-covington")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/covington/"
+                   "tex/latex/covington/")
+             (base32
+              "0h47zgbiylnirwcjprh31q2n8g842qlhlddd733xn1zal3n5alsz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/covington")
+    (synopsis "LaTeX macros for Linguistics")
+    (description
+     "This package provides numerous minor LaTeX enhancements for linguistics,
+including multiple accents on the same letter, interline glosses (word-by-word
+translations), Discourse Representation Structures, and example numbering.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-crossrefenum
   (package
@@ -4423,6 +4935,56 @@ custom derivatives and differential operators.  The options follow
 a consistent naming scheme making them easy to use and understand.")
     (license license:lppl1.3+)))
 
+(define-public texlive-diadia
+  (package
+    (name "texlive-diadia")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/diadia/" "scripts/diadia/"
+                   "tex/latex/diadia/")
+             (base32
+              "1sjnjabgqsv6v45sffkkzm78fnx89vmk836dajsvck5pd5nvkzxv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "diadia.lua")))
+    (home-page "https://ctan.org/pkg/diadia")
+    (synopsis "Package to keep a diabetes diary")
+    (description
+     "The @code{diadia} package allows you to keep a diabetes diary.  Usually,
+this means keeping record of certain medical values like blood sugar, blood
+pressure, pulse or weight.  It might also include other medical,
+pharmaceutical or nutritional data (HbA1c, insulin doses, carbohydrate units).
+
+The @code{diadia} package supports all of this plus more --- simply by adding
+more columns to the data file!  It is able to evaluate the data file and
+typesets formatted tables and derived plots.  Furthermore, it supports
+medication charts and info boxes.")
+    (license license:lppl)))
+
+(define-public texlive-diagbox
+  (package
+    (name "texlive-diagbox")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/diagbox/" "source/latex/diagbox/"
+                   "tex/latex/diagbox/")
+             (base32
+              "0zr7ih8jr56j727gf3l1q87rlrqn3zfz8cm7hs2q5l1f3y1gmcgh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/diagbox")
+    (synopsis "Table heads with diagonal lines")
+    (description
+     "The package's principal command, @code{\\diagbox}, takes two
+arguments (texts for the slash-separated parts of the box), and an optional
+argument with which the direction the slash will go, the box dimensions, etc.,
+may be controlled.  The package also provides @code{\\slashbox} and
+@code{\\backslashbox} commands for compatibility with the now removed slashbox
+package, which it supersedes.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-diffcoeff
   (package
     (name "texlive-diffcoeff")
@@ -4643,6 +5205,29 @@ such lists.  Applications in mind belonged to LaTeX, but the package should
 work with other formats as well.")
     (license license:lppl1.3+)))
 
+(define-public texlive-dramatist
+  (package
+    (name "texlive-dramatist")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/dramatist/"
+                   "source/latex/dramatist/"
+                   "tex/latex/dramatist/")
+             (base32
+              "17x10jaa7f9rnqfrnvgw225n5ypqrmacbpsfpl5zdhx9abbjh793")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dramatist")
+    (synopsis "Typeset dramas, both in verse and in prose")
+    (description
+     "This package is intended for typesetting drama of any length.  It
+provides two environments for typesetting dialogues in prose or in verse; new
+document divisions corresponding to acts and scenes; macros that control the
+appearance of characters and stage directions; and automatic generation of
+a ``dramatis personae'' list.")
+    (license license:gpl3+)))
+
 (define-public texlive-drawmatrix
   (package
     (name "texlive-drawmatrix")
@@ -4729,6 +5314,25 @@ responses and DFTs, while the package DSPBlocks (@file{dspblocks.sty})
 supports DSP block diagrams.")
     (license license:lppl)))
 
+(define-public texlive-dvgloss
+  (package
+    (name "texlive-dvgloss")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/dvgloss/" "source/latex/dvgloss/"
+                   "tex/latex/dvgloss/")
+             (base32
+              "1fs5ghbyl3qhg1v0iljjqn723a93m4l7f873h3h81pcga75mng4s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dvgloss")
+    (synopsis "Facilities for setting interlinear glossed text")
+    (description
+     "The package provides extensible macros for setting interlinear glossed
+text --- useful, for instance, for typing linguistics papers.")
+    (license license:lppl)))
+
 (define-public texlive-dyntree
   (package
     (name "texlive-dyntree")
@@ -4793,6 +5397,25 @@ Gaulle (now deceased), under a free licence.  It replaces the old full
 to the PGF mathematical engine.")
     (license license:lppl1.3+)))
 
+(define-public texlive-ecltree
+  (package
+    (name "texlive-ecltree")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ecltree/" "tex/latex/ecltree/")
+             (base32
+              "0ki5zzpl8dkz7zwyccmsxfnfq7vl5vlx3gi1py64mgqxfxp0rivw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ecltree")
+    (synopsis "Trees using Epic and Eepic macros")
+    (description
+     "The package recursively draws trees: each subtree is defined in
+a @code{bundle} environment, with a set of leaves described by @code{\\chunk}
+macros.  A chunk may have a @code{bundle} environment inside it.")
+    (license license:lppl)))
+
 (define-public texlive-econometrics
   (package
     (name "texlive-econometrics")
@@ -4816,6 +5439,27 @@ letters statistical distributions constants and symbols matrix operators and
 statistical operators.")
     (license license:lppl1.3+)))
 
+(define-public texlive-edfnotes
+  (package
+    (name "texlive-edfnotes")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/edfnotes/"
+                   "source/latex/edfnotes/"
+                   "tex/latex/edfnotes/")
+             (base32
+              "074db5fanasjzk7clj0l4ka3x1qpmvczwxix0l2v6sjjmyb4xfz4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/edfnotes")
+    (synopsis "Critical annotations to footnotes with @code{ednotes}")
+    (description
+     "The package modifies the annotation commands and label-test mechanism of
+the ednotes package so that critical notes appear on the pages and in the
+order that one would expect.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-edmac
   (package
     (name "texlive-edmac")
@@ -4834,6 +5478,48 @@ statistical operators.")
      "This is the type example package for typesetting scholarly critical
 editions.")
     (license license:gpl2)))
+
+(define-public texlive-eledform
+  (package
+    (name "texlive-eledform")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/eledform/"
+                   "source/latex/eledform/"
+                   "tex/latex/eledform/")
+             (base32
+              "1sslbwabzpvx314bfmr6gy1p8nrh89v5mnkgdcby9w42hnfqiw2n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/eledform")
+    (synopsis "Define textual variants")
+    (description
+     "The package provides commands to formalize textual variants in critical
+editions typeset using @code{eledmac}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-eledmac
+  (package
+    (name "texlive-eledmac")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/eledmac/" "source/latex/eledmac/"
+                   "tex/latex/eledmac/")
+             (base32
+              "1a4579g3rykcgbwjqbky260lx6x7mc41i6cqhi83anf3zilsii0r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/eledmac")
+    (synopsis "Typeset scholarly editions")
+    (description
+     "This package provides a package for typesetting scholarly critical editions,
+replacing the established @code{ledmac} package.  The package supports
+indexing by page and by line numbers, and simple @code{tabular}- and
+@code{array}-style environments.  The package is distributed with the related
+@code{eledpar} package.  The package is now superseded by @code{reledmac}.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-eltex
   (package
@@ -5135,6 +5821,25 @@ Japanese fonts under LuaTeX-ja.  It also makes full use of the priority
 feature, meeting the standards, and allows easy customisation.")
     (license license:expat)))
 
+(define-public texlive-expex
+  (package
+    (name "texlive-expex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/expex/" "tex/generic/expex/")
+             (base32
+              "0is4cdpsqycaw8xzc6x1gkg4ldk8v6a1i52qmxw13q8k10qh6b95")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/expex")
+    (synopsis "Linguistic examples and glosses, with reference capabilities")
+    (description
+     "The package provides macros for typesetting linguistic examples and
+glosses, with a refined mechanism for referencing examples and parts of
+examples.  The package can be used with LaTeX or with Plain TeX.")
+    (license license:lppl)))
+
 (define-public texlive-expose-expl3-dunkerque-2019
   (package
     (name "texlive-expose-expl3-dunkerque-2019")
@@ -5264,6 +5969,26 @@ high schools.  It provides commands to create the front page of the manual and
 the chapters.  Each chapter can consist of three sections: the lesson, the
 exercises and the activities.")
     (license license:lppl)))
+
+(define-public texlive-fduthesis
+  (package
+    (name "texlive-fduthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/fduthesis/"
+                   "source/latex/fduthesis/"
+                   "tex/latex/fduthesis/")
+             (base32
+              "1imgp79fa048nyvyjzfky1fzzmak4h4j7xa4168ak07qgr5gdq87")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fduthesis")
+    (synopsis "LaTeX thesis template for Fudan University")
+    (description
+     "This package is a LaTeX thesis template package for Fudan University.
+It can make it easy to write theses both in Chinese and English.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-filecontentsdef
   (package
@@ -5603,6 +6328,24 @@ possibility to override the standard behavior of norms, ...).")
 nets, diagrams, etc., very easily, in the LaTeX @code{picture} environment.")
     (license license:lppl)))
 
+(define-public texlive-gb4e
+  (package
+    (name "texlive-gb4e")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gb4e/" "tex/latex/gb4e/")
+             (base32
+              "1pi6n59v8vrrm2qaff8z28kwb0xa6nykgrfi9r0lxc8f1d2r5k7f")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gb4e")
+    (synopsis "Linguistic tools")
+    (description
+     "This package provides an environment for linguistic examples, tools for
+glosses, and various other goodies.")
+    (license license:lppl1.2+)))
+
 (define-public texlive-gene-logic
   (package
     (name "texlive-gene-logic")
@@ -5712,6 +6455,26 @@ package.  Its main features are:
      "This package provides Occitan language description file for
 Polyglossia.")
     (license license:lppl1.3+)))
+
+(define-public texlive-gmverse
+  (package
+    (name "texlive-gmverse")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gmverse/" "tex/latex/gmverse/")
+             (base32
+              "13vs1w9pfl4is5f5papwqqm83kmb17d4z7gv8nxkswnav9v5cl56")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gmverse")
+    (synopsis "Package for typesetting (short) poems")
+    (description
+     "This package provides a redefinition of the @code{verse} environment to
+make the @code{\\\\} command optional for line ends and to give it
+a possibility of optical centering and right-hanging alignment of lines broken
+because of length.")
+    (license license:lppl)))
 
 (define-public texlive-gost
   (package
@@ -5875,6 +6638,32 @@ directories.")
      "The output PDF file gives an amusing display, as the reader pages
 through it.")
     (license license:public-domain)))
+
+(define-public texlive-hanzibox
+  (package
+    (name "texlive-hanzibox")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/hanzibox/"
+                   "source/xelatex/hanzibox/"
+                   "tex/xelatex/hanzibox/")
+             (base32
+              "1bgbybzz5h79i2l3mbjxm11x9nsxm366c6d2mha9j5qabjghakya")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-ctex))
+    (home-page "https://ctan.org/pkg/hanzibox")
+    (synopsis
+     "Boxed Chinese characters with Pinyin above and translation below")
+    (description
+     "This is a LaTeX package written to simplify the input of Chinese with
+Hanyu Pinyin and translation.  Hanyu Pinyin is placed above Chinese with the
+@code{xpinyin} package, and the translation is placed below.  The package can
+be used as a utility for learning to write and pronounce Chinese characters,
+for Chinese character learning plans, presentations, exercise booklets and
+other documentation work.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-helmholtz-ellis-ji-notation
   (package
@@ -6231,6 +7020,24 @@ when using for open intervals.")
      "@emph{TeX for the Impatient} is a book on TeX, Plain TeX and Eplain.")
     (license license:fdl1.3+)))
 
+(define-public texlive-impatient-cn
+  (package
+    (name "texlive-impatient-cn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/plain/impatient-cn/")
+             (base32
+              "1pc20pb0las3slam1d9hmqigipmr6r98wwif12m33mm750vmq65i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/impatient")
+    (synopsis "Chinese translation of @emph{TeX for the Impatient} book")
+    (description
+     "@emph{TeX for the Impatient} is a book (of around 350 pages) on TeX,
+Plain TeX and Eplain.  This is its Chinese translation.")
+    (license license:fdl1.3+)))
+
 (define-public texlive-impatient-fr
   (package
     (name "texlive-impatient-fr")
@@ -6308,6 +7115,24 @@ conference proceedings.  The class uses the XePersian package.")
 installed.")
     (license license:lppl1.3c)))
 
+(define-public texlive-install-latex-guide-zh-cn
+  (package
+    (name "texlive-install-latex-guide-zh-cn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/install-latex-guide-zh-cn/")
+             (base32
+              "1mb6d92c7llz5cpkir4d1wf0l2yvmskl0kxgch9r5zjmb67qflin")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/install-latex-guide-zh-cn")
+    (synopsis "Short introduction to LaTeX installation written in Chinese")
+    (description
+     "This package will introduce the operations related to installing TeX
+Live and mainly introducing command line operations, in Chinese.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-interval
   (package
     (name "texlive-interval")
@@ -6383,6 +7208,25 @@ separators.  E.g., the input @samp{$1234.567890$} can be output as
 Finally, an @emph{e} starts the exponent of the number.  For example,
 @samp{$21e6$} may be output as @samp{$26\\times10\\,^@{6@}$}.")
     (license license:gpl3+)))
+
+(define-public texlive-ipaex
+  (package
+    (name "texlive-ipaex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ipaex/"
+                   "fonts/truetype/public/ipaex/")
+             (base32
+              "0zpvpdpry4ckgbs79hy0gv8cc98x9c0cizzdqzg2qkx8clp8y1bn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ipaex")
+    (synopsis "IPA (Japanese) fonts")
+    (description
+     "The fonts provide fixed-width glyphs for Kana and Kanji characters,
+proportional width glyphs for Western characters.")
+    (license license:ipa)))
 
 (define-public texlive-isomath
   (package
@@ -6498,6 +7342,90 @@ Notebook format to proper LaTeX so it gets included seamlessly, supporting
 text, LaTeX, images, etc.")
     (license license:asl2.0)))
 
+(define-public texlive-jura
+  (package
+    (name "texlive-jura")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jura/" "source/latex/jura/"
+                   "tex/latex/jura/")
+             (base32
+              "1lxss00mymcxljzaqmwj9zpy9cpc71a0a4g6bqrzvgspj506jdp7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jura")
+    (synopsis "Document class for German legal texts")
+    (description
+     "This package implements the standard layout for German term papers in law
+(one-and-half linespacing, 7 cm margins, etc.).  It includes @code{alphanum}
+that permits alphanumeric section numbering (e.g., @samp{A. Introduction};
+@samp{III. International Law}).")
+    (license license:gpl3+)))
+
+(define-public texlive-juraabbrev
+  (package
+    (name "texlive-juraabbrev")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/juraabbrev/"
+                   "makeindex/juraabbrev/"
+                   "source/latex/juraabbrev/"
+                   "tex/latex/juraabbrev/")
+             (base32
+              "0xybpc9j3x0gvq8hs5hrbb6ivilmp8ayjp6bq8xd7gsy7awag5d7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/juraabbrev")
+    (synopsis "Abbreviations for typesetting (German) juridical documents")
+    (description
+     "This package should be helpful for people working on (German) law.  It
+helps you to handle abbreviations and creates a list of those (pre-defined)
+abbreviations that have actually been used in the document.")
+    (license license:gpl3+)))
+
+(define-public texlive-juramisc
+  (package
+    (name "texlive-juramisc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/juramisc/" "tex/latex/juramisc/")
+             (base32
+              "0ka6gmlb0vlg0317ihjnlklvaajj4rrbi7c2iisngz69fgjm26iy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/juramisc")
+    (synopsis "Typesetting German juridical documents")
+    (description
+     "This package provides a collection of classes for typesetting court
+sentences, legal opinions, books and dissertations for German lawyers.
+A @code{jurabook} class is also provided, which may not yet be complete.")
+    (license license:lppl)))
+
+(define-public texlive-jurarsp
+  (package
+    (name "texlive-jurarsp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/jurarsp/" "doc/latex/jurarsp/"
+                   "source/latex/jurarsp/" "tex/latex/jurarsp/")
+             (base32
+              "03lwp5v6fmq2zhiwaf4qj52k44grzh119il4pdp2fvgl2q4a39sm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jurarsp")
+    (synopsis
+     "Citations of judgements and official documents in (German) juridical
+documents")
+    (description
+     "This package should be helpful for people working on (German) law.
+It (ab)uses BibTeX for citations of judgements and official documents.  For
+this purpose, a special BibTeX-style is provided.")
+    (license license:gpl3+)))
+
 (define-public texlive-karnaugh
   (package
     (name "texlive-karnaugh")
@@ -6581,6 +7509,91 @@ the Finnish language.  The manual covers most of the topics that a typical
 document author needs.  So it can be a useful guide for beginners as well as
 a reference manual for advanced users.")
     (license license:cc-by-sa4.0)))
+
+(define-public texlive-kotex-oblivoir
+  (package
+    (name "texlive-kotex-oblivoir")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/kotex-oblivoir/"
+                   "tex/latex/kotex-oblivoir/")
+             (base32
+              "0hq22jdzcg516zx26mkijpnk5i8gdj30lhjldly8plwmfznhzwwa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-kotex-utf texlive-memoir))
+    (home-page "https://ctan.org/pkg/kotex-oblivoir")
+    (synopsis "LaTeX document class for typesetting Korean documents")
+    (description
+     "The class is based on @code{memoir}, and is adapted to typesetting
+Korean documents.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-kotex-plain
+  (package
+    (name "texlive-kotex-plain")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/plain/kotex-plain/"
+                   "tex/plain/kotex-plain/")
+             (base32
+              "0r79cvm7iy1266yvrn60vwq9wjkgmzgfihbz9dqc84lif5q8kmnw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/kotex-plain")
+    (synopsis "Macros for typesetting Korean under Plain TeX")
+    (description
+     "The package provides macros for typesetting Hangul, the native alphabet
+of the Korean language, using Plain TeX.  Korean text should be encoded in
+UTF-8.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-kotex-utf
+  (package
+    (name "texlive-kotex-utf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/kotex-utf/"
+                   "tex/latex/kotex-utf/")
+             (base32
+              "1l3hlav7fihws2ly49fn994sc7mjcdwk3zp4xhkgvm0mqjbxzxzz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-cjk-ko))
+    (home-page "https://ctan.org/pkg/kotex-utf")
+    (synopsis "Typeset Hangul, coded in UTF-8")
+    (description
+     "The package typesets Hangul, which is the native alphabet of the Korean
+language; input Korean text should be encoded in UTF-8.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-kotex-utils
+  (package
+    (name "texlive-kotex-utils")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/kotex-utils/"
+                   "makeindex/kotex-utils/"
+                   "scripts/kotex-utils/")
+             (base32
+              "01qmr50fr3i2gzgjyj69jgj4czf62s22z58kja6hbqygczc1jba3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:link-scripts
+           #~(list "jamo-normalize.pl" "komkindex.pl" "ttf2kotexfont.pl")))
+    (inputs (list perl))
+    (propagated-inputs (list texlive-kotex-utf))
+    (home-page "https://ctan.org/pkg/kotex-utils")
+    (synopsis "Utility scripts and support files for typesetting Korean")
+    (description
+     "The bundle provides scripts and support files for index generation in
+Korean language typesetting.")
+    (license license:lppl)))
 
 (define-public texlive-knuth-errata
   (package
@@ -6809,6 +7822,50 @@ and commands.")
     (description "This is LaTeX for Omega and Aleph.")
     (license license:lppl1.0+)))
 
+(define-public texlive-langnames
+  (package
+    (name "texlive-langnames")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/langnames/"
+                   "source/latex/langnames/"
+                   "tex/latex/langnames/")
+             (base32
+              "0fi2xfy33d970g8wdnzasqdzgjcj7rkss9y7pzsp89z1hij3d1z2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/langnames")
+    (synopsis "Name languages and their genetic affiliations consistently")
+    (description
+     "This package attempts to make the typing of language names, codes, and
+families slightly easier by providing macros to access pre-defined
+language --- code --- family combinations from two important databases, as
+well as the possibility to create new combinations.  It may be particularly
+useful for large, collaborative projects as well as typologically minded ones
+with a variety of language examples.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-latex-notes-zh-cn
+  (package
+    (name "texlive-latex-notes-zh-cn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/latex-notes-zh-cn/")
+             (base32
+              "0w9rmd7b5fnfvix653n9vbnn1k8yxlaaak79ipvm8p53dx75xfxd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/latex-notes-zh-cn")
+    (synopsis "Chinese Introduction to TeX and LaTeX")
+    (description
+     "The document is an introduction to TeX and LaTeX, in Chinese.  It covers
+basic text typesetting, mathematics, graphics, tables, Chinese language &
+fonts, and some miscellaneous features (hyperlinks, long documents,
+bibliographies, indexes and page layout).")
+    (license license:lppl1.3+)))
+
 (define-public texlive-latex2e-help-texinfo-fr
   (package
     (name "texlive-latex2e-help-texinfo-fr")
@@ -6909,6 +7966,29 @@ Interlingua that can be used as a dummy text: @emph{Fundamento de
 intelligentia}.")
     (license license:public-domain)))
 
+(define-public texlive-ledmac
+  (package
+    (name "texlive-ledmac")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ledmac/" "source/latex/ledmac/"
+                   "tex/latex/ledmac/")
+             (base32
+              "03b23rkhdhvr0rbmp687p76mlq68crsfyh67frxbnh11vccmfgnc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ledmac")
+    (synopsis "Typeset scholarly editions")
+    (description
+     "This package provides a macro package for typesetting scholarly critical
+editions.  The @code{ledmac} package is a LaTeX port of the Plain TeX EDMAC
+macros.  It supports indexing by page and line number and simple
+@code{tabular}- and @code{array}-style environments.  The package is
+distributed with the related @code{ledpar} and @code{ledarab} packages.  The
+package is now superseded by @code{reledmac}.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-letgut
   (package
     (name "texlive-letgut")
@@ -6961,6 +8041,44 @@ with the symbols.  While it is possible to set arrows over longer strings of
 symbols, the focus lies on single characters.")
     (license license:lppl1.3+)))
 
+(define-public texlive-lexikon
+  (package
+    (name "texlive-lexikon")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lexikon/" "tex/latex/lexikon/")
+             (base32
+              "0x2h8w3cchzr2lvx5xqs1fn01y7b4lqkky85dard223w2r1dn22m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lexikon")
+    (synopsis "Macros for a two language dictionary")
+    (description "This package provides macros for a two language
+dictionary.")
+    (license license:lppl)))
+
+(define-public texlive-lexref
+  (package
+    (name "texlive-lexref")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lexref/" "tex/latex/lexref/")
+             (base32
+              "0562vjn0vvjsqfi2jqy1yp6mqi8nrs25yc9nr1zc950q421w0vrb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lexref")
+    (synopsis "Convenient and uniform references to legal provisions")
+    (description
+     "The package is aimed at continental lawyers (especially those in
+Switzerland and Germany), allowing the user to make references to legal
+provisions conveniently and uniformly.  The package also allows the user to
+add cited Acts to a nomenclature list (automatically), and to build specific
+indexes for each cited Act.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-lie-hasse
   (package
     (name "texlive-lie-hasse")
@@ -6980,6 +8098,46 @@ symbols, the focus lies on single characters.")
 simple roots of any complex simple Lie algebra.  It uses the Dynkin diagrams
 package @code{dynkin-diagrams}.")
     (license license:lppl1.3c)))
+
+(define-public texlive-ling-macros
+  (package
+    (name "texlive-ling-macros")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ling-macros/"
+                   "tex/latex/ling-macros/")
+             (base32
+              "0q5l9h5xkd9gkpx2g5inzkcsssqvdicv05r8xvlmmx41mf1ikc88")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ling-macros")
+    (synopsis "Macros for typesetting formal linguistics")
+    (description
+     "This package contains macros for typesetting glosses and formal
+expressions.  It covers a range of subfields in formal linguistics.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-linguex
+  (package
+    (name "texlive-linguex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/linguex/" "tex/latex/linguex/")
+             (base32
+              "0w2rxvjljrl4b7s1dr7k2vk5nifq0zgmjlx68ajpsihjnzal7k8g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/linguex")
+    (synopsis "Format linguists' examples")
+    (description
+     "This bundle comprises two packages: the @code{linguex} package
+facilitates the formatting of linguist examples, automatically taking care of
+example numbering, indentations, indexed brackets, and the @samp{*} in
+grammaticality judgments.  The @code{ps-trees} package provides linguistic
+trees.")
+    (license license:lppl)))
 
 (define-public texlive-lithuanian
   (package
@@ -7010,6 +8168,29 @@ encoding;
 and @file{latin7.def}.
 @end itemize")
     (license license:lppl1.3c)))
+
+(define-public texlive-liturg
+  (package
+    (name "texlive-liturg")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/liturg/" "source/latex/liturg/"
+                   "tex/latex/liturg/")
+             (base32
+              "1nmcz7zg27aasczdv3p6ilsmy66cbfjg9yri45d0pml7m7c56din")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    ;; The "liturg.ins" provided by the package does not generate anything.
+    ;; As a consequence, there's nothing to build.
+    (arguments (list #:build-targets #~'()))
+    (home-page "https://ctan.org/pkg/liturg")
+    (synopsis "Support for typesetting Catholic liturgical texts")
+    (description
+     "The packages offers simple macros for typesetting Catholic liturgical
+texts, particularly @code{Missal} and @code{Breviary} texts.  The package
+assumes availability of Latin typesetting packages.")
+    (license license:lppl)))
 
 (define-public texlive-logicproof
   (package
@@ -7149,6 +8330,25 @@ Proof, and Logic} by Dave Barker-Plummer, Jon Barwise, and John Etchemendy.")
      "This package includes the source files, PostScript and PDF files of the
 Bulgarian translation of the @emph{Short Introduction to LaTeX2e}.")
     (license license:public-domain)))
+
+(define-public texlive-lshort-chinese
+  (package
+    (name "texlive-lshort-chinese")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lshort-chinese/")
+             (base32
+              "0455mdpcv3yg4m5vrbdp47j7mcwi43mvsy2p9clp7794agaf2ir6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lshort-zh-cn")
+    (synopsis "Introduction to LaTeX, in Chinese")
+    (description
+     "This package provides a Chinese edition of the @emph{(Not so) short
+introduction to LaTeX2e}, with additional information of typesetting Chinese
+language.")
+    (license license:fdl1.3+)))
 
 (define-public texlive-lshort-czech
   (package
@@ -7294,9 +8494,44 @@ to LaTeX2e: LaTeX2e-Kurzbeschreibung}.")
     (home-page "https://ctan.org/pkg/lshort-italian")
     (synopsis "Introduction to LaTeX in Italian")
     (description
-     "This is the Italian translation of the @emph{(Not so} Short Introduction
+     "This is the Italian translation of the @emph{(Not so) Short Introduction
 to LaTeX2e.}")
     (license license:gpl3+)))
+
+(define-public texlive-lshort-japanese
+  (package
+    (name "texlive-lshort-japanese")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lshort-japanese/")
+             (base32
+              "0mfxig980jyzhay1i83d69p294hgbr92v3kk2a4z8ca3fwzy8w74")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lshort-japanese")
+    (synopsis "Japanese version of the @emph{Short Introduction to LaTeX2e}")
+    (description "This is the Japanese version of the @emph{(Not so) Short
+Introduction to LaTeX2e}.")
+    (license license:gpl3+)))
+
+(define-public texlive-lshort-korean
+  (package
+    (name "texlive-lshort-korean")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lshort-korean/")
+             (base32
+              "07660lrss97hswmis7rgc419h05mgrvsfrrwmnrwk5yn97flhhqd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lshort-korean")
+    (synopsis "Korean introduction to LaTeX")
+    (description
+     "This package provides a translation of Oetiker's original @emph{(Not so)
+short introduction to LaTeX2e}.")
+    (license license:fdl1.3+)))
 
 (define-public texlive-lshort-mongol
   (package
@@ -7946,6 +9181,26 @@ styles that ease the declaration of memory graphs.  It is intended for graphs
 that represent the memory of a computer program during its execution.")
     (license license:lppl1.3+)))
 
+(define-public texlive-mendex-doc
+  (package
+    (name "texlive-mendex-doc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/mendex-doc/"
+                   "makeindex/mendex-doc/"
+                   "source/latex/mendex-doc/")
+             (base32
+              "096b1v9zzl3qm189paaxz16z4a1xgcj7l2bhdgvl2wqshsz9lx4p")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mendex-doc")
+    (synopsis "Documentation for Mendex index processor")
+    (description
+     "This package provides documentation for Mendex (Japanese index
+processor).")
+    (license license:bsd-3)))
+
 (define-public texlive-messagepassing
   (package
     (name "texlive-messagepassing")
@@ -8008,6 +9263,26 @@ people's fonts.")
 ranging from very simple (lines and circles) to rather intricate (uncommon
 geometric transformations, fractals, bitmap, etc).")
     (license license:gpl1+)))
+
+(define-public texlive-metrix
+  (package
+    (name "texlive-metrix")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/metrix/" "source/latex/metrix/"
+                   "tex/latex/metrix/")
+             (base32
+              "185w7pgil8zix0czvd69l5pv6pcjc0n4nfbllm5v5mzr31sc0k5j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/metrix")
+    (synopsis "Typeset metric marks for Latin text")
+    (description
+     "The package may be used to type the prosodics/metrics of (Latin) verse;
+it provides macros to typeset the symbols standing alone, and in combination
+with symbols, giving automatic alignment.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-mex
   (package
@@ -8337,6 +9612,55 @@ Form (EBNF) notation.")
     (description "This style file provides macros for named tensor notation.")
     (license license:expat)))
 
+(define-public texlive-nanicolle
+  (package
+    (name "texlive-nanicolle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/nanicolle/"
+                   "tex/xelatex/nanicolle/")
+             (base32
+              "0lzcsmy4iw0ch3w1g3h5b23hkzspi5q2gs406l4cihfmf30yiadk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nanicolle")
+    (synopsis "Typesetting herbarium specimen labels")
+    (description
+     "This package provides a LaTeX class @file{nanicolle.cls} for typesetting
+collection labels and identification labels in Chinese style or in western
+style for plant herbarium specimens.  So far, documents using this class can
+only be compiled with XeLaTeX.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-nanumtype1
+  (package
+    (name "texlive-nanumtype1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/nanumtype1/"
+                   "fonts/afm/public/nanumtype1/"
+                   "fonts/map/dvips/nanumtype1/"
+                   "fonts/tfm/public/nanumtype1/"
+                   "fonts/type1/public/nanumtype1/"
+                   "fonts/vf/public/nanumtype1/"
+                   "tex/latex/nanumtype1/")
+             (base32
+              "0n7dbhxa186x7f2ql8kjr2bn425vlhswl2m5n2n3iklfam9bmf6k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nanumtype1")
+    (synopsis "Type1 subfonts of Nanum Korean fonts")
+    (description
+     "Nanum is a unicode font designed especially for Korean-language script.
+The font was designed by Sandoll Communication and Fontrix; it includes the
+sans serif (gothic), serif (myeongjo), pen script and brush script typefaces.
+The package provides Type1 subfonts converted from Nanum Myeongjo (Regular and
+@code{ExtraBold)} and Nanum Gothic (Regular and Bold) OTFs.  C70, LUC, T1, and
+TS1 font definition files are also provided.")
+    (license license:silofl1.1)))
+
 (define-public texlive-natded
   (package
     (name "texlive-natded")
@@ -8442,6 +9766,28 @@ the columns; tools to color rows and columns with a good PDF result; blocks of
 cells; etc.")
     (license license:lppl1.3+)))
 
+(define-public texlive-nnext
+  (package
+    (name "texlive-nnext")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/nnext/" "source/latex/nnext/"
+                   "tex/latex/nnext/")
+             (base32
+              "0hh2kn4ghnxv9l0xfkh0c0bkflmq5qwnc24y0jm1djjwrnyg1y2r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nnext")
+    (synopsis "Extension for the @code{gb4e} package")
+    (description
+     "This is an add-on for the @code{gb4e} package used in linguistics.  It
+implements the @code{\\Next}, @code{\\NNext}, @code{\\Last}, and
+@code{\\LLast} commands from the @code{linguex} package or the @code{\\nextx},
+@code{\\anextx}, @code{\\lastx}, @code{\\blastx}, and @code{\\bblastx}
+commands from the @code{expex} package.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-nuc
   (package
     (name "texlive-nuc")
@@ -8462,6 +9808,26 @@ nuclear physics and engineering applications.  Isotopes which have Z with more
 digits than A require special spacing to appear properly; this spacing is
 supported in the package.")
     (license license:lppl)))
+
+(define-public texlive-njurepo
+  (package
+    (name "texlive-njurepo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/njurepo/" "source/latex/njurepo/"
+                   "tex/latex/njurepo/")
+             (base32
+              "03dli7kk1h8kycbj83h2gy434zl6wvj4xz0lli91b1h8k59i8fv4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/njurepo")
+    (synopsis "Reports for Nanjing University")
+    (description
+     "This LaTeX document class provides a thesis template for Nanjing
+University in order to make it easy to write experiment reports and homework
+for the bachelor's curriculum.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-nucleardata
   (package
@@ -8816,6 +10182,48 @@ provided.")
 systems that use the Myanmar script.")
     (license license:silofl1.1)))
 
+(define-public texlive-parallel
+  (package
+    (name "texlive-parallel")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/parallel/"
+                   "source/latex/parallel/"
+                   "tex/latex/parallel/")
+             (base32
+              "14gca28ph90vhsliy5g8jc6fd87igni1wkiy41jrp33qhjiz94qa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/parallel")
+    (synopsis "Typeset parallel texts")
+    (description
+     "This package provides a @code{parallel} environment which allows two
+potentially different texts to be typeset in two columns, while maintaining
+alignment.  The two columns may be on the same page, or on facing pages.  This
+arrangement of text is commonly used when typesetting translations, but it can
+have value when comparing any two texts.")
+    (license license:lppl)))
+
+(define-public texlive-parrun
+  (package
+    (name "texlive-parrun")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/parrun/" "source/latex/parrun/"
+                   "tex/latex/parrun/")
+             (base32
+              "1cfqvsda505pxwyjv6k197lg464y4njr2j65sghvzk7qp3i6vq11")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/parrun")
+    (synopsis "Typesets (two) streams of text running parallel")
+    (description
+     "This package can be used for typesetting translated text and the
+original source, parallel on the same page, one above the other.")
+    (license license:lppl)))
+
 (define-public texlive-pascaltriangle
   (package
     (name "texlive-pascaltriangle")
@@ -8957,6 +10365,24 @@ from true constants, e.g. the fine structure constant, have been calculated
 using the accepted values of the fundamental constants.")
     (license license:lppl1.3c)))
 
+(define-public texlive-phonrule
+  (package
+    (name "texlive-phonrule")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/phonrule/" "tex/latex/phonrule/")
+             (base32
+              "09nhlhqgq2af2p6rn5r0q8ccn9a2qq35znn5j4z2kjq744wbzjih")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/phonrule")
+    (synopsis "Typeset linear phonological rules")
+    (description
+     "The package provides macros for typesetting phonological rules like
+those in @emph{Sound Pattern of English} (Chomsky and Halle 1968).")
+    (license license:lppl1.0+)))
+
 (define-public texlive-physics2
   (package
     (name "texlive-physics2")
@@ -9027,6 +10453,44 @@ It is designed as a tool that is easy to use, with a lean syntax, native to
 LaTeX, and directly supporting PDF output format.")
     (license license:lppl1.3c)))
 
+(define-public texlive-plari
+  (package
+    (name "texlive-plari")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/plari/" "source/latex/plari/"
+                   "tex/latex/plari/")
+             (base32
+              "07g4rn4nn5wvwqd39s0xnn35ijkamhzxi12icnha8vb0b564jwq8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/plari")
+    (synopsis "Typesetting stageplay scripts")
+    (description
+     "Plari is a @code{report}-alike class, without section headings, and with
+paragraphs vertically separated rather than indented.")
+    (license license:gpl3+)))
+
+(define-public texlive-play
+  (package
+    (name "texlive-play")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/play/" "source/latex/play/"
+                   "tex/latex/play/")
+             (base32
+              "1v1d8hfng6s8x8spzrzhhkgg36zay9jvfna9md1mh4ijlipnzyma")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/play")
+    (synopsis "Typeset drama using LaTeX")
+    (description
+     "This package provides a class and style file that supports the
+typesetting of plays, including options for line numbering.")
+    (license license:lppl)))
+
 (define-public texlive-pm-isomath
   (package
     (name "texlive-pm-isomath")
@@ -9049,6 +10513,117 @@ elegant solutions, it does not load any math alphabet, since pdfLaTeX can use
 only a maximum of such alphabets.  The necessary user macros are defined for
 typsetting common math symbols that require special ISO treatment.")
     (license license:lppl1.3c)))
+
+(define-public texlive-pmhanguljamo
+  (package
+    (name "texlive-pmhanguljamo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pmhanguljamo/"
+                   "tex/latex/pmhanguljamo/")
+             (base32
+              "1k8cvzmrrpb6hkkjczfq4mad71450pappf68jdlf1vmg3qb0f9z3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pmhanguljamo")
+    (synopsis "Poor man's Hangul Jamo input method")
+    (description
+     "This package provides a Hangul transliteration input method that allows
+to typeset Korean letters (Hangul) using the proper fonts. The use of XeLaTeX
+is recommended.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-poemscol
+  (package
+    (name "texlive-poemscol")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/poemscol/"
+                   "source/latex/poemscol/"
+                   "tex/latex/poemscol/")
+             (base32
+              "0hz6zsqcvlzcccxywwzwlpp9gsv41g4hc88481vmj313bys77spd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/poemscol")
+    (synopsis "Typesetting critical editions of poetry")
+    (description
+     "The package offers LaTeX macros for typesetting critical editions of
+poetry.  Its features include automatic linenumbering, generation of separate
+endnotes sections for emendations, textual collations, and explanatory notes,
+special marking for cases in which page breaks occur during stanza breaks,
+running headers of the form @samp{Notes to pp.@: xx-yy} for the notes
+sections, index of titles and first lines, and automatic generation of a table
+of contents.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-poetry
+  (package
+    (name "texlive-poetry")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/poetry/" "source/latex/poetry/"
+                   "tex/latex/poetry/")
+             (base32
+              "1z262am0qh6h1qqf36hxj2lc7d5pr4r65yx8ysrydh0sijccgild")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/poetry")
+    (synopsis "Facilities for typesetting poetry and poetical structure")
+    (description
+     "This package provides some macros and general doodads for typesetting poetry.
+There is, of course, already the excellent @code{verse} package, and the
+@code{poetrytex} package provides some extra functionality on top of it.  But
+@code{poetry} provides much of the same functionality in a bit of a different
+way, and with a few additional abilities, such as facilities for a list of
+poems, an index of first lines, and some structural commands.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-poetrytex
+  (package
+    (name "texlive-poetrytex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/poetrytex/"
+                   "source/latex/poetrytex/"
+                   "tex/latex/poetrytex/")
+             (base32
+              "1y78zd1hd3z1901x6mc6q0mw4rgj3qcqhnjn34zix11r0gn4b2jr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:tex-format "latex"
+           #:phases
+           #~(modify-phases %standard-phases
+               ;; Replace "\code{...}" with "\texttt{...}" (which is the alias
+               ;; chosen in the documentation) in order to prevent a "Command
+               ;; \code already defined" error.
+               (add-after 'unpack 'fix-documentation-source
+                 (lambda _
+                   (substitute* "source/latex/poetrytex/poetrytex.dtx"
+                     (("\\\\newcommand\\*\\\\code\\[1\\].*") "")
+                     (("\\\\code\\{") "\\texttt{")))))))
+    (native-inputs
+     (list (texlive-updmap.cfg
+            (list texlive-etoolbox
+                  texlive-fancyvrb
+                  texlive-framed
+                  texlive-hologo
+                  texlive-hypdoc
+                  texlive-parskip
+                  texlive-tipa
+                  texlive-tocloft))))
+    (home-page "https://ctan.org/pkg/poetrytex")
+    (synopsis "Typeset anthologies of poetry")
+    (description
+     "The package is designed to aid in the management and formatting of
+anthologies of poetry and other writings; it does not concern itself with
+actually typesetting the verse itself.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-polexpr
   (package
@@ -9317,6 +10892,25 @@ modern eyes.")
 @code{listings} package.")
     (license license:bsd-3)))
 
+(define-public texlive-qobitree
+  (package
+    (name "texlive-qobitree")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/qobitree/" "tex/latex/qobitree/")
+             (base32
+              "1pzy5i8fi37zhkpsrh179qd4gp8ahwk8s2gw6261kjjiqf6p6znc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/qobitree")
+    (synopsis "LaTeX macros for typesetting trees")
+    (description
+     "This package provides commands @code{\\branch} and @code{\\leaf} for
+specifying the elements of the tree; you build up your tree with those
+commands, and then issue the @code{\\tree} command to typeset the whole.")
+    (license license:lppl)))
+
 (define-public texlive-qsharp
   (package
     (name "texlive-qsharp")
@@ -9335,6 +10929,28 @@ modern eyes.")
      "The package provides syntax highlighting for the Q# language,
 a domain-specific language for quantum programming.")
     (license license:lppl1.3c)))
+
+(define-public texlive-qtree
+  (package
+    (name "texlive-qtree")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/qtree/" "tex/latex/qtree/")
+             (base32
+              "1gmwkm6400pcrjnq111bih7za0p45nx6gy4lksvgjhdcpnykbbla")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/qtree")
+    (synopsis "Draw tree structures")
+    (description
+     "The package offers support for drawing tree diagrams, and is especially
+suitable for linguistics use.  It allows trees to be specified in a simple
+bracket notation, automatically calculates branch sizes, and supports both
+DVI/PostScript and PDF output by use of @code{pict2e} facilities.  The package
+is a development of the existing @code{qobitree} package, offering a new front
+end.")
+    (license license:lppl)))
 
 (define-public texlive-rank-2-roots
   (package
@@ -9396,6 +11012,29 @@ notation.  This includes easy commands to denote Turing reductions, Turing
 functionals, c.e.@: sets, stagewise computations, forcing and syntactic
 classes.")
     (license license:public-domain)))
+
+(define-public texlive-reledmac
+  (package
+    (name "texlive-reledmac")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/reledmac/"
+                   "source/latex/reledmac/"
+                   "tex/latex/reledmac/")
+             (base32
+              "16nfibnjdasflskmxd23hxkapz788abfilwxm3vdj6djkznxq4sw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/reledmac")
+    (synopsis "Typeset scholarly editions")
+    (description
+     "This package provides a package for typesetting scholarly critical
+editions, replacing the established @code{ledmac} and @code{eledmac} packages.
+It supports indexing by page and by line numbers, and simple @code{tabular}-
+and @code{array}-style environments.  The package is distributed with the
+related @code{reledpar} package.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-resolsysteme
   (package
@@ -9518,6 +11157,48 @@ package solves the problem by extending ideas described in M. I. Grinchuk
 mathematical packages.")
     (license license:lppl1.3+)))
 
+(define-public texlive-rrgtrees
+  (package
+    (name "texlive-rrgtrees")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/rrgtrees/"
+                   "source/latex/rrgtrees/"
+                   "tex/latex/rrgtrees/")
+             (base32
+              "0h33q32pb1s8zv598aacdzfhpk2psrzxgxnav6am16cxfri60hpi")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/rrgtrees")
+    (synopsis
+     "Linguistic tree diagrams for Role and Reference Grammar (RRG) with LaTeX")
+    (description
+     "This package provides a set of LaTeX macros that makes it easy to
+produce linguistic tree diagrams suitable for Role and Reference
+Grammar (RRG).  This package allows the construction of trees with crossing
+lines, as is required by this theory for many languages.")
+    (license license:lppl)))
+
+(define-public texlive-rtklage
+  (package
+    (name "texlive-rtklage")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/rtklage/" "tex/latex/rtklage/")
+             (base32
+              "0p9z4dgh572n7j6b8vf8aqag8ybqw3xzsh5kab1czks2774gm7cq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ratex")
+    (synopsis "Package for German lawyers")
+    (description
+     "RATeX is a newly developed bundle of packages and classes provided for
+German lawyers.  Now in the early beginning it only contains @code{rtklage},
+a class to make lawsuits.")
+    (license license:lppl)))
+
 (define-public texlive-sankey
   (package
     (name "texlive-sankey")
@@ -9620,6 +11301,46 @@ with LaTeX and friends.")
 LaTeX documents.  This may be particularly useful for Math Teachers and IT
 specialists.")
     (license license:lppl1.3c)))
+
+(define-public texlive-screenplay
+  (package
+    (name "texlive-screenplay")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/screenplay/"
+                   "source/latex/screenplay/"
+                   "tex/latex/screenplay/")
+             (base32
+              "16vw7ikxblzlmamz0d95d0zj6vzhdg75w0q645sfh75pj7v6b1v0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/screenplay")
+    (synopsis "Class file to typeset screenplays")
+    (description
+     "The class implements the format recommended by the Academy of Motion
+Picture Arts and Sciences.")
+    (license license:gpl3+)))
+
+(define-public texlive-screenplay-pkg
+  (package
+    (name "texlive-screenplay-pkg")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/screenplay-pkg/"
+                   "tex/latex/screenplay-pkg/")
+             (base32
+              "07xl6631yjjx56whl1vl4mzdcn8k63i624lspxiw18ppfrxdh3an")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/screenplay-pkg")
+    (synopsis "Package version of the screenplay document class")
+    (description
+     "This package implements the tools of the @code{screenplay} document
+class in the form of a package so that screenplay fragments can be included
+within another document class.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-serbian-apostrophe
   (package
@@ -9759,6 +11480,25 @@ electrical and electronics engineers and graph theorists.")
      "The bundle provides a LaTeX package and a font (as Metafont source) for
 the shuffle product which is used in some part of mathematics and physics.")
     (license license:public-domain)))
+
+(define-public texlive-sides
+  (package
+    (name "texlive-sides")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sides/" "tex/latex/sides/")
+             (base32
+              "0lffwhb6px6f09f8jk6r9kvfh49dl5n0461b261mk2sr6fgyxrfz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sides")
+    (synopsis "LaTeX class for typesetting stage plays")
+    (description
+     "This is a LaTeX class for typesetting stage plays, based on the
+@code{plari} class.  It has been updated and several formatting changes have
+been made to it.")
+    (license license:gpl3+)))
 
 (define-public texlive-simplebnf
   (package
@@ -9952,6 +11692,25 @@ teachers) should find this package to be a real time saver.")
 can be adjusted with respect to relative position and format, and can be used
 in text and math mode.")
     (license license:cc-by4.0)))
+
+(define-public texlive-stage
+  (package
+    (name "texlive-stage")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/stage/" "source/latex/stage/"
+                   "tex/latex/stage/")
+             (base32
+              "0789mddzsadiw9fiasjzjdma0f9li8gddf8m9wy5jblnsl2asf5p")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/stage")
+    (synopsis "LaTeX class for stage plays")
+    (description
+     "@file{stage.cls} is a LaTeX class for creating plays of any length in
+a standard manuscript format for production and submission.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-stanli
   (package
@@ -10549,6 +12308,28 @@ TeXsis was originally developed for physicists, but others may also find it
 useful.  It is completely compatible with Plain TeX.")
     (license license:lppl)))
 
+(define-public texlive-textglos
+  (package
+    (name "texlive-textglos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/textglos/"
+                   "source/latex/textglos/"
+                   "tex/latex/textglos/")
+             (base32
+              "1jxx3wrwkmmm6ida3ih0yap57laflvsks8nv0395sv49xn7waxf0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/textglos")
+    (synopsis "Typeset and index linguistic gloss abbreviations")
+    (description
+     "The package provides a set of macros for in-line linguistic examples (as
+opposed to interlinear glossing, set apart from the main text).  It prevents
+hyphenated examples from breaking across lines and consistently formats
+phonemic examples, orthographic examples, and more.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-textgreek
   (package
     (name "texlive-textgreek")
@@ -10631,6 +12412,43 @@ documents and choose any (system wide) Thai fonts for typesetting in XeLaTeX.
 It also tries to appropriately justify paragraphs with no more external
 tools.")
     (license license:lppl1.3+)))
+
+(define-public texlive-thalie
+  (package
+    (name "texlive-thalie")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/thalie/" "tex/latex/thalie/")
+             (base32
+              "08dg91nr469s3x5c8njj0gpki1j89dji7ii9sw5l5ajd3pk8xbwv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/thalie")
+    (synopsis "Typeset drama plays")
+    (description
+     "The package provides tools to typeset drama plays.  It defines commands
+to introduce characters lines, to render stage directions, to divide a play
+into acts and scenes and to build the dramatis personae automatically.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-theatre
+  (package
+    (name "texlive-theatre")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/theatre/")
+             (base32
+              "1nhm56spqvryhmhwmzly939mzv5yv3398lh2lyfhf40rr02mzgi5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/theatre")
+    (synopsis "Sophisticated package for typesetting stage plays")
+    (description
+     "This package enables the user to typeset stage plays in a way that
+permits to create highly customized printouts for each actor.")
+    (license license:lppl1.2+)))
 
 (define-public texlive-thermodynamics
   (package
@@ -10769,6 +12587,31 @@ display calculators, specifically the TI-82 STATS.")
 the @code{tabbing} package.")
     (license license:lppl1.0+)))
 
+(define-public texlive-tree-dvips
+  (package
+    (name "texlive-tree-dvips")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tree-dvips/" "dvips/tree-dvips/"
+                   "tex/latex/tree-dvips/")
+             (base32
+              "0wk86z29aqfrsg947h5qbp98fngdx55v8xcx6dgniv5fv7d9ffrp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tree-dvips")
+    (synopsis "Trees and other linguists' macros")
+    (description
+     "The package defines a mechanism for specifying connected trees that uses
+a @code{tabular} environment to generate node positions.  The package uses
+PostScript code, loaded by Dvips, so output can only be generated by use of
+Dvips.
+
+The package @code{lingmacros.sty} defines a few macros for linguists:
+@code{\\enumsentence} for enumerating sentence examples, simple
+@code{tabular}-based non-connected tree macros, and gloss macros.")
+    (license license:lppl1.0+)))
+
 (define-public texlive-turnstile
   (package
     (name "texlive-turnstile")
@@ -10825,6 +12668,61 @@ analysis of textual data such as interview transcripts and field notes by
 providing the LaTeX user with macros which are used to markup textual
 information.")
     (license license:lppl)))
+
+(define-public texlive-unfonts-core
+  (package
+    (name "texlive-unfonts-core")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/unfonts-core/"
+                   "fonts/truetype/public/unfonts-core/")
+             (base32
+              "12q7h1akmgc3vdvyb4i8x51a716451kwi90vh9i57xw76hmg5f4x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unfonts-core")
+    (synopsis "TrueType version of Un-fonts")
+    (description
+     "This is TrueType version of Un-fonts core bundle.  It includes the
+following font families (12 fonts):
+@itemize
+@item UnBatang, UnBatangBold: serif;
+@item UnDotum, UnDotumBold: sans-serif;
+@item UnGraphic, UnGraphicBold: sans-serif style;
+@item UnDinaru, UnDinaruBold, UnDinaruLight;
+@item UnPilgi, UnPilgiBold: script;
+@item UnGungseo: cursive, brush-stroke.
+@end itemize")
+    (license license:gpl2)))
+
+(define-public texlive-unfonts-extra
+  (package
+    (name "texlive-unfonts-extra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/unfonts-extra/"
+                   "fonts/truetype/public/unfonts-extra/")
+             (base32
+              "1krs93dsi50278qxgm24ij9w9r7gdcxqsdfk6ai5klvkmlka8gkf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unfonts-extra")
+    (synopsis "TrueType version of Un-fonts")
+    (description
+     "This is TrueType version of Un-fonts extra bundle.  It includes the
+following Korean font families (11 fonts):
+@itemize
+@item UnPen, UnPenheulim: script;
+@item UnTaza: typewriter style;
+@item UnShinmun;
+@item UnYetgul: old Korean printing style;
+@item UnJamoSora, UnJamoNovel, UnJamoDotum, UnJamoBatang;
+@item UnPilgia;
+@item UnVada.
+@end itemize")
+    (license license:gpl2)))
 
 (define-public texlive-unicode-alphabets
   (package
@@ -10919,6 +12817,26 @@ fonts, in both Metafont and Type 1 formats.")
     (home-page "https://ctan.org/pkg/venn")
     (synopsis "Creating Venn diagrams with MetaPost")
     (description "This package provides MetaPost macros for Venn diagrams.")
+    (license license:lppl)))
+
+(define-public texlive-verse
+  (package
+    (name "texlive-verse")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/verse/" "source/latex/verse/"
+                   "tex/latex/verse/")
+             (base32
+              "0v54xgn9d91xsjcy5dmgs5r50amvqnakyc7hymdzbqkv5cz2dd3r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/verse")
+    (synopsis "Aids for typesetting simple verse")
+    (description
+     "The package provides aids for typesetting simple verses; the package is
+strong on layout, from simple alternate-line indentation to the @code{Mouse's
+tale} from @emph{Alice in Wonderland}.")
     (license license:lppl)))
 
 (define-public texlive-vlna
@@ -11127,6 +13045,29 @@ Cyrillic Mongolian using either XeLaTeX or LuaLaTeX.  The command
 to be able to create multilingual documents.")
     (license license:lppl1.3c)))
 
+(define-public texlive-xyling
+  (package
+    (name "texlive-xyling")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xyling/" "tex/latex/xyling/")
+             (base32
+              "1c4bgkbd42japidvrfg3ibj4h1l8v6zlivy7bqyiyj8alzdjhq4g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xyling")
+    (synopsis
+     "Draw syntactic trees, etc., for linguistics literature, using XY-Pic")
+    (description
+     "The macros in this package model the construction of linguistic tree
+structures as a genuinely graphical problem: they contain two types of
+objects, ``branches'' and ``node labels'', and these are positioned relative
+to a ``grid''.  It is essential that each of these three elements is
+constructed independent of the other two, and hence they can be modified
+without unwanted side effects.  The macros are based on the XY-Pic package.")
+    (license license:lppl)))
+
 (define-public texlive-xymtex
   (package
     (name "texlive-xymtex")
@@ -11294,6 +13235,40 @@ mode to avoid getting lost in big diagrams.")
     (home-page "https://ctan.org/pkg/zxjafont")
     (synopsis "Set up Japanese font families for XeLaTeX")
     (description "This package sets up Japanese font families for XeLaTeX.")
+    (license license:expat)))
+
+(define-public texlive-zxjatype
+  (package
+    (name "texlive-zxjatype")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/zxjatype/" "tex/latex/zxjatype/")
+             (base32
+              "0llm0414kdwqsajb1nl92xa8kqwvbm446pwijag2735gk8rxqz8j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/zxjatype")
+    (synopsis "Standard conforming typesetting of Japanese, for XeLaTeX")
+    (description "This package eases standard conforming typesetting of
+Japanese, for XeLaTeX.")
+    (license license:expat)))
+
+(define-public texlive-zxjafbfont
+  (package
+    (name "texlive-zxjafbfont")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/zxjafbfont/"
+                   "tex/latex/zxjafbfont/")
+             (base32
+              "1vwbr2nwxp5f8c7q1gwm9z3karjkxjxr1j4lg5p12ljqlwm7p3lw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/zxjafbfont")
+    (synopsis "Fallback CJK font support for xeCJK")
+    (description "This package provides fallback CJK font support for xeCJK.")
     (license license:expat)))
 
 (define-public texlive-biblatex-cheatsheet
@@ -11693,6 +13668,9 @@ team (2015-02-05): It seems that this script is currently not working.")
               "17zyr0cyxvp91832q35ha3qabdzh4njh96yvp4gfkkfkkszqp3jh")))
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
+    (arguments
+     ;; FIXME: I couldn't find how to build this package from source.
+     (list #:phases #~(modify-phases %standard-phases (delete 'build))))
     (propagated-inputs
      (list texlive-adobemapping
            texlive-atbegshi
@@ -11737,6 +13715,25 @@ team (2015-02-05): It seems that this script is currently not working.")
      "CTeX is a collection of macro packages and document classes for LaTeX
 Chinese typesetting.")
     (license license:lppl1.3c)))
+
+(define-public texlive-ctex-faq
+  (package
+    (name "texlive-ctex-faq")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ctex-faq/")
+             (base32
+              "15c0g0x8w7vm3hyn6lk60jf66akyfcq6x8jc2lnbjx8ydwgb26br")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ctex-faq")
+    (synopsis "LaTeX FAQ by the Chinese TeX Society (ctex.org)")
+    (description
+     "This is the LaTeX FAQ by the Chinese TeX Society.  Most questions were
+collected on the @url{bbs.ctex.org} forum, and were answered in detail by the
+author.")
+    (license license:fdl1.3+)))
 
 (define-public texlive-ctib
   (package
@@ -13292,6 +15289,27 @@ for short verbatim; @file{xfig.tex}, for including xfig/transfig output in
 a TeX document; and @file{cassette.tex} for setting cassette labels.")
     (license license:public-domain)))
 
+(define-public texlive-jsclasses
+  (package
+    (name "texlive-jsclasses")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/platex/jsclasses/"
+                   "source/platex/jsclasses/"
+                   "tex/platex/jsclasses/")
+             (base32
+              "024bgaim5rkamlwj4xa6w4yp8i37f8j6vn4jyrh8avwm9anc22pg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jsclasses")
+    (synopsis "Classes tailored for use with Japanese")
+    (description
+     "This package provides classes @code{jsarticle} and @code{jsbook},
+together with packages @code{okumacro} and @code{okuverb}.  These classes are
+designed to work under ASCII Corporation's Japanese TeX system pTeX.")
+    (license license:bsd-2)))
+
 (define-public texlive-kerkis
   (package
     (name "texlive-kerkis")
@@ -13684,6 +15702,30 @@ advised to consider using the @code{fancyvrb} package in place of
 @code{moreverb}.")
     (license license:lppl)))
 
+(define-public texlive-morisawa
+  (package
+    (name "texlive-morisawa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/morisawa/"
+                   "fonts/map/dvipdfmx/morisawa/"
+                   "fonts/tfm/public/morisawa/"
+                   "fonts/vf/public/morisawa/"
+                   "source/fonts/morisawa/"
+                   "tex/latex/morisawa/")
+             (base32
+              "1wqyiq049y0mv6d1r3d0mrjzhh5pq2vi50sr0jhd58k4wdg8zqkb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/morisawa")
+    (synopsis
+     "Selection of 5 standard Japanese fonts for pLaTeX and dvips")
+    (description
+     "The package enables selection of 5 standard Japanese fonts for pLaTeX
+and dvips.")
+    (license license:bsd-2)))
+
 (define-public texlive-mpman-ru
   (package
     (name "texlive-mpman-ru")
@@ -14036,7 +16078,18 @@ LaTeX packages use of @samp{@@@@}) in nested package files.")
               "0a843xnp3iikjxw1klxb3j2bssm6ylhcw32s046xxm2bs527hxi8")))
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
-    (arguments (list #:create-formats #~(list "platex" "platex-dev")))
+    (arguments
+     (list #:create-formats #~(list "platex" "platex-dev")
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-build
+                 ;; This phase is necessary because the build phase is
+                 ;; reluctant to generate "kinsoku.tex" since there is another
+                 ;; one among the inputs (texlive-ptex) already.
+                 (lambda _
+                   (substitute* "source/platex/base/plfmt.ins"
+                     (("\\\\keepsilent\n" all)
+                      (string-append all "\\askforoverwritefalse\n"))))))))
     (propagated-inputs
      (list texlive-atbegshi
            texlive-atveryend
@@ -14081,6 +16134,51 @@ e-pTeX.")
 developed by the LaTeX team, mainly intended to support pLaTeX2e and
 upLaTeX2e.  Currently patches for the @code{latex-tools} bundle and Martin
 Schroder's @code{ms} bundle are included.")
+    (license license:bsd-3)))
+
+(define-public texlive-platexcheat
+  (package
+    (name "texlive-platexcheat")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/platexcheat/")
+             (base32
+              "04hvm19x4z7vq2md3p3r2wwa7iqkgkxnvvj1xx3s9145m6fjib5a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/platexcheat")
+    (synopsis "LaTeX cheat sheet, in Japanese")
+    (description
+     "This is a translation to Japanese of Winston Chang's LaTeX cheat
+sheet (a reference sheet for writing scientific papers).  It has been adapted
+to Japanese standards using pLaTeX, and also attached additional information
+of standard LaTeX (especially about Math mode).")
+    (license license:expat)))
+
+(define-public texlive-plautopatch
+  (package
+    (name "texlive-plautopatch")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/plautopatch/"
+                   "tex/latex/plautopatch/")
+             (base32
+              "1fhphmjhq0mbsarkfmfj0580b97lxxbcwanr4zpwjj5f6krqq742")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/plautopatch")
+    (synopsis "Automated patches for pLaTeX/upLaTeX")
+    (description
+     "Japanese pLaTeX and upLaTeX formats and packages often conflict with
+other LaTeX packages which are unaware of pLaTeX and upLaTeX.  In the worst
+case, such packages throw a fatal error or end up with a wrong output.  The
+goal of this package is that there should be no need to worry about such
+incompatibilities, because specific patches are loaded automatically whenever
+necessary.  This helps not only to simplify source files, but also to make the
+appearance of working pLaTeX or upLaTeX sources similar to those of ordinary
+LaTeX ones.")
     (license license:bsd-3)))
 
 (define-public texlive-plipsum
@@ -14245,6 +16343,92 @@ distributed as package @code{pTeX-manual}.")
      "The bundle contains the plain TeX format for pTeX and e-pTeX.")
     (license license:bsd-3)))
 
+(define-public texlive-ptex-fontmaps
+  (package
+    (name "texlive-ptex-fontmaps")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ptex-fontmaps/"
+                   "fonts/cmap/ptex-fontmaps/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/adobe/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/apple/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/arphic/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/baekmuk/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/bizud/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/canon/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/cjkunifonts-ttf/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/cjkunifonts/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/dynacomware/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/fandol/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/founder/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/haranoaji/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/hiragino-pron/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/hiragino/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/ipa/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/ipaex/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/kozuka-pr6/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/kozuka-pr6n/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/kozuka/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/moga-mobo-ex/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/moga-mobo/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/morisawa-pr6n/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/morisawa/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/ms-osx/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/ms-win10/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/ms/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/noEmbed/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/noto-otc/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/noto/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/solaris/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/sourcehan-otc/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/sourcehan/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/ume/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/unfonts/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/yu-osx/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/yu-win/"
+                   "fonts/map/dvipdfmx/ptex-fontmaps/yu-win10/"
+                   "fonts/misc/ptex-fontmaps/"
+                   "scripts/ptex-fontmaps/"
+                   "source/ptex-fontmaps/jis04cmap_exp/"
+                   "source/ptex-fontmaps/script/")
+             (base32
+              "07qm41d33z9vjvchsxfrqxim7zb15cg77x4aw5a06mgn3w7kz6ha")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:link-scripts #~(list "kanji-config-updmap-sys.sh"
+                                  "kanji-config-updmap-user.sh"
+                                  "kanji-config-updmap.pl"
+                                  "kanji-fontmap-creator.pl")))
+    (inputs (list perl))
+    (home-page "https://ctan.org/pkg/ptex-fontmaps")
+    (synopsis
+     "Font maps and tools for Japanese/Chinese/Korean fonts with (u)pTeX")
+    (description
+     "This package provides font maps and setup tools for Japanese, Korean,
+Traditional Chinese, and Simplified Chinese.  It is the successor of the
+@code{jfontmaps} package.  The files in this package contain font maps for
+dvipdfmx to make various Japanese, Chinese, and Korean fonts available
+for (u)ptex and related programs and formats.")
+    (license (list license:public-domain license:gpl3))))
+
+(define-public texlive-ptex-manual
+  (package
+    (name "texlive-ptex-manual")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/ptex/ptex-manual/")
+             (base32
+              "1pz8jyd86s2fjj0d63q9h04x0sxcyx1ffp48lf3n8awj0zrij861")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ptex-manual")
+    (synopsis "Japanese pTeX manual")
+    (description "This package contains the Japanese pTeX manual.")
+    (license license:bsd-3)))
+
 (define-public texlive-ptex-fonts
   (package
     (name "texlive-ptex-fonts")
@@ -14272,6 +16456,188 @@ distributed as package @code{pTeX-manual}.")
      "The bundle contains fonts for use with pTeX and the documents for the
 @command{makejvf} program.")
     (license license:bsd-3)))
+
+(define-public texlive-ptex2pdf
+  (package
+    (name "texlive-ptex2pdf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ptex2pdf/" "scripts/ptex2pdf/")
+             (base32
+              "0vc4clig35s9cir2gmls7zvj8k1qal4np0akvlgsz2zch44b0imr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "ptex2pdf.lua")))
+    (home-page "https://ctan.org/pkg/ptex2pdf")
+    (synopsis "Convert Japanese TeX documents to PDF")
+    (description
+     "The Lua script provides system-independent support of Japanese
+typesetting engines in TeXworks.  As TeXworks typesetting setup does not allow
+for multistep processing, this script runs one of the pTeX-based programs
+followed by dvipdfmx.")
+    (license license:gpl2)))
+
+(define-public texlive-pxbase
+  (package
+    (name "texlive-pxbase")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/platex/pxbase/" "tex/platex/pxbase/")
+             (base32
+              "0dq9d4ixddffjnzb73d2qacgzm27665hvq2gsfjqzikzaa70dahw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pxbase")
+    (synopsis "Tools for use with (u)pLaTeX")
+    (description
+     "The main purpose of this package is to provide auxiliary functions which
+are utilized by other packages created by the same author.  It also provides
+a few user commands to assist in creating Japanese documents using
+@code{(u)pLaTeX.}")
+    (license license:expat)))
+
+(define-public texlive-pxchfon
+  (package
+    (name "texlive-pxchfon")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/platex/pxchfon/" "fonts/sfd/pxchfon/"
+                   "fonts/tfm/public/pxchfon/"
+                   "fonts/vf/public/pxchfon/"
+                   "tex/platex/pxchfon/")
+             (base32
+              "0pvhgcv6rxp2lnscsh9k3z907114p09ja3frcy5276is21d6sdrj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pxchfon")
+    (synopsis "Japanese font setup for pLaTeX and upLaTeX")
+    (description
+     "This package enables users to declare in their document which physical
+fonts should be used for the standard Japanese (logical) fonts of pLaTeX and
+upLaTeX.  Font setup is realized by changing the font mapping of dvipdfmx, and
+thus users can use any (monospaced) physical fonts they like, once they
+properly install this package, without creating helper files for each new
+font.  This package also supports setup for the fonts used in the
+@code{japanese-otf} package.")
+    (license license:expat)))
+
+(define-public texlive-pxcjkcat
+  (package
+    (name "texlive-pxcjkcat")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pxcjkcat/" "tex/latex/pxcjkcat/")
+             (base32
+              "10lbwry55rdldfhj2v893rpp1jdzv00vxhg4hf4gsgsmv1nnp25f")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pxcjkcat")
+    (synopsis "LaTeX interface for the CJK category codes of upTeX")
+    (description
+     "The package provides management of the CJK category code table of the
+upTeX extended TeX engine.  Package options are available for tailored use in
+the cases of documents that are principally written in Japanese, or
+principally written in English or other Western languages.")
+    (license license:expat)))
+
+(define-public texlive-pxjahyper
+  (package
+    (name "texlive-pxjahyper")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/platex/pxjahyper/"
+                   "tex/platex/pxjahyper/")
+             (base32
+              "0128yslhwbrdhshjhxk6ayfl42ds0x0sfyvp91aspwbkfjnr34p9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pxjahyper")
+    (synopsis "Hyperref support for pLaTeX")
+    (description
+     "This package adjusts the behavior of @code{hyperref} on (u)pLaTeX so
+that authors can properly create PDF documents that contain document
+information in Japanese.")
+    (license license:expat)))
+
+(define-public texlive-pxjodel
+  (package
+    (name "texlive-pxjodel")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pxjodel/"
+                   "fonts/tfm/public/pxjodel/"
+                   "fonts/vf/public/pxjodel/"
+                   "tex/latex/pxjodel/")
+             (base32
+              "1g5sd60zd34ark50qy2dgqrdcd5pwy5hxmi6g5jxqlj3j1n6r1ny")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pxjodel")
+    (synopsis "Help change metrics of fonts from japanese-otf")
+    (description
+     "This package changes the setup of the @code{japanese-otf} package so
+that the TFMs for direct input are all replaced by new ones with prefixed
+names.  This function will assist users who want to use the
+@code{japanese-otf} package together with tailored TFMs of Japanese fonts.")
+    (license license:expat)))
+
+(define-public texlive-pxrubrica
+  (package
+    (name "texlive-pxrubrica")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/platex/pxrubrica/"
+                   "source/platex/pxrubrica/"
+                   "tex/platex/pxrubrica/")
+             (base32
+              "0n8jc65szkq114qg197hc9amrpifqvha8wifxplhvbmb09kzm5mm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pxrubrica")
+    (synopsis "Ruby annotations according to JIS X 4051")
+    (description
+     "This package provides a function to add ruby annotations (furigana) that
+follow the style conventional in Japanese typography as described in the W3C
+technical note @emph{Requirements for Japanese Text Layout} and the JIS
+specification JIS X 4051.")
+    (license license:expat)))
+
+(define-public texlive-pxufont
+  (package
+    (name "texlive-pxufont")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pxufont/"
+                   "fonts/tfm/public/pxufont/"
+                   "fonts/vf/public/pxufont/"
+                   "tex/latex/pxufont/")
+             (base32
+              "167hmw73lxgsv27gkzanr1plalsqfxphknl8q3rbamy2zp6n0al0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pxufont")
+    (synopsis "Emulate non-Unicode Japanese fonts using Unicode fonts")
+    (description
+     "The set of the Japanese logical fonts (JFMs) that are used as standard
+fonts in pTeX and upTeX contains both Unicode JFMs and non-Unicode JFMs.  This
+bundle provides an alternative set of non-Unicode JFMs that are tied to the
+virtual fonts (VFs) that refer to the glyphs in the Unicode JFMs.  Moreover it
+provides a LaTeX package that redefines the NFSS settings of the Japanese
+fonts of @code{(u)pLaTeX} so that the new set of non-Unicode JFMs will be
+employed.  As a whole, this bundle allows users to dispense with the mapping
+setup on non-Unicode JFMs.  Such a setup is useful in particular when users
+want to use OpenType fonts (such as Source Han Serif) that have a glyph
+encoding different from Adobe-Japan1, because mapping setups from non-Unicode
+JFMs to such physical fonts are difficult to prepare.")
+    (license license:expat)))
 
 (define-public texlive-pwebmac
   (package
@@ -14792,7 +17158,18 @@ barcodes.")
               "0bzkyira30b9xdsdfxjmwzgqffl9pvckz5avm6c3r0bq6asiml9l")))
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
-    (arguments (list #:create-formats #~(list "uplatex" "uplatex-dev")))
+    (arguments
+     (list #:create-formats #~(list "uplatex" "uplatex-dev")
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-build
+                 ;; This phase is necessary because the build phase is
+                 ;; reluctant to generate "ukinsoku.tex" since there is
+                 ;; another one among the inputs (texlive-uptex) already.
+                 (lambda _
+                   (substitute* "source/uplatex/base/uplfmt.ins"
+                     (("\\\\keepsilent\n" all)
+                      (string-append all "\\askforoverwritefalse\n"))))))))
     (propagated-inputs
      (list texlive-atbegshi
            texlive-atveryend
@@ -14898,6 +17275,26 @@ original LaTeX with @code{\\inputenc@{utf8@}} and Babel
     (synopsis "Fonts for use with upTeX")
     (description "The bundle contains fonts (TFM and VF) for use with upTeX.")
     (license license:bsd-3)))
+
+(define-public texlive-upzhkinsoku
+  (package
+    (name "texlive-upzhkinsoku")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/upzhkinsoku/"
+                   "tex/generic/upzhkinsoku/")
+             (base32
+              "0c95fy9raykpjgnkz5h0wyjxyg2h0ksx2kb14lx2rsv65xsi909y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/upzhkinsoku")
+    (synopsis "Supplementary Chinese kinsoku for Unicode *pTeX")
+    (description
+     "This package provides supplementary Chinese kinsoku (line breaking rules
+etc.)@: settings for Unicode (e-)upTeX (when using Unicode as its internal
+encoding), and ApTeX.  Both LaTeX and plain TeX are supported.")
+    (license license:knuth)))
 
 (define-public texlive-variations
   (package
@@ -15046,6 +17443,24 @@ features allow to deal with numbers (tests, display, some high level
 operations, etc.)")
     (license license:lppl1.3+)))
 
+(define-public texlive-xtuthesis
+  (package
+    (name "texlive-xtuthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xtuthesis/"
+                   "tex/latex/xtuthesis/")
+             (base32
+              "1fdk9dkikqlkjwrg8qjm2phvsyyvddshf78bjy6liyz5hqakk6r8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xtuthesis")
+    (synopsis "XTU thesis template")
+    (description
+     "The package provides a thesis template for the Xiangtan University.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-yannisgr
   (package
     (name "texlive-yannisgr")
@@ -15068,6 +17483,50 @@ for setting modern polytonic Greek.  The fonts are provided as Metafont
 source; macros to produce a Greek variant of Plain TeX (including
 a hyphenation table adapted to the fonts code table) are provided.")
     (license license:gpl2)))
+
+(define-public texlive-zhlineskip
+  (package
+    (name "texlive-zhlineskip")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/zhlineskip/"
+                   "tex/latex/zhlineskip/")
+             (base32
+              "070vi0pra74in55r0pq2k35s3x3xk6gjwvnsif7bnx4k7wn39mal")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/zhlineskip")
+    (synopsis "Line spacing for CJK documents")
+    (description
+     "This package supports typesetting CJK documents.  It allows users to
+specify the two ratios between the leading and the font size of the body text
+and the footnote text.  For CJK typesetting, these ratios usually range from
+1.5 to 1.67.  This package is also capable of restoring the math leading to
+that of the Latin text (usually 1.2 times the font size).")
+    (license license:lppl1.3c)))
+
+(define-public texlive-zhlipsum
+  (package
+    (name "texlive-zhlipsum")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/zhlipsum/"
+                   "source/latex/zhlipsum/"
+                   "tex/latex/zhlipsum/")
+             (base32
+              "1lhc3a8l5sizyw0v1cfsrwwwymmyab1yvx99iqhdh7avrzmi2gda")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-ctex))
+    (home-page "https://ctan.org/pkg/zhlipsum")
+    (synopsis "Chinese dummy text")
+    (description
+     "This package provides an interface to dummy text in Chinese language,
+which will be useful for testing Chinese documents.  UTF-8, GBK and Big5
+encodings are supported.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-zztex
   (package
@@ -16339,6 +18798,71 @@ converter.  It provides a command line tool that drives the conversion
 process.  It also provides a library which can be used to create customized
 conversion tools.")
     (license license:lppl1.3+)))
+
+(define-public texlive-makecell
+  (package
+    (name "texlive-makecell")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/makecell/"
+                   "source/latex/makecell/"
+                   "tex/latex/makecell/")
+             (base32
+              "1n122230s49jizldn8ps1pfa5dsg8wmh5x8wla4y6rsgjcccqn4s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list
+      #:tex-format "latex"
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'replace-obsolete-package
+            ;; "slashbox" is no longer provided in TeX Live.  It is superseded
+            ;; by `diagbox', which is backward compatible.
+            (lambda _
+              (substitute* "source/latex/makecell/makecell.dtx"
+                (("\\\\usepackage\\{slashbox\\}")
+                 "\\usepackage{diagbox}"))))
+          (add-after 'replace-obsolete-package 'load-float
+            ;; Loading `float' package prevents the "Unknown float option `H'"
+            ;; error.
+            (lambda _
+              (substitute* "source/latex/makecell/makecell.dtx"
+                (("usepackage\\{diagbox\\}.*" line)
+                 (string-append line "\\usepackage{float}\n")))))
+          (add-after 'load-float 'remove-hsize-reference
+            ;; Replace "\hsize" primitive with a dummy value to prevent
+            ;; a "missing number treated as zero" error.
+            (lambda _
+              (substitute* "source/latex/makecell/makecell.dtx"
+                (("\\\\ttabbox\\[\\\\hsize\\]") "\\ttabbox[10cm]")))))))
+    (native-inputs
+     (list (texlive-updmap.cfg
+            (list texlive-diagbox
+                  texlive-float
+                  texlive-hypdoc
+                  texlive-multirow
+                  texlive-pict2e))))
+    (home-page "https://ctan.org/pkg/makecell")
+    (synopsis "Tabular column heads and multilined cells")
+    (description
+     "This package supports common layouts for tabular column heads in whole
+documents, based on one-column tabular environment.  In addition, it can
+create multi-lined tabular cells.
+
+The package also offers:
+@itemize
+@item a macro which changes the vertical space around all the cells in a @code{tabular}
+environment,
+@item macros for multirow cells, which use the facilities
+of the @code{multirow} package,
+@item macros to number rows in tables, or to skip cells;
+@item diagonally divided cells;
+@item horizontal lines in @code{tabular} environments with defined thickness.
+@end itemize")
+    (license license:lppl)))
+
 
 (define-public texlive-optexcount
   (package
@@ -18495,6 +21019,45 @@ LaTeX user to easily create complex commutative diagrams, by placing formula
 nodes on a conceptual grid and attaching arrows to them.")
     (license license:gpl2+)))
 
+(define-public texlive-pbibtex-base
+  (package
+    (name "texlive-pbibtex-base")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/ptex/pbibtex/" "pbibtex/bib/"
+                   "pbibtex/bst/")
+             (base32
+              "06glwwv1rw4n5cpg6cs70yzgyix65nhfsakyq72sn82yss1gvf8z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pbibtex-base")
+    (synopsis "Bibliography styles and miscellaneous files for pBibTeX")
+    (description
+     "These are miscellaneous files, including bibliography
+styles (@file{.bst}), for pBibTeX, which is a Japanese extended version of
+BibTeX contained in TeX Live.")
+    (license license:bsd-3)))
+
+(define-public texlive-pbibtex-manual
+  (package
+    (name "texlive-pbibtex-manual")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pbibtex-manual/")
+             (base32
+              "030rhhb4xcijvjc0x1ylyk6xz5mn90wrlp5ss4yr6qlpzmq21b50")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pbibtex-manual")
+    (synopsis "Documentation files for (u)pBibTeX")
+    (description
+     "The bundle contains documentation files for Japanese pBibTeX and
+upBibTeX.  For historical reasons, this also contains old documentation files
+for JBibTeX.")
+    (license license:bsd-3)))
+
 (define-public texlive-penrose
   (package
     (name "texlive-penrose")
@@ -18812,6 +21375,27 @@ same way that @code{kvoptions} adds the same facility to the LaTeX standard
      "This package allows the drawing of vectorian ornaments (196) with
 PGF/TikZ.")
     (license license:lppl1.3+)))
+
+(define-public texlive-pgfornament-han
+  (package
+    (name "texlive-pgfornament-han")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pgfornament-han/"
+                   "tex/latex/pgfornament-han/")
+             (base32
+              "17h71dbzj7a381gv3zn1pr1g2376mwwg8l9mk3y97wiv9m9afhxn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pgfornament-han")
+    (synopsis "Library for Chinese traditional motifs and patterns")
+    (description
+     "This package provides a @code{pgfornament} library for Chinese
+traditional motifs and patterns.  The command @code{\\pgfornamenthan} takes
+the same options as @code{\\pgfornament} from the @code{pgfornament} package,
+but renders Chinese traditional motifs instead.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-pgfplots
   (package
@@ -19441,6 +22025,27 @@ package.")
      "The package is prepared for typesetting some Urdu translations of the
 Holy Quran.  It adds eight Urdu translations to the @code{quran} package.")
     (license license:lppl1.3c)))
+
+(define-public texlive-qyxf-book
+  (package
+    (name "texlive-qyxf-book")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/qyxf-book/"
+                   "tex/latex/qyxf-book/")
+             (base32
+              "0sgjdfpmwjqh40sbanj772bwimbf3az7wah65hxaz5198xd67m1y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/qyxf-book")
+    (synopsis "Book Template for Qian Yuan Xue Fu")
+    (description
+     "@code{qyxf-book} is a LaTeX document class (template) developed by Qian
+Yuan Xue Fu (QYXF), a student club of Xi'an Jiaotong University (XJTU).  It
+creates a minimalistic document style, and several color schemes are offered.
+Currently the template is only designed for Chinese typesetting.")
+    (license license:expat)))
 
 (define-public texlive-r-und-s
   (package
@@ -20655,6 +23260,38 @@ that one can easily extrapolate the use beyond articles and theses: the
 application is powerful enough to generate any text-based structure, given
 that a corresponding template exists.")
     (license license:bsd-3)))
+
+(define-public texlive-texproposal
+  (package
+    (name "texlive-texproposal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/texproposal/")
+             (base32
+              "1yxb3yagljsdp4s07fzd6498889i7cscch68fb77jbfc2z4srvsy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/texproposal")
+    (synopsis "Proposal prototype for LaTeX promotion in Chinese universities")
+    (description
+     "This package contains the original source code and necessary attachment
+of the document @emph{Proposal for Offering TeX Courses and Relevant Resources
+in Chongqing University}.  This proposal could be helpful if one is
+considering to suggest their (Chinese) university or company to use TeX (or
+LaTeX, or XeLaTeX} as a typesetting system.
+
+The present proposal mainly explains the importance and necessity of
+introducing TeX, a typesetting system often used in academic writing, to
+students and teachers.  This proposal starts from a brief introduction of TeX,
+then steps further into its fascinating application to academic writing and
+dissertation formatting.  Finally, a set of possible implementation strategies
+with regard to the proper introduction of TeX and relevant resources to our
+university, is proposed.")
+    ;; The content of the project itself is released under CC-BY 4.0 terms,
+    ;; but the underlying code used to format and display that content is
+    ;; licensed under the Expat license.
+    (license (list license:cc-by4.0 license:expat))))
 
 (define-public texlive-texware
   (package
@@ -22995,6 +25632,48 @@ and so on) while being, at the same time, seamlessly integrated within the
 rest of the mathematics produced by (AmS-)LaTeX.")
     (license license:lppl1.3+)))
 
+(define-public texlive-haranoaji
+  (package
+    (name "texlive-haranoaji")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/haranoaji/"
+                   "fonts/opentype/public/haranoaji/")
+             (base32
+              "06lkgiylh0vjxqm8i4dvygna0zb112dw5xxlh8r5hr5kf2805m99")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/haranoaji")
+    (synopsis "Harano Aji fonts")
+    (description
+     "Harano Aji fonts (Harano Aji Mincho and Harano Aji Gothic) are fonts
+obtained by replacing Adobe-Identity-0 (AI0) CIDs of Source Han fonts (Source
+Han Serif and Source Han Sans) with Adobe-Japan1 (AJ1) CIDs.  There are 14
+fonts, 7 weights each for Mincho and Gothic.")
+    (license license:silofl1.1)))
+
+(define-public texlive-haranoaji-extra
+  (package
+    (name "texlive-haranoaji-extra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/haranoaji-extra/"
+                   "fonts/opentype/public/haranoaji-extra/")
+             (base32
+              "1zy3bv836rmpqimky7b2xgsmdh6xkkbnjiljraci2vnfgwl1q3pb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/haranoaji-extra")
+    (synopsis "Extra weights for Harano Aji fonts")
+    (description
+     "Harano Aji fonts (Harano Aji Mincho and Harano Aji Gothic) are fonts
+obtained by replacing Adobe-Identity-0 (AI0) CIDs of Source Han fonts (Source
+Han Serif and Source Han Sans) with Adobe-Japan1 (AJ1) CIDs.  This package
+provides extra weights for these fonts.")
+    (license license:silofl1.1)))
+
 (define-public texlive-hardwrap
   (package
     (name "texlive-hardwrap")
@@ -23065,6 +25744,28 @@ hatching interior of closed paths.")
 Adobe's basic set.")
     ;; No license version specified.
     (license license:gpl3+)))
+
+(define-public texlive-ieejtran
+  (package
+    (name "texlive-ieejtran")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/ieejtran/"
+                   "doc/bibtex/ieejtran/")
+             (base32
+              "01bcw45v6mbyb1gzykzk5ccwz70s6591994xrj84z9ljgzp06lyg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ieejtran")
+    (synopsis
+     "Unofficial bibliography style file for the Institute of Electrical
+Engineers of Japan")
+    (description
+     "This package provides an unofficial BibTeX style for authors of the
+Institute of Electrical Engineers of Japan (IEEJ) transactions journals and
+conferences.")
+    (license license:expat)))
 
 (define-public texlive-inputenx
   (package
@@ -24020,6 +26721,8 @@ UTF-8 or a suitable 8-bit encoding.")
 (define-public texlive-xpinyin
   (package
     (name "texlive-xpinyin")
+    ;; XXX: Whenever updating this package, please check if "Unihan.zip"
+    ;; native input needs to be updated, too.
     (version (number->string %texlive-revision))
     (source (texlive-origin
              name version
@@ -24029,6 +26732,60 @@ UTF-8 or a suitable 8-bit encoding.")
               "1fxsnvmkm66rfq08j03sch24maw0wgb8dhl73r2rf6gwxzf4imc5")))
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
+    (arguments
+     (list
+      #:tex-format "luatex"
+      #:modules '((ice-9 match)
+                  (srfi srfi-1)
+                  (guix build texlive-build-system)
+                  (guix build utils))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'copy-unihan.zip
+            ;; Copy the "Unihan.zip" file where the Lua script expects to find
+            ;; it.
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((unihan.zip
+                     (any (match-lambda
+                            ((_ . dir)
+                             (and (string-suffix? "Unihan.zip" dir) dir)))
+                          inputs)))
+                (with-directory-excursion "source/latex/xpinyin"
+                  (install-file unihan.zip ".")
+                  (rename-file (basename unihan.zip) "Unihan.zip")))))
+          (add-before 'build 'copy-ctxdocstrip.tex
+            ;; Set TEXINPUTS so that the process can find extracted
+            ;; "ctxdocstrip.tex".
+            (lambda* (#:key inputs #:allow-other-keys)
+              (install-file (search-input-file inputs
+                                               "tex/generic/ctex/ctxdocstrip.tex")
+                            "build/")
+              (setenv "TEXINPUTS" (string-append (getcwd) "/build:"))))
+          (add-after 'build 'fix-reproducibility
+            ;; Remove a time-stamp so the generated database is reproducible.
+            (lambda _
+              (substitute* "tex/latex/xpinyin/xpinyin-database.def"
+                (("%% +by \"texlua xpinyin.lua\" .*") "")))))))
+    (native-inputs
+     (list
+      ;; XXX: The Unihan database may need to be updated whenever this package
+      ;; is.  Appropriate Unicode version can be found in the
+      ;; "tex/latex/xpinyin/xpinyin-database.def" file.
+      (origin
+        (method url-fetch)
+        (uri "https://www.unicode.org/Public/14.0.0/ucd/Unihan.zip")
+        (sha256
+         (base32
+          "0bc5277lpc5j0gg7fjfsah7krhqjzdxya5ww6walvkc25fdm3r1a")))
+      ;; There's a circular dependency between this package (where `ctex'
+      ;; should be a native input) and `ctex' (where this package is
+      ;; a propagated input).  To work around this, grab the required
+      ;; "ctxdocstrip.tex" file from `ctex'.
+      (texlive-origin
+       "ctxdocstrip.tex" (number->string %texlive-revision)
+       (list "tex/generic/ctex/ctxdocstrip.tex")
+       (base32
+        "154v2d6wfzhfg654nlh2apy9zr78d09rkimymyjqpxymkpbk8lli"))))
     (home-page "https://ctan.org/pkg/xpinyin")
     (synopsis "Automatically add pinyin to Chinese characters")
     (description
@@ -26463,6 +29220,27 @@ LaTeX names.")
 Babel.")
     (license license:lppl1.3c)))
 
+(define-public texlive-babel-japanese
+  (package
+    (name "texlive-babel-japanese")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/babel-japanese/"
+                   "source/generic/babel-japanese/"
+                   "tex/generic/babel-japanese/")
+             (base32
+              "0jn2pl080c0dd6ryj6y5b87h6ijg3lcd2hw7g5kyw7p9r7a6b8i0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/babel-japanese")
+    (synopsis "Babel support for Japanese")
+    (description
+     "This package provides a japanese option for the Babel package.  It
+defines all the language definition macros in Japanese.  Currently this
+package works with pLaTeX, upLaTeX, XeLaTeX and LuaLaTeX.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-babel-kurmanji
   (package
     (name "texlive-babel-kurmanji")
@@ -27209,6 +29987,25 @@ between various classes of Unix systems.")
 
 (define-deprecated-package texlive-latex-ifplatform texlive-ifplatform)
 
+(define-public texlive-ifptex
+  (package
+    (name "texlive-ifptex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/ifptex/" "tex/generic/ifptex/")
+             (base32
+              "0l5mclz9cwj756ah0nqbiai0b5m9368dz4ykb0ih5irm6cmswdfm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ifptex")
+    (synopsis "Check if the engine is pTeX or one of its derivatives")
+    (description
+     "The @code{ifptex} package is a counterpart of @code{ifxetex},
+@code{ifluatex}, etc.@: for the pTeX engine.  The @code{ifuptex} package is an
+alias to @code{ifptex} provided for backward compatibility.")
+    (license license:expat)))
+
 (define-public texlive-iftex
   (package
     (name "texlive-iftex")
@@ -27233,6 +30030,26 @@ the engine in use.")
 
 (define-deprecated-package texlive-generic-iftex texlive-iftex)
 (define-deprecated-package texlive-generic-ifxetex texlive-iftex)
+
+(define-public texlive-ifxptex
+  (package
+    (name "texlive-ifxptex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/ifxptex/"
+                   "tex/generic/ifxptex/")
+             (base32
+              "0r77j010a9fcn47kjy6vwv72i8fynb8jsilas6hs9c9lgk5bal1g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ifxptex")
+    (synopsis "Detect pTeX and its derivatives")
+    (description
+     "The package provides commands for detecting pTeX and its derivatives
+(e-pTeX, upTeX, e-upTeX, and ApTeX).  Both LaTeX and plain TeX are
+supported.")
+    (license license:knuth)))
 
 (define-public texlive-tipa
   (package
@@ -30360,6 +33177,55 @@ BibLaTeX, and is considered experimental.")
 
 (define-deprecated-package texlive-latex-gcite texlive-gcite)
 
+(define-public texlive-gckanbun
+  (package
+    (name "texlive-gckanbun")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gckanbun/" "tex/latex/gckanbun/")
+             (base32
+              "1hjp7nw2b34pkfxh6n2722zc83hjpn492q77gb063jzi79pgbprx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gckanbun")
+    (synopsis "Kanbun typesetting for (u)pLaTeX and LuaLaTeX")
+    (description
+     "This package provides a Kanbun (Han Wen, ``Chinese writing'')
+typesetting for @code{(u)pLaTeX} and LuaLaTeX.")
+    (license license:expat)))
+
+(define-public texlive-gentombow
+  (package
+    (name "texlive-gentombow")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gentombow/"
+                   "tex/latex/gentombow/")
+             (base32
+              "1pc1cxsxlnj9d2qnvm31r3cw15mf7fwr5dadd10473mww8bp8irf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gentombow")
+    (synopsis "Generate Japanese-style crop marks")
+    (description
+     "This bundle provides a LaTeX package for generating Japanese-style crop
+marks (called tombow in Japanese) for practical use in self-publishing.
+
+The bundle contains the following packages:
+@itemize
+@item @file{gentombow.sty}: Generate crop marks (called tombow in
+Japanese) for practical use in self-publishing.  It provides the core
+tombow feature if not available.
+@item @file{pxgentombow.sty}: Superseded by @file{gentombow.sty}; kept
+for compatibility only.
+@item @file{bounddvi.sty}: Set papersize special to DVI file.  Can be
+used on LaTeX, pLaTeX, upLaTeX (with DVI output mode) with dvips or
+dvipdfmx drivers.
+@end itemize")
+    (license license:bsd-3)))
+
 (define-public texlive-geometry
   (package
     (name "texlive-geometry")
@@ -32073,12 +34939,15 @@ DVIPDFMx.")
               "170lwb97ji9zgmmayzxmpawjkzk50g7rwqmwr11w72zfqkc2v9g2")))
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
+    ;; FIXME: I couldn't find how to build this package from source.
+    (arguments
+     (list #:phases #~(modify-phases %standard-phases (delete 'build))))
     (home-page "https://ctan.org/pkg/zhnumber")
     (synopsis "Typeset Chinese representations of numbers")
     (description
-     "The package provides commands to typeset Chinese representations of numbers.
-The main difference between this package and CJKnumb is that the commands
-provided are expandable in the proper way.")
+     "The package provides commands to typeset Chinese representations of
+numbers.  The main difference between this package and CJKnumb is that the
+commands provided are expandable in the proper way.")
     (license license:lppl1.3c)))
 
 (define-public texlive-zhspacing
@@ -32301,6 +35170,26 @@ provides means for easy customization of the list of notes.")
 @code{\\footnote}), and place them at the end of the section, chapter or
 document.")
     (license license:lppl1.2+)))
+
+(define-public texlive-endnotesj
+  (package
+    (name "texlive-endnotesj")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/endnotesj/"
+                   "tex/latex/endnotesj/")
+             (base32
+              "1yv8jzvps79svd4013f6cpm41mh3mx2m64jx7bv01ryqdgjzq2g9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/endnotesj")
+    (synopsis "Japanese-style endnotes")
+    (description
+     "This package provides customized styles for endnotes to be used with
+Japanese documents.  It can be used on pLaTeX, upLaTeX, and LuaLaTeX
+(LuaTeX-ja).")
+    (license license:bsd-3)))
 
 (define-public texlive-enumitem
   (package
@@ -32912,6 +35801,25 @@ LaTeX Companion} book, together with necessary supporting files.")
 necessary supporting files.")
     (license license:lppl1.3c)))
 
+(define-public texlive-tlmgr-intro-zh-cn
+  (package
+    (name "texlive-tlmgr-intro-zh-cn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/tlmgr-intro-zh-cn/")
+             (base32
+              "127fad3aq66rnn4jkccyw7qc8pdcwapyjb6lj9kn49nqcy3jm6nk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tlmgr-intro-zh-cn")
+    (synopsis "Short tutorial on using @command{tlmgr} in Chinese")
+    (description
+     "This is a Chinese translation of the @command{tlmgr} documentation.  It
+introduces some of the common usage of the TeX Live Manager.  The original can
+be found in the @code{tlmgrbasics} package.")
+    (license license:gpl3+)))
+
 (define-public texlive-tlmgrbasics
   (package
     (name "texlive-tlmgrbasics")
@@ -33118,6 +36026,176 @@ Portable Document Format (PDF) form (using the @command{pdfjadetex}
 command).")
     ;; The license text is found at the header of the jadetex.dtx file.
     (license license:expat)))
+
+(define-public texlive-japanese-mathformulas
+  (package
+    (name "texlive-japanese-mathformulas")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/lualatex/japanese-mathformulas/"
+                   "tex/lualatex/japanese-mathformulas/")
+             (base32
+              "0a5kqgkl89m5yc9zgkhlz44dvvi52jfaja3lwcf7g7q039k2h6fg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/japanese-mathformulas")
+    (synopsis "Compiling basic math formulas in Japanese using LuaLaTeX")
+    (description
+     "This is a style file for compiling basic maths formulas in Japanese
+using LuaLaTeX.  @code{\\NewDocumentCommand} allows you to specify whether the
+formula should be used within a sentence or on a new line.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-japanese-otf
+  (package
+    (name "texlive-japanese-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/japanese-otf/"
+                   "fonts/ofm/public/japanese-otf/"
+                   "fonts/tfm/public/japanese-otf/"
+                   "fonts/vf/public/japanese-otf/"
+                   "source/fonts/japanese-otf/"
+                   "tex/platex/japanese-otf/")
+             (base32
+              "125z1fi13dnksngsc442n6fcmicv7hhrxrq8anzxax4ic3dqfvha")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/japanese-otf")
+    (synopsis "Advanced font selection for platex and its friends")
+    (description
+     "The package contains pLaTeX support files and virtual fonts for
+supporting a wide variety of fonts in LaTeX using the pTeX engine.")
+    (license license:bsd-3)))
+
+(define-public texlive-jieeetran
+  (package
+    (name "texlive-jieeetran")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/jieeetran/"
+                   "doc/bibtex/jieeetran/")
+             (base32
+              "122g618j9wli9amx9c82whjp81i5cpjz1mj4pnmyfa8x5mfdh6dp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jieeetran")
+    (synopsis
+     "UnofficiaL BibTeX style for citing Japanese articles in IEEE format")
+    (description
+     "This package provides an unofficial BibTeX style for authors trying to
+cite Japanese articles in the Institute of Electrical and Electronics
+Engineers (IEEE) format.")
+    (license license:expat)))
+
+(define-public texlive-jlreq
+  (package
+    (name "texlive-jlreq")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jlreq/"
+                   "fonts/tfm/public/jlreq/"
+                   "fonts/vf/public/jlreq/"
+                   "source/latex/jlreq/"
+                   "tex/latex/jlreq/"
+                   "tex/luatex/jlreq/")
+             (base32
+              "11jyj5mcyd9yxhb7mnm7naaaj26cgdk5iqkwna20109pcc2qy0wz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jlreq")
+    (synopsis
+     "Japanese document class based on requirements for Japanese text layout")
+    (description
+     "This package provides a Japanese document class based on requirements
+for Japanese text layout.  The class file and the JFM (Japanese font metric)
+files for LuaTeX-ja, pLaTeX, or upLaTeX are provided.")
+    (license license:bsd-2)))
+
+(define-public texlive-jlreq-deluxe
+  (package
+    (name "texlive-jlreq-deluxe")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/platex/jlreq-deluxe/"
+                   "fonts/tfm/public/jlreq-deluxe/"
+                   "fonts/vf/public/jlreq-deluxe/"
+                   "tex/platex/jlreq-deluxe/")
+             (base32
+              "0l80iqgsnhvqisrkhgflwpxs5fqyz2ddv6vp3b17vnxvymyzzvg4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jlreq-deluxe")
+    (synopsis "Multi-weight Japanese font support for the @code{jlreq} class")
+    (description
+     "This package provides multi-weight Japanese font support for the
+@code{jlreq} class.")
+    (license license:expat)))
+
+(define-public texlive-jpneduenumerate
+  (package
+    (name "texlive-jpneduenumerate")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jpneduenumerate/"
+                   "tex/latex/jpneduenumerate/")
+             (base32
+              "0ndg4ig5bg9ns2pxcf070c7jyh7d7r3r7c7xg5d99k3qlg4vkd9n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jpneduenumerate")
+    (synopsis "Enumerative expressions in Japanese education")
+    (description
+     "Mathematical equation representation in Japanese education differs
+somewhat from the standard LaTeX writing style.  This package introduces
+enumerative expressions in Japanese education.")
+    (license license:expat)))
+
+(define-public texlive-jpnedumathsymbols
+  (package
+    (name "texlive-jpnedumathsymbols")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jpnedumathsymbols/"
+                   "tex/latex/jpnedumathsymbols/")
+             (base32
+              "0ap370bp831xxrq45zllyrbhhxs0yv3qb1l5pkpvgsildfk5rk7m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jpnedumathsymbols")
+    (synopsis "Mathematical equation representation in Japanese education")
+    (description
+     "Mathematical equation representation in Japanese education differs
+somewhat from the standard LaTeX writing style.  This package introduces
+mathematical equation representation in Japanese education.")
+    (license license:expat)))
+
+(define-public texlive-kanbun
+  (package
+    (name "texlive-kanbun")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/kanbun/" "tex/latex/kanbun/")
+             (base32
+              "1a922jly8f791r4jbz4097h8js5z29435zphm5i52pvkl6p245wy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/kanbun")
+    (synopsis "Typeset kanbun-kundoku with support for kanbun annotation")
+    (description
+     "This package allows users to manually input macros for elements in
+a kanbun-kundoku (Han Wen Xun Du) paragraph.  More importantly, it accepts
+plain text input in the kanbun annotation form when used with LuaLaTeX, which
+allows typesetting kanbun-kundoku paragraphs efficiently.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-libertine
   (package
@@ -35357,6 +38435,26 @@ typical exercises contained in a test.  It is mainly intended for Italian high
 school teachers, as the style is probably more in line with Italian high
 school tests.")
     (license license:lppl1.3+)))
+
+(define-public texlive-exam-zh
+  (package
+    (name "texlive-exam-zh")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/exam-zh/" "tex/latex/exam-zh/")
+             (base32
+              "1p0zy0y2c75mq84n3bqbd39hw1phiyfl22q0fzid58v5ngcf0ip1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/exam-zh")
+    (synopsis "LaTeX template for Chinese exams")
+    (description
+     "This package provides a class @file{exam-zh.cls} suitable for Chinese
+exams of all types.  It also includes several module packages like
+@file{exam-zh-question.sty} and @file{exam-zh-choices.sty}, which can be used
+individually.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-examplep
   (package
@@ -41013,6 +44111,74 @@ includes the Aleph engine and related Omega formats and packages, and the
 HiTeX engine and related.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
+(define-public texlive-collection-humanities
+  (package
+    (name "texlive-collection-humanities")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-adtrees
+           texlive-bibleref
+           texlive-bibleref-lds
+           texlive-bibleref-mouth
+           texlive-bibleref-parse
+           texlive-collection-latex
+           texlive-covington
+           texlive-diadia
+           texlive-dramatist
+           texlive-dvgloss
+           texlive-ecltree
+           texlive-edfnotes
+           texlive-eledform
+           texlive-eledmac
+           texlive-expex
+           texlive-gb4e
+           texlive-gmverse
+           texlive-jura
+           texlive-juraabbrev
+           texlive-juramisc
+           texlive-jurarsp
+           texlive-langnames
+           texlive-ledmac
+           texlive-lexikon
+           texlive-lexref
+           texlive-ling-macros
+           texlive-linguex
+           texlive-liturg
+           texlive-metrix
+           texlive-nnext
+           texlive-parallel
+           texlive-parrun
+           texlive-phonrule
+           texlive-plari
+           texlive-play
+           texlive-poemscol
+           texlive-poetry
+           texlive-poetrytex
+           texlive-qobitree
+           texlive-qtree
+           texlive-reledmac
+           texlive-rrgtrees
+           texlive-rtklage
+           texlive-screenplay
+           texlive-screenplay-pkg
+           texlive-sides
+           texlive-stage
+           texlive-textglos
+           texlive-thalie
+           texlive-theatre
+           texlive-tree-dvips
+           texlive-verse
+           texlive-xyling))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Humanities packages")
+    (description
+     "This collection contains packages for law, linguistics, social sciences,
+humanities, etc.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
 (define-public texlive-collection-langarabic
   (package
     (name "texlive-collection-langarabic")
@@ -41053,6 +44219,54 @@ HiTeX engine and related.")
     (home-page "https://www.tug.org/texlive/")
     (synopsis "Support for Arabic and Persian")
     (description "This collection provides support for Arabic and Persian.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-langchinese
+  (package
+    (name "texlive-collection-langchinese")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-arphic
+           texlive-arphic-ttf
+           texlive-asymptote-by-example-zh-cn
+           texlive-asymptote-faq-zh-cn
+           texlive-asymptote-manual-zh-cn
+           texlive-cns
+           texlive-collection-langcjk
+           texlive-ctex
+           texlive-ctex-faq
+           texlive-exam-zh
+           texlive-fandol
+           texlive-fduthesis
+           texlive-hanzibox
+           texlive-hyphen-complete
+           texlive-impatient-cn
+           texlive-install-latex-guide-zh-cn
+           texlive-latex-notes-zh-cn
+           texlive-lshort-chinese
+           texlive-nanicolle
+           texlive-njurepo
+           texlive-pgfornament-han
+           texlive-qyxf-book
+           texlive-texproposal
+           texlive-tlmgr-intro-zh-cn
+           texlive-upzhkinsoku
+           texlive-xpinyin
+           texlive-xtuthesis
+           texlive-zhlineskip
+           texlive-zhlipsum
+           texlive-zhmetrics
+           texlive-zhmetrics-uptex
+           texlive-zhnumber
+           texlive-zhspacing))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Support for Chinese")
+    (description
+     "This collection provides support for Chinese, with additional packages
+from @code{collection-langcjk}.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
 (define-public texlive-collection-langcjk
@@ -41497,6 +44711,112 @@ simply on the size of the support.")
     (home-page "https://www.tug.org/texlive/")
     (synopsis "Support for Italian")
     (description "This collection provides support packages for Italian.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-langjapanese
+  (package
+    (name "texlive-collection-langjapanese")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-ascmac
+           texlive-asternote
+           texlive-babel-japanese
+           texlive-bxbase
+           texlive-bxcjkjatype
+           texlive-bxghost
+           texlive-bxjaholiday
+           texlive-bxjalipsum
+           texlive-bxjaprnind
+           texlive-bxjatoucs
+           texlive-bxjscls
+           texlive-bxorigcapt
+           texlive-bxwareki
+           texlive-collection-langcjk
+           texlive-convbkmk
+           texlive-endnotesj
+           texlive-gckanbun
+           texlive-gentombow
+           texlive-haranoaji
+           texlive-haranoaji-extra
+           texlive-ieejtran
+           texlive-ifptex
+           texlive-ifxptex
+           texlive-ipaex
+           texlive-japanese-mathformulas
+           texlive-japanese-otf
+           texlive-jieeetran
+           texlive-jlreq
+           texlive-jlreq-deluxe
+           texlive-jpneduenumerate
+           texlive-jpnedumathsymbols
+           texlive-jsclasses
+           texlive-kanbun
+           texlive-lshort-japanese
+           texlive-luatexja
+           texlive-mendex-doc
+           texlive-morisawa
+           texlive-pbibtex-base
+           texlive-pbibtex-manual
+           texlive-platex
+           texlive-platex-tools
+           texlive-platexcheat
+           texlive-plautopatch
+           texlive-ptex
+           texlive-ptex-base
+           texlive-ptex-fontmaps
+           texlive-ptex-fonts
+           texlive-ptex-manual
+           texlive-ptex2pdf
+           texlive-pxbase
+           texlive-pxchfon
+           texlive-pxcjkcat
+           texlive-pxjahyper
+           texlive-pxjodel
+           texlive-pxrubrica
+           texlive-pxufont
+           texlive-uplatex
+           texlive-uptex
+           texlive-uptex-base
+           texlive-uptex-fonts
+           texlive-wadalab
+           texlive-zxjafbfont
+           texlive-zxjatype))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Support for Japanese")
+    (description
+     "This collection provides support for Japanese, with additional packages
+from @code{collection-langcjk}.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-langkorean
+  (package
+    (name "texlive-collection-langkorean")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-baekmuk
+           texlive-cjk-ko
+           texlive-collection-langcjk
+           texlive-kotex-oblivoir
+           texlive-kotex-plain
+           texlive-kotex-utf
+           texlive-kotex-utils
+           texlive-lshort-korean
+           texlive-nanumtype1
+           texlive-pmhanguljamo
+           texlive-uhc
+           texlive-unfonts-core
+           texlive-unfonts-extra))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Support for Korean")
+    (description
+     "This collection provides support for Korean, with additional packages
+from @code{collection-langcjk}.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
 (define-public texlive-collection-langother
@@ -47463,6 +50783,22 @@ letters in their names may be defined.")
               "0rcw2d5ncq8avk33nxika34q3da1v4kcmr6jqdxdg49bq4h8ljs7")))
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (native-inputs
+     (list (texlive-updmap.cfg
+            (list texlive-bera
+                  texlive-enumitem
+                  texlive-etoolbox
+                  texlive-hypdoc
+                  texlive-inconsolata
+                  texlive-lipsum
+                  texlive-listings
+                  texlive-mathpazo
+                  texlive-microtype
+                  texlive-palatino
+                  texlive-svn-prov
+                  texlive-upquote
+                  texlive-xkeyval))))
     (home-page "https://ctan.org/pkg/everyhook")
     (synopsis "Hooks for standard TeX token lists")
     (description
