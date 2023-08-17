@@ -4241,7 +4241,7 @@ hard-coded.")
 (define-public thermald
   (package
     (name "thermald")
-    (version "2.5.3")
+    (version "2.5.4")
     (source
      (origin
       (method git-fetch)
@@ -4250,7 +4250,7 @@ hard-coded.")
              (commit (string-append "v" version))))
       (file-name (git-file-name name version))
       (sha256
-       (base32 "0hpk7pjlrnj62m5zdmih7gf3nihhyphyslh5xakdjb64cvx5z25d"))))
+       (base32 "1w886ik0izjmzsfff0g6rmn27xma5b66qv73cfjih7pyvclhnhp5"))))
     (build-system gnu-build-system)
     (arguments
      `(#:configure-flags
