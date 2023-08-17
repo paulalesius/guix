@@ -1269,6 +1269,28 @@ a Marathi journal, with LaTeX.")
                    (license:fsf-free "file://doc/latex/aalok/README.txt")
                    license:fdl1.3+))))
 
+(define-public texlive-abc
+  (package
+    (name "texlive-abc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/abc/" "source/latex/abc/"
+                   "tex/latex/abc/")
+             (base32
+              "1vywrv35h65gkxipc7d26k32r04fk61kfkkk9bj3zsmxsw1v3r8d")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/abc")
+    (synopsis "Support ABC music notation in LaTeX")
+    (description
+     "The abc package lets you include lines of music written in the ABC Plus
+language.  The package will then employ the @code{\\write18} facility to
+convert your notation to PostScript (using the established utility
+@command{abcm2ps}) and hence to the format needed for inclusion in your
+document.")
+    (license license:lppl1.2+)))
+
 (define-public texlive-accents
   (package
     (name "texlive-accents")
@@ -2571,6 +2593,34 @@ package tries to put breaks at adequate places.  It is suitable for
 computer-generated long formulae with many terms.")
     (license license:lppl1.3+)))
 
+(define-public texlive-autosp
+  (package
+    (name "texlive-autosp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/autosp/"
+                   "doc/man/man1/autosp.1"
+                   "doc/man/man1/autosp.man1.pdf"
+                   "doc/man/man1/tex2aspc.1"
+                   "doc/man/man1/tex2aspc.man1.pdf")
+             (base32
+              "16szmbffp9pwzv7zq3l4yvnsfk4m7w57wib7pqpgv1v5fzhlaahs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/autosp")
+    (synopsis
+     "Preprocessor generating note-spacing commands for MusiXTeX scores")
+    (description
+     "This program simplifies the creation of MusiXTeX scores by converting
+(non-standard) commands of the form @code{\\anotes ... \\en} into one or more
+conventional note-spacing commands, as determined by the note values
+themselves, with @code{\\sk} spacing commands inserted as necessary.  The
+coding for an entire measure can be entered one part at a time, without
+concern for note-spacing changes within the part or spacing requirements of
+other parts.")
+    (license license:gpl2+)))
+
 (define-public texlive-axodraw2
   (package
     (name "texlive-axodraw2")
@@ -2670,6 +2720,25 @@ in-line BNF expressions using math mode.")
 @file{dotum.ttf} (sans-serif), @file{gulim.ttf} (sans-serif rounded) and
 @file{hline.ttf} (headline).")
     (license license:expat)))
+
+(define-public texlive-bagpipe
+  (package
+    (name "texlive-bagpipe")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/bagpipe/"
+                   "tex/generic/bagpipe/")
+             (base32
+              "0zybnikkj00hmlzfaaljcq1ml5vi6qfhl1hfrjq9vjc409vzzvka")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bagpipe")
+    (synopsis "Support for typesetting bagpipe music")
+    (description
+     "Typesetting bagpipe music in MusixTeX is needlessly tedious.  This
+package provides specialized and re-defined macros to simplify this task.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-bangla
   (package
@@ -4120,6 +4189,48 @@ given by Mumbai University.")
                    ;; Aalok (आलोक) copyleft license v1.0+.
                    (license:fsf-free "file://doc/latex/aalok/README.txt")
                    license:fdl1.3+))))
+
+(define-public texlive-chordbars
+  (package
+    (name "texlive-chordbars")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chordbars/"
+                   "tex/latex/chordbars/")
+             (base32
+              "0pyxnjalrmkan3mjir6w3g3xhgyzzbjkjhxz460p1nm8n5ng05xq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chordbars")
+    (synopsis "Print chord grids for pop/jazz tunes")
+    (description
+     "This Tikz-based music-related package is targeted at pop/jazz
+guitar/bass/piano musicians.  They usually need only the chords and the song
+structure.  This package produces rectangular song patterns with one square
+per bar, with the chord shown inside the square.  It also handles the song
+structure by showing the bar count and the repetitions of the patterns.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-chordbox
+  (package
+    (name "texlive-chordbox")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chordbox/" "tex/latex/chordbox/")
+             (base32
+              "01css8dnzss7s711ry2rs2fi3bw70s0lgj0cwwdicjgi331zbq70")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chordbox")
+    (synopsis "Draw chord diagrams")
+    (description
+     "This package provides two macros for drawing chord diagrams, as may be
+found for example in chord charts/books and educational materials.  They are
+composed as TikZ pictures and have several options to modify their
+appearance.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-chronosys
   (package
@@ -5990,6 +6101,30 @@ exercises and the activities.")
 It can make it easy to write theses both in Chinese and English.")
     (license license:lppl1.3c)))
 
+(define-public texlive-figbas
+  (package
+    (name "texlive-figbas")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/figbas/"
+                   "fonts/afm/public/figbas/"
+                   "fonts/map/dvips/figbas/"
+                   "fonts/tfm/public/figbas/"
+                   "fonts/type1/public/figbas/")
+             (base32
+              "07dc19989sx968hbn3h2m1bbplp8zqh1yj9v92mcp54876rk8bbp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/figbas")
+    (synopsis "Mini-fonts for figured-bass notation in music")
+    (description
+     "This package consists of three mini-fonts (and associated metrics) of
+conventional ligatures for the figured-bass notations 2+, 4+, 5+, 6+ and 9+ in
+music manuscripts.  The fonts are usable with Computer Modern Roman and Sans,
+and Palatino/Palladio, respectively.")
+    (license license:lppl)))
+
 (define-public texlive-filecontentsdef
   (package
     (name "texlive-filecontentsdef")
@@ -6346,6 +6481,27 @@ nets, diagrams, etc., very easily, in the LaTeX @code{picture} environment.")
 glosses, and various other goodies.")
     (license license:lppl1.2+)))
 
+(define-public texlive-gchords
+  (package
+    (name "texlive-gchords")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gchords/" "tex/latex/gchords/")
+             (base32
+              "0wchfk25v6rh5nffjyn8bypwjsqc9pi2rjrw3np65a0sxxc0sl1v")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gchords")
+    (synopsis "Typeset guitar chords")
+    (description
+     "This package provides a LaTeX package for typesetting of guitar chord
+diagrams, including options for chord names, finger numbers and typesetting
+above lyrics.  The bundle also includes a TCL script (@file{chordbox.tcl})
+that provides a graphical application which creates LaTeX files that use
+@file{gchords.sty}.")
+    (license license:gpl3+)))
+
 (define-public texlive-gene-logic
   (package
     (name "texlive-gene-logic")
@@ -6519,6 +6675,32 @@ The package also provides an interface to control various settings including
 algorithm parameters.")
     (license license:expat)))
 
+(define-public texlive-gregoriotex
+  (package
+    (name "texlive-gregoriotex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/luatex/gregoriotex/"
+                   "fonts/source/gregoriotex/"
+                   "fonts/truetype/public/gregoriotex/"
+                   "scripts/gregoriotex/"
+                   "source/luatex/gregoriotex/"
+                   "tex/lualatex/gregoriotex/"
+                   "tex/luatex/gregoriotex/")
+             (base32
+              "0lnpq6rfdb6dg543cmbsm817ziim6arxnzxzbn0wn8i8aw681idr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gregoriotex")
+    (synopsis "Engraving gregorian chant scores")
+    (description
+     "Gregorio is a software application for engraving gregorian chant scores
+on a computer.  Gregorio's main job is to convert a gabc file (simple text
+representation of a score) into a GregorioTeX file, which makes TeX able to
+create a PDF of your score.")
+    (license license:gpl3)))
+
 (define-public texlive-grundgesetze
   (package
     (name "texlive-grundgesetze")
@@ -6539,6 +6721,27 @@ algorithm parameters.")
 concept-script in the style of his @emph{Grundgesetze der Arithmetik} (Basic
 Laws of Arithmetic).")
     (license license:gpl2)))
+
+(define-public texlive-gtrcrd
+  (package
+    (name "texlive-gtrcrd")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gtrcrd/" "tex/latex/gtrcrd/")
+             (base32
+              "0ndnzkm84ynn3wcnfg6j6fcl87wmd3g9w5d17g1z6qp340asrkp9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gtrcrd")
+    (synopsis "Add chords to lyrics")
+    (description
+     "The package provides the means to specify guitar chords to be played
+with each part of the lyrics of a song.  The syntax of the macros reduces the
+chance of failing to provide a chord where one is needed, and the structure of
+the macros ensures that the chord specification appears immediately above the
+start of the lyric.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-gu
   (package
@@ -6579,6 +6782,67 @@ Currently two steps of symmetry reduction are supported.")
 4th edition, by Helmut Kopka and Patrick W. Daly as code, sample figures,
 processed files, as well as solutions to the exercices.")
     (license license:lppl1.3c+)))
+
+(define-public texlive-guitar
+  (package
+    (name "texlive-guitar")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/guitar/" "source/latex/guitar/"
+                   "tex/latex/guitar/")
+             (base32
+              "0rywmlz59mjm59n4607qk9fa62w1c9qv9iyyja8k9vb4pc9yijrc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/guitar")
+    (synopsis "Guitar chords and song texts")
+    (description
+     "This package provides (La)TeX macros for typesetting guitar chords over
+song texts.  Note that this package only places arbitrary TeX code over the
+lyrics.  To typeset the chords graphically (and not only by name), the author
+recommends use of an additional package such as @code{gchords}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-guitarchordschemes
+  (package
+    (name "texlive-guitarchordschemes")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/guitarchordschemes/"
+                   "tex/latex/guitarchordschemes/")
+             (base32
+              "189xx0y549ss4ip8x2f1rpcqyad5njrni785sxmy2cghqbdcgzzn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/guitarchordschemes")
+    (synopsis "Guitar chord and scale tablatures")
+    (description
+     "This package provides two commands (@code{\\chordscheme} and
+@code{\\scales}).  With those commands it is possible to draw schematic
+diagrams of guitar chord tablatures and scale tablatures.  Both commands know
+a range of options that allow wide customization of the output.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-guitartabs
+  (package
+    (name "texlive-guitartabs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/guitartabs/"
+                   "tex/latex/guitartabs/")
+             (base32
+              "1hk5yl7za7mm6cpg9g4z5wnq4m2nwm41sq8w7m8ic38sr85n67zz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/guitartabs")
+    (synopsis "Class for drawing guitar tablatures easily")
+    (description
+     "This package provides is a simple LaTeX2e class that allows guitarists
+to create basic guitar tablatures using LaTeX.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-gustlib
   (package
@@ -6638,6 +6902,24 @@ directories.")
      "The output PDF file gives an amusing display, as the reader pages
 through it.")
     (license license:public-domain)))
+
+(define-public texlive-harmony
+  (package
+    (name "texlive-harmony")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/harmony/" "tex/latex/harmony/")
+             (base32
+              "0ky4aiv3zvykfwalf1md4lzjbr9pc14i93xsxdwl25jcsi2kvjk7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/harmony")
+    (synopsis "Typeset harmony symbols, etc., for musicology")
+    (description
+     "The package @file{harmony.sty} helps typesetting harmony symbols for
+musicology.")
+    (license license:lppl)))
 
 (define-public texlive-hanzibox
   (package
@@ -7904,6 +8186,26 @@ bibliographies, indexes and page layout).")
 @code{latex2e-help-texinfo}.")
     (license license:public-domain)))
 
+(define-public texlive-latex4musicians
+  (package
+    (name "texlive-latex4musicians")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/latex4musicians/")
+             (base32
+              "1zvy2pa93kyn056d5n0irzdq5xmzki6d35zxacxfy19r0g9rwq6f")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/latex4musicians")
+    (synopsis "Guide for combining LaTeX and music")
+    (description
+     "This guide, @emph{LaTeX for Musicians}, explains how to create LaTeX
+documents that include several kinds of music elements: music symbols, song
+lyrics, guitar chords diagrams, lead sheets, music excerpts, guitar
+tablatures, multi-page scores.")
+    (license license:fdl1.3+)))
+
 (define-public texlive-latexcheat-de
   (package
     (name "texlive-latexcheat-de")
@@ -7965,6 +8267,25 @@ be able to use ligatures and quotation marks.  Finally, it offers a text in
 Interlingua that can be used as a dummy text: @emph{Fundamento de
 intelligentia}.")
     (license license:public-domain)))
+
+(define-public texlive-leadsheets
+  (package
+    (name "texlive-leadsheets")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/leadsheets/"
+                   "tex/latex/leadsheets/")
+             (base32
+              "12aly170pf10dw82i6rykiaxl9r5mmva7kvkhlywir4s6gx07gjc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/leadsheets")
+    (synopsis "Typesetting leadsheets and songbooks")
+    (description
+     "This LaTeX package offers support for typesetting simple leadsheets of
+songs, i.e., song lyrics and the corresponding chords.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-ledmac
   (package
@@ -8097,6 +8418,38 @@ indexes for each cited Act.")
      "This package draws Hasse diagrams of the partially ordered sets of the
 simple roots of any complex simple Lie algebra.  It uses the Dynkin diagrams
 package @code{dynkin-diagrams}.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-lilyglyphs
+  (package
+    (name "texlive-lilyglyphs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lilyglyphs/"
+                   "fonts/opentype/public/lilyglyphs/"
+                   "scripts/lilyglyphs/"
+                   "source/latex/lilyglyphs/fonts/"
+                   "source/latex/lilyglyphs/glyphimages/definitions/"
+                   "source/latex/lilyglyphs/glyphimages/generated_src/"
+                   "tex/latex/lilyglyphs/")
+             (base32
+              "1g5v2bq7ml9pnh2xlkzf6k9zh3azw7i96iapp8yajyxk8akj0ki2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:link-scripts
+           #~(list "lily-glyph-commands.py"
+                   "lily-image-commands.py"
+                   "lily-rebuild-pdfs.py")))
+    (inputs (list python))
+    (home-page "https://ctan.org/pkg/lilyglyphs")
+    (synopsis "Access Lilypond fragments and glyphs, in LaTeX")
+    (description
+     "The package provides the means to include arbitrary elements of LilyPond
+notation, including symbols from Lilypond's Emmentaler font, in a LaTeX
+document.  The package uses OpenType fonts, and as a result must be compiled
+with LuaLaTeX or XeLaTeX.")
     (license license:lppl1.3c)))
 
 (define-public texlive-ling-macros
@@ -8766,6 +9119,54 @@ LaTeX2e}.")
      "The package provides language drivers for the listings package for
 several languages not included in that package: BUGS, JAGS, and Stan.")
     (license license:lppl1.3+)))
+
+(define-public texlive-lyluatex
+  (package
+    (name "texlive-lyluatex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/support/lyluatex/" "scripts/lyluatex/"
+                   "tex/luatex/lyluatex/")
+             (base32
+              "04w57pki09mzhaxv3s1f2m0bj1df5aqxygqgrihvkabc5x00is87")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lyluatex")
+    (synopsis
+     "Commands to include LilyPond scores within a (Lua)LaTeX document")
+    (description
+     "This package provides macros for the inclusion of LilyPond scores within
+LuaLaTeX.  It calls LilyPond to compile scores, then includes the produced
+files.")
+    (license license:expat)))
+
+(define-public texlive-m-tx
+  (package
+    (name "texlive-m-tx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/m-tx/"
+                   "doc/man/man1/prepmx.1"
+                   "doc/man/man1/prepmx.man1.pdf"
+                   "scripts/m-tx/"
+                   "tex/generic/m-tx/"
+                   "tex/latex/m-tx/")
+             (base32
+              "1sakzv7r6mybx0k7k0fi1qb789nf7lvbl0ns8s0hhc9fz37b0br5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "m-tx.lua")))
+    (home-page "https://ctan.org/pkg/m-tx")
+    (synopsis "Preprocessor for @command{pmx}")
+    (description
+     "M-Tx is a preprocessor to @command{pmx}, which is itself a preprocessor
+to MusixTeX, a music typesetting system.  The prime motivation to the
+development of M-Tx was to provide lyrics for music to be typeset.  In fact,
+@command{pmx} now provides a lyrics interface, but M-Tx continues in use by
+those who prefer its language.")
+    (license license:expat)))
 
 (define-public texlive-macros2e
   (package
@@ -9498,6 +9899,197 @@ related to multiobjective optimisation, multiobjective evolutionary
 algorithms, multicriteria decision making and similar fields.")
     (license license:lppl)))
 
+(define-public texlive-musical
+  (package
+    (name "texlive-musical")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/musical/" "tex/latex/musical/")
+             (base32
+              "0qdrd622vs5dkr5w6pvf04hvni1jqcgxfvhf0ak7gjaxjczisb9h")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/musical")
+    (synopsis "Typeset (musical) theatre scripts")
+    (description
+     "This package is designed to simplify the development and distribution of
+scripts for theatrical musicals, especially ones under development.  The
+output is formatted to follow generally accepted script style while also
+maintaining a high level of typographic integrity, and includes commands for
+dialog, lyrics, stage directions, music and dance cues, rehearsal marks, and
+more.  It gracefully handles dialog that crosses page breaks, and can generate
+lists of songs and lists of dances in the show.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-musicography
+  (package
+    (name "texlive-musicography")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/musicography/"
+                   "tex/latex/musicography/")
+             (base32
+              "07z5yg0ganmmp3qx5v55ll82sf45x6mhjl59abc5xckkfrgixpxn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/musicography")
+    (synopsis "Accessing symbols for music writing with pdfLaTeX")
+    (description
+     "This package makes available the most commonly used symbols in writing
+about music in a way that can be used with pdfLaTeX and looks consistent and
+attractive.  It includes accidentals, meters, and notes of different rhythmic
+values.  The package builds on the approach used in the @code{harmony}
+package, where the symbols are taken from the MusiXTeX fonts.  But it provides
+a larger range of symbols and a more flexible, user-friendly interface.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-musixguit
+  (package
+    (name "texlive-musixguit")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/musixguit/"
+                   "tex/latex/musixguit/")
+             (base32
+              "1ck8li0wdn22x0g4f57c9r57ans4rj7ggrm3rsp7xnqgc78as065")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/musixguit")
+    (synopsis "Easy notation for guitar music, in MusixTeX")
+    (description
+     "The package provides commands for typesetting notes for guitar,
+especially for simplifying guitar notation with MusixTeX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-musixtex
+  (package
+    (name "texlive-musixtex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/musixtex/"
+                   "doc/man/man1/musixflx.1"
+                   "doc/man/man1/musixflx.man1.pdf"
+                   "doc/man/man1/musixtex.1"
+                   "doc/man/man1/musixtex.man1.pdf"
+                   "dvips/musixtex/"
+                   "scripts/musixtex/"
+                   "source/generic/musixtex/musixcrd/"
+                   "tex/generic/musixtex/"
+                   "tex/latex/musixtex/")
+             (base32
+              "1j46cf3v3jmhww47xvm4grnb495aggf1vnmb2sq3zbk9pfmrvd4x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:build-targets #~(list "strip.tex")
+           #:link-scripts #~(list "musixflx.lua" "musixtex.lua")))
+    (home-page "https://ctan.org/pkg/musixtex")
+    (synopsis "Sophisticated music typesetting")
+    (description
+     "MusiXTeX provides a set of macros, based on the earlier MusicTeX,
+for typesetting music with TeX.  To produce optimal spacing, MusiXTeX
+is a three-pass system: @command{etex}, @command{musixflx}, and
+@command{etex} again.  (Musixflx is a Lua script that is provided in
+the bundle.) The three-pass process, optionally followed by processing
+for printed output, is automated by the @command{musixtex} wrapper
+script.
+
+The package uses its own specialised fonts, which must be available on the
+system for @command{musixtex} to run.  The MusiXTeX macros are universally
+acknowledged to be challenging to use directly: the @command{pmx} preprocessor
+compiles a simpler input language to MusiXTeX macros.")
+    (license license:gpl2+)))
+
+(define-public texlive-musixtex-fonts
+  (package
+    (name "texlive-musixtex-fonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/musixtex-fonts/"
+                   "fonts/map/dvips/musixtex-fonts/"
+                   "fonts/opentype/public/musixtex-fonts/"
+                   "fonts/source/public/musixtex-fonts/"
+                   "fonts/tfm/public/musixtex-fonts/"
+                   "fonts/type1/public/musixtex-fonts/")
+             (base32
+              "0ychs959d1yvxkhwayf73iwvl4qg0a6v5fk7lnw8w3hk8n7zvp86")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/musixtex-fonts")
+    (synopsis "Fonts used by MusixTeX")
+    (description
+     "These are fonts for use with MusixTeX; they are provided both as
+original Metafont source, and as converted Adobe Type 1.  The bundle renders
+the older (Type 1 fonts only) bundle @code{musixtex-t1fonts} obsolete.")
+    (license license:gpl3+)))
+
+(define-public texlive-musixtnt
+  (package
+    (name "texlive-musixtnt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/musixtnt/"
+                   "doc/man/man1/msxlint.1"
+                   "doc/man/man1/msxlint.man1.pdf"
+                   "tex/generic/musixtnt/")
+             (base32
+              "0z1rfscla1hiibd0gs3lgf8x5yx19pmwdsbzvx2vvz0ikwgjglm9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list
+      #:tests? #true
+      #:modules '((guix build texlive-build-system)
+                  ((guix build gnu-build-system) #:prefix gnu:)
+                  (guix build utils)
+                  (srfi srfi-1))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'unpack-musixtnt-source
+            (lambda _
+              (mkdir-p "build")
+              (with-directory-excursion "build"
+                (invoke "tar" "xvf"
+                        ;; Tarball includes a release date that we ignore.
+                        (first (find-files ".." "^musixtnt-.*\\.tar.gz"))
+                        "--strip-components=1"))))
+          (add-after 'unpack-prerex-source 'build-msxlint
+            (lambda args
+              (with-directory-excursion "build"
+                (for-each (lambda (phase)
+                            (apply (assoc-ref gnu:%standard-phases phase) args))
+                          '(configure
+                            build
+                            check
+                            install
+                            compress-documentation))))))))
+    (propagated-inputs (list texlive-musixtex))
+    (home-page "https://ctan.org/pkg/musixtnt")
+    (synopsis
+     "MusiXTeX extension library enabling transformations of the effect of
+notes commands")
+    (description
+     "This archive contains a MusiXTeX extension library @file{musixtnt.tex}
+and a program, @command{msxlint}.
+
+@file{musixtnt.tex} provides a macro @code{\\TransformNotes} that enables
+transformations of the effect of notes commands such as @code{\\notes}.  In
+general, the effect of @code{\\TransformNotes@{input@}@{output@}} is that
+notes commands in the source will expect their arguments to match the input
+pattern, but the notes will be typeset according to the output pattern.  An
+example is extracting single-instrument parts from a multi-instrument score.
+
+@command{msxlint} detects incorrectly formatted notes lines in a MusiXTeX
+source file.  This should be used before using @code{\\TransformNotes}.")
+    (license license:gpl2)))
+
 (define-public texlive-mwcls
   (package
     (name "texlive-mwcls")
@@ -9950,6 +10542,26 @@ mathematical function values.")
     (description
      "The package will typeset both Z and Object-Z specifications.")
     (license license:lppl)))
+
+(define-public texlive-octave
+  (package
+    (name "texlive-octave")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/octave/" "tex/latex/octave/")
+             (base32
+              "1avikh00n92lxk7p7h0kvsv2dk2z411fv85fagj7bg6azb3fch8g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/octave")
+    (synopsis "Typeset musical pitches with octave designations")
+    (description
+     "This package package typesets musical pitch names with designation for
+the octave in either the Helmholtz system (with octave numbers), or the
+traditional system (with prime symbols).  The system can also be changed
+mid-document.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-omega
   (package
@@ -10433,6 +11045,25 @@ mode.  All major SI units are included, as well as some @acronym{CGS,
 Centimetre–Gram–Second} units used in astronomy.")
     (license license:lppl1.3c)))
 
+(define-public texlive-piano
+  (package
+    (name "texlive-piano")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/piano/" "tex/latex/piano/")
+             (base32
+              "0nbax18dgg2a9l6bihqhwx0va7829324lk29ibq29wjissmhjqww")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/piano")
+    (synopsis "Typeset a basic 2-octave piano diagram")
+    (description
+     "This package adds the @code{\\keyboard[1][2]..[7]} command to your
+project.  When used, it draws a small 2 octaves piano keyboard on your
+document, with up to 7 keys highlighted.")
+    (license license:lppl)))
+
 (define-public texlive-pinoutikz
   (package
     (name "texlive-pinoutikz")
@@ -10533,6 +11164,58 @@ typsetting common math symbols that require special ISO treatment.")
 to typeset Korean letters (Hangul) using the proper fonts. The use of XeLaTeX
 is recommended.")
     (license license:lppl1.3+)))
+
+(define-public texlive-pmx
+  (package
+    (name "texlive-pmx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/pmx/"
+                   "doc/man/man1/pmxab.1"
+                   "doc/man/man1/pmxab.man1.pdf"
+                   "doc/man/man1/scor2prt.1"
+                   "doc/man/man1/scor2prt.man1.pdf"
+                   "tex/generic/pmx/")
+             (base32
+              "1p9js9izv50vg7qqqmyg5jz4am4phhscqdfnn4nszlyfv3zkg7p3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pmx")
+    (synopsis "Preprocessor for MusiXTeX")
+    (description
+     "PMX provides a preprocessor for MusiXTeX.  @command{pmxab} builds a TeX
+input file based on a @file{.pmx} input file in a much simpler language,
+making most of the layout decisions by itself.  It has most of MusiXTeX's
+functionality, but it also permits in-line TeX to give access to virtually all
+of MusiXTeX.  For proof-listening, @command{pmxab} will make a MIDI file of
+your score.  @command{scor2prt} is an auxiliary program that makes parts from
+a score.")
+    (license license:gpl2)))
+
+(define-public texlive-pmxchords
+  (package
+    (name "texlive-pmxchords")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/man/man1/pmxchords.1"
+                   "doc/man/man1/pmxchords.man1.pdf"
+                   "doc/pmxchords/" "scripts/pmxchords/"
+                   "tex/generic/pmxchords/")
+             (base32
+              "01dlic0b0fdm41982mqj3xpin0wksmsyz4h53vdckkz2ayyagagk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "pmxchords.lua")))
+    (home-page "https://ctan.org/pkg/pmxchords")
+    (synopsis "Produce chord information to go with @command{pmx} output")
+    (description
+     "The bundle supplements @command{pmx}, providing the means of typesetting
+chords above the notes of a score.  The bundle contains: macros for typing the
+chords; a Lua script to transpose chord macros to the required key signature;
+and support scripts for common requirements.")
+    (license license:gpl2)))
 
 (define-public texlive-poemscol
   (package
@@ -11012,6 +11695,27 @@ notation.  This includes easy commands to denote Turing reductions, Turing
 functionals, c.e.@: sets, stagewise computations, forcing and syntactic
 classes.")
     (license license:public-domain)))
+
+(define-public texlive-recorder-fingering
+  (package
+    (name "texlive-recorder-fingering")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/recorder-fingering/"
+                   "tex/latex/recorder-fingering/")
+             (base32
+              "075n6ifhpn15fdnrhp326lzp0dnzs0j287g7kr4xx59cc1m6lqkg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/recorder-fingering")
+    (synopsis "Package to display recorder fingering diagrams")
+    (description
+     "This package provides support for generating and displaying fingering
+diagrams for baroque fingering recorders.  Standard fingerings are provided
+for recorders in both C and F, along with methods to create and display
+alternate fingerings for trills, etc.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-reledmac
   (package
@@ -11645,6 +12349,88 @@ by @code{siunitx}; @code{siunits} has maintenance-only support, now.")
      "The package provides a selection of new maths commands and improved
 re-definitions of existing commands.")
     (license license:lppl1.3+)))
+
+(define-public texlive-songbook
+  (package
+    (name "texlive-songbook")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/songbook/" "makeindex/songbook/"
+                   "source/latex/songbook/"
+                   "tex/latex/songbook/")
+             (base32
+              "0ab4l130dyzaslqmy7vm71rszwszw11kqzkn0b5fb680kxvsyicf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/songbook")
+    (synopsis "Package for typesetting song lyrics and chord books")
+    (description
+     "The package provides an all purpose songbook style.  Three types of
+output may be created from a single input file: ``words and chords'' books for
+the musicians to play from, ``words only'' songbooks for the congregation to
+sing from, and overhead transparency masters for congregational use.
+
+The package will also print a table of contents, an index sorted by title and
+first line, and an index sorted by key, or by artist/composer.  The package
+attempts to handle songs in multiple keys, as well as songs in multiple
+languages.")
+    (license license:lgpl2.1)))
+
+(define-public texlive-songproj
+  (package
+    (name "texlive-songproj")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/songproj/"
+                   "source/latex/songproj/"
+                   "tex/latex/songproj/")
+             (base32
+              "044b9zbm2l1w8flnb5vx99590m65d1nxgys2dj3w79kkbmnhc7jy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/songproj")
+    (synopsis "Generate Beamer slideshows with song lyrics")
+    (description
+     "This package, together with the Beamer class, is used to generate
+slideshows with song lyrics.  This is typically used in religious services in
+churches equipped with a projector, for which this package has been written,
+but it can be useful for any type of singing assembly.  It provides
+environments to describe a song in a natural way, and formatting it into
+slides with overlays.  The package comes with an additional Python script that
+can be used to convert plain-text song lyrics to the expected LaTeX markup.")
+    (license license:bsd-3)))
+
+(define-public texlive-songs
+  (package
+    (name "texlive-songs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/songs/" "source/latex/songs/"
+                   "tex/latex/songs/")
+             (base32
+              "0mgzkh6cvq3smwjlkvd1gnhb7m151fgiv7f4v3drjqlsjyg2qds6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/songs")
+    (synopsis "Produce song books for church or fellowship")
+    (description
+     "The package provides a means of producing beautiful song books for
+church or fellowship.  It offers:
+@itemize
+@item a very easy chord-entry syntax;
+@item multiple modes (words-only; words+chords; slides; handouts);
+@item measure bars;
+@item guitar tablatures;
+@item automatic transposition;
+@item scripture quotations;
+@item multiple indexes (sorted by title, author, important lyrics, or
+scripture references);
+@item and projector-style output generation, for interactive use.
+@end itemize")
+    (license license:gpl2)))
 
 (define-public texlive-spalign
   (package
@@ -26650,6 +27436,25 @@ correctly; and define two extra commands: @code{\\vfrac} and
 @code{\\namedglyph}.")
     (license license:lppl1.3c)))
 
+(define-public texlive-xml2pmx
+  (package
+    (name "texlive-xml2pmx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/man/man1/xml2pmx.1"
+                   "doc/man/man1/xml2pmx.man1.pdf")
+             (base32
+              "1d3ralqh0b71scd59b4hmm707yfrz1rj28ni2lzkhbb1ql73bvah")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xml2pmx")
+    (synopsis "Convert MusicXML to PMX and MusiXTeX")
+    (description
+     "This program translates MusicXML files to input suitable for PMX and
+MusiXTeX processing.")
+    (license license:gpl3+)))
+
 (define-public texlive-xmltexconfig
   (package
     (name "texlive-xmltexconfig")
@@ -26717,6 +27522,29 @@ matching the XML 1.0 and XML Namespace Recommendations.  Element and attribute
 names, as well as character data, may use any characters allowed in XML, using
 UTF-8 or a suitable 8-bit encoding.")
     (license license:lppl1.0+)))        ;per xmltex/base/readme.txt
+
+(define-public texlive-xpiano
+  (package
+    (name "texlive-xpiano")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xpiano/" "source/latex/xpiano/"
+                   "tex/latex/xpiano/")
+             (base32
+              "1nk8v0d641cr4mg4l2k0fv7pl9b26nyi30k4px5wajwm976f042p")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xpiano")
+    (synopsis "Extension of the @code{piano} package")
+    (description
+     "This package provides macros for typesetting virtual keyboards limited
+to two octaves for showing notes represented by a colored circle.  Optionally,
+the number used for pitch analysis can be shown.  It is an extension of
+@file{piano.sty}.  It features extended syntax and several options, like
+setting the color, adding numbers for pitch analysis, one or two octaves, and
+others.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-xpinyin
   (package
@@ -45562,6 +46390,55 @@ science packages.")
     (description
      "This collection includes all MetaPost and Metafont packages, along
 with packages in @code{collection-basic}.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-music
+  (package
+    (name "texlive-collection-music")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-abc
+           texlive-autosp
+           texlive-bagpipe
+           texlive-chordbars
+           texlive-chordbox
+           texlive-collection-latex
+           texlive-ddphonism
+           texlive-figbas
+           texlive-gchords
+           texlive-gregoriotex
+           texlive-gtrcrd
+           texlive-guitar
+           texlive-guitarchordschemes
+           texlive-guitartabs
+           texlive-harmony
+           texlive-latex4musicians
+           texlive-leadsheets
+           texlive-lilyglyphs
+           texlive-lyluatex
+           texlive-m-tx
+           texlive-musical
+           texlive-musicography
+           texlive-musixguit
+           texlive-musixtex
+           texlive-musixtex-fonts
+           texlive-musixtnt
+           texlive-octave
+           texlive-piano
+           texlive-pmx
+           texlive-pmxchords
+           texlive-recorder-fingering
+           texlive-songbook
+           texlive-songproj
+           texlive-songs
+           texlive-xml2pmx
+           texlive-xpiano))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Music packages")
+    (description "This collection includes music-related fonts and packages.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
 (define-public texlive-collection-pictures
