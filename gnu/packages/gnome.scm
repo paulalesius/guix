@@ -2801,11 +2801,12 @@ and how they are displayed (View).")
            gettext-minimal
            `(,glib "bin")
            gobject-introspection
+           itstool
            pkg-config
            python))
     (inputs
      (list bash-minimal
-           librsvg
+           (librsvg-for-system)
            gsettings-desktop-schemas
            gtk+
            pango
@@ -5386,7 +5387,7 @@ once.")
      (list gtk+
            json-glib
            libgee
-           librsvg
+           (librsvg-for-system)
            qqwing))
     (home-page "https://wiki.gnome.org/Apps/Sudoku")
     (synopsis "Japanese logic game")
@@ -6084,7 +6085,7 @@ playlists in a variety of formats.")
        ("pkg-config" ,pkg-config)
        ("xmllint" ,libxml2)))
     (inputs
-     (list gtk+ guile-2.2 libcanberra librsvg))
+     (list gtk+ guile-2.2 libcanberra (librsvg-for-system)))
     (home-page "https://wiki.gnome.org/Apps/Aisleriot")
     (synopsis "Solitaire card games")
     (description
@@ -6671,7 +6672,7 @@ discovery protocols.")
            libxml2
            libsoup
            libpeas
-           librsvg
+           (librsvg-for-system)
            libhandy
            gnome-desktop
            gstreamer
@@ -12156,7 +12157,7 @@ and a high score table.")
      `(("glib" ,glib)
        ("gtk+" ,gtk+)
        ("gtk+-2" ,gtk+-2)
-       ("librsvg" ,librsvg)
+       ("librsvg" ,(librsvg-for-system))
        ("libxml2" ,libxml2)))
     (home-page "https://gitlab.gnome.org/GNOME/gnome-themes-extra")
     (synopsis "GNOME Extra Themes")
