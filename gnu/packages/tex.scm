@@ -1247,6 +1247,23 @@ TGA. Accepted output formats are: EPS, PCL5, PDF, PDF1, PBM, PGM, PPM, PS,
 markedEPS, markedPS, PNG, XWD, BMP, TIFF, JPEG, GIF, XPM.")
     (license license:gpl3+)))
 
+(define-public texlive-aaai-named
+  (package
+    (name "texlive-aaai-named")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/aaai-named/")
+             (base32
+              "1xs2iki0v1mh0kbqjxnv9r24bcfmgj6myfw7h368h8g0s1n8d5v6")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aaai-named")
+    (synopsis "BibTeX style for AAAI")
+    (description
+     "This package provides a BibTeX style derived from the standard master,
+presumably for use with the @code{aaai} package.")
+    (license license:knuth)))
+
 (define-public texlive-aalok
   (package
     (name "texlive-aalok")
@@ -1460,6 +1477,41 @@ a @file{.pl} (Property List) file, which in its turn can be converted to
 a @file{.tfm} (TeX Font Metric) file.  It normally preserves kerns and
 ligatures, but also offers additional control over them.")
     (license license:gpl2)))
+
+(define-public texlive-aichej
+  (package
+    (name "texlive-aichej")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/aichej/")
+             (base32
+              "1pr92pq3yjsrbax6ah01cqg7131fp2rkqqjnxwcrm4119z2ic0gf")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aichej")
+    (synopsis "Bibliography style file for the AIChE Journal")
+    (description
+     "The style was generated using custom-bib, and implements the style of
+the American Institute of Chemical Engineers Journal (or @code{AIChE} Journal
+or @code{AIChE} J or @code{AIChEJ).}")
+    (license license:lppl)))
+
+(define-public texlive-ajl
+  (package
+    (name "texlive-ajl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/ajl/")
+             (base32
+              "1xkrvy06lw4ngj94zybs14ysal2pg7g71h864gq9bjw0zwq2yjzs")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ajl")
+    (synopsis "BibTeX style for AJL")
+    (description
+     "This package provides bibliographic style references in style of
+Australian Journal of Linguistics.")
+    (license license:lppl)))
 
 (define-public texlive-akshar
   (package
@@ -1938,6 +1990,26 @@ of the academic year, a macro to be redefined to change the presentation of
 the years.")
     (license license:lppl1.3c)))
 
+(define-public texlive-annotate
+  (package
+    (name "texlive-annotate")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/annotate/")
+             (base32
+              "12q3xk08ycz57vsrcr2glk7y48w8sbc4n8lrqaicd46cxfd4jdqm")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/annotate")
+    (synopsis "Bibliography style with annotations")
+    (description
+     "The style is a derivative of the standard @code{alpha} style, which
+processes an entry's annotate field as part of the printed output.")
+    ;; There is no explicit license in the "annotate.bst" file, but it
+    ;; mentions being derived from "alpha.bst", which is released under
+    ;; Knuth's terms.  We therefore use the same license.
+    (license license:knuth)))
+
 (define-public texlive-annotate-equations
   (package
     (name "texlive-annotate-equations")
@@ -2014,6 +2086,44 @@ This replaces the original Omega package for use with Lambda, and provides
 extra facilities (including Babel-like language switching, which eases porting
 of LaTeX documents to Lambda).")
     (license license:lppl)))
+
+(define-public texlive-apalike-ejor
+  (package
+    (name "texlive-apalike-ejor")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/apalike-ejor/"
+                   "doc/bibtex/apalike-ejor/")
+             (base32
+              "0qq7c81hqi46596zw322w1qd8z341zksi5720f9s75nj1hmjj12g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/apalike-ejor")
+    (synopsis
+     "BibTeX style file for the European Journal of Operational Research")
+    (description
+     "This package contains a BibTeX style file, @file{apalike-ejor.bst},
+made to follow the European Journal of Operational Research reference style
+guidelines.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-apalike2
+  (package
+    (name "texlive-apalike2")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/apalike2/")
+             (base32
+              "0mn84ahwjg8gvw5lifvcrnch11q79d4bgw3nmhrh4v8slwgip5l7")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/apalike2")
+    (synopsis "Bibliography style that approaches APA requirements")
+    (description
+     "This package is an adaptation of @code{apalike}, which is part of the
+base BibTeX distribution.")
+    (license license:knuth)))
 
 (define-public texlive-apnum
   (package
@@ -2301,6 +2411,28 @@ choose the correct letter depending on word context (initial/medial/final
 form).")
     (license license:lppl1.3+)))
 
+(define-public texlive-archaeologie
+  (package
+    (name "texlive-archaeologie")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/archaeologie/"
+                   "doc/latex/archaeologie/"
+                   "source/latex/archaeologie/"
+                   "tex/latex/archaeologie/")
+             (base32
+              "0w8r9z0k0rxdgxa2p16rqyh7rm83sy0410p5lz5k23h805q5qsmy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/archaeologie")
+    (synopsis "Citation-style for the German Archaeological Institute")
+    (description
+     "This citation-style covers the citation and bibliography rules of the
+German Archaeological Institute (DAI).  Various options are available to
+change and adjust the outcome according to one's own preferences.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-armtex
   (package
     (name "texlive-armtex")
@@ -2527,6 +2659,28 @@ Chinese.")
      "This is an (incomplete, simplified) Chinese translation of the Asymptote
 manual.")
     (license license:lgpl3+)))
+
+(define-public texlive-authordate
+  (package
+    (name "texlive-authordate")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/authordate/"
+                   "doc/bibtex/authordate/"
+                   "tex/latex/authordate/")
+             (base32
+              "0d3cd63b80vfd8vzbpn6dnhy47fpq5rxm95i52id2j6606gi1skf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/authordate")
+    (synopsis "Author/date style citation styles")
+    (description
+     "The bundle provides four BibTeX styles (@code{authordate1}, ...,
+@code{authordate4}), and a LaTeX package, for citation in author/date style.
+The BibTeX styles differ in how they format names and titles; one of them is
+necessary for the LaTeX package to work.")
+    (license license:knuth)))
 
 (define-public texlive-auto-pst-pdf
   (package
@@ -2889,6 +3043,24 @@ issues of numbers in Basque.")
 It may use either TikZ or PSTricks as graphics engine.")
     (license license:lppl1.3+)))
 
+(define-public texlive-beebe
+  (package
+    (name "texlive-beebe")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/beebe/" "tex/generic/beebe/")
+             (base32
+              "060v67ma1r6n9fmg4v4zl2pgxz6gmd4qrazyss9hwq6z4206pqc0")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblio")
+    (synopsis "Collection of bibliographies")
+    (description
+     "This package provides a collection of BibTeX bibliographies on
+TeX-related topics (including, for example, spell-checking and SGML).  Each
+includes a LaTeX wrapper file to typeset the bibliography.")
+    (license license:public-domain)))
+
 (define-public texlive-begingreek
   (package
     (name "texlive-begingreek")
@@ -2952,6 +3124,52 @@ to deal with the Bengali letters that are not in Devanagari.  The package also
 supports Assamese.")
     (license license:lppl)))
 
+(define-public texlive-besjournals
+  (package
+    (name "texlive-besjournals")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/besjournals/"
+                   "doc/bibtex/besjournals/")
+             (base32
+              "1mcc5xa56j17h6wv9b111qypw6ff4mg0skapa4wq79lb8p3l1cmv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/besjournals-bst")
+    (synopsis
+     "Bibliographies suitable for British Ecological Society journals")
+    (description
+     "The package provides a BibTeX style for use with journals published by
+the British Ecological Society.  The style was produced independently of the
+Society, and has no formal approval by the BES.")
+    (license license:lppl)))
+
+(define-public texlive-bestpapers
+  (package
+    (name "texlive-bestpapers")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/bestpapers/"
+                   "doc/bibtex/bestpapers/")
+             (base32
+              "0c0lp51z5z2707r1hig993gbx78v7zb84wmk3z9iyw08m3bbq34s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bestpapers")
+    (synopsis "A BibTeX package to produce lists of authors' best papers")
+    (description
+     "Many people preparing their resumes find the requirement ``please list
+five (or six, or ten) papers authored by you''.  The same requirement is often
+stated for reports prepared by professional teams.  The creation of such lists
+may be a cumbersome task.  Even more difficult is it to support such lists
+over the time, when new papers are added.  The BibTeX style
+@file{bestpapers.bst} is intended to facilitate this task.  It is based on the
+idea that it is easier to score than to sort: we can assign a score to a paper
+and then let the computer select the papers with highest scores.")
+    (license license:public-domain)))
+
 (define-public texlive-betababel
   (package
     (name "texlive-betababel")
@@ -2990,6 +3208,1533 @@ transliteration.")
      "These files are French translations of the classical BibTeX style
 files.")
     (license license:lppl)))
+
+(define-public texlive-bib2gls
+  (package
+    (name "texlive-bib2gls")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/man/man1/bib2gls.1"
+                   "doc/man/man1/bib2gls.man1.pdf"
+                   "doc/man/man1/convertgls2bib.1"
+                   "doc/man/man1/convertgls2bib.man1.pdf"
+                   "doc/support/bib2gls/"
+                   "scripts/bib2gls/"
+                   "source/support/bib2gls/src/")
+             (base32
+              "11a3wvyg5anm9hkmlpb6yvls1bmhypyswj55q332ziac6hpi2wd5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "bib2gls.sh" "convertgls2bib.sh")))
+    (propagated-inputs (list texlive-glossaries-extra))
+    (home-page "https://ctan.org/pkg/bib2gls")
+    (synopsis
+     "Convert @file{.bib} files to @file{glossaries-extra.sty} resource files")
+    (description
+     "This Java command line application may be used to extract glossary
+information stored in a @file{.bib} file and convert it into glossary entry
+definition commands.  This application should be used with
+@file{glossaries-extra.sty}'s record package option.  It performs two
+functions in one: it selects entries according to records found in the
+@file{.aux} file (similar to BibTeX), and hierarchically sorts entries and
+collates location lists (similar to MakeIndex or Xindy).  The glossary entries
+can then be managed in a system such as JabRef, and only the entries that are
+actually required will be defined, reducing the resources required by TeX.
+
+The supplementary application @command{convertgls2bib} can be used to convert
+existing @file{.tex} files containing definitions (@code{\\newglossaryentry}
+etc.)#: to the @file{.bib} format required by @command{bib2gls}.")
+    (license license:gpl3+)))
+
+(define-public texlive-bibarts
+  (package
+    (name "texlive-bibarts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bibarts/" "source/latex/bibarts/"
+                   "tex/latex/bibarts/")
+             (base32
+              "18jms4i9y9ngzr5cf74j6xhxkas4yg7hm1yfgim6iakshhdhy964")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'build 'build-and-install'bibsort
+                 (lambda _
+                   (mkdir-p "build")
+                   (invoke "gcc" "-o" "build/bibsort"
+                           "source/latex/bibarts/bibsort.c")
+                   (install-file "build/bibsort"
+                                 (string-append #$output "/bin")))))))
+    (home-page "https://ctan.org/pkg/bibarts")
+    (synopsis "Arts-style bibliographical information")
+    (description
+     "@code{BibArts} is a LaTeX package to assist in making bibliographical
+features common in the arts and the humanities (history, political science,
+philosophy, etc.).  @file{bibarts.sty} provides commands for quotations,
+abbreviations, and especially for a formatted citation of literature,
+journals (periodicals), edited sources, and archive sources.
+
+It will also copy all citation information, abbreviations, and register key
+words into lists for an automatically generated appendix.  These lists may
+refer to page and footnote numbers. BibArts has nothing to do with BibTeX.
+The lists are created by @command{bibsort}.  This program creates the
+bibliography without using MakeIndex or BibTeX.")
+    (license license:gpl3+)))
+
+(define-public texlive-bibcop
+  (package
+    (name "texlive-bibcop")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/bibtex/bibcop/"
+                   "doc/man/man1/bibcop.1"
+                   "doc/man/man1/bibcop.man1.pdf"
+                   "scripts/bibcop/"
+                   "source/bibtex/bibcop/"
+                   "tex/latex/bibcop/")
+             (base32
+              "0w8n51ksff3b4nfx0ggnh00jhsdh1zg25hijxmpsq0z0wgazai9b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "bibcop.pl")))
+    (inputs (list perl))
+    (propagated-inputs (list texlive-iexec texlive-pgfopts))
+    (home-page "https://ctan.org/pkg/bibcop")
+    (synopsis "Style checker for .bib files")
+    (description
+     "This LaTeX package checks the quality of your @file{.bib} file and emits
+warning messages if any issues are found.  For this, the TeX processor must be
+run with the @samp{--shell-escape} option.  @command{bibcop} can also be used
+as a standalone command line tool.")
+    (license license:expat)))
+
+(define-public texlive-biber-ms
+  (package
+    (name "texlive-biber-ms")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/bibtex/biber-ms/"
+                   "source/bibtex/biber-ms/")
+             (base32
+              "10r9jgarrbvqrz9nkjfkzsy3niggg5w6sjr7zi7bqy8zhkwf3hsf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biber-ms")
+    (synopsis
+     "BibTeX replacement for users of BibLaTeX (multiscript version)")
+    (description
+     "This is the multiscript version of Biber.  It must be used with the
+multiscript version of @code{biblatex-ms}.")
+    (license license:artistic2.0)))
+
+(define-public texlive-bibexport
+  (package
+    (name "texlive-bibexport")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/bibexport/"
+                   "doc/bibtex/bibexport/" "scripts/bibexport/"
+                   "source/bibtex/bibexport/")
+             (base32
+              "161056627w1lazfpld3lyjwfrl8j8gc4b6dzml46bzwf7mk9ifln")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "bibexport.sh")))
+    (home-page "https://ctan.org/pkg/bibexport")
+    (synopsis "Extract a BibTeX file based on a @file{.aux} file")
+    (description
+     "This package provides a Bourne shell script that uses BibTeX to extract
+bibliography entries that are @code{\\cite}'d in a document.  It can also
+expand a BibTeX file, expanding the abbreviations (other than the built-in
+ones like month names) and following the cross-references.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-bibhtml
+  (package
+    (name "texlive-bibhtml")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/bibhtml/" "doc/bibtex/bibhtml/")
+             (base32
+              "0fjpipxc885hk9pvjf3f0wsp84lr1d7flvs5c56jmlvryvc6mv0w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bibhtml")
+    (synopsis "BibTeX support for HTML files")
+    (description
+     "Bibhtml consists of a Perl script and a set of BibTeX style files, which
+together allow you to output a bibliography as a collection of HTML files.
+The references in the text are linked directly to the corresponding
+bibliography entry, and if a URL is defined in the entry within the BibTeX
+database file, then the generated bibliography entry is linked to this.  The
+package provides three different style files derived from each of the standard
+@file{plain.bst} and @file{alpha.bst}, as well as two style files derived from
+@file{abbrv.bst} and unsrt.bst (i.e., eight in total).")
+    (license license:gpl3+)))
+
+(define-public texlive-biblatex-abnt
+  (package
+    (name "texlive-biblatex-abnt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-abnt/"
+                   "tex/latex/biblatex-abnt/")
+             (base32
+              "14j3yn8ijwaa547gzyw7ql8q871w5r9rprc6l1s5dhp7vz3kzk6z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-abnt")
+    (synopsis "BibLaTeX style for Brazil's ABNT rules")
+    (description
+     "This package offers a BibLaTeX style for Brazil's ABNT (Brazilian
+Association of Technical Norms) rules.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-ajc2020unofficial
+  (package
+    (name "texlive-biblatex-ajc2020unofficial")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-ajc2020unofficial/"
+                   "tex/latex/biblatex-ajc2020unofficial/")
+             (base32
+              "1ngh68a7ihhvpdfz09c087pfqnnpj3mnm8c4jmw8krq52b79fr87")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-ajc2020unofficial")
+    (synopsis "BibLaTeX style for the Australasian Journal of Combinatorics")
+    (description
+     "This is an unofficial BibLaTeX style for the Australasian Journal of
+Combinatorics.  Note that the journal (as for 01 March 2020) does not accept
+BibLaTeX, so you probably want to use @code{biblatex2bibitem}.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-anonymous
+  (package
+    (name "texlive-biblatex-anonymous")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-anonymous/"
+                   "tex/latex/biblatex-anonymous/")
+             (base32
+              "1q24xrr80i6xsq65gfvvi1s5qsp78g52qgn2nf2523gjnnzp4p7n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-anonymous")
+    (synopsis "Tool to manage anonymous work with BibLaTeX")
+    (description
+     "The package provides tools to help manage anonymous work with BibLaTeX.
+It will be useful, for example, in history or classical philology.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-apa6
+  (package
+    (name "texlive-biblatex-apa6")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-apa6/"
+                   "tex/latex/biblatex-apa6/")
+             (base32
+              "14xkqca4l4sb8jwlz6k28hmlya4m9474sv79icyzzq1v0vbqmgbq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-apa6")
+    (synopsis "BibLaTeX citation and reference style for APA 6th Edition")
+    (description
+     "This is a fairly complete BibLaTeX style (citations and references) for
+APA (American Psychological Association) 6th Edition conformant publications.
+It implements and automates most of the guidelines in the APA 6th edition
+style guide for citations and references.  An example document is also given
+which typesets every citation and reference example in the APA 6th edition
+style guide.  This is a legacy style for 6th Edition documents.  Please use
+the BibLaTeX-apa style package for the latest APA edition conformance.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-archaeology
+  (package
+    (name "texlive-biblatex-archaeology")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-archaeology/"
+                   "source/latex/biblatex-archaeology/"
+                   "tex/latex/biblatex-archaeology/")
+             (base32
+              "059mp6c1wgxkdjqrpwyx9yafw8dma75c3653rjc3sp66xx3akr8k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-archaeology")
+    (synopsis "Collection of BibLaTeX styles for German prehistory")
+    (description
+     "This package provides additional BibLaTeX styles for German humanities.
+Its core purpose is to enable the referencing rules of the Romano-Germanic
+Commission (@emph{Romisch-Germanische Kommission}), the department of
+prehistory of the German Archaeological Institute (@emph{Deutsches
+Archaologisches Institut}), since these are referenced by most guidelines in
+German prehistory and medieval archaeology and serve as a kind of template.
+@code{biblatex-archaeology} provides verbose, numeric and author date styles
+as well and adaptions to specific document types like exhibition and auction
+catalogues.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-arthistory-bonn
+  (package
+    (name "texlive-biblatex-arthistory-bonn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-arthistory-bonn/"
+                   "tex/latex/biblatex-arthistory-bonn/")
+             (base32
+              "0iwms7w1xqghdf3s0m91xzw4y7d20lvpv69ibl92cpjj5fggp0x8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-arthistory-bonn")
+    (synopsis "BibLaTeX citation style for art historians")
+    (description
+     "This citation style covers the citation and bibliography guidelines of
+the Kunsthistorisches Institut der Universitat Bonn for undergraduates.  It
+introduces bibliography entry types for catalogs and features a tabular
+bibliography, among other things.  Various options are available to change and
+adjust the outcome according to one's own preferences.  The style is
+compatible with English and German.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-bath
+  (package
+    (name "texlive-biblatex-bath")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-bath/"
+                   "source/latex/biblatex-bath/"
+                   "tex/latex/biblatex-bath/")
+             (base32
+              "1c640csqvq0f9fd5d7xx4apllbwvr4cmi2x38863wlrvlnxa9kd7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-bath")
+    (synopsis "Style recommended by the University of Bath Library")
+    (description
+     "This package provides a BibLaTeX style to format reference lists in the
+Harvard style recommended by the University of Bath Library.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-bookinarticle
+  (package
+    (name "texlive-biblatex-bookinarticle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-bookinarticle/"
+                   "tex/latex/biblatex-bookinarticle/")
+             (base32
+              "0mhj3adqlirylhjqj8y0m8pinmark07zqvx00zl9rrdpagj6q4y8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-bookinarticle")
+    (synopsis "Manage book edited in article")
+    (description
+     "This package provides three new BibLaTeX entry types --- @code{@@bookinarticle},
+@code{@@bookinincollection} and @code{@@bookinthesis} --- to refer to a modern
+edition of an old book, where this modern edition is provided in
+a @code{@@article}, @code{@@incollection} or in a @code{@@thesis}.  The
+package is now superseded by @code{biblatex-bookinother}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-bookinother
+  (package
+    (name "texlive-biblatex-bookinother")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-bookinother/"
+                   "tex/latex/biblatex-bookinother/")
+             (base32
+              "062ri08pwr5fh8v500dbgrc7nbxgi0jd864xfmvf601lwpwqn9c7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-bookinother")
+    (synopsis "Manage book edited in other entry type")
+    (description
+     "This package provides new BibLaTeX entry types and fields for book
+edited in other types, like for instance @code{@@bookinarticle}.  It offers
+more types than the older package @code{biblatex-bookinarticle}, which it
+supersedes.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-bwl
+  (package
+    (name "texlive-biblatex-bwl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-bwl/"
+                   "tex/latex/biblatex-bwl/")
+             (base32
+              "122qz05rc7c3pys6adg38xq0r123f4hspc3yyw8l2mzlpbbwm9y5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-bwl")
+    (synopsis "BibLaTeX citations for FU Berlin")
+    (description
+     "The bundle provides a set of BibLaTeX implementations of bibliography
+and citation styles for the Business Administration Department of the Free
+University of Berlin.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-caspervector
+  (package
+    (name "texlive-biblatex-caspervector")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-caspervector/"
+                   "tex/latex/biblatex-caspervector/")
+             (base32
+              "0drch06w3kp5ygc3jad70iixylgaivhxnnibglnih89yg4wq90y4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-caspervector")
+    (synopsis "Simple citation style for Chinese users")
+    (description
+     "The package provides a simple and easily extensible biblography/citation
+style for Chinese LaTeX users, using BibLaTeX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-chem
+  (package
+    (name "texlive-biblatex-chem")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-chem/"
+                   "tex/latex/biblatex-chem/")
+             (base32
+              "0y4fgnykh5x48cnbgyhgj04iqz05mvnzqvjn84vbr3mqmwjrndbl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-chem")
+    (synopsis
+     "BibLaTeX implementations of chemistry-related bibliography styles")
+    (description
+     "The bundle offers a set of styles to allow chemists to use BibLaTeX.
+The package has complete styles for: all ACS journals; RSC journals using
+standard (Chem.@: Commun.) style; and Angewandte Chem.@: style, (thus covering
+a wide range of journals).")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-chicago
+  (package
+    (name "texlive-biblatex-chicago")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-chicago/"
+                   "tex/latex/biblatex-chicago/")
+             (base32
+              "00y8h4hvmz17bn46936xfi1cy0rsh5y33pyc1hrkrrldabq8rxys")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-chicago")
+    (synopsis "Chicago style files for BibLaTeX")
+    (description
+     "This is a BibLaTeX style that implements the Chicago author-date and
+notes with bibliography style specifications given in the @emph{Chicago Manual
+of Style}, 17th edition (with continuing support for the 16th edition, too).
+The style implements entry types for citing audio-visual materials, among many
+others.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-claves
+  (package
+    (name "texlive-biblatex-claves")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-claves/"
+                   "tex/latex/biblatex-claves/")
+             (base32
+              "08ydcv7qlbxaysh7jm3d4glrhp1fyd4fvvxc3jc4k50ga77ksqj0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-claves")
+    (synopsis "Tool to manage claves of old litterature with BibLaTeX")
+    (description
+     "When studying antic and medieval literature, we may find many different
+texts published with the same title, or, in contrary, the same text published
+with different titles.  To avoid confusion, scholars have published claves,
+which are books listing ancient texts, identifying them by an identifier ---
+a number or a string of text.  For example, for early Christianity, we have
+the Bibliotheca Hagiographica Graeca, the Clavis Apocryphorum Novi Testamenti
+and other claves.  It could be useful to print the identifier of a texts in
+one specific clavis, or in many claves.  The package allows us to create new
+field for different claves, and to present all these fields in a consistent
+way.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-cv
+  (package
+    (name "texlive-biblatex-cv")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-cv/"
+                   "tex/latex/biblatex-cv/")
+             (base32
+              "17m6lqnr35y6vcfrrhlhxjf55b85py9miksswhkipyiaj3kphhb8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-cv")
+    (synopsis "Create a CV from BibTeX files")
+    (description
+     "This package creates an academic curriculum vitae (CV) from a BibTeX
+@file{.bib} file.  The package makes use of BibLaTeX and Biber to
+automatically format, group, and sort the entries on a CV.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-dw
+  (package
+    (name "texlive-biblatex-dw")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-dw/"
+                   "tex/latex/biblatex-dw/bbx/"
+                   "tex/latex/biblatex-dw/cbx/"
+                   "tex/latex/biblatex-dw/lbx/")
+             (base32
+              "1vw008djg535hdwbmk5dqvaw0v6cm3lqmlvk8sfzybpqffw1crlr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-dw")
+    (synopsis "Humanities styles for BibLaTeX")
+    (description
+     "This package provides a small collection of styles for the BibLaTeX
+package.  It was designed for citations in the humanities and offers some
+features that are not provided by the standard BibLaTeX styles.  The styles
+are dependent on BibLaTeX and cannot be used without it.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-enc
+  (package
+    (name "texlive-biblatex-enc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-enc/"
+                   "tex/latex/biblatex-enc/")
+             (base32
+              "0k9sais0dknydcdy1a7fkkrb5grqap3q2jn8qk36x658nkjjb9ln")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-enc")
+    (synopsis "BibLaTeX style for the Ecole nationale des chartes (Paris)")
+    (description
+     "This package provides a citation and bibliography style for use with
+BibLaTeX.  It conforms to the bibliographic standards used at the Ecole
+nationale des chartes (Paris), and may be suitable for a more general use in
+historical and philological works.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-ext
+  (package
+    (name "texlive-biblatex-ext")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-ext/"
+                   "tex/latex/biblatex-ext/")
+             (base32
+              "09adm378m9laxxb9bs6lqhfprrq0d3l1c627fxp1vcnxqqwd99xc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-ext")
+    (synopsis "Extended BibLaTeX standard styles")
+    (description
+     "The BibLaTeX-ext bundle provides styles that slightly extend the
+standard styles that ship with BibLaTeX.  The styles offered in this bundle
+provide a simple interface to change some of the stylistic decisions made in
+the standard styles.  At the same time they stay as close to their standard
+counterparts as possible, so that most customisation methods can be applied
+here as well.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-fiwi
+  (package
+    (name "texlive-biblatex-fiwi")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-fiwi/"
+                   "tex/latex/biblatex-fiwi/")
+             (base32
+              "080m1xj1g8v6aavp2i0hipjk3iikjqd2i36by2fiq0ys5vl5vhnq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-fiwi")
+    (synopsis "BibLaTeX styles for use in German humanities")
+    (description
+     "The package provides a collection of styles for BibLaTeX.  It was
+designed for citations in German Humanities, especially film studies, and
+offers some features that are not provided by the standard BibLaTeX styles.
+The style is highly optimized for documents written in German, and the main
+documentation is only available in German.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-gb7714-2015
+  (package
+    (name "texlive-biblatex-gb7714-2015")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-gb7714-2015/"
+                   "tex/latex/biblatex-gb7714-2015/")
+             (base32
+              "061gp5xwh2dkckb8dn9b7xhf76cqsq908dniwkp6hg531dzyn525")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-gb7714-2015")
+    (synopsis
+     "BibLaTeX implementation of the GBT7714-2015 bibliography style for
+Chinese users")
+    (description
+     "This package provides an implementation of the GBT7714-2015 bibliography
+style.  This implementation follows the GBT7714-2015 standard and can be used
+by simply loading BibLaTeX with the appropriate option.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-german-legal
+  (package
+    (name "texlive-biblatex-german-legal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-german-legal/"
+                   "tex/latex/biblatex-german-legal/")
+             (base32
+              "14njaba2gvz338f8z4w3vi1qyf7yxx3l9c9nla6ggrw4rnicjpzs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-german-legal")
+    (synopsis "Comprehensive citation style for German legal texts")
+    (description
+     "This package aims to provide citation styles (for footnotes and
+bibliographies) for German legal texts.  It is currently focused on citations
+in books (style german-legal-book), but may be extended to journal articles in
+the future.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-gost
+  (package
+    (name "texlive-biblatex-gost")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-gost/"
+                   "tex/latex/biblatex-gost/")
+             (base32
+              "0k4fdvhj8ki05arcimxlj3fm2216cijaj5jk5yy95754j3z6byj3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-gost")
+    (synopsis "BibLaTeX support for GOST standard bibliographies")
+    (description
+     "The package provides BibLaTeX support for Russian bibliography style
+GOST 7.0.5-2008")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-historian
+  (package
+    (name "texlive-biblatex-historian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-historian/"
+                   "tex/latex/biblatex-historian/")
+             (base32
+              "0y9jvjyji39ly5pf72qhnnlsrixaxjxdx529lyav8bhd2zz3c5s7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-historian")
+    (synopsis "BibLaTeX style based on the @emph{Turabian Manual}")
+    (description
+     "This package provides a BibLaTeX style, based on the @emph{Turabian
+Manual} (a version of Chicago).")
+    (license license:lppl)))
+
+(define-public texlive-biblatex-ieee
+  (package
+    (name "texlive-biblatex-ieee")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-ieee/"
+                   "tex/latex/biblatex-ieee/")
+             (base32
+              "0a3r2lvp4nr53gxpa40qa7zdgj2qpyygvcgcbprnvfxlqrk8lfm0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-ieee")
+    (synopsis "IEEE style files for BibLaTeX")
+    (description
+     "This is a BibLaTeX style that implements the bibliography style of the
+IEEE for BibLaTeX.  The implementation follows standard BibLaTeX conventions,
+and can be used simply by loading BibLaTeX with the appropriate @samp{ieee}
+option.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-ijsra
+  (package
+    (name "texlive-biblatex-ijsra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-ijsra/"
+                   "tex/latex/biblatex-ijsra/")
+             (base32
+              "0phgbrp47f6pgayws29acsacm7dcb5w3asvwswx5a2rg30wj2fln")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-ijsra")
+    (synopsis
+     "BibLaTeX style for the International Journal of Student Research in
+Archaeology")
+    (description
+     "This is the BibLaTeX style used for the journal International Journal of
+Student Research in Archaeology.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-iso690
+  (package
+    (name "texlive-biblatex-iso690")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-iso690/"
+                   "tex/latex/biblatex-iso690/")
+             (base32
+              "07h16m8n8lydph2n567fnx2hzdw15mwyrcgs30x8anv9qxh0z6jf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-iso690")
+    (synopsis "BibLaTeX style for ISO 690 standard")
+    (description
+     "The package provides a bibliography and citation style which conforms to
+the latest revision of the international standard ISO 690:2010.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-jura2
+  (package
+    (name "texlive-biblatex-jura2")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-jura2/"
+                   "tex/latex/biblatex-jura2/")
+             (base32
+              "1cnsmk46j98z7wk7qs6v9f5m42x124v2nxrnq8n1jcs1jd03q6ry")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-jura2")
+    (synopsis "Citation style for the German legal profession")
+    (description
+     "The package offers BibLaTeX support for citations in German legal texts.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-juradiss
+  (package
+    (name "texlive-biblatex-juradiss")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-juradiss/"
+                   "tex/latex/biblatex-juradiss/")
+             (base32
+              "13rwvj1ibhj0c46xr13wjyh68abkrvh2jcg2ccichh33crrxaql0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-juradiss")
+    (synopsis "BibLaTeX stylefiles for German law theses")
+    (description
+     "The package provides a custom citation-style for typesetting a German
+law thesis with LaTeX.")
+    (license license:lppl)))
+
+(define-public texlive-biblatex-license
+  (package
+    (name "texlive-biblatex-license")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-license/"
+                   "tex/latex/biblatex-license/")
+             (base32
+              "1xz6zms984v5r8hq01f7ap245lfhqj577rc9ww57ccv4kgvgicqd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-license")
+    (synopsis "Add license data to the bibliography")
+    (description
+     "This package is for adding license license:data to bibliography entries
+via BibLaTeX's built-in related mechanism.  It provides a new related type
+@code{license} and some bibmacros for typesetting these related entries.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-lncs
+  (package
+    (name "texlive-biblatex-lncs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-lncs/"
+                   "tex/latex/biblatex-lncs/")
+             (base32
+              "0fxhwvkgk3y2d1w6h2sldgzwbwng97bqqgny2slaajhk9wlbcs3k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-lncs")
+    (synopsis "BibLaTeX style for Springer Lecture Notes in Computer Science")
+    (description
+     "This is a BibLaTeX style for Springer Lecture Notes in Computer Science
+(LNCS).  It extends the standard BiBTeX model by an acronym entry.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-lni
+  (package
+    (name "texlive-biblatex-lni")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-lni/"
+                   "tex/latex/biblatex-lni/")
+             (base32
+              "1532swanj6p4pq7a4gqkmqjsdby20ls04ghkvdjg4066z1mizjp4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-lni")
+    (synopsis "LNI style for BibLaTeX")
+    (description
+     "BibLaTeX style for the Lecture Notes in Informatics, which is published
+by the Gesellschaft fur Informatik (GI e.V.).")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-luh-ipw
+  (package
+    (name "texlive-biblatex-luh-ipw")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-luh-ipw/"
+                   "tex/latex/biblatex-luh-ipw/bbx/"
+                   "tex/latex/biblatex-luh-ipw/cbx/"
+                   "tex/latex/biblatex-luh-ipw/lbx/")
+             (base32
+              "18fnq2xjwsp5lq7vywbgzppbijqn4xarqga0g1rpj89g9q0zjs30")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-luh-ipw")
+    (synopsis "BibLaTeX styles for social sciences")
+    (description
+     "The bundle is a small collection of styles for BibLaTeX.  It was
+designed for citations in the Humanities, following the guidelines of style of
+the institutes for the social sciences of the Leibniz University Hannover/LUH
+(especially the Institute of Political Science).")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-manuscripts-philology
+  (package
+    (name "texlive-biblatex-manuscripts-philology")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-manuscripts-philology/"
+                   "tex/latex/biblatex-manuscripts-philology/")
+             (base32
+              "1q0rqqh6gqs930bzay5cq5hghxk28xs2321y8h7awif0akq03rhm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-manuscripts-philology")
+    (synopsis "Manage classical manuscripts with BibLaTeX")
+    (description
+     "The package adds a new entry type: @code{@@manuscript} to manage
+manuscript in classical philology, for example to prepare a critical
+edition.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-mla
+  (package
+    (name "texlive-biblatex-mla")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-mla/"
+                   "tex/latex/biblatex-mla/")
+             (base32
+              "09qlx067vhc4aflx9rjdbyq99xh3nzwlxj81cxp07mm2mykhxf39")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-mla")
+    (synopsis "MLA style files for BibLaTeX")
+    (description
+     "The package provides BibLaTeX support for citations in the format
+specified by the MLA handbook.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-morenames
+  (package
+    (name "texlive-biblatex-morenames")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-morenames/"
+                   "tex/latex/biblatex-morenames/")
+             (base32
+              "1gwzxz1yqnq3q2fjrb4nf0370a90fbi6b20zvplj3lfiqmdkaiak")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-morenames")
+    (synopsis "New names for standard BibLaTeX entry type")
+    (description
+     "This package adds new fields of ``name'' type to the standard entry
+types of BibLaTeX.  For example, @samp{maineditor}, for a @code{@@collection},
+means the editor of @code{@@mvcollection}, and not the editor of the
+@code{@@collection}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-ms
+  (package
+    (name "texlive-biblatex-ms")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/biblatex-ms/biblatex/"
+                   "bibtex/bst/biblatex-ms/"
+                   "doc/latex/biblatex-ms/"
+                   "tex/latex/biblatex-ms/")
+             (base32
+              "00xib8xvxl78qzxs66qmfyp4jdkcs3qx4ray2nwv1fffhj69aw3n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-etoolbox texlive-kvoptions texlive-logreq
+                             texlive-pdftexcmds texlive-url))
+    (home-page "https://ctan.org/pkg/biblatex-ms")
+    (synopsis "Sophisticated bibliographies in LaTeX (multiscript version)")
+    (description
+     "This package is the multiscript' version of the BibLaTeX package
+intended to solve the issues faced by those wishing to create multilingual
+bibliographies.  It is intended to be backwards-compatible with the standard
+BibLaTeX package and includes significantly enhanced optional functionality.
+
+It requires the use of the multiscript version of Biber (biber-ms).")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-multiple-dm
+  (package
+    (name "texlive-biblatex-multiple-dm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-multiple-dm/"
+                   "tex/latex/biblatex-multiple-dm/")
+             (base32
+              "07dp3ppz8kma5gh0bs98jnk7gvqqcp4l1ag60941myjvfsyqplxv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-multiple-dm")
+    (synopsis "Load multiple datamodels in BibLaTeX")
+    (description
+     "The package adds the possibility to BibLaTeX to load data models from
+multiple sources.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-musuos
+  (package
+    (name "texlive-biblatex-musuos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-musuos/"
+                   "tex/latex/biblatex-musuos/")
+             (base32
+              "0iqp02yk8b9s18k8v78q2y5g507fsh2zk68dj0yc77gwa6gsmrmh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-musuos")
+    (synopsis "BibLaTeX style for citations in @file{musuos.cls}")
+    (description
+     "The style is designed for use with the musuos class, but it should be
+usable with other classes, too.")
+    (license license:lppl)))
+
+(define-public texlive-biblatex-nature
+  (package
+    (name "texlive-biblatex-nature")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-nature/"
+                   "tex/latex/biblatex-nature/")
+             (base32
+              "1bpgcwpd8sw28dn7q8bkxpnpqb741216gaasvqdpah9kj53zfypg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-nature")
+    (synopsis "BibLaTeX support for @emph{Nature}")
+    (description
+     "The bundle offers styles that allow authors to use BibLaTeX when
+preparing papers for submission to the journal @emph{Nature}.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-nejm
+  (package
+    (name "texlive-biblatex-nejm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-nejm/"
+                   "source/latex/biblatex-nejm/"
+                   "tex/latex/biblatex-nejm/")
+             (base32
+              "1fa12hbzrqd7brz90zhn3lklbqvvn5sw5l3y8pnm5xx604dkdiiw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-nejm")
+    (synopsis "BibLaTeX style for the New England Journal of Medicine (NEJM)")
+    (description
+     "This is a BibLaTeX numeric style based on the design of the New England
+Journal of Medicine (NEJM).")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-nottsclassic
+  (package
+    (name "texlive-biblatex-nottsclassic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-nottsclassic/"
+                   "tex/latex/biblatex-nottsclassic/")
+             (base32
+              "13rvxykjyah5vn44sfagf1ggqhh1hd1qhz9m6jb87yhwz5snkrxh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-nottsclassic")
+    (synopsis "Citation style for the University of Nottingham")
+    (description
+     "This citation-style covers the citation and bibliography rules of the
+University of Nottingham.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-opcit-booktitle
+  (package
+    (name "texlive-biblatex-opcit-booktitle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-opcit-booktitle/"
+                   "tex/latex/biblatex-opcit-booktitle/")
+             (base32
+              "078fzk4i7sknaxkgn2lr54bcslqbjjsr1nb0z7y46v7kpg2lpcrf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-opcit-booktitle")
+    (synopsis "Use @samp{op.@: cit.}@: for the booktitle of a subentry")
+    (description
+     "The default citation styles use the @samp{op.@: cit.}@: form in order to
+have a shorter reference when a title has already been cited.  However, when
+you cite two entries which share the same booktitle but not the same title,
+the @samp{op.@: cit.}@: mechanism does not work.  This package fixes this.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-oxref
+  (package
+    (name "texlive-biblatex-oxref")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-oxref/"
+                   "source/latex/biblatex-oxref/"
+                   "tex/latex/biblatex-oxref/")
+             (base32
+              "0jzmb28h0s2nji23mkj5ich7z5kaifv3snj20rm0dpjk20a087h3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-oxref")
+    (synopsis "BibLaTeX styles inspired by the @emph{Oxford Guide to Style}")
+    (description
+     "This bundle provides four BibLaTeX styles that implement (many of) the
+stipulations and examples provided by the 2014 @emph{New Hart's Rules} and the
+2002 @emph{Oxford Guide to Style}:
+@itemize
+
+@item @code{oxnotes} is a style similar to the standard @code{verbose},
+intended for use with footnotes;
+
+@item @code{oxnum} is a style similar to the standard @code{numeric}, intended
+for use with numeric in-text citations;
+
+@item @code{oxalph} is a style similar to the standard @code{alphabetic},
+intended for use with alphabetic in-text citations;
+
+@item @code{oxyear} is a style similar to the standard @code{author-year},
+intended for use with parenthetical in-text citations.
+
+@end itemize
+
+The bundle provides support for a wide variety of content types, including
+manuscripts, audiovisual resources, social media and legal references.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-philosophy
+  (package
+    (name "texlive-biblatex-philosophy")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-philosophy/"
+                   "source/latex/biblatex-philosophy/"
+                   "tex/latex/biblatex-philosophy/")
+             (base32
+              "05fapyb6wwyv4mwjhgg3gasvqkwpwd6jxv095hird9011n6drrzm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (native-inputs
+     (list (texlive-updmap.cfg
+            (list texlive-biblatex
+                  texlive-cochineal
+                  texlive-csquotes
+                  texlive-etoolbox
+                  texlive-fontaxes
+                  texlive-fontsize
+                  texlive-guitlogo
+                  texlive-hologo
+                  texlive-hypdoc
+                  texlive-inconsolata
+                  texlive-libertine
+                  texlive-listings
+                  texlive-ltxdockit
+                  texlive-manfnt
+                  texlive-mdframed
+                  texlive-metalogo
+                  texlive-microtype
+                  texlive-needspace
+                  texlive-newtx
+                  texlive-parskip
+                  texlive-pgf
+                  texlive-sectsty
+                  texlive-upquote
+                  texlive-xcolor
+                  texlive-xkeyval
+                  texlive-xstring
+                  texlive-zref))))
+    (home-page "https://ctan.org/pkg/biblatex-philosophy")
+    (synopsis "Styles for using BibLaTeX for work in philosophy")
+    (description
+     "The bundle offers two styles --- @code{philosophy-classic} and
+@code{philosophy-modern} --- that facilitate the production of two different
+kinds of bibliography, based on the author-year style, with options and
+features to manage the information about the translation of foreign texts or
+their reprints.  Though the package's default settings are based on the
+conventions used in Italian publications, these styles can be used with every
+language recognized by Babel, possibly with some simple redefinitions.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-phys
+  (package
+    (name "texlive-biblatex-phys")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-phys/"
+                   "tex/latex/biblatex-phys/")
+             (base32
+              "1q9l7ma3zpybx142adbiall4y5x4hc5kc536wpmiwkz29zi6w7ka")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-phys")
+    (synopsis
+     "BibLaTeX implementation of the AIP and APS bibliography style")
+    (description
+     "The package provides an implementation of the bibliography styles of
+both the AIP and the APS for BibLaTeX.  This implementation follows standard
+BibLaTeX conventions, and can be used simply by loading BibLaTeX with the
+appropriate option: @samp{\\usepackage[style=phys]@{biblatex@}}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-publist
+  (package
+    (name "texlive-biblatex-publist")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-publist/"
+                   "tex/latex/biblatex-publist/")
+             (base32
+              "0s43idph9n9klrxy34lnplrrwy3wy4z87iiif5l9japi1j51vz6c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-publist")
+    (synopsis "BibLaTeX bibliography support for publication lists")
+    (description
+     "The package provides a BibLaTeX bibliography style file (@file{.bbx})
+for publication lists.  The style file draws on BibLaTeX's @code{authoryear}
+style, but provides some extra features often desired for publication lists,
+such as the omission of the author's own name from author or editor data.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-readbbl
+  (package
+    (name "texlive-biblatex-readbbl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-readbbl/"
+                   "tex/latex/biblatex-readbbl/")
+             (base32
+              "0fr0p5c2v66vy86qx2m8i4p3p75d6qm506gv8xbfqckzyfzi9x6z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-readbbl")
+    (synopsis "Read a @file{.bbl} file created by biber")
+    (description
+     "This small package modifies the BibLaTeX macro which reads a @file{.bbl}
+file created by Biber.  It is thus possible to include a @file{.bbl} file into
+the main document with the @code{environment} and send it to a publisher who
+does not need to run the Biber program.  However, when the bibliography
+changes one has to create a new @file{.bbl} file.")
+    (license license:lppl)))
+
+(define-public texlive-biblatex-realauthor
+  (package
+    (name "texlive-biblatex-realauthor")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-realauthor/"
+                   "tex/latex/biblatex-realauthor/")
+             (base32
+              "1av0vd7lwg5yad75b9fbi09s4bcaqd8bdz43kzyj2r7cimj8dpl0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-realauthor")
+    (synopsis "Indicate the real author of a work")
+    (description
+     "This package allows to use a new field @code{realauthor}, which
+indicates the real author of a work, when published in a pseudepigraphic
+name.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-sbl
+  (package
+    (name "texlive-biblatex-sbl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-sbl/"
+                   "makeindex/biblatex-sbl/"
+                   "tex/latex/biblatex-sbl/")
+             (base32
+              "1b04lwzmsgapf2x1y83jdmzsc0h59dwy35lglxwvmlwlv8czpx9s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-sbl")
+    (synopsis "Society of Biblical Literature (SBL) style files for BibLaTeX")
+    (description
+     "The package provides BibLaTeX support for citations in the format
+specified by the second edition of the Society of Biblical Literature (SBL)
+Handbook of Style.  A style file for writing SBL student papers is also
+included.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-science
+  (package
+    (name "texlive-biblatex-science")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-science/"
+                   "tex/latex/biblatex-science/")
+             (base32
+              "0sw2bzhbgbfg5gajbm61x4243qrfna1ifbp9bl1swdmvw9g3hycd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-science")
+    (synopsis "BibLaTeX implementation of the @emph{Science} bibliography style")
+    (description
+     "The bundle offers styles that allow authors to use BibLaTeX when
+preparing papers for submission to the journal @emph{Science}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-shortfields
+  (package
+    (name "texlive-biblatex-shortfields")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-shortfields/"
+                   "tex/latex/biblatex-shortfields/")
+             (base32
+              "14s6ykbnb6b2i811rjn44chv8f73yhnnywczn78zwbij5z6jgcjv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-shortfields")
+    (synopsis "Use short forms of fields with BibLaTeX")
+    (description
+     "The BibLaTeX package provides @code{shortseries} and @code{shortjournal}
+field, but the default styles don't use them.  It also provides a mechanism to
+print the equivalence between short forms of fields and long
+fields (@code{\\printbiblist}), but this mechanism does not allow to mix
+between different type of short fields, for example, between short forms of
+journal title and short forms of series titles.
+
+This package provides a solution to these two problems.  If
+a @code{shortjournal} field is defined, it prints it instead of the
+@code{\\journal} field.  If a @code{shortseries} field is defined, it prints
+it instead of the @code{\\series} field.  It provides
+a @code{\\printbibshortfields} command to print a list of the sort forms of
+the fields.  This list also includes the claves defined with the
+@code{biblatex-claves} package.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-socialscienceshuberlin
+  (package
+    (name "texlive-biblatex-socialscienceshuberlin")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-socialscienceshuberlin/"
+                   "tex/latex/biblatex-socialscienceshuberlin/")
+             (base32
+              "1klcvjf8vz3bg0q7pmci6hhih52ph0z0hhkbv3iippyy33jhijrc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-socialscienceshuberlin")
+    (synopsis "BibLaTeX-style for the social sciences at HU Berlin")
+    (description
+     "This is a BibLaTeX style for the social sciences at the
+Humboldt-Universitat zu Berlin.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-software
+  (package
+    (name "texlive-biblatex-software")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-software/"
+                   "source/latex/biblatex-software/"
+                   "tex/latex/biblatex-software/")
+             (base32
+              "0dlinydsrlcw898ccynx76mdv9jsvr4ninsqv2aggmj3g9xripn0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-software")
+    (synopsis "BibLaTeX stylefiles for software products")
+    (description
+     "This package implements software entry types for BibLaTeX in the form of
+a bibliography style extension.  It requires the Biber backend.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-source-division
+  (package
+    (name "texlive-biblatex-source-division")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-source-division/"
+                   "tex/latex/biblatex-source-division/")
+             (base32
+              "07y25624fpmx9hfmyyga8wh5cmvl14lqbmflglpl60jqsy622mgi")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-source-division")
+    (synopsis "References by division in classical sources")
+    (description
+     "The package enables the user to make reference to division marks (such
+as book, chapter, section), in the document being referenced, in addition to
+the page-based references that BibTeX-based citations have always had.  The
+citation is made in the same way as the LaTeX standard, but what's inside the
+square brackets may include the division specification.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-spbasic
+  (package
+    (name "texlive-biblatex-spbasic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-spbasic/"
+                   "tex/latex/biblatex-spbasic/")
+             (base32
+              "071d1iqy1scz3wncsfv1backp5b7ly28rn5k0wy67wwz1vxa0d17")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-spbasic")
+    (synopsis "BibLaTeX style emulating Springer's old @file{spbasic.bst}")
+    (description
+     "This package provides a bibliography and citation style for BibLaTeX and
+Biber for typesetting articles for Springer's journals.  It is the same as the
+old BibTeX style @file{spbasic.bst}.")
+    (license license:lppl)))
+
+(define-public texlive-biblatex-subseries
+  (package
+    (name "texlive-biblatex-subseries")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-subseries/"
+                   "tex/latex/biblatex-subseries/")
+             (base32
+              "09kqqccn8dlaydz1v2szllryaxrj0c36z63ynhrv9dvd1sk0vdhd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-subseries")
+    (synopsis "Manages subseries with BibLaTeX")
+    (description
+     "Some publishers organize book series with subseries.  In this case, two
+numbers are associated with one volume: the number inside the series and the
+number inside the subseries.  This package provides new fields to manage such
+system.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-swiss-legal
+  (package
+    (name "texlive-biblatex-swiss-legal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-swiss-legal/"
+                   "tex/latex/biblatex-swiss-legal/")
+             (base32
+              "1x4dy1vxrbx0xkw3vysvcds0s1jz9w1pwri5ypiidj517sdsnff4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-swiss-legal")
+    (synopsis
+     "Bibliography and citation styles following Swiss legal practice")
+    (description
+     "The package provides BibLaTeX bibliography and citation styles for
+documents written in accordance with Swiss legal citation standards in either
+French or German.  However, the package is at present outdated and does not
+work properly with newer versions of BibLaTeX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-trad
+  (package
+    (name "texlive-biblatex-trad")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-trad/"
+                   "tex/latex/biblatex-trad/")
+             (base32
+              "19ma61dsdpsm52zm7wnkqccmx54g9gvh05d10c59q86ffv1dnlmx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-trad")
+    (synopsis "Traditional BibTeX styles with BibLaTeX")
+    (description
+     "The bundle provides implementations of the traditional BibTeX styles
+(@code{plain}, @code{abbrev}, @code{unsrt} and @code{alpha}) with BibLaTeX.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-true-citepages-omit
+  (package
+    (name "texlive-biblatex-true-citepages-omit")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-true-citepages-omit/"
+                   "tex/latex/biblatex-true-citepages-omit/")
+             (base32
+              "1mfkmn5g6r61mlyf3vx98q18a042yjkmh3drid9vs0kaj66di4n5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-true-citepages-omit")
+    (synopsis
+     "Correct some limitations of BibLaTeX @samp{citepages=omit} option")
+    (description
+     "This package deals with a limitation of the @samp{citepages=omit} option
+of the verbose family of BibLaTeX citestyles.  The option works when you
+@code{\\cite[xx]@{key@}}, but not when you @code{\\cite[\\pno~xx, some
+text]@{key@}}.  The package corrects this problem.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-biblatex-unified
+  (package
+    (name "texlive-biblatex-unified")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-unified/"
+                   "tex/latex/biblatex-unified/")
+             (base32
+              "0d9b20m10dlkii2zxj00xgascqarf8qv1vfz28v7hnm9vd54h3rw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-unified")
+    (synopsis "BibLaTeX unified stylesheet for linguistics journals")
+    (description
+     "BibLaTeX-unified is an opinionated BibLaTeX implementation of the
+Unified Stylesheet for Linguistics Journals.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-biblatex-vancouver
+  (package
+    (name "texlive-biblatex-vancouver")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex-vancouver/"
+                   "tex/latex/biblatex-vancouver/")
+             (base32
+              "1sji214mi5garp5h3if1fh1rvck573cxg61rgdlyy543883nrxv7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex-vancouver")
+    (synopsis "Vancouver style for BibLaTeX")
+    (description
+     "This package provides the Vancouver reference style for BibLaTeX.  It is
+based on the @code{numeric} style and requires Biber.")
+    (license license:gpl3+)))
+
+(define-public texlive-biblatex2bibitem
+  (package
+    (name "texlive-biblatex2bibitem")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblatex2bibitem/"
+                   "tex/latex/biblatex2bibitem/")
+             (base32
+              "1cd9b7vhmlx2clqr2gpwqs4hjga9mjqlxj7m74kq555rn5ppkyyn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblatex2bibitem")
+    (synopsis "Convert BibLaTeX-generated bibliography to bibitems")
+    (description
+     "Some journals accept the reference list only as @code{\\bibitems}.  If
+you use BibTeX, there is no problem: just paste the content of the @file{.bbl}
+file into your document.  However, there was no out-of-the-box way to do the
+same for BibLaTeX, and you had to struggle with searching appropriate
+@file{.bst} files, or formatting your reference list by hand, or something
+like that.  Using the workaround provided by this package solves the
+problem.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-bibleref
   (package
@@ -3119,6 +4864,25 @@ a simpler and more convenient interface to the functionality of the
 @code{bibleref} package.")
     (license license:lppl1.3+)))
 
+(define-public texlive-biblist
+  (package
+    (name "texlive-biblist")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/biblist/" "tex/latex/biblist/")
+             (base32
+              "1r7cd68yr8pnmqnr39qzp42kxqcx89cqzz81ig9y7qgicznji0i8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biblist")
+    (synopsis "Print a BibTeX database")
+    (description
+     "The package provides the means of listing an entire BibTeX database,
+avoiding the potentially large (macro) impact associated with
+@code{\\nocite@{*@}}.")
+    (license license:gpl3+)))
+
 (define-public texlive-bidihl
   (package
     (name "texlive-bidihl")
@@ -3135,6 +4899,101 @@ a simpler and more convenient interface to the functionality of the
     (description
      "This package provides experimental Bidi-aware text highlighting.")
     (license license:lppl1.3+)))
+
+(define-public texlive-bibtexperllibs
+  (package
+    (name "texlive-bibtexperllibs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "scripts/bibtexperllibs/BibTeX/"
+                   "scripts/bibtexperllibs/LaTeX/"
+                   "source/support/bibtexperllibs/")
+             (base32
+              "1p99pg9rvkzi3rqm4kp43zf5sk28q7a2m8ikfckg10ybaws5d3zg")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bibtexperllibs")
+    (synopsis "BibTeX Perl Libraries")
+    (description
+     "This package provides BibTeX related Perl libraries.")
+    (license
+     (list license:artistic2.0
+           license:gpl1
+           license:public-domain))))
+
+(define-public texlive-bibtopic
+  (package
+    (name "texlive-bibtopic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bibtopic/"
+                   "source/latex/bibtopic/"
+                   "tex/latex/bibtopic/")
+             (base32
+              "1b4lhlw29y37c7pxmqvy4ahgb85bmxrgnr2jhzvdhzdm5y9md7a3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (home-page "https://ctan.org/pkg/bibtopic")
+    (synopsis "Include multiple bibliographies in a document")
+    (description
+     "The package allows the user to include several bibliographies covering
+different topics or bibliographic material into a document (e.g., one
+bibliography for primary literature and one for secondary literature).  The
+package provides commands to include either all references from a @file{.bib}
+file, only the references actually cited or those not cited in your document.
+The user has to construct a separate @file{.bib} file for each bibliographic
+topic, each of which will be processed separately by BibTeX.  If you want to
+have bibliographies specific to one part of a document, see the packages
+@code{bibunits} or @code{chapterbib}.")
+    (license license:gpl3+)))
+
+(define-public texlive-bibtopicprefix
+  (package
+    (name "texlive-bibtopicprefix")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bibtopicprefix/"
+                   "source/latex/bibtopicprefix/"
+                   "tex/latex/bibtopicprefix/")
+             (base32
+              "1fadq51adii1453v31xj7p328h4rvans1ynmxjcmnwhlj4hdjp5n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bibtopicprefix")
+    (synopsis "Prefix references to bibliographies produced by
+@code{bibtopic}")
+    (description
+     "The package permits users to apply prefixes (fixed strings) to
+references to entries in bibliographies produced by the @code{bibtopic}
+package.")
+    (license license:lppl)))
+
+(define-public texlive-bibunits
+  (package
+    (name "texlive-bibunits")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bibunits/"
+                   "source/latex/bibunits/"
+                   "tex/latex/bibunits/")
+             (base32
+              "0hlz277lskhcs5xr0qn2rram957himj67hkwqqsjjap8khf7fz6v")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bibunits")
+    (synopsis "Multiple bibliographies in one document")
+    (description
+     "The package provide a mechanism to generate separate bibliographies for
+different units (chapters, sections or bibunit-environments) of a text.  The
+package separates the citations of each unit of text into a separate file to
+be processed by BibTeX.  The global bibliography section produced by LaTeX may
+also appear in the document and citations can be placed in both the local unit
+and the global bibliographies at the same time.")
+    (license license:lppl)))
 
 (define-public texlive-binomexp
   (package
@@ -3178,6 +5037,25 @@ between the Plant, Fungi, Animalia and Bacteria kingdoms.  There are default
 settings for the way species names are typeset, but they can be customized.
 Different default styles are used in different situations.")
     (license license:gpl3+)))
+
+(define-public texlive-biolett-bst
+  (package
+    (name "texlive-biolett-bst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/biolett-bst/"
+                   "doc/bibtex/biolett-bst/")
+             (base32
+              "1xfr79xw0ih61s5qapx2adiyjj0d149nslpmkd1fw29g1v4zrjd2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/biolett-bst")
+    (synopsis "BibTeX style for the journal @emph{Biology Letters}")
+    (description
+     "This package provides a BibTeX style (@file{.bst}) file for the journal
+@emph{Biology Letters} published by the Royal Society.")
+    (license license:lppl1.0+)))
 
 (define-public texlive-bitelist
   (package
@@ -3297,6 +5175,26 @@ convert atomic numbers to element symbols or element names and vice versa.")
 characters.")
     (license license:gpl3+)))
 
+(define-public texlive-bookdb
+  (package
+    (name "texlive-bookdb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/bookdb/" "doc/bibtex/bookdb/")
+             (base32
+              "0df6bzmc90af3v4nzv6hp9padpc7h680vm2hy8wzb268z3ld268h")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bookdb")
+    (synopsis "BibTeX style file for cataloguing a home library")
+    (description
+     "This package provides an extended book entry for use in cataloguing
+a home library.  The extensions include fields for binding, category,
+collator, condition, copy, illustrations, introduction, location, pages, size,
+value, volumes.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-booktabs-de
   (package
     (name "texlive-booktabs-de")
@@ -3399,6 +5297,30 @@ south-east, etc.); 12 types and 32 directions are available.")
 those long IUPAC compound names, and some chemical idioms.  It also supports
 the labelling of compounds and reference to labelled compounds.")
     (license license:lppl)))
+
+(define-public texlive-breakcites
+  (package
+    (name "texlive-breakcites")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/breakcites/"
+                   "tex/latex/breakcites/")
+             (base32
+              "12jiw135xi12k0f46zmza4jw141gq919c6q0ijv8xlic0wra4gyy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/breakcites")
+    (synopsis "Ensure that multiple citations may break at line end")
+    (description
+     "This packages makes a very minor change to the operation of the
+@code{\\cite} command so that multiple citations may break at line end.  Note
+that the change is not necessary in unmodified LaTeX; however, there remain
+packages that restore the undesirable behaviour of the command as provided in
+LaTeX 2.09.  Neither @code{cite} nor @code{natbib} make this mistake.")
+    ;; The file below states: "You may freely use, modify, and/or
+    ;; distribute this package without limitation."
+    (license (license:fsf-free "file://doc/latex/breakcites/README"))))
 
 (define-public texlive-bropd
   (package
@@ -3914,6 +5836,44 @@ parameter value for style, another for a property).  User input to
 documents sharing the same notation.")
     (license license:lppl1.3c)))
 
+(define-public texlive-cell
+  (package
+    (name "texlive-cell")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/cell/" "doc/latex/cell/"
+                   "tex/latex/cell/")
+             (base32
+              "0x2dw80z0kzisbwnx2xrmsk0biqbanmydzygg9zdymhcx7w5rz52")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cell")
+    (synopsis "Bibliography style for Cell")
+    (description
+     "This is an APA-like style (cf.@: @file{apalike.bst} in the BibTeX
+distribution), developed from the same author's JMB style.  A supporting LaTeX
+package is also provided.")
+    (license license:public-domain)))
+
+(define-public texlive-chbibref
+  (package
+    (name "texlive-chbibref")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chbibref/" "tex/latex/chbibref/")
+             (base32
+              "1k4cwy4z0kacikpvxkk3y68apw2x33sh06yccb1s894r1bn3c1qi")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chbibref")
+    (synopsis "Change the Bibliography and References title")
+    (description
+     "This package defines a single command, @code{\\setbibref}, which sets
+whichever of @code{\\bibname} and @code{\\refname} is in use.")
+    (license license:lppl)))
+
 (define-public texlive-chemarrow
   (package
     (name "texlive-chemarrow")
@@ -3941,6 +5901,30 @@ source, and generated type 1 versions), and a package to use it.  The arrows
 in the font are designed to look more like those in chemistry text-books than
 do Knuth's originals.")
     (license license:public-domain)))
+
+(define-public texlive-chembst
+  (package
+    (name "texlive-chembst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/chembst/" "doc/latex/chembst/"
+                   "source/latex/chembst/")
+             (base32
+              "026j8lv3kbxmbq6sc1n8rdrr47njgn5mn9im1mmppzk5bi7w6yzz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chembst")
+    (synopsis "Collection of BibTeX files for chemistry journals")
+    (description
+     "The package offers a collection of advanced BibTeX style files suitable
+for publications in chemistry journals.  Currently, style files for journals
+published by the American Chemical Society, Wiley-VCH and The Royal Society of
+Chemistry are available.  The style files support advanced features such as
+automatic formatting of errata or creating an appropriate entry for
+publications in @emph{Angewandte Chemie} where both English and German should
+be cited simultaneously.")
+    (license license:lppl)))
 
 (define-public texlive-chemcompounds
   (package
@@ -4307,6 +6291,60 @@ given by Mumbai University.")
                    (license:fsf-free "file://doc/latex/aalok/README.txt")
                    license:fdl1.3+))))
 
+(define-public texlive-chicago
+  (package
+    (name "texlive-chicago")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/chicago/" "tex/latex/chicago/")
+             (base32
+              "0mwrphf2g7v5yc0qij76dkzalgm3fhcm8zs7akgaypyk98cvxw8k")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chicago")
+    (synopsis "Chicago bibliography style")
+    (description
+     "Chicago is a BibTeX style that follows the @samp{B} reference style of
+the 13th Edition of the Chicago manual of style; a LaTeX package is also
+provided.  The style was derived from the @code{newapa} style.")
+    (license license:knuth)))
+
+(define-public texlive-chicago-annote
+  (package
+    (name "texlive-chicago-annote")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/chicago-annote/"
+                   "doc/bibtex/chicago-annote/")
+             (base32
+              "16hqz4xf7mbnrnx8420ynykxr1l3slfvjq8d8s0mrw42v88965ni")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chicago-annote")
+    (synopsis "Chicago-based annotated BibTeX style")
+    (description
+     "This is a revision of chicagoa.bst, using the commonly-used annote field
+in place of the original's annotation.")
+    (license license:lppl)))
+
+(define-public texlive-chicagoa
+  (package
+    (name "texlive-chicagoa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/chicagoa/")
+             (base32
+              "1za4fqlpirbr3qs894abnlwmrhsqbahniyyimy1dxal0cp61cfil")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chicagoa")
+    (synopsis "Chicago bibliography style with annotations")
+    (description
+     "This is a modification of the author's @code{chicago} style, to support
+an annotation field in bibliographies.")
+    (license license:knuth)))
+
 (define-public texlive-chinesechess
   (package
     (name "texlive-chinesechess")
@@ -4387,6 +6425,26 @@ appearance.")
 Interfaces for Plain TeX, ConTeXt and LaTeX are provided.")
     (license license:lppl1.3+)))
 
+(define-public texlive-chscite
+  (package
+    (name "texlive-chscite")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/chscite/" "doc/latex/chscite/"
+                   "source/latex/chscite/" "tex/latex/chscite/")
+             (base32
+              "0q4mgvrbljbw7pmwjs4qcr91sfhbnbshhmygxqrkriyrfnqy6yfq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chscite")
+    (synopsis "Bibliography style for Chalmers University of Technology")
+    (description
+     "The package, heavily based on the harvard package for Harvard-style
+citations, provides a citation suite for students at Chalmers University of
+Technology that follows given recommendations.")
+    (license license:lppl1.2+)))
+
 (define-public texlive-churchslavonic
   (package
     (name "texlive-churchslavonic")
@@ -4411,6 +6469,83 @@ Interfaces for Plain TeX, ConTeXt and LaTeX are provided.")
      "The package provides fonts, hyphenation patterns, and supporting macros
 to typeset Church Slavonic texts.")
     (license license:expat)))
+
+(define-public texlive-citation-style-language
+  (package
+    (name "texlive-citation-style-language")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/citation-style-language/"
+                   "doc/man/man1/citeproc-lua.1"
+                   "doc/man/man1/citeproc-lua.man1.pdf"
+                   "scripts/citation-style-language/"
+                   "tex/latex/citation-style-language/")
+             (base32
+              "13342c9kq5zy9a6kag81xfa38dydmimhcnb11jx7d8il6g0pd46w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "citeproc-lua.lua")))
+    (propagated-inputs
+     (list texlive-filehook
+           texlive-l3kernel
+           texlive-l3packages
+           texlive-lua-uca
+           texlive-lualibs
+           texlive-luatex
+           texlive-luaxml
+           texlive-url))
+    (home-page "https://ctan.org/pkg/citation-style-language")
+    (synopsis "Bibliography formatting with Citation Style Language")
+    (description
+     "The Citation Style Language (CSL) is an XML-based language that defines
+the formats of citations and bibliography.  There are currently thousands of
+styles in CSL including the most widely used APA, Chicago, Vancouver, etc.
+The citation-style-language package is aimed to provide another reference
+formatting method for LaTeX that utilizes the CSL styles.  It contains
+a citation processor implemented in pure Lua (@code{citeproc-lua}) which reads
+bibliographic metadata and performs sorting and formatting on both citations
+and bibliography according to the selected CSL style.  A LaTeX package
+(@file{citation-style-language.sty}) is provided to communicate with the
+processor.")
+    (license (list license:expat license:cc-by-sa3.0))))
+
+(define-public texlive-citeall
+  (package
+    (name "texlive-citeall")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/citeall/" "tex/latex/citeall/")
+             (base32
+              "0sap2kns1b51zj0dmy70q77rw7dnhdjqab0rmyvpp2hgq5yk3mhq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/citeall")
+    (synopsis "Cite all entries of a @file{.bbl} created with BibLaTeX")
+    (description
+     "This small package allows to cite all entries of
+a BibLaTeX (@file{.bbl}) file.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-citeref
+  (package
+    (name "texlive-citeref")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/citeref/" "tex/latex/citeref/")
+             (base32
+              "0k76msdfsf968cv3m1z8lcf6mlmy90gaaphrgkr7cs67pgyvq6jq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/citeref")
+    (synopsis "Add reference-page-list to bibliography-items")
+    (description
+     "The package adds reference-page-list to bibliography-items.  It does its
+job without using the indexing facilities, and needs no special
+@code{\\cite}-replacement package.")
+    (license license:bsd-4)))
 
 (define-public texlive-cjhebrew
   (package
@@ -4620,6 +6755,36 @@ the same way the package's author did when writing the book, and your output
 will look just like the pseudocode in the text.")
     (license license:lppl)))
 
+(define-public texlive-cochineal
+  (package
+    (name "texlive-cochineal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cochineal/"
+                   "fonts/afm/public/cochineal/"
+                   "fonts/enc/dvips/cochineal/"
+                   "fonts/map/dvips/cochineal/"
+                   "fonts/opentype/public/cochineal/"
+                   "fonts/tfm/public/cochineal/"
+                   "fonts/type1/public/cochineal/"
+                   "fonts/vf/public/cochineal/"
+                   "tex/latex/cochineal/")
+             (base32
+              "04kziysq9szhz3brwkqwnjmvy3m0wnb3mhp86h8l7qwgndzx9j8w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cochineal")
+    (synopsis "Cochineal fonts with LaTeX support")
+    (description
+     "Cochineal is a fork from the Crimson fonts (Roman, Italic, Bold,
+@code{BoldItalic} only), which contain roughly 4200 glyphs in the four styles
+mentioned above.  Cochineal adds more than 1500 glyphs in those styles so that
+it is possible to make a TeX support collection that contains essentially all
+glyphs in all styles.  The fonts are provided in OpenType and PostScript
+formats.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
 (define-public texlive-codeanatomy
   (package
     (name "texlive-codeanatomy")
@@ -4662,6 +6827,26 @@ Interdisciplinary Approach} from Robert Sedgewick and Kevin Wayne.")
 prone to be misspelled thus rendering a legal document invalid.  The package
 quickly verifies the consistency of the fiscal code string, and can therefore
 be useful for lawyers and accountants that use fiscal codes very frequently.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-collref
+  (package
+    (name "texlive-collref")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/collref/" "source/latex/collref/"
+                   "tex/latex/collref/")
+             (base32
+              "0gvla01fypbdqvjg0zziy4cl2s6z441pvn3s8b45dvz4hy1hkfji")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/collref")
+    (synopsis "Collect blocks of references into a single reference")
+    (description
+     "The package automatically collects multiple @code{\\bibitem} references,
+which always appear in the same sequence in @code{\\cite}, into a single
+@code{\\bibitem} block.")
     (license license:lppl1.3+)))
 
 (define-public texlive-colorsep
@@ -4720,6 +6905,23 @@ domain and range, and function operation) and various reference commands.")
      "This package provides a TikZ library for making commutative diagrams
 easy to design, parse and tweak.")
     (license license:expat)))
+
+(define-public texlive-compactbib
+  (package
+    (name "texlive-compactbib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "tex/latex/compactbib/")
+             (base32
+              "077l73vb0rcxy1n51r3wmcb7gma6nn3xrl543a67n96lpp5xvnnk")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/compactbib")
+    (synopsis "Multiple thebibliography environments")
+    (description
+     "This package allows a second bibliography, optionally with a different
+title, after the main bibliography.")
+    (license license:lppl)))
 
 (define-public texlive-compare
   (package
@@ -4947,6 +7149,66 @@ with a wide array of formats.  For the moment, it works out of the box with
 ConTeXt and LaTeX.")
     (license (list license:gpl3+ license:fdl1.3+))))
 
+(define-public texlive-crossrefware
+  (package
+    (name "texlive-crossrefware")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/man/man1/bbl2bib.1"
+                   "doc/man/man1/bbl2bib.man1.pdf"
+                   "doc/man/man1/bibdoiadd.1"
+                   "doc/man/man1/bibdoiadd.man1.pdf"
+                   "doc/man/man1/bibmradd.1"
+                   "doc/man/man1/bibmradd.man1.pdf"
+                   "doc/man/man1/biburl2doi.1"
+                   "doc/man/man1/biburl2doi.man1.pdf"
+                   "doc/man/man1/bibzbladd.1"
+                   "doc/man/man1/bibzbladd.man1.pdf"
+                   "doc/man/man1/ltx2crossrefxml.1"
+                   "doc/man/man1/ltx2crossrefxml.man1.pdf"
+                   "doc/support/crossrefware/"
+                   "scripts/crossrefware/"
+                   "tex/latex/crossrefware/")
+             (base32
+              "048405cg5q3fy5vd7xbri8cfgn0wrzc08sb3z30cv79kjwm1xj6w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:link-scripts
+           #~(list "bbl2bib.pl"
+                   "bibdoiadd.pl"
+                   "bibmradd.pl"
+                   "biburl2doi.pl"
+                   "bibzbladd.pl"
+                   "ltx2crossrefxml.pl")))
+    (inputs (list perl))
+    (home-page "https://ctan.org/pkg/crossrefware")
+    (synopsis "Scripts for working with @url{crossref.org}")
+    (description
+     "This bundle contains the following scripts:
+@itemize
+
+@item @file{bibdoiadd.pl}: add DOI numbers to papers in a given @file{.bib}
+file,
+
+@item @file{bibzbladd.pl}: add Zbl numbers to papers in a given @file{.bib}
+file,
+
+@item @file{bibmradd.pl}: add MR numbers to papers in a given @file{.bib}
+file,
+
+@item @file{bbl2bib.pl}: convert @code{thebibliography} environment to
+a @file{.bib} file,
+
+@item @file{biburl2doi.pl}: convert URLs pointing to @url{doi.org} to DOIs,
+
+@item @file{ltx2crossrefxml.pl}: tool for the creation of XML files for
+submitting to @url{crossref.org}.
+
+@end itemize")
+    (license license:gpl3+)))
+
 (define-public texlive-crossword
   (package
     (name "texlive-crossword")
@@ -5054,6 +7316,38 @@ computer science, but easily extensible to other fields.  It provides macros
 for structuring exercises, aggregating points, and displaying a grading table,
 as well as several macros for easier math mode usage.")
     (license license:expat)))
+
+(define-public texlive-custom-bib
+  (package
+    (name "texlive-custom-bib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/custom-bib/"
+                   "source/latex/custom-bib/"
+                   "tex/latex/custom-bib/")
+             (base32
+              "1hzy0j9k55ygkzvgs3y2jz435267l3g4isqynr64978zhyqybqpd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               ;; The installation process requires ".mbs" files to be
+               ;; available when generating the package.  Extend TEXINPUTS to
+               ;; include their location.
+               (add-before 'build 'extend-texinputs
+                 (lambda _
+                   (setenv "TEXINPUTS"
+                           (string-append (getcwd)
+                                          "/tex/latex/custom-bib/:")))))))
+    (home-page "https://ctan.org/pkg/custom-bib")
+    (synopsis "Customised BibTeX styles")
+    (description
+     "This package generates customized BibTeX bibliography styles from
+a generic file using @code{docstrip} driven by parameters generated by a menu
+application.  It includes support for the Harvard style of citations.")
+    (license license:lppl)))
 
 (define-public texlive-customdice
   (package
@@ -5313,6 +7607,26 @@ may be controlled.  The package also provides @code{\\slashbox} and
 package, which it supersedes.")
     (license license:lppl1.3+)))
 
+(define-public texlive-din1505
+  (package
+    (name "texlive-din1505")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/din1505/" "doc/latex/din1505/")
+             (base32
+              "0ggi58kra06k8r4drkhnlap9khvscpji78j8v92s3gzh8qmsjhp4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/din1505")
+    (synopsis "Bibliography styles for German texts")
+    (description
+     "This package provides a set of bibliography styles that conform to DIN
+1505, and match the original BibTeX standard set (@code{plain}, @code{unsrt},
+@code{alpha} and @code{abbrv}), together with a style @code{natdin} to work with
+@code{natbib}.")
+    (license license:knuth)))
+
 (define-public texlive-diffcoeff
   (package
     (name "texlive-diffcoeff")
@@ -5444,6 +7758,32 @@ styles, that conform to the requirements of the Russian standard GOST
 R 7.0.11-2011, are provided.")
     (license license:lppl1.3+)))
 
+(define-public texlive-dk-bib
+  (package
+    (name "texlive-dk-bib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/dk-bib/"
+                   "bibtex/bst/dk-bib/"
+                   "bibtex/csf/dk-bib/"
+                   "doc/latex/dk-bib/"
+                   "source/latex/dk-bib/"
+                   "tex/latex/dk-bib/")
+             (base32
+              "1bwmaja41mivsrcx3j9p0yplqccw62fd9wn6v1yx138kg0ayib1n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dk-bib")
+    (synopsis "Danish variants of standard BibTeX styles")
+    (description
+     "Dk-bib is a translation of the four standard BibTeX style files (@code{abbrv},
+@code{alpha}, @code{plain} and @code{unsrt}) and the @code{apalike} style file
+into Danish.  The files have been extended with URL, ISBN, ISSN, annote and
+printing fields which can be enabled through a LaTeX style file.  Dk-bib also
+comes with a couple of Danish sorting order files for BibTeX8.")
+    (license (list license:knuth license:gpl2+))))
+
 (define-public texlive-dnp
   (package
     (name "texlive-dnp")
@@ -5480,6 +7820,27 @@ programming languages.")
     ;; README states: "You can do anything with the files from DocBy.TeX
     ;; package without any limit".
     (license (license:fsf-free "file://doc/generic/docbytex/README"))))
+
+(define-public texlive-doipubmed
+  (package
+    (name "texlive-doipubmed")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/doipubmed/"
+                   "source/latex/doipubmed/"
+                   "tex/latex/doipubmed/")
+             (base32
+              "1432hh1pr5r6izfcqlbvl1lxpradidrwpfkvjr25ds1rlh240y66")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/doipubmed")
+    (synopsis "Special commands for use in bibliographies")
+    (description
+     "The package provides the commands @code{\\doi}, @code{\\pubmed} and
+@code{\\citeurl}.  These commands are primarily designed for use in
+bibliographies.  A @code{LaTeX2HTML} style file is also provided.")
+    (license license:lppl)))
 
 (define-public texlive-dosepsbin
   (package
@@ -5744,6 +8105,47 @@ a @code{bundle} environment, with a set of leaves described by @code{\\chunk}
 macros.  A chunk may have a @code{bundle} environment inside it.")
     (license license:lppl)))
 
+(define-public texlive-ecobiblatex
+  (package
+    (name "texlive-ecobiblatex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ecobiblatex/"
+                   "tex/latex/ecobiblatex/")
+             (base32
+              "09569x2dx1h6a63ji44ipkx0nvapc9mgkgrqvc552x62c97zcf21")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ecobiblatex")
+    (synopsis
+     "Global Ecology and Biogeography BibLaTeX styles for the Biber backend")
+    (description
+     "This bundle provides a set of styles for creating bibliographies using
+BibLaTeX in the style of the @emph{Global Ecology and Biogeography} journal.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-econ-bst
+  (package
+    (name "texlive-econ-bst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/econ-bst/"
+                   "doc/bibtex/econ-bst/")
+             (base32
+              "0nflr827a88yd66bb0mfk86dby1253fxdfrjzx0b4k4zqdljhrbg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/econ-bst")
+    (synopsis "BibTeX style for economics papers")
+    (description
+     "This is a BibTeX style file for papers in economics.  It provides the
+following features: author-year type citation reference style used in
+economics papers highly customizable use of certified random order, as
+proposed by Ray Robson (2018)")
+    (license license:lppl1.3+)))
+
 (define-public texlive-econometrics
   (package
     (name "texlive-econometrics")
@@ -5766,6 +8168,31 @@ related to the notation of vectors, matrices, sets, calligraphic and roman
 letters statistical distributions constants and symbols matrix operators and
 statistical operators.")
     (license license:lppl1.3+)))
+
+(define-public texlive-economic
+  (package
+    (name "texlive-economic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/economic/"
+                   "doc/bibtex/economic/" "tex/latex/economic/")
+             (base32
+              "1b530sy5bf7f6xa4bakm5agnzx0dckafxkqsy9gv2rk2803qsf6c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/economic")
+    (synopsis "BibTeX support for submitting to economics journals")
+    (description
+     "The bundle offers macros and BibTeX styles for the @emph{American
+Economic Review} (AER), the @emph{American Journal of Agricultural
+Economics} (AJAE), the @emph{Canadian Journal of Economics} (CJE), the
+@emph{European Review of Agricultural Economics} (ERAE), the
+@emph{International Economic Review} (IER) and @emph{Economica}.
+
+The macro sets are based on (and require) the @code{harvard} package, and all
+provide variations of author-date styles of presentation.")
+    (license license:lppl)))
 
 (define-public texlive-edfnotes
   (package
@@ -6316,6 +8743,23 @@ the chapters.  Each chapter can consist of three sections: the lesson, the
 exercises and the activities.")
     (license license:lppl)))
 
+(define-public texlive-fbs
+  (package
+    (name "texlive-fbs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/fbs/")
+             (base32
+              "18h6n8azrnk2qabv30kpa8gmj2ljkvx0nqs8qb9r8dxxnhng78ch")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fbs")
+    (synopsis "BibTeX style for @emph{Frontiers in Bioscience}")
+    (description
+     "This package provides a BibTeX style file made with @code{custom}-bib to
+fit @emph{Frontiers in Bioscience} requirements.")
+    (license license:lppl)))
+
 (define-public texlive-fduthesis
   (package
     (name "texlive-fduthesis")
@@ -6358,6 +8802,38 @@ It can make it easy to write theses both in Chinese and English.")
 conventional ligatures for the figured-bass notations 2+, 4+, 5+, 6+ and 9+ in
 music manuscripts.  The fonts are usable with Computer Modern Roman and Sans,
 and Palatino/Palladio, respectively.")
+    (license license:lppl)))
+
+(define-public texlive-figbib
+  (package
+    (name "texlive-figbib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/figbib/" "doc/latex/figbib/"
+                   "tex/latex/figbib/")
+             (base32
+              "1wvglj3z86xjz1bi5931hxm9b2kn6r4j7391di26wmsyhdajs2yz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/figbib")
+    (synopsis "Organize figure databases with BibTeX")
+    (description
+     "FigBib lets you organize your figures in BibTeX databases.  Some FigBib
+features are:
+@itemize
+
+@item store and manage figures in a BibTeX database;
+
+@item Include figures in your LaTeX document with one short command;
+
+@item generate a list of figures containing more or other information than the
+figure captions;
+
+@item control with one switch where to output the figures, either as usual
+float objects or in a separate part at the end of your document.
+
+@end itemize")
     (license license:lppl)))
 
 (define-public texlive-filecontentsdef
@@ -6496,6 +8972,99 @@ and complex notation.  Further many macros and shortcuts are added, e.g., for
 spaces, operators, physics unit, etc.")
     (license license:lppl)))
 
+(define-public texlive-fontsize
+  (package
+    (name "texlive-fontsize")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/fontsize/"
+                   "source/latex/fontsize/"
+                   "tex/latex/fontsize/")
+             (base32
+              "1y061r4hadb2c26dgch6lrjw6f4j87zj1gj5lgzgx0hyyz58snqy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:tex-format "latex"
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'fix-circular-dependency
+                 ;; Documentation doesn't build, and generates a circular
+                 ;; dependency with BIBLATEX-PHILOSOPHY package.  Since we're
+                 ;; not interested in re-building the whole documentation,
+                 ;; just skip that part.
+                 (lambda _
+                   (substitute* "source/latex/fontsize/fontsize.dtx"
+                     (("\\[style=philosophy-classic\\]") "")
+                     (("\\\\DocInput\\{fontsize\\.dtx\\}") "")))))))
+    (native-inputs
+     (list (texlive-updmap.cfg
+            (list texlive-biblatex
+                  texlive-booktabs
+                  texlive-caption
+                  texlive-cochineal
+                  texlive-csquotes
+                  texlive-etoolbox
+                  texlive-fontaxes
+                  texlive-guitlogo
+                  texlive-hologo
+                  texlive-hypdoc
+                  texlive-inconsolata
+                  texlive-libertine
+                  texlive-listings
+                  texlive-ltxdockit
+                  texlive-manfnt
+                  texlive-mathalpha
+                  texlive-mdframed
+                  texlive-metalogo
+                  texlive-microtype
+                  texlive-needspace
+                  texlive-newtx
+                  texlive-parskip
+                  texlive-pgf
+                  texlive-sectsty
+                  texlive-siunitx
+                  texlive-tabu
+                  texlive-upquote
+                  texlive-xcolor
+                  texlive-xkeyval
+                  texlive-xstring
+                  texlive-zref))))
+    (home-page "https://ctan.org/pkg/fontsize")
+    (synopsis
+     "Small package to set arbitrary sizes for the main font of the document")
+    (description
+     "The package allows you to set arbitrary sizes for the main font of the
+document, through the @emph{fontsize=<size>} option.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-footbib
+  (package
+    (name "texlive-footbib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/footbib/" "source/latex/footbib/"
+                   "tex/latex/footbib/")
+             (base32
+              "0kv8nh82b16bmhxh2291ahznhjgm5g4qskqwdba66w48wkhzr32j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/footbib")
+    (synopsis "Bibliographic references as footnotes")
+    (description
+     "The package makes bibliographic references appear as footnotes.  It
+defines a command @code{\\footcite} which is similar to the LaTeX
+@code{\\cite} command but the references cited in this way appear at the
+bottom of the pages.  This @code{foot} bibliography does not conflict with the
+standard one and both may exist simultaneously in a document.  The command
+@code{\\cite} may still be used to produce the standard bibliography.  The
+@code{foot} bibliography uses its own style and bibliographic database which
+may be specified independently of the standard one.  Any standard bibliography
+style may be used.")
+    (license license:lppl)))
+
 (define-public texlive-formal-grammar
   (package
     (name "texlive-formal-grammar")
@@ -6560,6 +9129,28 @@ such a way that left and right sub- and superscripts are set on the same
 level, as appropriate.  The package provides an alternative to the use of the
 @code{\\sideset} command in the @code{amsmath} package.")
     (license license:lppl)))
+
+(define-public texlive-francais-bst
+  (package
+    (name "texlive-francais-bst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/francais-bst/"
+                   "doc/bibtex/francais-bst/"
+                   "tex/latex/francais-bst/")
+             (base32
+              "19dz9n5wy2phjzm4kk9axvk00akmj07ccw0avkq644z87ksgzqws")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/francais-bst")
+    (synopsis "Bibliographies conforming to French typographic standards")
+    (description
+     "The package provides bibliographies (in French) conforming to the rules
+in @emph{Guide de la communication ecrite} (Malo, M., Quebec Amerique, 1996).
+The BibTeX styles were generated using @code{custom-bib} and they are
+compatible with @code{natbib}.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-frenchmath
   (package
@@ -6766,6 +9357,32 @@ nets, diagrams, etc., very easily, in the LaTeX @code{picture} environment.")
 glosses, and various other goodies.")
     (license license:lppl1.2+)))
 
+(define-public texlive-gbt7714
+  (package
+    (name "texlive-gbt7714")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/gbt7714/" "doc/bibtex/gbt7714/"
+                   "source/bibtex/gbt7714/"
+                   "tex/latex/gbt7714/")
+             (base32
+              "0pmkbh0axh0qnc08fjn5g7pbw59n543siy4l9q3bihnyid11i5qp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-bibtex texlive-natbib texlive-url))
+    (home-page "https://ctan.org/pkg/gbt7714")
+    (synopsis "China's bibliography style standard GB/T 7714-2015 for BibTeX")
+    (description
+     "The package provides a BibTeX implementation for the Chinese national
+bibliography style standard GB/T 7714-2015.  It consists of two @file{.bst}
+files for numerical and author-year styles as well as a LaTeX package which
+provides the citation style defined in the standard.
+
+The package is compatible with @code{natbib} and supports language
+detection (Chinese and English) for each biblilography entry.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-gchords
   (package
     (name "texlive-gchords")
@@ -6806,6 +9423,26 @@ that provides a graphical application which creates LaTeX files that use
 provides an environment like @code{eqnarray}, a @code{newtheorem}-like
 environment (NewTheorem), and several macros.")
     (license license:isc)))
+
+(define-public texlive-geschichtsfrkl
+  (package
+    (name "texlive-geschichtsfrkl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/geschichtsfrkl/"
+                   "source/latex/geschichtsfrkl/"
+                   "tex/latex/geschichtsfrkl/")
+             (base32
+              "1mplym0rkfl8pxzw31m1p117pbfz1s59180bhbwi2wgj4225p4w7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/geschichtsfrkl")
+    (synopsis "BibLaTeX style for historians")
+    (description
+     "The package provides a BibLaTeX style, (mostly) meeting the requirements
+of the History Faculty of the University of Freiburg (Germany).")
+    (license license:lppl)))
 
 (define-public texlive-ghab
   (package
@@ -6895,6 +9532,27 @@ package.  Its main features are:
     (description
      "This package provides Occitan language description file for
 Polyglossia.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-glossaries-extra
+  (package
+    (name "texlive-glossaries-extra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/glossaries-extra/"
+                   "doc/latex/glossaries-extra/"
+                   "source/latex/glossaries-extra/"
+                   "tex/latex/glossaries-extra/")
+             (base32
+              "0s075syzxyz4mkdmq3y4xk38gb9ip19k0cdrlymmixd7jiawvlm8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/glossaries-extra")
+    (synopsis "Extension to the @code{glossaries} package")
+    (description
+     "This package provides improvements and extra features to the
+@code{glossaries} package.")
     (license license:lppl1.3+)))
 
 (define-public texlive-gmverse
@@ -7150,6 +9808,35 @@ a range of options that allow wide customization of the output.")
 to create basic guitar tablatures using LaTeX.")
     (license license:lppl1.3c)))
 
+(define-public texlive-guitlogo
+  (package
+    (name "texlive-guitlogo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/guitlogo/"
+                   "source/latex/guitlogo/"
+                   "tex/latex/guitlogo/")
+             (base32
+              "0fwp3w5b51qs9jr9xq0hl0hsqbx7dkj7qgwjpay88sflycv3qpba")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/guitlogo")
+    (synopsis "Macros for typesetting the GuIT logo")
+    (description
+     "This package provides some commands useful to correctly write the logo
+of @emph{Gruppo Utilizzatori Italiani di TeX} (Italian TeX User Group), using
+the default document color or any other color the user may ever choose, in
+conformity with the logo's scheme as seen on the group's website
+@url{https://www.guitex.org}.  Likewise, commands are provided that simplify
+the writing of the GuIT acronym's complete expansion, of the addresses of the
+group's internet site and public forum, and the meeting GuITmeeting and the
+magazine @emph{Ars TeXnica}'s logo.  Optionally, using @code{hyperref}, the
+outputs of the above cited commands can become hyperlinks to the group's
+website @url{https://www.guitex.org}.  The Documentation is available in
+Italian only.")
+    (license license:lppl1.3a)))
+
 (define-public texlive-gustlib
   (package
     (name "texlive-gustlib")
@@ -7271,6 +9958,53 @@ for Chinese character learning plans, presentations, exercise booklets and
 other documentation work.")
     (license license:lppl1.3c)))
 
+(define-public texlive-harvard
+  (package
+    (name "texlive-harvard")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/harvard/" "bibtex/bst/harvard/"
+                   "doc/latex/harvard/" "source/latex/harvard/"
+                   "tex/latex/harvard/")
+             (base32
+              "1qcw1rrvcgcz26pwcmsfd7gs4bzlq1n4zws92xqsr5fi95pr8q7k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/harvard")
+    (synopsis "Harvard citation package for use with LaTeX")
+    (description
+     "This is a re-implementation, for LaTeX, of the original Harvard package.
+The bundle contains the LaTeX package, several BibTeX styles, and a Perl
+package for use with LaTeX2HTML.
+
+Harvard is an author-year citation style (all but the first author are
+suppressed in second and subsequent citations of the same entry); the package
+defines several variant styles: @file{apsr.bst} for the @emph{American
+Political Science Review}; @file{agsm.bst} for Australian government
+publications; @file{dcu.bst} from the Design Computing Unit of the University
+of Sydney; @file{kluwer.bst}, which aims at the format preferred in Kluwer
+publications; @file{nederlands.bst} which deals with sorting Dutch names with
+prefixes (such as van) according to Dutch rules, together with several styles
+whose authors offer no description of their behaviour.")
+    (license license:lppl)))
+
+(define-public texlive-harvmac
+  (package
+    (name "texlive-harvmac")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/plain/harvmac/" "tex/plain/harvmac/")
+             (base32
+              "0bxa9vvkg79xk3nakdc5an2py6gwbv9ml66xmz1hp1llbg3562vf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/harvmac")
+    (synopsis "Macros for scientific articles")
+    (description "This package provides macros for scientific articles.")
+    (license license:cc-by3.0)))
+
 (define-public texlive-havannah
   (package
     (name "texlive-havannah")
@@ -7340,6 +10074,28 @@ compiled using XeLaTeX.")
 packages, and a selection of others that are useful in High Energy Physics
 papers, etc.")
     (license license:lppl)))
+
+(define-public texlive-hep-bibliography
+  (package
+    (name "texlive-hep-bibliography")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/hep-bibliography/"
+                   "source/latex/hep-bibliography/"
+                   "tex/latex/hep-bibliography/")
+             (base32
+              "02jf5c920bq42g0z1gnapg1lv20ih2issim5yzf98rvjwh8c0ji9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hep-bibliography")
+    (synopsis "Acronym extension for glossaries")
+    (description
+     "The @code{hep-bibliography} package extends the BibLaTeX package with
+some functionality mostly useful for high energy physics.  In particular it
+makes full use of all BibTeX fields provided by Discover High-Energy
+Physics.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-hep-reference
   (package
@@ -7507,6 +10263,25 @@ and XeTeX, that provides functionality for drawing Hex boards and games.")
      "Hex is a mathematical game invented by the Danish mathematician Piet
 Hein and independently by the mathematician John Nash.  This package defines
 an environment that enables the user to draw such a game in a trivial way.")
+    (license license:lppl)))
+
+(define-public texlive-historische-zeitschrift
+  (package
+    (name "texlive-historische-zeitschrift")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/historische-zeitschrift/"
+                   "tex/latex/historische-zeitschrift/")
+             (base32
+              "1w8zhk1darw39lrgs4i1p8zk78a1q7skc93ac8qczbrw5pln27k5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/historische-zeitschrift")
+    (synopsis "BibLaTeX style for the journal @emph{Historische Zeitschrift}")
+    (description
+     "The package provides citations according with the house style of the
+@emph{Historische Zeitschrift}, a German historical journal.")
     (license license:lppl)))
 
 (define-public texlive-hitex
@@ -7714,6 +10489,63 @@ monospaced Arabic font.  The package only works with LuaLaTeX or XeLaTeX.")
 when using for open intervals.")
     (license license:lppl1.3+)))
 
+(define-public texlive-icite
+  (package
+    (name "texlive-icite")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/icite/" "source/latex/icite/"
+                   "tex/latex/icite/")
+             (base32
+              "0a3gqnjbyn33ld3j66pfrrsv502zdrsag0glhar82fbba21qlj9w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/icite")
+    (synopsis "Indices locorum citatorum")
+    (description
+     "The package is designed to produce from BibTeX or BibLaTeX
+bibliographical databases the different indices of authors and works cited
+which are called indices locorum citatorum.  It relies on a specific
+@code{\\icite} command and can operate with either BibTeX or BibLaTeX.")
+    (license (list license:gpl3+ license:cc-by-sa4.0))))
+
+(define-public texlive-ietfbibs
+  (package
+    (name "texlive-ietfbibs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/bibtex/ietfbibs/")
+             (base32
+              "18ypa96z1gclq4amka28sv26pm7lycak68zf4b3sf1bx4ldnzmxq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ietfbibs")
+    (synopsis "Generate BibTeX entries for various IETF index files")
+    (description
+     "The package provides scripts to translate IETF index files to BibTeX
+files.")
+    (license license:expat)))
+
+(define-public texlive-ijqc
+  (package
+    (name "texlive-ijqc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/ijqc/" "doc/bibtex/ijqc/")
+             (base32
+              "18sqc8k21l15zlplpaimdcg8g75z3lrlc0qcb6wx838980gn961r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ijqc")
+    (synopsis "BibTeX style file for the @emph{Intl. J. Quantum Chem}")
+    (description
+     "@file{ijqc.bst} is a BibTeX style file to support publication in Wiley's
+@emph{International Journal of Quantum Chemistry}.")
+    (license license:lppl)))
+
 (define-public texlive-impatient
   (package
     (name "texlive-impatient")
@@ -7826,6 +10658,27 @@ conference proceedings.  The class uses the XePersian package.")
 installed.")
     (license license:lppl1.3c)))
 
+(define-public texlive-inlinebib
+  (package
+    (name "texlive-inlinebib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/inlinebib/"
+                   "doc/bibtex/inlinebib/"
+                   "tex/latex/inlinebib/")
+             (base32
+              "13kfygh2r8s038rnskxnj91h08k8xs6cln16vzsy1j59c82idvkb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/inlinebib")
+    (synopsis "Citations in footnotes")
+    (description
+     "This package provides a BibTeX style and a LaTeX package that allow for
+a full bibliography at the end of the document as well as citation details in
+footnotes.")
+    (license license:lppl)))
+
 (define-public texlive-install-latex-guide-zh-cn
   (package
     (name "texlive-install-latex-guide-zh-cn")
@@ -7920,6 +10773,26 @@ Finally, an @emph{e} starts the exponent of the number.  For example,
 @samp{$21e6$} may be output as @samp{$26\\times10\\,^@{6@}$}.")
     (license license:gpl3+)))
 
+(define-public texlive-iopart-num
+  (package
+    (name "texlive-iopart-num")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/iopart-num/"
+                   "doc/bibtex/iopart-num/")
+             (base32
+              "1n30ncmg0djhpdfa9jl5mv188347xmqsv08vgf2v4ipx7czhjm7v")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/iopart-num")
+    (synopsis "Numeric citation style for IOP journals")
+    (description
+     "This package provides a BibTeX style providing numeric citation in
+Harvard-like format.  Intended for use with Institute of Physics (IOP)
+journals, including @emph{Journal of Physics}.")
+    (license license:lppl)))
+
 (define-public texlive-ipaex
   (package
     (name "texlive-ipaex")
@@ -7938,6 +10811,27 @@ Finally, an @emph{e} starts the exponent of the number.  For example,
      "The fonts provide fixed-width glyphs for Kana and Kanji characters,
 proportional width glyphs for Western characters.")
     (license license:ipa)))
+
+(define-public texlive-is-bst
+  (package
+    (name "texlive-is-bst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/is-bst/" "doc/bibtex/is-bst/")
+             (base32
+              "0bdkk1s5nfqy95h9ia08h4kpij4khj1y5z6byxgn7fsvcxncl1cb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/is-bst")
+    (synopsis "Extended versions of standard BibTeX styles")
+    (description
+     "The bundle contains an extended version (@file{xbtxbst.doc}) of the
+source of the standard BibTeX styles, together with corresponding versions of
+the standard styles.  The styles offer support for CODEN, ISBN, ISSN, LCCN,
+and PRICE fields, extended PAGES fields, the PERIODICAL entry, and extended
+citation label suffixing.")
+    (license license:knuth)))
 
 (define-public texlive-isomath
   (package
@@ -7982,6 +10876,26 @@ of ``Capitolo 1'', that is, spelling the number in words instead of the usual
 digit form.  This package provides support for spelling out numbers in Italian
 words, both in cardinal and in ordinal form.")
     (license license:lppl)))
+
+(define-public texlive-jbact
+  (package
+    (name "texlive-jbact")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/jbact/")
+             (base32
+              "0z0x6jrxaayp3w441r1zwlqirvv23g0b8h9xgy6r3ppi71glzqvp")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jbact")
+    (synopsis "BibTeX style for biology journals")
+    (description
+     "The style is a development of @file{apalike.bst} in the BibTeX bundle.
+The style serves two journals --- if the user executes
+@samp{\\nocite@{TitlesOn@}}, the style serves for the @emph{Journal of
+Theoretical Biology}; otherwise it serves for the @emph{Journal of Molecular
+Biology}.")
+    (license license:knuth)))
 
 (define-public texlive-jeuxcartes
   (package
@@ -8074,6 +10988,47 @@ macros for mathematical notation which make the code more readable or allow
 flexibility in typesetting material.")
     (license license:lppl)))
 
+(define-public texlive-jmb
+  (package
+    (name "texlive-jmb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/jmb/" "tex/latex/jmb/")
+             (base32
+              "1a5nz825jppq3pl1263w2sbm0a48kmmndppfpp7vi69n5j2248dy")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jmb")
+    (synopsis "BibTeX style for the @emph{Journal of Theoretical Biology}")
+    (description
+     "This BibTeX bibliography style is for the @emph{Journal of Molecular
+Biology} and @emph{Journal of Theoretical Biology}; the accompanying LaTeX
+package is a close relative of @code{apalike.sty} in the BibTeX distribution;
+it features author-date references.")
+    (license license:knuth)))
+
+(define-public texlive-jneurosci
+  (package
+    (name "texlive-jneurosci")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/jneurosci/"
+                   "doc/latex/jneurosci/"
+                   "tex/latex/jneurosci/")
+             (base32
+              "1y010df0hxqsjb1q571z4s3vnz2q03l2n4lycg6z89b2yyvdplsv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jneurosci")
+    (synopsis "BibTeX style for the @emph{Journal of Neuroscience}")
+    (description
+     "This is a slightly modified version of the @code{namedplus} style, which
+fully conforms with the @emph{Journal of Neuroscience} citation style.  It
+should be characterised as an author-date citation style; a BibTeX style and
+a LaTeX package are provided.")
+    (license license:lppl)))
+
 (define-public texlive-jupynotex
   (package
     (name "texlive-jupynotex")
@@ -8137,6 +11092,37 @@ that permits alphanumeric section numbering (e.g., @samp{A. Introduction};
      "This package should be helpful for people working on (German) law.  It
 helps you to handle abbreviations and creates a list of those (pre-defined)
 abbreviations that have actually been used in the document.")
+    (license license:gpl3+)))
+
+(define-public texlive-jurabib
+  (package
+    (name "texlive-jurabib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/jurabib/" "bibtex/bst/jurabib/"
+                   "doc/latex/jurabib/" "source/latex/jurabib/"
+                   "tex/latex/jurabib/")
+             (base32
+              "1z8n654n0f97qayql0111smpydwmdf6i22bg55i6nh5al2jcsbbb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jurabib")
+    (synopsis
+     "Extended BibTeX citation support for the humanities and legal texts")
+    (description
+     "This package enables automated citation with BibTeX for legal studies
+and the humanities.  In addition, the package provides commands for specifying
+editors in a commentary in a convenient way.  Simplified formatting of the
+citation as well as the bibliography entry is also provided.  It is possible
+to display the (short) title of a work only if an authors is cited with
+multiple works.  Giving a full citation in the text, conforming to the
+bibliography entry, is supported.  Several options are provided which might be
+of special interest for those outside legal studies--for instance, displaying
+multiple full citations.  In addition, the format of last names and first
+names of authors may be changed easily.  Cross references to other footnotes
+are possible.  Language dependent handling of bibliography entries is possible
+by the special language field.")
     (license license:gpl3+)))
 
 (define-public texlive-juramisc
@@ -8424,6 +11410,25 @@ collected in one place for reading and searching.  They all stem from the
 system that Knuth created.  The central entry point is the index file, with
 links to the individual documents, either in HTML or in PDF format.")
     (license license:public-domain)))
+
+(define-public texlive-ksfh-nat
+  (package
+    (name "texlive-ksfh-nat")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/ksfh_nat/")
+             (base32
+              "1qzn0n19lslf2qg8fvm844xx5k7s8a275a77z2ynbb0vs1w4prpw")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ksfh-nat")
+    (synopsis "BibTeX style for KSFH Munich")
+    (description
+     "The package supports bibliographies as standard for
+KSFH (@emph{Katholische Stiftungsfachhochschule}) Munich.  BibTeX entries in
+@code{article}, @code{book}, @code{inbook}, @code{incollection} and
+@code{misc} formats are supported.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-kvmap
   (package
@@ -8983,6 +11988,28 @@ example numbering, indentations, indexed brackets, and the @samp{*} in
 grammaticality judgments.  The @code{ps-trees} package provides linguistic
 trees.")
     (license license:lppl)))
+
+(define-public texlive-listbib
+  (package
+    (name "texlive-listbib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/listbib/" "doc/latex/listbib/"
+                   "scripts/listbib/" "source/latex/listbib/"
+                   "tex/latex/listbib/")
+             (base32
+              "1k4xwmv6lh1vaggimzmiqib8aai9dm0j586m0hds04485pvhv5ky")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "listbib")))
+    (home-page "https://ctan.org/pkg/listbib")
+    (synopsis "Lists contents of BibTeX files")
+    (description
+     "This package generates listings of bibliographic data bases in BibTeX
+format.  Included is a @file{listbib.bst}, which is better suited for this
+purpose than the standard styles.")
+    (license license:gpl3+)))
 
 (define-public texlive-lithuanian
   (package
@@ -9696,6 +12723,67 @@ LaTeX2e}.")
 several languages not included in that package: BUGS, JAGS, and Stan.")
     (license license:lppl1.3+)))
 
+(define-public texlive-ltb2bib
+  (package
+    (name "texlive-ltb2bib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ltb2bib/" "source/latex/ltb2bib/"
+                   "tex/latex/ltb2bib/")
+             (base32
+              "1wrm89bynjm4g4a1zpx38v6yd2l3b1gh13h4m5hknvla2lydljfg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ltb2bib")
+    (synopsis "Converts @code{amsrefs} bibliographical databases to BibTeX
+format")
+    (description
+     "This package implements a LaTeX command that converts an @code{amsrefs}
+bibliographical database (@file{.ltb}) to a BibTeX bibliographical database
+(@file{.bib}).  @code{ltb2bib} is the reverse of the @samp{amsxport} option in
+@code{amsrefs}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ltxdockit
+  (package
+    (name "texlive-ltxdockit")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ltxdockit/"
+                   "tex/latex/ltxdockit/")
+             (base32
+              "0n1c8g8kaaazg7kahfkckh86s29bi1p3sw9h8v7hl5zgg6mb3415")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ltxdockit")
+    (synopsis "Documentation support")
+    (description
+     "This bundle, consisting of a simple wrapper class and some packages,
+forms a small LaTeX and BibTeX documentation kit; the author uses it for some
+of his own packages.")
+    (license license:lppl)))
+
+(define-public texlive-luabibentry
+  (package
+    (name "texlive-luabibentry")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/lualatex/luabibentry/"
+                   "source/lualatex/luabibentry/"
+                   "tex/lualatex/luabibentry/")
+             (base32
+              "00f6sxkzmfznjbisicacxd546v8zizm1fz36s05iiyra04cawnw4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/luabibentry")
+    (synopsis "Repeat BibTeX entries in a LuaLaTeX document body")
+    (description
+     "The package reimplements @code{bibentry}, for use in LuaLaTeX.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-lyluatex
   (package
     (name "texlive-lyluatex")
@@ -9809,6 +12897,26 @@ Riichi (aka Japanese) Mahjong but can be used to typeset any style of
 mahjong.")
     (license (list license:expat license:cc-by4.0))))
 
+(define-public texlive-margbib
+  (package
+    (name "texlive-margbib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/margbib/" "source/latex/margbib/"
+                   "tex/latex/margbib/")
+             (base32
+              "04aa9nfdxc475nyj4cl8gkj2grn7v3rkb3hwhbhff5nr88nx4aqq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (home-page "https://ctan.org/pkg/margbib")
+    (synopsis "Display bibitem tags in the margins")
+    (description
+     "The package redefines the @code{thebibliography} environment to place
+the citation key into the margin.")
+    (license license:gpl3+)))
+
 (define-public texlive-matapli
   (package
     (name "texlive-matapli")
@@ -9844,6 +12952,28 @@ Mathématiques Appliquées et Industrielles (SMAI).")
      "This package contains samples for the book @emph{(More) Math into LaTeX},
 4th edition.")
     (license license:public-domain)))
+
+(define-public texlive-mathalpha
+  (package
+    (name "texlive-mathalpha")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mathalpha/"
+                   "tex/latex/mathalpha/")
+             (base32
+              "19wniyaba8cz4vk279ashg68bxq9178cvvz53cng2cn6i6rw32rv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mathalpha")
+    (synopsis "General package for loading maths alphabets in LaTeX")
+    (description
+     "Package @code{mathalfa} was renamed to @code{mathalpha}.  For backward
+compatibility the old name will continue to be recognized in LaTeX documents.
+The package provides means of loading maths alphabets (such as are normally
+addressed via macros @code{\\mathcal}, @code{\\mathbb}, @code{\\mathfrak} and
+@code{\\mathscr}).")
+    (license license:lppl1.3c)))
 
 (define-public texlive-mathcommand
   (package
@@ -10497,6 +13627,59 @@ accented letters using ordinary Computer Modern (CM) fonts.  The system is
 distributed as a TeX change file.")
     (license license:knuth)))
 
+(define-public texlive-multibib
+  (package
+    (name "texlive-multibib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/multibib/" "doc/latex/multibib/"
+                   "makeindex/multibib/"
+                   "source/latex/multibib/"
+                   "tex/latex/multibib/")
+             (base32
+              "1m16vi9fj2yc49a6iqcccd7yay26i8zpyzzsgxywlrp4ijrx4hqc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/multibib")
+    (synopsis "Multiple bibliographies within one document")
+    (description
+     "The package the creation of references to multiple bibliographies within
+one document.  It thus provides complementary functionality to packages like
+@code{bibunits} and @code{chapterbib}, which allow the creation of one
+bibliography for multiple, but different parts of the document.  Multibib is
+compatible with @code{inlinebib}, @code{natbib}, and @code{koma-script}.")
+    (license license:lppl)))
+
+(define-public texlive-multibibliography
+  (package
+    (name "texlive-multibibliography")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/multibibliography/"
+                   "doc/latex/multibibliography/"
+                   "scripts/multibibliography/"
+                   "source/latex/multibibliography/"
+                   "tex/latex/multibibliography/")
+             (base32
+              "10281fv7xfqmdc08pyk9l9280crklsfqwf5cwd5ysbhdz1r0grcm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "multibibliography.pl")))
+    (inputs (list perl))
+    (home-page "https://ctan.org/pkg/multibibliography")
+    (synopsis
+     "Multiple versions of a bibliography, with different sort orders")
+    (description
+     "Conventional standards for bibliography styles impose a forced choice
+between index and name/year citations, and corresponding references.  The
+package avoids this choice, by providing alphabetic, sequenced, and even
+chronological orderings of references.  Inline citations, that integrate these
+heterogeneous styles, are also supported (and work with other bibliography
+packages).")
+    (license license:lppl1.3+)))
+
 (define-public texlive-multiobjective
   (package
     (name "texlive-multiobjective")
@@ -10516,6 +13699,25 @@ distributed as a TeX change file.")
      "The package provides a series of operators commonly used in papers
 related to multiobjective optimisation, multiobjective evolutionary
 algorithms, multicriteria decision making and similar fields.")
+    (license license:lppl)))
+
+(define-public texlive-munich
+  (package
+    (name "texlive-munich")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/munich/" "doc/latex/munich/")
+             (base32
+              "1w464hiivzccfk0i4hz60x3q14h38y2yzycldckx144q0z6i4c5r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/munich")
+    (synopsis "Alternative author-date bibliography style")
+    (description
+     "The Munich BibTeX style is produced with @code{custom-bib}, as a German
+(and, more generally, Continental European) alternative to such author-date
+styles as @code{harvard} and @code{oxford}.")
     (license license:lppl)))
 
 (define-public texlive-musical
@@ -10890,6 +14092,23 @@ The package provides Type1 subfonts converted from Nanum Myeongjo (Regular and
 TS1 font definition files are also provided.")
     (license license:silofl1.1)))
 
+(define-public texlive-nar
+  (package
+    (name "texlive-nar")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/nar/")
+             (base32
+              "1nwk71qirapkg3h6jwlv53fm6zwb2vq0fvmc4xcanf19sm3331mk")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nar")
+    (synopsis "BibTeX style for @emph{Nucleic Acid Research}")
+    (description
+     "This BibTeX bibliography style is for the journal @emph{Nucleic Acid Research}.
+It was adapted from the standard @file{unsrt.bst} style file.")
+    (license license:knuth)))
+
 (define-public texlive-natded
   (package
     (name "texlive-natded")
@@ -10970,6 +14189,27 @@ environments for quickly creating nice mathematical documents.")
      "This LaTeX package provides automatic definite articles for Hungarian.")
     (license license:lppl1.3+)))
 
+(define-public texlive-newcastle-bst
+  (package
+    (name "texlive-newcastle-bst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/newcastle-bst/"
+                   "doc/bibtex/newcastle-bst/")
+             (base32
+              "0q5mwwiwf6pvlk6xbvrc6rfm87qrkpp7nba4qgdagjkdrn0hs4jz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/newcastle-bst")
+    (synopsis
+     "BibTeX style following Harvard at Newcastle style recommendations")
+    (description
+     "This package provides a BibTeX style to format reference lists in the
+Harvard at Newcastle style recommended by Newcastle University.  It should be
+used alongside @code{natbib} for citations.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-nicematrix
   (package
     (name "texlive-nicematrix")
@@ -11019,6 +14259,28 @@ the size and colour of the sticks, and flexibility to draw heaps of different
 objects.")
     (license license:expat)))
 
+(define-public texlive-nmbib
+  (package
+    (name "texlive-nmbib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/nmbib/" "doc/latex/nmbib/"
+                   "source/latex/nmbib/" "tex/latex/nmbib/")
+             (base32
+              "17snspchv0yafz062h59gs9px4dwjk99pwfyxcraw9243k2gd79g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nmbib")
+    (synopsis "Multiple versions of a bibliography, with different sort orders")
+    (description
+     "This package is a rewrite of the @code{multibibliography} package
+providing multiple bibliographies with different sorting.  The new version
+offers a number of citation commands, streamlines the creation of
+bibliographies, ensures compatibility with the @code{natbib} package, and
+provides other improvements.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-nnext
   (package
     (name "texlive-nnext")
@@ -11040,6 +14302,47 @@ implements the @code{\\Next}, @code{\\NNext}, @code{\\Last}, and
 @code{\\anextx}, @code{\\lastx}, @code{\\blastx}, and @code{\\bblastx}
 commands from the @code{expex} package.")
     (license license:lppl1.3+)))
+
+(define-public texlive-notes2bib
+  (package
+    (name "texlive-notes2bib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/notes2bib/"
+                   "source/latex/notes2bib/"
+                   "tex/latex/notes2bib/")
+             (base32
+              "0d51xy7hlwdl752yl1sfr7f6r77j41nkpj1mf1l7pycn5nlnii79")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/notes2bib")
+    (synopsis "Integrating notes into the bibliography")
+    (description
+     "The package defines a new type of note, @code{bibnote}, which will
+always be added to the bibliography.  The package allows footnotes and
+endnotes to be moved into the bibliography in the same way.  The package can
+be used with @code{natbib} and BibLaTeX as well as plain LaTeX citations.
+Both sorted and unsorted bibliography styles are supported.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-notex-bst
+  (package
+    (name "texlive-notex-bst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/notex-bst/")
+             (base32
+              "14r3q4z35k5n0rl2igjs4lj5ic4yd14xksg1qam5klb6raaf1jkh")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/notex-bst")
+    (synopsis "BibTeX style that outputs HTML")
+    (description
+     "@file{noTeX.bst} produces a number of beautifully formatted HTML
+@samp{P} elements instead of TeX code.  It can be used to automatically
+generate bibliographies to be served on the web starting from BibTeX files.")
+    (license license:public-domain)))
 
 (define-public texlive-nuc
   (package
@@ -11342,6 +14645,30 @@ so on up to 1999th.  Separate counter commands are provided for different
 letter case variants, and for masculine and feminine gender inflections.")
     (license license:lppl)))
 
+(define-public texlive-oscola
+  (package
+    (name "texlive-oscola")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/oscola/" "makeindex/oscola/"
+                   "tex/latex/oscola/")
+             (base32
+              "1lx883rqq9p3f0vfv6i5xp35qpi79jf1jxycyi5j86i1fvk0jz08")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/oscola")
+    (synopsis
+     "BibLaTeX style for the Oxford Standard for the Citation of Legal
+Authorities")
+    (description
+     "The package provides a set of style files for use with BibLaTeX and
+Biber to produce citations and bibliographies in accordance with the
+widely-used Oxford Standard for the Citation of Legal Authorities.  It also
+includes facilities for constructing tables of cases and legislation from
+citations (in conjunction with appropriate indexing packages).")
+    (license license:lppl1.3+)))
+
 (define-public texlive-ot-tableau
   (package
     (name "texlive-ot-tableau")
@@ -11602,6 +14929,25 @@ customized by means of different @code{\\pascal} macro options or the
 patterns for wide ranges of languages.")
     (license license:lppl1.3c)))
 
+(define-public texlive-perception
+  (package
+    (name "texlive-perception")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/perception/"
+                   "doc/bibtex/perception/")
+             (base32
+              "0958g65hv8fpyhhbkvkd2ybdbp6aiblnc5izbr5z5w8b0v5n0ixx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/perception")
+    (synopsis "BibTeX style for the journal @emph{Perception}")
+    (description
+     "This package provides a BibTeX style for the journal
+@emph{Perception}.")
+    (license license:lppl)))
+
 (define-public texlive-perfectcut
   (package
     (name "texlive-perfectcut")
@@ -11810,6 +15156,23 @@ It is designed as a tool that is easy to use, with a lean syntax, native to
 LaTeX, and directly supporting PDF output format.")
     (license license:lppl1.3c)))
 
+(define-public texlive-plainyr
+  (package
+    (name "texlive-plainyr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/plainyr/")
+             (base32
+              "09py8psdqqnxmq2nkczxz092668zscvf9hbr6fcvrnj0blvz3wxy")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/plainyr")
+    (synopsis "Plain bibliography style, sorted by year first")
+    (description
+     "This is a version of the standard plain BibTeX style, modified to sort
+chronologically (by year) first, then by author, title, etc.")
+    (license license:knuth)))
+
 (define-public texlive-plari
   (package
     (name "texlive-plari")
@@ -11942,6 +15305,24 @@ chords above the notes of a score.  The bundle contains: macros for typing the
 chords; a Lua script to transpose chord macros to the required key signature;
 and support scripts for common requirements.")
     (license license:gpl2)))
+
+(define-public texlive-pnas2009
+  (package
+    (name "texlive-pnas2009")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/pnas2009/")
+             (base32
+              "0yl475rlfhlnd9d0pyzm1gj2gixrdzyn6858j1ndvkhr8vc055ns")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pnas2009")
+    (synopsis "BibTeX style for PNAS (newer version)")
+    (description
+     "This style produces bibliographies in the format of @emph{Proceedings of
+the National Academy of Sciences, USA}.  The style was derived from the
+standard @file{unsrt.bst} and adapted to the new (2009) formatting rules.")
+    (license license:knuth)))
 
 (define-public texlive-poemscol
   (package
@@ -12669,6 +16050,27 @@ Grammar (RRG).  This package allows the construction of trees with crossing
 lines, as is required by this theory for many languages.")
     (license license:lppl)))
 
+(define-public texlive-rsc
+  (package
+    (name "texlive-rsc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/rsc/" "doc/latex/rsc/"
+                   "source/latex/rsc/" "tex/latex/rsc/")
+             (base32
+              "1fgc54fyikrgx81gfhv7mab6sqj4xjz6pyrkxk8jnlwwqrsk0yxb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/rsc")
+    (synopsis "BibTeX style for use with RSC journals")
+    (description
+     "The @code{rsc} package provides a BibTeX style in accordance with the
+requirements of the Royal Society of Chemistry.  It was originally based on
+the file @file{pccp.bst}, but also implements a number of styles from the
+@code{achemso} package.  The package is now a stub for the @code{chemstyle}.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-rtklage
   (package
     (name "texlive-rtklage")
@@ -13048,6 +16450,24 @@ around the payoffs, (b) payoff columns of equal width, and (c) payoffs
 vertically centered within the boxes.")
     (license license:lppl)))
 
+(define-public texlive-showtags
+  (package
+    (name "texlive-showtags")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/showtags/" "tex/latex/showtags/")
+             (base32
+              "0690p94mmlwhg06wzisa73w4445yg3ljy98haqf65acrcb09rl6j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/showtags")
+    (synopsis "Print the tags of bibliography entries")
+    (description
+     "This package prints the tag right-aligned on each line of the
+bibliography.")
+    (license license:public-domain)))
+
 (define-public texlive-shuffle
   (package
     (name "texlive-shuffle")
@@ -13365,6 +16785,27 @@ scripture references);
 @end itemize")
     (license license:gpl2)))
 
+(define-public texlive-sort-by-letters
+  (package
+    (name "texlive-sort-by-letters")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/sort-by-letters/"
+                   "doc/bibtex/sort-by-letters/")
+             (base32
+              "19zsc6a97q5wjdgxcl7mjlbxzhj5xpfi4zi8ym1962l97dj4a96n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sort-by-letters")
+    (synopsis "Bibliography styles for alphabetic sorting")
+    (description
+     "This bundle contains several bibliography styles for separating
+a document's references by the first letter of the first author/editor in the
+bibliography entry.  The styles are adapted from standard ones or from
+@code{natbib} ones.")
+    (license license:knuth)))
+
 (define-public texlive-soup
   (package
     (name "texlive-soup")
@@ -13433,6 +16874,27 @@ teachers) should find this package to be a real time saver.")
 can be adjusted with respect to relative position and format, and can be used
 in text and math mode.")
     (license license:cc-by4.0)))
+
+(define-public texlive-splitbib
+  (package
+    (name "texlive-splitbib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/splitbib/"
+                   "source/latex/splitbib/"
+                   "tex/latex/splitbib/")
+             (base32
+              "18jhdrj9zfnqr4wyazxsqng6a88fwgkw2ka03qskjps8s9pc2fw7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/splitbib")
+    (synopsis "Split and reorder your bibliography")
+    (description
+     "This package enables you to split a bibliography into several categories
+and subcategories.  It does not depend on BibTeX: any bibliography may be
+split and reordered.")
+    (license license:lppl)))
 
 (define-public texlive-stage
   (package
@@ -14419,6 +17881,27 @@ The package @code{lingmacros.sty} defines a few macros for linguists:
 @code{tabular}-based non-connected tree macros, and gloss macros.")
     (license license:lppl1.0+)))
 
+(define-public texlive-turabian-formatting
+  (package
+    (name "texlive-turabian-formatting")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/turabian-formatting/"
+                   "tex/latex/turabian-formatting/")
+             (base32
+              "1h42lrgq59900bhzgw114w1sxi432rbnpb2j5amwz64bsckvd2ry")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/turabian-formatting")
+    (synopsis "Formatting based on @emph{Turabian's Manual}")
+    (description
+     "The @code{turabian-formatting} package provides Chicago-style formatting
+based on Kate L. Turabian's @emph{A Manual for Writers of Research Papers,
+Theses, and Dissertations: Chicago Style for Students and Researchers} (9th
+edition).")
+    (license license:lppl1.3+)))
+
 (define-public texlive-turnstile
   (package
     (name "texlive-turnstile")
@@ -14531,6 +18014,48 @@ following Korean font families (11 fonts):
 @end itemize")
     (license license:gpl2)))
 
+(define-public texlive-uni-wtal-ger
+  (package
+    (name "texlive-uni-wtal-ger")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uni-wtal-ger/"
+                   "tex/latex/uni-wtal-ger/")
+             (base32
+              "0bxrvl10ccdqarffdf3xzcihnid8h84sv1hcbncjmwq249kf3f96")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uni-wtal-ger")
+    (synopsis
+     "Citation style for literary studies at the University of Wuppertal")
+    (description
+     "The package defines a BibLaTeX citation style based on the author-title
+style of @code{biblatex-dw}.  The citations are optimised for literary studies
+in faculty of humanities at the Bergische Universitat Wuppertal.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-uni-wtal-lin
+  (package
+    (name "texlive-uni-wtal-lin")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uni-wtal-lin/"
+                   "tex/latex/uni-wtal-lin/")
+             (base32
+              "07ndzpby3m8ccw3r4sp9plrzmnnpiksvi8plnqyssklalmm406hj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uni-wtal-lin")
+    (synopsis
+     "Citation style for linguistic studies at the University of Wuppertal")
+    (description
+     "The package defines a BibLaTeX citation style based on the standard
+author-year style.  The citations are optimised for linguistic studies at the
+Institute of Linguistics at the Bergische Universitat Wuppertal.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-unicode-alphabets
   (package
     (name "texlive-unicode-alphabets")
@@ -14574,6 +18099,75 @@ display of medieval and other documents.")
      "This package predefines common units, defines an easy to use interface
 to define new units and changes the output concerning to the surrounding font
 settings.")
+    (license license:lppl)))
+
+(define-public texlive-urlbst
+  (package
+    (name "texlive-urlbst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/urlbst/" "doc/bibtex/urlbst/"
+                   "scripts/urlbst/" "source/bibtex/urlbst/")
+             (base32
+              "0sfs2ybkfcqy8w0wdni3aakpnmk60zkmnlc55xskyzzh4yc69qi7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:link-scripts #~(list "urlbst")))
+    (inputs (list perl))
+    (home-page "https://ctan.org/pkg/urlbst")
+    (synopsis "Web support for BibTeX")
+    (description
+     "This package supports a new BibTeX @code{webpage} entry type and @code{url},
+@code{lastchecked}, and @code{eprint} and @code{DOI} fields.  The Perl script
+@command{urlbst} can be used to add this support to an arbitrary @file{.bst}
+file which has a reasonably conventional structure.  The result is meant to be
+robust rather than pretty.")
+    (license (list license:gpl2 license:lppl))))
+
+(define-public texlive-usebib
+  (package
+    (name "texlive-usebib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/usebib/" "source/latex/usebib/"
+                   "tex/latex/usebib/")
+             (base32
+              "1qymf8hnp7ilzm030ypbagmw6nicdfy8lhry20viws1v7dibk9l0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/usebib")
+    (synopsis "Simple bibliography processor")
+    (description
+     "The package is described by its author as @emph{a poor person's
+replacement for the more powerful methods provided by BibLaTeX to access data
+from a @file{.bib} file}.  Its principle commands are @code{\\bibinput}, which
+specifies a database to use, and @code{\\usebibdata}, which typesets a single
+field from a specified entry in that database.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-vak
+  (package
+    (name "texlive-vak")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/vak/" "doc/bibtex/vak/")
+             (base32
+              "1v8bg5yvihskx04m1jjmhlykj2azqb0qv4b2a56vqirrwhldks75")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/vak")
+    (synopsis "BibTeX style for Russian theses, books, etc")
+    (description
+     "The file can be used to format the bibliographies of PhD theses,
+books etc., according to the latest Russian standards: GOST 7.82 -- 2001 and
+GOST 7.1 -- 2003.  It introduces the minimum number of new entries and styles
+to cover all frequently used situations.  The style file provides an easy way
+to perform a semiautomatic, or a completely manual sort of the list of the
+references.  Processing bibliographies produced by the style requires a 8-bit
+BibTeX system.")
     (license license:lppl)))
 
 (define-public texlive-velthuis
@@ -14749,6 +18343,26 @@ package uses TikZ for most things.  The package support exporting the game to
 a VASSAL module.")
     (license license:cc-by-sa4.0)))
 
+(define-public texlive-windycity
+  (package
+    (name "texlive-windycity")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/windycity/"
+                   "tex/latex/windycity/")
+             (base32
+              "13fw7nnkgnphwm3vjdsn40p7n5j6cfb4c60ga6y16xrcwihzdqpb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/windycity")
+    (synopsis "Chicago style for BibLaTeX")
+    (description
+     "Windy City is a style for BibLaTeX that formats notes, bibliographies,
+parenthetical citations, and reference lists according to the 17th edition of
+@emph{The Chicago Manual of Style}.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-witharrows
   (package
     (name "texlive-witharrows")
@@ -14812,6 +18426,26 @@ Native American languages.")
     (description
      "This package provides LaTeX support for the @code{wnri} fonts.")
     (license license:gpl2)))
+
+(define-public texlive-xcite
+  (package
+    (name "texlive-xcite")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xcite/" "source/latex/xcite/"
+                   "tex/latex/xcite/")
+             (base32
+              "1r6f4wk7d3na9a8v20kqp24m46rsqgqx0n8k5hv3ynhqhzizhpll")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xcite")
+    (synopsis "Use citation keys from a different document")
+    (description
+     "The package @code{xcite} is no longer necessary, because its
+functionality has been taken over by @code{xr}, so this final version is just
+a stub that loads @code{xr}.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-xecjk
   (package
@@ -15072,6 +18706,26 @@ pgfkeys-enabled options are provided both at package load and configurably.")
     (description
      "This is a LaTeX package for creating CJK character calligraphy
 practicing sheets (copybooks).  Currently, only XeTeX is supported.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-zootaxa-bst
+  (package
+    (name "texlive-zootaxa-bst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/zootaxa-bst/"
+                   "doc/bibtex/zootaxa-bst/")
+             (base32
+              "178daki12ky2hxjsdgz6nnc84741hdj0mn30lglp2sazqwjxrbw0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/zootaxa-bst")
+    (synopsis "BibTeX style for the journal @emph{Zootaxa}")
+    (description
+     "This package provides a @file{.bst} reference style file for the journal
+@emph{Zootaxa} that publishes contributions in zoology and classification.
+This is a fork of @file{apa.bst}.")
     (license license:lppl1.3c)))
 
 (define-public texlive-zx-calculus
@@ -45468,6 +49122,185 @@ The macros were designed for use within other macros.")
      "These files are regarded as basic for any TeX system, covering plain TeX
 macros, Computer Modern fonts, and configuration for common drivers; no
 LaTeX.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-bibtexextra
+  (package
+    (name "texlive-collection-bibtexextra")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-aaai-named
+           texlive-aichej
+           texlive-ajl
+           texlive-amsrefs
+           texlive-annotate
+           texlive-apacite
+           texlive-apalike-ejor
+           texlive-apalike2
+           texlive-archaeologie
+           texlive-authordate
+           texlive-beebe
+           texlive-besjournals
+           texlive-bestpapers
+           texlive-bib2gls
+           texlive-bibarts
+           texlive-bibcop
+           texlive-biber
+           texlive-biber-ms
+           texlive-bibexport
+           texlive-bibhtml
+           texlive-biblatex
+           texlive-biblatex-abnt
+           texlive-biblatex-ajc2020unofficial
+           texlive-biblatex-anonymous
+           texlive-biblatex-apa
+           texlive-biblatex-apa6
+           texlive-biblatex-archaeology
+           texlive-biblatex-arthistory-bonn
+           texlive-biblatex-bath
+           texlive-biblatex-bookinarticle
+           texlive-biblatex-bookinother
+           texlive-biblatex-bwl
+           texlive-biblatex-caspervector
+           texlive-biblatex-chem
+           texlive-biblatex-chicago
+           texlive-biblatex-claves
+           texlive-biblatex-cv
+           texlive-biblatex-dw
+           texlive-biblatex-enc
+           texlive-biblatex-ext
+           texlive-biblatex-fiwi
+           texlive-biblatex-gb7714-2015
+           texlive-biblatex-german-legal
+           texlive-biblatex-gost
+           texlive-biblatex-historian
+           texlive-biblatex-ieee
+           texlive-biblatex-ijsra
+           texlive-biblatex-iso690
+           texlive-biblatex-jura2
+           texlive-biblatex-juradiss
+           texlive-biblatex-license
+           texlive-biblatex-lncs
+           texlive-biblatex-lni
+           texlive-biblatex-luh-ipw
+           texlive-biblatex-manuscripts-philology
+           texlive-biblatex-mla
+           texlive-biblatex-morenames
+           texlive-biblatex-ms
+           texlive-biblatex-multiple-dm
+           texlive-biblatex-musuos
+           texlive-biblatex-nature
+           texlive-biblatex-nejm
+           texlive-biblatex-nottsclassic
+           texlive-biblatex-opcit-booktitle
+           texlive-biblatex-oxref
+           texlive-biblatex-philosophy
+           texlive-biblatex-phys
+           texlive-biblatex-publist
+           texlive-biblatex-readbbl
+           texlive-biblatex-realauthor
+           texlive-biblatex-sbl
+           texlive-biblatex-science
+           texlive-biblatex-shortfields
+           texlive-biblatex-socialscienceshuberlin
+           texlive-biblatex-software
+           texlive-biblatex-source-division
+           texlive-biblatex-spbasic
+           texlive-biblatex-subseries
+           texlive-biblatex-swiss-legal
+           texlive-biblatex-trad
+           texlive-biblatex-true-citepages-omit
+           texlive-biblatex-unified
+           texlive-biblatex-vancouver
+           texlive-biblatex2bibitem
+           texlive-biblist
+           texlive-bibtexperllibs
+           texlive-bibtopic
+           texlive-bibtopicprefix
+           texlive-bibunits
+           texlive-biolett-bst
+           texlive-bookdb
+           texlive-breakcites
+           texlive-cell
+           texlive-chbibref
+           texlive-chembst
+           texlive-chicago
+           texlive-chicago-annote
+           texlive-chicagoa
+           texlive-chscite
+           texlive-citation-style-language
+           texlive-citeall
+           texlive-citeref
+           texlive-collection-latex
+           texlive-collref
+           texlive-compactbib
+           texlive-crossrefware
+           texlive-custom-bib
+           texlive-din1505
+           texlive-dk-bib
+           texlive-doipubmed
+           texlive-ecobiblatex
+           texlive-econ-bst
+           texlive-economic
+           texlive-fbs
+           texlive-figbib
+           texlive-footbib
+           texlive-francais-bst
+           texlive-gbt7714
+           texlive-geschichtsfrkl
+           texlive-harvard
+           texlive-harvmac
+           texlive-hep-bibliography
+           texlive-historische-zeitschrift
+           texlive-icite
+           texlive-ietfbibs
+           texlive-ijqc
+           texlive-inlinebib
+           texlive-iopart-num
+           texlive-is-bst
+           texlive-jbact
+           texlive-jmb
+           texlive-jneurosci
+           texlive-jurabib
+           texlive-ksfh-nat
+           texlive-listbib
+           texlive-logreq
+           texlive-ltb2bib
+           texlive-luabibentry
+           texlive-margbib
+           texlive-multibib
+           texlive-multibibliography
+           texlive-munich
+           texlive-nar
+           texlive-newcastle-bst
+           texlive-nmbib
+           texlive-notes2bib
+           texlive-notex-bst
+           texlive-oscola
+           texlive-perception
+           texlive-plainyr
+           texlive-pnas2009
+           texlive-rsc
+           texlive-showtags
+           texlive-sort-by-letters
+           texlive-splitbib
+           texlive-turabian-formatting
+           texlive-uni-wtal-ger
+           texlive-uni-wtal-lin
+           texlive-urlbst
+           texlive-usebib
+           texlive-vak
+           texlive-windycity
+           texlive-xcite
+           texlive-zootaxa-bst))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "BibTeX additional styles")
+    (description
+     "This collection provides additional BibTeX styles and bibliography
+data(bases), notably including BibLaTeX.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
 (define-public texlive-collection-binextra
