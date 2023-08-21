@@ -374,9 +374,9 @@ configure network interfaces in Linux containers.")
             (lambda _
               (invoke "make" "install.completions"
                       (string-append "PREFIX=" #$output)))))))
-    (propagated-inputs
-     (list
-      buildah))
+    ;;(propagated-inputs
+    ;; (list
+    ;;  buildah))
     (inputs
      (list btrfs-progs
            cni-plugins
