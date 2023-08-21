@@ -312,7 +312,7 @@ configure network interfaces in Linux containers.")
 (define-public podman
   (package
     (name "podman")
-    (version "4.6.0")
+    (version "4.6.1")
     (source
      (origin
        (method git-fetch)
@@ -325,7 +325,7 @@ configure network interfaces in Linux containers.")
                    ((".*hack/btrfs.*") "")))
        (sha256
         (base32
-         "1x1iyjd3q2d8w3rqx7d5bv4n0pfk4ffj2abij2b90ir12rjc9izi"))
+         "0d5lfj8i0250f2lrirbq8ayihagmws0hnkjwbyb9nrh6zs6lns3c"))
        (file-name (git-file-name name version))))
 
     (build-system gnu-build-system)
@@ -374,6 +374,9 @@ configure network interfaces in Linux containers.")
             (lambda _
               (invoke "make" "install.completions"
                       (string-append "PREFIX=" #$output)))))))
+    (propagated-inputs
+     (list
+      buildah))
     (inputs
      (list btrfs-progs
            cni-plugins
@@ -404,7 +407,7 @@ containers.")
 (define-public buildah
   (package
     (name "buildah")
-    (version "1.29.1")
+    (version "1.31.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -413,7 +416,7 @@ containers.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1mcqkz68fjccdla1bgxw57w268a586brm6x28fcm6x425ah0w07h"))))
+                "12sv836v7kj63w015l3b7spzl1xdi30yycrnklgqqjf16ipz7wib"))))
     (build-system go-build-system)
     (arguments
      (list #:import-path "github.com/containers/buildah/cmd/buildah"
