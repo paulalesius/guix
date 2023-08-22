@@ -6508,7 +6508,7 @@ emerges from a sewer hole and pulls her below ground.")
 (define-public cdogs-sdl
   (package
     (name "cdogs-sdl")
-    (version "1.4.0")
+    (version "1.5.0")
     (source
      (origin
        (method git-fetch)
@@ -6517,13 +6517,21 @@ emerges from a sewer hole and pulls her below ground.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1505z8rli59i1ych4rzwbf4dvhv72icdj22n1xarb8xfyz0wyp3b"))))
+        (base32 "1i1akay3ad2bkiqa7vfkh3qyhiqax8ikp1v6lfjysvxg65wkqdvc"))))
     (build-system cmake-build-system)
     (arguments
-     `(#:configure-flags
-       (list (string-append "-DCDOGS_DATA_DIR="
-                            (assoc-ref %outputs "out")
-                            "/share/cdogs-sdl/"))))
+     (list
+      #:configure-flags
+      #~(list (string-append "-DCDOGS_DATA_DIR=" #$output
+                             "/share/cdogs-sdl/"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-install-directory
+            (lambda _
+              (substitute* "CMakeLists.txt"
+                (("set\\(DATA_INSTALL_DIR \".\"\\)")
+                 (string-append "set(DATA_INSTALL_DIR \""
+                                #$output "/share/cdogs-sdl\")"))))))))
     (native-inputs
      (list pkg-config))
     (inputs

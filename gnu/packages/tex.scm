@@ -1308,6 +1308,93 @@ convert your notation to PostScript (using the established utility
 document.")
     (license license:lppl1.2+)))
 
+(define-public texlive-aboensis
+  (package
+    (name "texlive-aboensis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/aboensis/"
+                   "fonts/opentype/public/aboensis/"
+                   "tex/latex/aboensis/")
+             (base32
+              "14333k6bkfywdka3h2a2yd2nw0521q0lwl3x38612j7cb82izyi3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aboensis")
+    (synopsis "Late medieval OpenType cursive font")
+    (description
+     "The package contains the OpenType medieval cursive font Aboensis and
+a style file to use it in XeLaTeX documents.  The font is based on @emph{Codex
+Aboensis}, that is a law book written in Sweden in the 1430s.  Since medieval
+cursive is very difficult to read for modern people, the font is not suitable
+for use as an ordinary book font, but is intended for emulating late medieval
+manuscripts.
+
+The font contains two sets of initials: lombardic and cursive to go with the
+basic alphabet, and there is support for writing two-colored initials and
+capitals.  There are also a large number of abbreviation sigla that can be
+accessed as ligature substitutions.  The style file contains macros that help
+to use the extended features of the font such as initials and two-colored
+capitals.  There are also macros to help achieve even pages with consistent
+line spacing.")
+    (license
+     (list license:silofl1.1
+           license:lppl1.3c
+           license:cc-by4.0
+           license:public-domain))))
+
+(define-public texlive-academicons
+  (package
+    (name "texlive-academicons")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/academicons/"
+                   "fonts/truetype/public/academicons/"
+                   "tex/latex/academicons/")
+             (base32
+              "1gxgj0ppyrf6pj9qvhk02ybwf68yzlh2110r41iwsai5by2iczhm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/academicons")
+    (synopsis "Font containing high quality icons of online academic profiles")
+    (description
+     "The @code{academicons} package provides access in (La)TeX to 124 high
+quality icons of online academic profiles included in the free Academicons
+font.  This package requires either the Xe(La)TeX or Lua(La)TeX engine to load
+the Academicons font from the system.  The @code{academicons} package provides
+the generic @code{\\aiicon} command to access icons, which takes as mandatory
+argument the name of the desired icon.  It also provides individual direct
+commands for each specific icon.")
+    (license (list license:lppl1.3c license:silofl1.1))))
+
+(define-public texlive-accanthis
+  (package
+    (name "texlive-accanthis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/accanthis/"
+                   "fonts/enc/dvips/accanthis/"
+                   "fonts/map/dvips/accanthis/"
+                   "fonts/opentype/arkandis/accanthis/"
+                   "fonts/tfm/arkandis/accanthis/"
+                   "fonts/type1/arkandis/accanthis/"
+                   "fonts/vf/arkandis/accanthis/"
+                   "tex/latex/accanthis/")
+             (base32
+              "1xpy3bs8wwb6ncw4c8kc5vvddl77rmjwfjq66xw12sc8mgg9grmv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/accanthis")
+    (synopsis "Accanthis fonts, with LaTeX support")
+    (description
+     "Accanthis No.@: 3, designed by Hirwin Harendal, is suitable as an
+alternative to fonts such as Garamond, Galliard, Horley old style, Sabon, and
+Bembo.  The package provides support files for use with all LaTeX engines.")
+    (license (list license:gpl2+ license:lppl))))
+
 (define-public texlive-accents
   (package
     (name "texlive-accents")
@@ -1397,6 +1484,54 @@ adaptation for working with Babel.")
            license:knuth                ;bxabst
            license:public-domain))))    ;docmac
 
+(define-public texlive-adforn
+  (package
+    (name "texlive-adforn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/adforn/"
+                   "fonts/afm/arkandis/adforn/"
+                   "fonts/enc/dvips/adforn/"
+                   "fonts/map/dvips/adforn/"
+                   "fonts/tfm/arkandis/adforn/"
+                   "fonts/type1/arkandis/adforn/"
+                   "tex/latex/adforn/")
+             (base32
+              "0dpdbqlc7p3mwm1bj1m5sbkwi5qjsvsfzfb0wnq4flvz1gc09245")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/adforn")
+    (synopsis "OrnementsADF font with TeX and LaTeX support")
+    (description
+     "The bundle provides the Ornements ADF font in PostScript Type 1 format
+with TeX and LaTeX support files.")
+    (license (list license:lppl license:gpl2+))))
+
+(define-public texlive-adfsymbols
+  (package
+    (name "texlive-adfsymbols")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/adfsymbols/"
+                   "fonts/afm/arkandis/adfsymbols/"
+                   "fonts/enc/dvips/adfsymbols/"
+                   "fonts/map/dvips/adfsymbols/"
+                   "fonts/tfm/arkandis/adfsymbols/"
+                   "fonts/type1/arkandis/adfsymbols/"
+                   "tex/latex/adfsymbols/")
+             (base32
+              "188is31d2zcd8kk339x4wvhhm98gbfkvq6pi25d9mva4vz3w1vf5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/adfsymbols")
+    (synopsis "SymbolsADF with TeX and LaTeX support")
+    (description
+     "The package provides Arkandis foundry's ArrowsADF and BulletsADF fonts
+in Adobe Type 1 format, together with TeX and LaTeX support files.")
+    (license (list license:lppl license:gpl2))))
+
 (define-public texlive-adhocfilelist
   (package
     (name "texlive-adhocfilelist")
@@ -1454,6 +1589,34 @@ devoted to representing natural language expressions.")
      "The package comprises the collection of CMap and PDF mapping files made
 available for distribution by Adobe.")
     (license license:bsd-3)))
+
+(define-public texlive-aesupp
+  (package
+    (name "texlive-aesupp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/aesupp/"
+                   "fonts/enc/dvips/aesupp/"
+                   "fonts/map/dvips/aesupp/"
+                   "fonts/opentype/public/aesupp/"
+                   "fonts/tfm/public/aesupp/"
+                   "fonts/type1/public/aesupp/"
+                   "source/fonts/aesupp/"
+                   "tex/latex/aesupp/")
+             (base32
+              "1sx5802d1ib72i0ssjpr0c54pgq1s980wg3q1685pjniw68ns1vj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aesupp")
+    (synopsis "Special support for the @samp{ae} character")
+    (description
+     "This package provides special support for the italic @samp{ae} character
+in some fonts, due to design flaws (in the author's opinion) regarding this
+character.  At the moment only the fonts TeX Gyre Bonum, TeX Gyre Schola, TeX
+Gyre Pagella, and the Latin Modern fonts are supported.  The other fonts in
+the TeX Gyre bundle do not need this support.")
+    (license (list license:gfl1.0 license:gpl3+))))
 
 (define-public texlive-afm2pl
   (package
@@ -1555,6 +1718,33 @@ Devanagari characters and syllables in a more correct way.")
 a given (Unicode) glyph.  It relies on Fontconfig.")
     (license license:bsd-3)))
 
+(define-public texlive-alegreya
+  (package
+    (name "texlive-alegreya")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/alegreya/"
+                   "fonts/enc/dvips/alegreya/"
+                   "fonts/map/dvips/alegreya/"
+                   "fonts/opentype/huerta/alegreya/"
+                   "fonts/tfm/huerta/alegreya/"
+                   "fonts/type1/huerta/alegreya/"
+                   "fonts/vf/huerta/alegreya/"
+                   "tex/latex/alegreya/")
+             (base32
+              "1n09fq89nxw3jaglmvjfl7ysflqi0rh6mmp6q0zn57m72sza9rra")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/alegreya")
+    (synopsis "Alegreya fonts with LaTeX support")
+    (description
+     "Alegreya, designed by Juan Pablo del Peral, is a typeface originally
+intended for literature.  It conveys a dynamic and varied rhythm which
+facilitates the reading of long texts.  Bold, black, small caps and five
+number styles are available.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-aleph
   (package
     (name "texlive-aleph")
@@ -1581,6 +1771,32 @@ a given (Unicode) glyph.  It relies on Fontconfig.")
      "This package provides a development of Omega, using most of the
 extensions of TeX, itself developed for e-TeX.")
     (license license:gpl3+)))
+
+(define-public texlive-alfaslabone
+  (package
+    (name "texlive-alfaslabone")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/alfaslabone/"
+                   "fonts/enc/dvips/alfaslabone/"
+                   "fonts/map/dvips/alfaslabone/"
+                   "fonts/opentype/public/alfaslabone/"
+                   "fonts/tfm/public/alfaslabone/"
+                   "fonts/type1/public/alfaslabone/"
+                   "fonts/vf/public/alfaslabone/"
+                   "tex/latex/alfaslabone/")
+             (base32
+              "1wpn96dd1rca52dqwngvyyvnmvak32sjz2id6lcra2jnz5jhk01g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/alfaslabone")
+    (synopsis "Alfa Slab One font face with support for LaTeX and pdfLaTeX")
+    (description
+     "The @code{alfaslabone} package supports the Alfa Slab One font face for
+LaTeX.  There is only a Regular font face.  It's useful for book-chapter
+headlines.")
+    (license license:silofl1.1)))
 
 (define-public texlive-alg
   (package
@@ -1627,6 +1843,34 @@ own LaTeX export which does not look like the editor rendition, produces
 standalone documents cumbersome to customize, and has arbitrary and
 inconsistent differences between the input syntax and the program text.")
     (license license:gpl3+)))
+
+(define-public texlive-algolrevived
+  (package
+    (name "texlive-algolrevived")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/algolrevived/"
+                   "fonts/enc/dvips/algolrevived/"
+                   "fonts/map/dvips/algolrevived/"
+                   "fonts/opentype/public/algolrevived/"
+                   "fonts/tfm/public/algolrevived/"
+                   "fonts/type1/public/algolrevived/"
+                   "fonts/vf/public/algolrevived/"
+                   "tex/latex/algolrevived/")
+             (base32
+              "0709ijp5jqajwdc9ryhjp4jky0pqynj9wj3rryxk9z6sm63pbq1k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/algolrevived")
+    (synopsis "Revival of Frutiger's Algol alphabet")
+    (description
+     "The package revives Frutiger's Algol alphabet, designed in 1963 for the
+code segments in an ALGOL manual.  It provides OpenType and Type 1, regular
+and medium weights, upright and slanted variations.  Albeit not monospaced,
+this font is good for listings if you don't need code to be aligned with
+specific columns.  It also makes a passable but limited text font.")
+    (license (list license:silofl1.1 license:lppl1.3c))))
 
 (define-public texlive-algorithm2e
   (package
@@ -1779,6 +2023,86 @@ math environments.")
      "This font is designed for Arabic-based writing systems in the Kano
 region of Nigeria and Niger.")
     (license license:silofl1.1)))
+
+(define-public texlive-allrunes
+  (package
+    (name "texlive-allrunes")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/allrunes/"
+                   "fonts/map/dvips/allrunes/"
+                   "fonts/source/public/allrunes/"
+                   "fonts/type1/public/allrunes/"
+                   "source/fonts/allrunes/"
+                   "tex/latex/allrunes/")
+             (base32
+              "14a1qaa30s4dzmg4dlrjd3faa3bcrl2gdpp700i8pghj3pjk7gp4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/allrunes")
+    (synopsis "Fonts and LaTeX package for almost all runes")
+    (description
+     "This large collection of fonts (in Adobe Type 1 format), with the LaTeX
+package gives access to almost all runes ever used in Europe.  The bundle
+covers not only the main forms but also a lot of varieties.")
+    (license license:lppl)))
+
+(define-public texlive-almendra
+  (package
+    (name "texlive-almendra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/almendra/"
+                   "fonts/enc/dvips/almendra/"
+                   "fonts/map/dvips/almendra/"
+                   "fonts/tfm/public/almendra/"
+                   "fonts/truetype/public/almendra/"
+                   "fonts/type1/public/almendra/"
+                   "fonts/vf/public/almendra/"
+                   "tex/latex/almendra/")
+             (base32
+              "1mkj0cjpry0hdynlpf719haczm1csv0yvla6nhlgp3dq5k28hvp2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/almendra")
+    (synopsis "Almendra fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX, and LuaLaTeX support for
+the Almendra family of fonts, designed by Ana Sanfelippo.  Almendra is
+a typeface design based on calligraphy.  Its style is related to the Chancery
+and Gothic hands.  There are regular and bold weights with matching italics.
+There is also a regular-weight small-caps.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-almfixed
+  (package
+    (name "texlive-almfixed")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/almfixed/"
+                   "fonts/opentype/public/almfixed/"
+                   "fonts/truetype/public/almfixed/")
+             (base32
+              "1ihyldbdz89swj8lm75kb3n3nqqgzkydwlppsndfpib74pvp6s97")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/almfixed")
+    (synopsis "Extend TeX-Gyre Latin Modern to full Arabic Unicode support")
+    (description
+     "Arabic-Latin Modern Fixed is an extension of TeX-Gyre Latin Modern Mono
+10 Regular.  Every glyph and OpenType feature of the Latin Modern Mono has
+been retained, with minor improvements.  On the other hand, we have changed
+the vertical metrics of the font.
+
+The unique feature of Arabic-Latin Modern is its treatment of vowels and
+diacritics.  Each vowel and diacritic (ALM Fixed contains a total of 68 such
+glyphs) may now be edited horizontally within any text editor or processor.
+Editing complex Arabic texts will now be much easier to input and to
+proofread.")
+    (license license:gfl1.0)))
 
 (define-public texlive-alpha-persian
   (package
@@ -1967,6 +2291,34 @@ prepare submissions for the AMS.")
     ;; Use same license as `amscls'.
     (license license:lppl1.3c)))
 
+(define-public texlive-andika
+  (package
+    (name "texlive-andika")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/andika/"
+                   "fonts/enc/dvips/andika/"
+                   "fonts/map/dvips/andika/"
+                   "fonts/tfm/SIL/andika/"
+                   "fonts/truetype/SIL/andika/"
+                   "fonts/type1/SIL/andika/"
+                   "fonts/vf/SIL/andika/"
+                   "tex/latex/andika/")
+             (base32
+              "1gjahg3xwzwrj9cp6l0zmhfqxwzl4m89vvngmpq4ym0f6rg5pb4i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/andika")
+    (synopsis "Andika fonts with support for all LaTeX engines")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Andika family of fonts designed by SIL International especially for
+literacy use, taking into account the needs of beginning readers.  The focus
+is on clear, easy-to-perceive letterforms that will not be readily confused
+with one another.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-annee-scolaire
   (package
     (name "texlive-annee-scolaire")
@@ -2030,6 +2382,34 @@ equations and add annotation labels using TikZ.  It should work with pdfLaTeX
 as well as LuaLaTeX.")
     (license license:expat)))
 
+(define-public texlive-anonymouspro
+  (package
+    (name "texlive-anonymouspro")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/anonymouspro/"
+                   "fonts/afm/public/anonymouspro/"
+                   "fonts/enc/dvips/anonymouspro/"
+                   "fonts/map/dvips/anonymouspro/"
+                   "fonts/tfm/public/anonymouspro/"
+                   "fonts/truetype/public/anonymouspro/"
+                   "fonts/type1/public/anonymouspro/"
+                   "fonts/vf/public/anonymouspro/"
+                   "source/fonts/anonymouspro/"
+                   "tex/latex/anonymouspro/")
+             (base32
+              "1qfhsbq3ab72k9d023pa70vs1807djijg84l888nwsf3ylfwg7mf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/anonymouspro")
+    (synopsis "Use AnonymousPro fonts with LaTeX")
+    (description
+     "The fonts are a monowidth set, designed for use by coders.  They appear
+as a set of four TrueType, or Adobe Type 1 font files, and LaTeX support is
+also provided.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-antanilipsum
   (package
     (name "texlive-antanilipsum")
@@ -2050,6 +2430,31 @@ as well as LuaLaTeX.")
 mocking nonsense phrases from the movie series @emph{Amici Miei} (``My
 friends'', in English), directed by Mario Monicelli.")
     (license license:lppl1.3c)))
+
+(define-public texlive-antiqua
+  (package
+    (name "texlive-antiqua")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/antiqua/"
+                   "fonts/afm/urw/antiqua/"
+                   "fonts/map/dvips/antiqua/"
+                   "fonts/map/vtex/antiqua/"
+                   "fonts/tfm/urw/antiqua/"
+                   "fonts/type1/urw/antiqua/"
+                   "fonts/vf/urw/antiqua/"
+                   "tex/latex/antiqua/")
+             (base32
+              "0agnibj98zx2f2r40gqcfm2f1x06389wd2qrlf6b4pl8pgay42z2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/urw-antiqua")
+    (synopsis "URW Antiqua condensed font, for use with TeX")
+    (description
+     "The package contains a copy of the Type 1 font URW Antiqua 2051 Regular
+Condensed, with supporting files for use with (La)TeX.")
+    (license license:gpl3+)))
 
 (define-public texlive-antomega
   (package
@@ -2433,6 +2838,86 @@ German Archaeological Institute (DAI).  Various options are available to
 change and adjust the outcome according to one's own preferences.")
     (license license:lppl1.3+)))
 
+(define-public texlive-archaic
+  (package
+    (name "texlive-archaic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/archaic/"
+                   "fonts/afm/public/archaic/"
+                   "fonts/map/dvips/archaic/"
+                   "fonts/source/public/archaic/"
+                   "fonts/tfm/public/archaic/"
+                   "fonts/type1/public/archaic/"
+                   "source/fonts/archaic/"
+                   "tex/latex/archaic/")
+             (base32
+              "0a6lp4w9b76q1w30a58205b1n7jf61n58ps2hdxrhpg9nxqwy1w0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/archaic")
+    (synopsis "Collection of archaic fonts")
+    (description
+     "The collection contains fonts to represent Aramaic, Cypriot,
+Etruscan, Greek of the 6th and 4th centuries BCE, Egyptian hieroglyphics,
+Linear A, Linear B, Nabatean old Persian, the Phaistos disc, Phoenician,
+proto-Semitic, runic, South Arabian Ugaritic and Viking scripts.  The bundle
+also includes a small font for use in phonetic transcription of the archaic
+writings.")
+    (license license:lppl)))
+
+(define-public texlive-archivo
+  (package
+    (name "texlive-archivo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/archivo/"
+                   "fonts/enc/dvips/archivo/"
+                   "fonts/map/dvips/archivo/"
+                   "fonts/opentype/public/archivo/"
+                   "fonts/tfm/public/archivo/"
+                   "fonts/type1/public/archivo/"
+                   "fonts/vf/public/archivo/"
+                   "tex/latex/archivo/")
+             (base32
+              "1wdvr7ch2ydj41yd0xniwppb5wh1m9w97d839fhmp21lgyhss0jl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/archivo")
+    (synopsis "Archivo font face with support for LaTeX and pdfLaTeX")
+    (description
+     "This package provides the Archivo family of fonts designed by
+Omnibus-Type, with support for LaTeX and pdfLaTeX.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-arimo
+  (package
+    (name "texlive-arimo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/arimo/"
+                   "fonts/enc/dvips/arimo/"
+                   "fonts/map/dvips/arimo/"
+                   "fonts/tfm/google/arimo/"
+                   "fonts/truetype/google/arimo/"
+                   "fonts/type1/google/arimo/"
+                   "fonts/vf/google/arimo/"
+                   "tex/latex/arimo/")
+             (base32
+              "06m23slsvcp0pm2ds2rxmgj0qrrvy8qknda4yjhvcz9almwb4syx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/arimo")
+    (synopsis "Arimo sans serif fonts with LaTeX support")
+    (description
+     "The Arimo family, designed by Steve Matteson, is a refreshing sans serif
+design which is metrically compatible with Arial.")
+    (license license:asl2.0)))
+
 (define-public texlive-armtex
   (package
     (name "texlive-armtex")
@@ -2546,6 +3031,55 @@ pdfLaTeX and the @code{cjk} package, are provided by the @code{arphic}
 package.")
     (license license:arphic-1999)))
 
+(define-public texlive-arvo
+  (package
+    (name "texlive-arvo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/arvo/"
+                   "fonts/enc/dvips/arvo/"
+                   "fonts/map/dvips/arvo/"
+                   "fonts/tfm/public/arvo/"
+                   "fonts/truetype/public/arvo/"
+                   "fonts/vf/public/arvo/"
+                   "tex/latex/arvo/")
+             (base32
+              "1dc52n81wxz06vfbxzmfdp9j6a217v8yf8bczqlnx5vgzy8wlmi3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/arvo")
+    (synopsis "Arvo font face with support for LaTeX and pdfLaTeX")
+    (description
+     "This package provides the Arvo family of fonts, designed by Anton
+Koovit, with support for LaTeX and pdfLaTeX.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-asapsym
+  (package
+    (name "texlive-asapsym")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/asapsym/"
+                   "fonts/opentype/omnibus-type/asapsym/"
+                   "source/fonts/asapsym/"
+                   "tex/generic/asapsym/"
+                   "tex/latex/asapsym/"
+                   "tex/plain/asapsym/")
+             (base32
+              "038adcagkzy1bj5y9i5a4i5kbyr3wg7w0lfhbbg9z7glqmivilic")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/asapsym")
+    (synopsis "Using the ASAP Symbol font with LaTeX and Plain TeX")
+    (description
+     "The package provides macros (usable with LaTeX or Plain TeX) for using
+the ASAP Symbol font, which is also included.  The font is distributed in
+OpenType format, and makes extensive use of OpenType features.  Therefore, at
+this time, only XeTeX and LuaTeX are supported.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-ascii-chart
   (package
     (name "texlive-ascii-chart")
@@ -2563,6 +3097,30 @@ package.")
      "This package contains an ASCII wall chart.  The document may be
 converted between Plain TeX and LaTeX by a simple editing action.")
     (license license:lppl1.3+)))
+
+(define-public texlive-ascii-font
+  (package
+    (name "texlive-ascii-font")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ascii-font/"
+                   "fonts/map/dvips/ascii-font/"
+                   "fonts/tfm/public/ascii-font/"
+                   "fonts/type1/public/ascii-font/"
+                   "source/fonts/ascii-font/"
+                   "tex/latex/ascii-font/")
+             (base32
+              "0cbzvbszxyv552z1274m3bf5k40xr8w12da17db0w2w02y47nyq5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ascii-font")
+    (synopsis "Use the ASCII font in LaTeX")
+    (description
+     "The package provides glyph and font access commands so that LaTeX users
+can use the ASCII glyphs in their documents.  The ASCII font is encoded
+according to the IBM PC Code Page 437 C0 Graphics.")
+    (license license:lppl)))
 
 (define-public texlive-ascmac
   (package
@@ -2590,6 +3148,31 @@ writing support.  It uses only native picture macros and fonts for drawing
 boxes and is thus driver independent.")
     (license license:bsd-3)))
 
+(define-public texlive-aspectratio
+  (package
+    (name "texlive-aspectratio")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/aspectratio/"
+                   "fonts/map/dvips/aspectratio/"
+                   "fonts/source/public/aspectratio/"
+                   "fonts/tfm/public/aspectratio/"
+                   "fonts/type1/public/aspectratio/"
+                   "tex/latex/aspectratio/")
+             (base32
+              "1vm1aj4mm2rn2p032nakg16gmyzv43149h2v1l18dw72sayqqg2s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/aspectratio")
+    (synopsis "Capital @samp{A} and capital @samp{R} ligature for Aspect Ratio")
+    (description
+     "The package provides fonts (both as Adobe Type 1 format, and as Metafont
+source) for the AR symbol (for Aspect Ratio) used by aeronautical scientists
+and engineers.  Note that the package supersedes the package @code{ar}.")
+    (license license:lppl)))
+
 (define-public texlive-asternote
   (package
     (name "texlive-asternote")
@@ -2608,6 +3191,29 @@ boxes and is thus driver independent.")
      "This LaTeX package can output annotation symbols enclosed in square
 brackets and marked with an asterisk.")
     (license license:expat)))
+
+(define-public texlive-astro
+  (package
+    (name "texlive-astro")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/astro/"
+                   "fonts/source/public/astro/"
+                   "fonts/tfm/public/astro/")
+             (base32
+              "1pdmn93wiarwplha6r59ap9nvhdm9ir4aa4az93w3b189g316g2c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/astro")
+    (synopsis "Astronomical (planetary) symbols")
+    (description
+     "Astrosym is a font containing astronomical symbols, including those used
+for the planets, four planetoids, the phases of the moon, the signs of the
+zodiac, and some additional symbols.  The font is distributed as Metafont
+source.")
+    (license license:lppl)))
 
 (define-public texlive-asymptote-by-example-zh-cn
   (package
@@ -2659,6 +3265,115 @@ Chinese.")
      "This is an (incomplete, simplified) Chinese translation of the Asymptote
 manual.")
     (license license:lgpl3+)))
+
+(define-public texlive-atkinson
+  (package
+    (name "texlive-atkinson")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/atkinson/"
+                   "fonts/enc/dvips/atkinson/"
+                   "fonts/map/dvips/atkinson/"
+                   "fonts/opentype/public/atkinson/"
+                   "fonts/tfm/public/atkinson/"
+                   "fonts/type1/public/atkinson/"
+                   "fonts/vf/public/atkinson/"
+                   "tex/latex/atkinson/")
+             (base32
+              "00wg21v7jiaw3qajdxp2jih5xjpv7h8d0n1d6zjnzkxzk0p8zcj0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/atkinson")
+    (synopsis "Support for the Atkinson Hyperlegible family of fonts")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Atkinson Hyperlegible family of fonts.  What makes it different from
+traditional typography design is that it focuses on letterform distinction to
+increase character recognition, ultimately improving readability.")
+    (license
+     (list license:lppl
+           (license:fsdg-compatible
+            "file://doc/Atkinson-Hyperlegible-Font-License-2020-1104.pdf")))))
+
+(define-public texlive-augie
+  (package
+    (name "texlive-augie")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/augie/"
+                   "fonts/afm/public/augie/"
+                   "fonts/map/dvips/augie/"
+                   "fonts/tfm/public/augie/"
+                   "fonts/type1/public/augie/"
+                   "fonts/vf/public/augie/"
+                   "tex/latex/augie/")
+             (base32
+              "1fvl04lcvi4vsx547gx349dbld4hf7k2j08adqlnszs23p95yj3f")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/augie")
+    (synopsis "Calligraphic font for typesetting handwriting")
+    (description
+     "This package provides a calligraphic font for simulating American-style
+informal handwriting.  The font is distributed in Adobe Type 1 format.")
+    (license license:lppl)))
+
+(define-public texlive-auncial-new
+  (package
+    (name "texlive-auncial-new")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/auncial-new/"
+                   "fonts/afm/public/auncial-new/"
+                   "fonts/map/dvips/auncial-new/"
+                   "fonts/tfm/public/auncial-new/"
+                   "fonts/type1/public/auncial-new/"
+                   "source/fonts/auncial-new/"
+                   "tex/latex/auncial-new/")
+             (base32
+              "1644ank81l1qlijmld88k1qq3qk4x6an0qvyqz1da2dgwdhjap00")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/auncial-new")
+    (synopsis "Artificial Uncial font and LaTeX support macros")
+    (description
+     "The @code{auncial-new} bundle provides packages and fonts for a script
+based on the Artificial Uncial manuscript book-hand used between the 6th &
+10th century AD.  The script consists of minuscules and digits, with some
+appropriate period punctuation marks.  Both normal and bold versions are
+provided, and the font is distributed in Adobe Type 1 format.")
+    (license license:lppl)))
+
+(define-public texlive-aurical
+  (package
+    (name "texlive-aurical")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/aurical/"
+                   "fonts/afm/public/aurical/"
+                   "fonts/map/dvips/aurical/"
+                   "fonts/source/public/aurical/"
+                   "fonts/tfm/public/aurical/"
+                   "fonts/type1/public/aurical/"
+                   "tex/latex/aurical/")
+             (base32
+              "1jaqr4gdywnjn7hclinjyydndxsa1f2j7382ygl0jnj35kxz0pkr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aurical")
+    (synopsis "Calligraphic fonts for use with LaTeX in T1 encoding")
+    (description
+     "The package that implements a set (AuriocusKalligraphicus) of three
+calligraphic fonts derived from the author's handwriting in Adobe Type
+1 Format, T1 encoding for use with LaTeX: Auriocus Kalligraphicus; Lukas
+Svatba; and Jana Skrivana.  Each font features old style digits
+and (machine-generated) boldface and slanted versions.  A variant of Lukas
+Svatba offers a long @samp{s}.")
+    (license license:lppl)))
 
 (define-public texlive-authordate
   (package
@@ -2834,6 +3549,27 @@ the pdf code inserted in the output file.  The processing involves a run of
 @command{pdflatex}.")
     (license license:gpl3+)))
 
+(define-public texlive-b1encoding
+  (package
+    (name "texlive-b1encoding")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/b1encoding/"
+                   "fonts/enc/dvips/b1encoding/"
+                   "source/latex/b1encoding/"
+                   "tex/latex/b1encoding/")
+             (base32
+              "1lzsa0k5rr0n50d31dh4ghww329qjpg39w843zmh05z0jir6rg79")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/b1encoding")
+    (synopsis "LaTeX encoding tools for Bookhands fonts")
+    (description
+     "The package characterises and defines the author's B1 encoding for use
+with LaTeX when typesetting things using his Bookhands fonts.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-backnaur
   (package
     (name "texlive-backnaur")
@@ -2980,6 +3716,90 @@ of mathematical disciplines.")
     (description "This package provides fonts supporting chess diagrams.")
     (license license:gpl3+)))
 
+(define-public texlive-baskervald
+  (package
+    (name "texlive-baskervald")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/baskervald/"
+                   "fonts/afm/arkandis/baskervald/"
+                   "fonts/enc/dvips/baskervald/"
+                   "fonts/map/dvips/baskervald/"
+                   "fonts/tfm/arkandis/baskervald/"
+                   "fonts/type1/arkandis/baskervald/"
+                   "fonts/vf/arkandis/baskervald/"
+                   "source/fonts/baskervald/"
+                   "tex/latex/baskervald/")
+             (base32
+              "1alny6nsxm43mn84w16vp2whlhnmqkr7pfx8jsmgkz8bkxzh9pg9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/baskervaldadf")
+    (synopsis "Baskervald ADF fonts collection with TeX and LaTeX support")
+    (description
+     "Baskervald ADF is a serif family with lining figures designed as
+a substitute for Baskerville.  The family currently includes upright and
+italic or oblique shapes in each of regular, bold and heavy weights.  All
+fonts include the slashed zero and additional non-standard ligatures.")
+    (license license:lppl)))
+
+(define-public texlive-baskervaldx
+  (package
+    (name "texlive-baskervaldx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/baskervaldx/"
+                   "fonts/afm/public/baskervaldx/"
+                   "fonts/enc/dvips/baskervaldx/"
+                   "fonts/map/dvips/baskervaldx/"
+                   "fonts/opentype/public/baskervaldx/"
+                   "fonts/tfm/public/baskervaldx/"
+                   "fonts/type1/public/baskervaldx/"
+                   "fonts/vf/public/baskervaldx/"
+                   "tex/latex/baskervaldx/")
+             (base32
+              "1qszqzpy9bdqajd1h7cha0xm0kgy21q9yzsrrgwygchkz9zv6r66")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/baskervaldx")
+    (synopsis "Extension and modification of BaskervaldADF with LaTeX support")
+    (description
+     "This package extends and modifies the BaskervaldADF font (a Baskerville
+substitute) with more accented glyphs, with small caps and oldstyle figures in
+all shapes.  It includes OpenType and PostScript fonts, as well as LaTeX
+support files.")
+    (license (list license:gpl2+ license:lppl1.3+))))
+
+(define-public texlive-baskervillef
+  (package
+    (name "texlive-baskervillef")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/baskervillef/"
+                   "fonts/enc/dvips/baskervillef/"
+                   "fonts/map/dvips/baskervillef/"
+                   "fonts/opentype/public/baskervillef/"
+                   "fonts/tfm/public/baskervillef/"
+                   "fonts/type1/public/baskervillef/"
+                   "fonts/vf/public/baskervillef/"
+                   "tex/latex/baskervillef/")
+             (base32
+              "107lqn684kgr7fk3zh1lgi6q7hqz9gs18kkg3fbbrg9qjva1j4xv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/baskervillef")
+    (synopsis "Fry's Baskerville look-alike, with math support")
+    (description
+     "BaskervilleF is a fork from the Libre Baskerville fonts (Roman, Italic,
+Bold only).  Their fonts are optimized for web usage, while BaskervilleF is
+optimized for traditional TeX usage, normally destined for production of PDF
+files.  A bold italic style was added and mathematical support is offered as
+an option to @code{newtxmath}.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
 (define-public texlive-basque-book
   (package
     (name "texlive-basque-book")
@@ -3023,6 +3843,80 @@ Basque according to the correct forms ruled by The Basque Language Academy
 (Euskaltzaindia).  The commands automatically solve the complex declination
 issues of numbers in Basque.")
     (license license:lppl1.2+)))
+
+(define-public texlive-bbding
+  (package
+    (name "texlive-bbding")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bbding/"
+                   "fonts/source/public/bbding/"
+                   "fonts/tfm/public/bbding/"
+                   "source/latex/bbding/" "tex/latex/bbding/")
+             (base32
+              "0l507nxnnh880h5kg8q0ww6sl93k441l0lsplr5ldrngxvx1vrsc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/bbding")
+    (synopsis "Symbol (dingbat) font and LaTeX macros for its use")
+    (description
+     "This package provides a symbol font (distributed as Metafont source)
+that contains many of the symbols of the Zapf dingbats set, together with an
+NFSS interface for using the font.  An Adobe Type 1 version of the fonts is
+available in the @code{niceframe} fonts bundle.")
+    (license license:lppl)))
+
+(define-public texlive-bbold-type1
+  (package
+    (name "texlive-bbold-type1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/bbold-type1/"
+                   "fonts/afm/public/bbold-type1/"
+                   "fonts/map/dvips/bbold-type1/"
+                   "fonts/type1/public/bbold-type1/")
+             (base32
+              "1flccfh58w977j9w62mcn7xzspmg68gb6h5nwh2mfbz7l0015fsz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bbold-type1")
+    (synopsis "Adobe Type 1 format version of the @code{bbold} font")
+    (description
+     "The files offer an Adobe Type 1 format version of the 5pt, 7pt and 10pt
+versions of the @code{bbold} fonts.")
+    ;; The README states: "You may freely use, modify and/or
+    ;; distribute this file".
+    (license (license:fsf-free "file:doc/fonts/bbold-type1/README"))))
+
+(define-public texlive-bboldx
+  (package
+    (name "texlive-bboldx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/bboldx/"
+                   "fonts/afm/public/bboldx/"
+                   "fonts/enc/dvips/bboldx/"
+                   "fonts/map/dvips/bboldx/"
+                   "fonts/tfm/public/bboldx/"
+                   "fonts/type1/public/bboldx/"
+                   "tex/latex/bboldx/")
+             (base32
+              "1r4s3yyah0iqwhzss52wjv3wml5r4bywp3fbanjzkv16f2pk51yb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bboldx")
+    (synopsis "Extend the @code{bbold} package with a Blackboard Bold alphabet")
+    (description
+     "This is an extension of @code{bbold} to a package with three weights,
+of which the original is considered as light and the additions as regular and
+bold.")
+    ;; The README states: "You may freely use, modify and/or
+    ;; distribute this file".
+    (license (license:fsf-free "file://doc/fonts/bboldx/README"))))
 
 (define-public texlive-bclogo
   (package
@@ -3083,6 +3977,26 @@ with.  A similar @code{\\greektxt} command does a similar action for shorter
 texts.")
     (license license:lppl1.3c)))
 
+(define-public texlive-belleek
+  (package
+    (name "texlive-belleek")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/belleek/"
+                   "fonts/map/dvips/belleek/"
+                   "fonts/truetype/public/belleek/"
+                   "fonts/type1/public/belleek/"
+                   "source/latex/belleek/")
+             (base32
+              "12jigkk2xlnfllwaj6qsisgvl5b2kcwnv5j921cvm7gjn9x1i941")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/belleek")
+    (synopsis "Replacement for basic MathTime fonts")
+    (description "This package replaces the original MathTime fonts.")
+    (license license:public-domain)))
+
 (define-public texlive-begriff
   (package
     (name "texlive-begriff")
@@ -3123,6 +4037,34 @@ texts.")
 to deal with the Bengali letters that are not in Devanagari.  The package also
 supports Assamese.")
     (license license:lppl)))
+
+(define-public texlive-berenisadf
+  (package
+    (name "texlive-berenisadf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/berenisadf/"
+                   "fonts/afm/arkandis/berenisadf/"
+                   "fonts/enc/dvips/berenisadf/"
+                   "fonts/map/dvips/berenisadf/"
+                   "fonts/opentype/arkandis/berenisadf/"
+                   "fonts/tfm/arkandis/berenisadf/"
+                   "fonts/type1/arkandis/berenisadf/"
+                   "tex/latex/berenisadf/")
+             (base32
+              "11daizsls1zhwdfy78s2rjk76zwkziv33xrvrqbxybs2hdbg261d")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/berenisadf")
+    (synopsis "Berenis ADF fonts and TeX/LaTeX support")
+    (description
+     "The bundle provides the BerenisADF Pro font collection, in OpenType and
+PostScript Type 1 formats, together with support files to use the fonts in
+TeXnANSI (LY1) and LaTeX standard T1 and TS1 encodings.")
+    ;; (La)TeX support is released under LPPL 1.3+ terms.  Fonts themselves
+    ;; use GPL 2+ with exceptions.
+    (license (list license:lppl1.3+ license:gpl2+))))
 
 (define-public texlive-besjournals
   (package
@@ -3189,6 +4131,61 @@ and then let the computer select the papers with highest scores.")
 option to provide a simple way to insert ancient Greek texts with diacritical
 characters into your document using the commonly used Beta Code
 transliteration.")
+    (license license:lppl)))
+
+(define-public texlive-beuron
+  (package
+    (name "texlive-beuron")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/beuron/"
+                   "fonts/map/dvips/beuron/"
+                   "fonts/opentype/public/beuron/"
+                   "fonts/source/public/beuron/"
+                   "fonts/tfm/public/beuron/"
+                   "fonts/type1/public/beuron/"
+                   "tex/latex/beuron/")
+             (base32
+              "06hk60z0s2rdbj1iard10zxw7zvvm2xds755r4mqh0p70qhkpjzx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/beuron")
+    (synopsis "Script of the Beuronese art school")
+    (description
+     "This package provides the script used in the works of the Beuron art
+school for use with TeX and LaTeX.  It is a monumental script consisting of
+capital letters only.  The fonts are provided as Metafont sources, in the
+Type1 and in the OpenType format.  The package includes suitable font
+selection commands for use with LaTeX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-bguq
+  (package
+    (name "texlive-bguq")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/bguq/"
+                   "fonts/map/dvips/bguq/"
+                   "fonts/source/public/bguq/"
+                   "fonts/tfm/public/bguq/"
+                   "fonts/type1/public/bguq/"
+                   "source/fonts/bguq/"
+                   "tex/latex/bguq/")
+             (base32
+              "0d87ihzwq3lxhr28yaj1wpkvl4jgcfw8859g9mamrprkm7klm2rb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/bguq")
+    (synopsis "Improved quantifier stroke for Begriffsschrift packages")
+    (description
+     "The font contains a single character: the Begriffsschrift quantifier (in
+several sizes), as used to set the Begriffsschrift (concept notation) of
+Frege.  The font is not intended for end users; instead it is expected that it
+will be used by other packages which implement the Begriffsschrift.")
     (license license:lppl)))
 
 (define-public texlive-bib-fr
@@ -5102,6 +6099,56 @@ retains outer braces.")
 used to describe hardware, data format or protocols.")
     (license license:lppl)))
 
+(define-public texlive-bitter
+  (package
+    (name "texlive-bitter")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/bitter/"
+                   "fonts/enc/dvips/bitter/"
+                   "fonts/map/dvips/bitter/"
+                   "fonts/tfm/huerta/bitter/"
+                   "fonts/truetype/huerta/bitter/"
+                   "fonts/type1/huerta/bitter/"
+                   "fonts/vf/huerta/bitter/"
+                   "tex/latex/bitter/")
+             (base32
+              "07fb0dw1g1faz05naf53rinjrk0pngpfpcq4fxd1fy6580h7446f")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bitter")
+    (synopsis "Bitter family of fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX, and LuaLaTeX support for
+the Bitter family of fonts.  Bitter is a contemporary slab-serif typeface for
+text.  There are regular and bold weights and an italic, but no bold italic.")
+    (license (list license:lppl license:silofl1.1))))
+
+(define-public texlive-blacklettert1
+  (package
+    (name "texlive-blacklettert1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/blacklettert1/"
+                   "fonts/tfm/public/blacklettert1/"
+                   "fonts/vf/public/blacklettert1/"
+                   "source/fonts/blacklettert1/"
+                   "tex/latex/blacklettert1/")
+             (base32
+              "0fvrz3rbcdgzrg3rg3nfvdb52zxn9vhsx0xd8rc6xryzrqaib7q0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/blacklettert1")
+    (synopsis "T1-encoded versions of Haralambous old German fonts")
+    (description
+     "This package contains virtual fonts that offer T1-alike encoded variants
+of old German fonts Gothic, Schwabacher and Fraktur (which are also available
+in Adobe type 1 format).  The package includes LaTeX macros to embed the fonts
+into the LaTeX font selection scheme.")
+    (license license:lppl1.2+)))
+
 (define-public texlive-bodeplot
   (package
     (name "texlive-bodeplot")
@@ -5154,6 +6201,35 @@ atoms up to the atomic number 112.  In addition, commands are provided to
 convert atomic numbers to element symbols or element names and vice versa.")
     (license license:lppl1.3+)))
 
+(define-public texlive-boisik
+  (package
+    (name "texlive-boisik")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/boisik/"
+                   "fonts/source/public/boisik/"
+                   "fonts/tfm/public/boisik/"
+                   "tex/latex/boisik/")
+             (base32
+              "1xg00nb28dgc8ch85n1mgj5n0cshkvyvgv98qawxn2xvx14vqw89")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     ;; FIXME: Font metrics generation fails for "bskmab10" font, with error:
+     ;; "! Strange path (turning number is zero)".
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'generate-font-metrics))))
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/boisik")
+    (synopsis "Font inspired by Baskerville design")
+    (description
+     "Boisik is a serif font set (inspired by the Baskerville typeface),
+written in Metafont.  The set comprises roman and italic text fonts and maths
+fonts.  LaTeX support is offered for use with OT1, IL2 and OM* encodings.")
+    (license license:gpl2)))
+
 (define-public texlive-boldtensors
   (package
     (name "texlive-boldtensors")
@@ -5195,6 +6271,40 @@ collator, condition, copy, illustrations, introduction, location, pages, size,
 value, volumes.")
     (license license:lppl1.3+)))
 
+(define-public texlive-bookhands
+  (package
+    (name "texlive-bookhands")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/bookhands/"
+                   "fonts/afm/public/bookhands/"
+                   "fonts/map/dvips/bookhands/"
+                   "fonts/source/public/bookhands/"
+                   "fonts/tfm/public/bookhands/"
+                   "fonts/type1/public/bookhands/"
+                   "source/fonts/bookhands/"
+                   "tex/latex/bookhands/")
+             (base32
+              "0ssz80jwmd00x7d1x1xc6i61kbs30bc875bvakd5gymdw2kv7s3z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/bookhands")
+    (synopsis "Collection of book-hand fonts")
+    (description
+     "This is a set of book-hand (Metafont) fonts and packages covering
+manuscript scripts from the 1st century until Gutenberg and Caxton.  The
+included hands are: Square Capitals (1st century onwards); Roman
+Rustic (1st-6th centuries); Insular Minuscule (6th cenury onwards);
+Carolingian Minuscule (8th-12th centuries); Early Gothic (11th-12th
+centuries); Gothic Textura Quadrata (13th-15th centuries); Gothic Textura
+Prescisus vel sine pedibus (13th century onwards); Rotunda (13-15th
+centuries); Humanist Minuscule (14th century onwards); Uncial (3rd-6th
+centuries); Half Uncial (3rd-9th centuries); Artificial Uncial (6th-10th
+centuries); and Insular Majuscule (6th-9th centuries).")
+    (license license:lppl)))
+
 (define-public texlive-booktabs-de
   (package
     (name "texlive-booktabs-de")
@@ -5230,6 +6340,31 @@ documentation.")
      "This package provides a French translation of @code{booktabs}
 documentation.")
     (license license:lppl)))
+
+(define-public texlive-boondox
+  (package
+    (name "texlive-boondox")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/boondox/"
+                   "fonts/map/dvips/boondox/"
+                   "fonts/tfm/public/boondox/"
+                   "fonts/type1/public/boondox/"
+                   "fonts/vf/public/boondox/"
+                   "tex/latex/boondox/")
+             (base32
+              "0rsid25qlsbj3z60h8n22m8l6gyk4nbr598c6z9azldpxn88dz91")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/boondox")
+    (synopsis "Mathematical alphabets derived from the STIX fonts")
+    (description
+     "The package contains a number of PostScript fonts derived from the STIX
+OpenType fonts that may be used in maths mode in regular and bold weights for
+Calligraphic, Fraktur and Double-struck alphabets.  Virtual fonts with metrics
+suitable for maths mode are provided, as are LaTeX support files.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-borceux
   (package
@@ -5298,6 +6433,27 @@ those long IUPAC compound names, and some chemical idioms.  It also supports
 the labelling of compounds and reference to labelled compounds.")
     (license license:lppl)))
 
+(define-public texlive-braille
+  (package
+    (name "texlive-braille")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/braille/" "tex/latex/braille/")
+             (base32
+              "021nxjz23gn8zjrrzxggjaqq3gv894c512x15kffywm8h5k0bzy5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/braille")
+    (synopsis "Support for Braille")
+    (description
+     "This package allows the user to produce Braille documents on paper for
+the blind without knowing Braille.  Python scripts @file{grade1.py} and
+@file{grade2.py} convert ordinary text to grade 1 and 2 Braille tags; then,
+the LaTeX package takes the tags and prints out corresponding Braille
+symbols.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-breakcites
   (package
     (name "texlive-breakcites")
@@ -5344,6 +6500,32 @@ brackets in LaTeX.  The commands facilitate the easy manipulation of equations
 involving brackets and allow partial differentials to be expressed in an
 alternate form.")
     (license license:lppl1.3+)))
+
+(define-public texlive-brushscr
+  (package
+    (name "texlive-brushscr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/brushscr/"
+                   "dvips/brushscr/"
+                   "fonts/afm/public/brushscr/"
+                   "fonts/map/dvips/brushscr/"
+                   "fonts/tfm/public/brushscr/"
+                   "fonts/type1/public/brushscr/"
+                   "fonts/vf/public/brushscr/"
+                   "tex/latex/brushscr/")
+             (base32
+              "0kdikrlhbqfcnb42y5pz93l8wkzbrn7hx5gjf05vkchcxq24nj5x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/brushscr")
+    (synopsis "Handwriting script font")
+    (description
+     "The BrushScript font simulates hand-written characters; it is
+distributed in Adobe Type 1 format (but is available in italic shape only).
+The package includes the files needed by LaTeX in order to use that font.")
+    (license license:public-domain)))
 
 (define-public texlive-burmese
   (package
@@ -5670,6 +6852,31 @@ in Python, C and Pascal.  Program source files may also be input.")
     (description "This package provides C90 font encoding for Thai.")
     (license license:gpl2+)))
 
+(define-public texlive-caladea
+  (package
+    (name "texlive-caladea")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/caladea/"
+                   "fonts/enc/dvips/caladea/"
+                   "fonts/map/dvips/caladea/"
+                   "fonts/tfm/huerta/caladea/"
+                   "fonts/truetype/huerta/caladea/"
+                   "fonts/type1/huerta/caladea/"
+                   "fonts/vf/huerta/caladea/"
+                   "tex/latex/caladea/")
+             (base32
+              "02pw132njvk23iwfwlfq5cbamqmgxap2h5pq23x3r8dbym1zpk9f")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/caladea")
+    (synopsis "Support for the Caladea family of fonts")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Caladea family of fonts.")
+    (license (list license:asl2.0 license:lppl))))
+
 (define-public texlive-calculation
   (package
     (name "texlive-calculation")
@@ -5695,6 +6902,124 @@ is empty.  An expression in a calculation can be given a comment; it is placed
 at the side opposite to the equation numbers.  Calculations are allowed inside
 hints although numbering and commenting is then disabled.")
     (license license:lppl1.3+)))
+
+(define-public texlive-calligra
+  (package
+    (name "texlive-calligra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/calligra/"
+                   "fonts/source/public/calligra/"
+                   "fonts/tfm/public/calligra/")
+             (base32
+              "1h9w2qifsd0sjr2czy6zbyvgvdl72nd1sn2hmxv0jsmbcjqak1ib")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/calligra")
+    (synopsis "Calligraphic font")
+    (description
+     "This package provides a calligraphic font in the handwriting style.
+The font is supplied as Metafont source.  LaTeX support of the font is
+provided in the @code{calligra} package in the @code{fundus} bundle.")
+    (license license:expat)))
+
+(define-public texlive-calligra-type1
+  (package
+    (name "texlive-calligra-type1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/calligra-type1/"
+                   "fonts/afm/public/calligra-type1/"
+                   "fonts/map/dvips/calligra-type1/"
+                   "fonts/type1/public/calligra-type1/")
+             (base32
+              "1v6zwghf8q70lls3hmwj8gc0n6d4ffjf1xjvq1k6w71shiga8bqi")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/calligra-type1")
+    (synopsis "Type 1 version of Calligra")
+    (description
+     "This is a Type 1 conversion of Peter Vanroose's Calligra handwriting
+font.")
+    (license license:expat)))
+
+(define-public texlive-cantarell
+  (package
+    (name "texlive-cantarell")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cantarell/"
+                   "fonts/enc/dvips/cantarell/"
+                   "fonts/map/dvips/cantarell/"
+                   "fonts/opentype/gnome/cantarell/"
+                   "fonts/tfm/gnome/cantarell/"
+                   "fonts/type1/gnome/cantarell/"
+                   "fonts/vf/gnome/cantarell/"
+                   "tex/latex/cantarell/")
+             (base32
+              "11cj8z6wyzq92x66alas88qgrs4ap0xgvf0yr7h62vg5ym3618c8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cantarell")
+    (synopsis "LaTeX support for the Cantarell font family")
+    (description
+     "Cantarell is a contemporary Humanist sans serif designed by Dave
+Crossland and Jakub Steiner.  The present package provides support for this
+font in LaTeX. It includes Type 1 versions of the fonts, converted for this
+package using FontForge from its sources, for full support with Dvips.")
+    (license (list license:silofl1.1 license:lppl1.3c))))
+
+(define-public texlive-carlito
+  (package
+    (name "texlive-carlito")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/carlito/"
+                   "fonts/enc/dvips/carlito/"
+                   "fonts/map/dvips/carlito/"
+                   "fonts/tfm/google/carlito/"
+                   "fonts/truetype/google/carlito/"
+                   "fonts/type1/google/carlito/"
+                   "fonts/vf/google/carlito/"
+                   "tex/latex/carlito/")
+             (base32
+              "14hk51bgwpn4wr843g7w8wjwmadq0ca86gviayhwsz4zax68jhx6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/carlito")
+    (synopsis "Support for Carlito sans-serif fonts")
+    (description
+     "The package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Carlito family of sans serif fonts, designed by Lukasz Dziedzic.")
+    (license license:silofl1.1)))
+
+(define-public texlive-carolmin-ps
+  (package
+    (name "texlive-carolmin-ps")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/carolmin-ps/"
+                   "fonts/afm/public/carolmin-ps/"
+                   "fonts/map/dvips/carolmin-ps/"
+                   "fonts/type1/public/carolmin-ps/")
+             (base32
+              "1867h17l0ms2schmbrsjm4gajfmckm2x7ny2ijd9vf232l7s1b53")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/carolmin-t1")
+    (synopsis "Adobe Type 1 format of Carolingian Minuscule fonts")
+    (description
+     "The bundle offers Adobe Type 1 format versions of Peter Wilson's
+Carolingian Minuscule font set (part of the @code{bookhands} collection).  The
+fonts in the bundle are ready-to-use replacements for the Metafont
+originals.")
+    (license license:lppl)))
 
 (define-public texlive-cartonaugh
   (package
@@ -5739,6 +7064,31 @@ contains commands for drawing implicants on top of the map.")
 constructions to present mathematical demonstrations with successive braces
 for the deductions.")
     (license license:lppl1.3+)))
+
+(define-public texlive-cascadia-code
+  (package
+    (name "texlive-cascadia-code")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cascadia-code/"
+                   "fonts/enc/dvips/cascadia-code/"
+                   "fonts/map/dvips/cascadia-code/"
+                   "fonts/opentype/public/cascadia-code/"
+                   "fonts/tfm/public/cascadia-code/"
+                   "fonts/type1/public/cascadia-code/"
+                   "fonts/vf/public/cascadia-code/"
+                   "tex/latex/cascadia-code/")
+             (base32
+              "1bcp2zw71aka47nc5wmi3196ypyr430ws1j63jnbzjaxnk2r63yw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cascadia-code")
+    (synopsis "Cascadia Code font with support for LaTeX and pdfLaTeX")
+    (description
+     "Cascadia Code is a monospaced font by Microsoft.  This package provides
+the Cascadia Code family of fonts with support for LaTeX and pdfLaTeX.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-catcodes
   (package
@@ -5855,6 +7205,60 @@ documents sharing the same notation.")
 distribution), developed from the same author's JMB style.  A supporting LaTeX
 package is also provided.")
     (license license:public-domain)))
+
+(define-public texlive-cfr-initials
+  (package
+    (name "texlive-cfr-initials")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cfr-initials/"
+                   "tex/latex/cfr-initials/")
+             (base32
+              "03isx6wck9q2nmn2gm6zmd1830d2v9bps5g1k9qw6y02wdac8az9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cfr-initials")
+    (synopsis "LaTeX packages for use of initials")
+    (description
+     "This is a set of 23 tiny packages designed to make it easier to use
+fonts from the initials package in LaTeX, e.g., with the @code{lettrine}
+package.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-cfr-lm
+  (package
+    (name "texlive-cfr-lm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cfr-lm/"
+                   "fonts/enc/dvips/cfr-lm/"
+                   "fonts/map/dvips/cfr-lm/"
+                   "fonts/tfm/public/cfr-lm/"
+                   "fonts/vf/public/cfr-lm/"
+                   "source/fonts/cfr-lm/"
+                   "tex/latex/cfr-lm/")
+             (base32
+              "06zsvbnpg93gw7m0nfsxc1hcqi6idgdc3xwwwy954fx13dpvrqfi")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cfr-lm")
+    (synopsis "Enhanced support for the Latin Modern fonts")
+    (description
+     "The package supports a number of features of the Latin Modern fonts
+which are not easily accessible via the default (La)TeX support.  In
+particular, the package supports the use of the various styles of digits
+available, small-caps and upright italic shapes, and alternative weights and
+widths.  It also supports variable width typewriter and the @code{quotation}
+font.
+
+By default, the package uses proportional oldstyle digits and variable width
+typewriter but this can be changed by passing appropriate options to the
+package.  The package also supports using (for example) different styles of
+digits within a document so it is possible to use proportional oldstyle digits
+by default, say, but tabular lining digits within a particular table.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-chbibref
   (package
@@ -6177,6 +7581,36 @@ formatting chemistry documents according to the conventions of a number of
 leading journals.  It also provides some handy chemistry-related macros.")
     (license license:lppl1.3+)))
 
+(define-public texlive-cherokee
+  (package
+    (name "texlive-cherokee")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cherokee/"
+                   "fonts/source/public/cherokee/"
+                   "fonts/tfm/public/cherokee/"
+                   "tex/latex/cherokee/")
+             (base32
+              "0cganm5d4gnkkhandancyd915w2x9kskj9qg81y54jcfyjz8gp51")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/cherokee")
+    (synopsis "Font for the Cherokee script")
+    (description
+     "The Cherokee script was designed in 1821 by Segwoya.  The alphabet is
+essentially syllabic, only 6 characters (a e i o s u) correspond to Roman
+letters: the font encodes these to the corresponding roman letter.  The
+remaining 79 characters have been arbitrarily encoded in the range 38-122; the
+@code{cherokee} package provides commands that map each such syllable to the
+appropriate character.")
+    ;; "You may freely use, modify, and/or distribute this file, without
+    ;; limitation.  If you make significant additions or improvements,
+    ;; I request that you email me an updated version."
+    (license
+     (license:fsf-free "file://fonts/source/public/cherokee/cherokee.mf"))))
+
 (define-public texlive-chess
   (package
     (name "texlive-chess")
@@ -6364,6 +7798,33 @@ an annotation field in bibliographies.")
 environment for Chinese chess manual writing.")
     (license license:lppl1.3c)))
 
+(define-public texlive-chivo
+  (package
+    (name "texlive-chivo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/chivo/"
+                   "fonts/enc/dvips/chivo/"
+                   "fonts/map/dvips/chivo/"
+                   "fonts/opentype/public/chivo/"
+                   "fonts/tfm/public/chivo/"
+                   "fonts/type1/public/chivo/"
+                   "fonts/vf/public/chivo/"
+                   "source/fonts/chivo/"
+                   "tex/latex/chivo/")
+             (base32
+              "0dvcz42rw2y33amrjikgicy9r4c6m0c4cvv2h0sm7k5bympnj8w0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chivo")
+    (synopsis "Using the Chivo fonts with LaTeX")
+    (description
+     "This work provides the necessary files to use the Chivo fonts with
+LaTeX.  Chivo is a set of eight fonts provided by Hector Gatti and Omnibus
+Team.")
+    (license (list license:silofl1.1 license:lppl1.3c))))
+
 (define-public texlive-chordbars
   (package
     (name "texlive-chordbars")
@@ -6469,6 +7930,36 @@ Technology that follows given recommendations.")
      "The package provides fonts, hyphenation patterns, and supporting macros
 to typeset Church Slavonic texts.")
     (license license:expat)))
+
+(define-public texlive-cinzel
+  (package
+    (name "texlive-cinzel")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cinzel/"
+                   "fonts/enc/dvips/cinzel/"
+                   "fonts/map/dvips/cinzel/"
+                   "fonts/tfm/ndiscovered/cinzel/"
+                   "fonts/truetype/ndiscovered/cinzel/"
+                   "fonts/type1/ndiscovered/cinzel/"
+                   "fonts/vf/ndiscovered/cinzel/"
+                   "tex/latex/cinzel/")
+             (base32
+              "0qik1ji23w35350ajjxz5w39w1cy4lg582343nrhr9y8jl18kfap")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cinzel")
+    (synopsis "LaTeX support for Cinzel and Cinzel Decorative fonts")
+    (description
+     "Cinzel and Cinzel Decorative fonts, designed by Natanael Gama,
+find their inspiration in first century roman inscriptions, and are based on
+classical proportions.  Cinzel is all-caps (similar to Trajan and
+Michelangelo), but is available in three weights (Regular, Bold, Black).
+There are no italic fonts, but there are Decorative variants, which can be
+selected by the usual italic-selection commands in the package's LaTeX
+support.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-citation-style-language
   (package
@@ -6712,6 +8203,68 @@ the above --- Cyrillic, Greek, Latin-based scripts, Russian and Vietnamese are
 supported.")
     (license license:gpl2)))
 
+(define-public texlive-clara
+  (package
+    (name "texlive-clara")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/clara/"
+                   "fonts/enc/dvips/clara/"
+                   "fonts/map/dvips/clara/"
+                   "fonts/opentype/public/clara/"
+                   "fonts/tfm/public/clara/"
+                   "fonts/type1/public/clara/"
+                   "fonts/vf/public/clara/"
+                   "tex/latex/clara/")
+             (base32
+              "182iw362irf247frsy0dzrswnh1341jlwrlwhvx1hcrbrvhpbz42")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/clara")
+    (synopsis "Clara serif font family")
+    (description
+     "Clara is a type family created specially by Seamas O Brogain.  The
+family includes italic, bold, bold italic, and small capitals, while the
+character set includes (monotonic) Greek, Cyrillic, ogham, phonetic and
+mathematical ranges, scribal abbreviations and other specialist characters.
+The fonts also include some OpenType features (such as ligature substitution,
+small capitals, and old-style numerals) and variant forms for particular
+languages.")
+    (license (list license:silofl1.1 license:gpl2+))))
+
+(define-public texlive-clearsans
+  (package
+    (name "texlive-clearsans")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/clearsans/"
+                   "fonts/enc/dvips/clearsans/"
+                   "fonts/map/dvips/clearsans/"
+                   "fonts/tfm/intel/clearsans/"
+                   "fonts/truetype/intel/clearsans/"
+                   "fonts/type1/intel/clearsans/"
+                   "fonts/vf/intel/clearsans/"
+                   "tex/latex/clearsans/")
+             (base32
+              "1sf84xxvq9rxb3n5nsggfswvdagynnz6clazk86w4k2a5r0qf8yw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/clearsans")
+    (synopsis "Clear Sans fonts with LaTeX support")
+    (description
+     "Clear Sans was designed by Daniel Ratighan.  It is available in three
+weights (regular, medium, and bold) with corresponding italics, plus light and
+thin upright (without italics).
+
+It has minimized, unambiguous characters and slightly narrow proportions,
+making it ideal for UI design.  Its strong, recognizable forms avoid
+distracting ambiguity, making Clear Sans comfortable for reading short UI
+labels and long passages in both screen and print.  The fonts are available in
+both TrueType and Type 1 formats.")
+    (license (list license:asl2.0 license:lppl))))
+
 (define-public texlive-clrscode
   (package
     (name "texlive-clrscode")
@@ -6753,6 +8306,215 @@ output will look just like the pseudocode in the text.")
 Rivest, and Stein.  The package was written by the authors.  Use the commands
 the same way the package's author did when writing the book, and your output
 will look just like the pseudocode in the text.")
+    (license license:lppl)))
+
+(define-public texlive-cm-mf-extra-bold
+  (package
+    (name "texlive-cm-mf-extra-bold")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "fonts/source/public/cm-mf-extra-bold/"
+                   "fonts/tfm/public/cm-mf-extra-bold/")
+             (base32
+              "1l1cm32z8wcpj0cl7czqkhnwil3ail7a2bbzn70dnswpj0ka8k9n")))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/cm-mf-extra-bold")
+    (synopsis "Extra Metafont files for CM")
+    (description
+     "The bundle provides bold versions of @code{cmcsc}, @code{cmex},
+@code{cmtex} and @code{cmtt} fonts (all parts of the standard Computer Modern
+font distribution), as Metafont base files.")
+    (license (list license:gpl3+ license:public-domain))))
+
+(define-public texlive-cm-unicode
+  (package
+    (name "texlive-cm-unicode")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cm-unicode/"
+                   "fonts/afm/public/cm-unicode/"
+                   "fonts/enc/dvips/cm-unicode/"
+                   "fonts/map/dvips/cm-unicode/"
+                   "fonts/opentype/public/cm-unicode/"
+                   "fonts/type1/public/cm-unicode/")
+             (base32
+              "15ysic6vah1wircybhpm9915mr1bbc8b2jalia86ajiqbxn2l9h0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cm-unicode")
+    (synopsis "Computer Modern Unicode font family")
+    (description
+     "This package provides Computer Modern Unicode fonts.  Some characters in
+several fonts are copied from Blue Sky Type 1 fonts released by AMS.
+Currently the fonts contain glyphs from Latin, Cyrillic, Greek code sets and
+IPA extensions.  This font set contains 33 fonts.  This archive contains AFM,
+PFB and OTF versions; the OTF version of the Computer Modern Unicode fonts
+works with TeX engines that directly support OpenType features, such as XeTeX
+and LuaTeX.")
+    (license license:silofl1.1)))
+
+(define-public texlive-cmathbb
+  (package
+    (name "texlive-cmathbb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cmathbb/"
+                   "fonts/enc/dvips/cmathbb/"
+                   "fonts/map/dvips/cmathbb/"
+                   "fonts/tfm/public/cmathbb/"
+                   "fonts/type1/public/cmathbb/"
+                   "fonts/vf/public/cmathbb/"
+                   "tex/latex/cmathbb/")
+             (base32
+              "1pmzsaskwcbyjihidy7hvz7s2cixhl7ccy0c9cbh2cm3md6gdrqh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cmathbb")
+    (synopsis "Computer modern mathematical blackboard bold font")
+    (description
+     "This font contains all digits and latin letters uppercase and lowercase
+for the Computer Modern font family in blackboard bold.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-cmll
+  (package
+    (name "texlive-cmll")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cmll/"
+                   "fonts/map/dvips/cmll/"
+                   "fonts/source/public/cmll/"
+                   "fonts/tfm/public/cmll/"
+                   "fonts/type1/public/cmll/"
+                   "source/latex/cmll/"
+                   "tex/latex/cmll/")
+             (base32
+              "13q5ar2zaf7h6f2mzgxxqzaraziwl6asicbnyq6anfv2ky38rd72")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (native-inputs (list texlive-euxm texlive-metafont))
+    (home-page "https://ctan.org/pkg/cmll")
+    (synopsis "Symbols for linear logic")
+    (description
+     "This is a very small font set that contain some symbols useful in linear
+logic, which are apparently not available elsewhere.  Variants are included
+for use with Computer Modern serif and sans-serif and with the AMS Euler
+series.  The font is provided both as Metafont source, and in Adobe Type
+1 format.  LaTeX support is provided.")
+    (license license:lppl)))
+
+(define-public texlive-cmpica
+  (package
+    (name "texlive-cmpica")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cmpica/"
+                   "fonts/source/public/cmpica/"
+                   "fonts/tfm/public/cmpica/")
+             (base32
+              "0gpj2i588h6d0b5cl4xaik9nyx7w1sd8wik5q4mgmzspbkdk5a04")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/cmpica")
+    (synopsis "Computer Modern Pica variant")
+    (description
+     "This is an approximate equivalent of the Xerox Pica typeface; the font
+is optimised for submitting fiction manuscripts to mainline publishers.  The
+font is a fixed-width one, rather less heavy than Computer Modern typewriter.
+Emphasis for bold-face comes from a wavy underline of each letter.  The two
+fonts are supplied as Metafont source.")
+    (license license:public-domain)))
+
+(define-public texlive-cmsrb
+  (package
+    (name "texlive-cmsrb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cmsrb/"
+                   "fonts/afm/public/cmsrb/"
+                   "fonts/enc/dvips/cmsrb/"
+                   "fonts/map/dvips/cmsrb/"
+                   "fonts/tfm/public/cmsrb/"
+                   "fonts/type1/public/cmsrb/"
+                   "fonts/vf/public/cmsrb/"
+                   "tex/latex/cmsrb/")
+             (base32
+              "0f6ylk8n881sl0njbz7yqy98pbk51s6m73zldcsz2w62qnghd1x0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cmsrb")
+    (synopsis "Computer Modern for Serbian and Macedonian")
+    (description
+     "This package provides provides Adobe Type 1 Computer Modern fonts for
+the Serbian and Macedonian languages.  Although the @code{cm-super} package
+provides great support for Cyrillic script in various languages, there remains
+a problem with italic variants of some letters for Serbian and Macedonian.
+This package includes the correct shapes for italic letters @code{\\cyrb},
+@code{\\cyrg}, @code{\\cyrd}, @code{\\cyrp}, and @code{\\cyrt}.  It also
+offers some improvements in letters and accents used in the Serbian language.
+Supported encodings are: T1, T2A, TS1, X2 and OT2.  The OT2 encoding is
+modified so that it is now easy to transcribe Latin text to Cyrillic.")
+    (license license:gpl3+)))
+
+(define-public texlive-cmtiup
+  (package
+    (name "texlive-cmtiup")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cmtiup/"
+                   "fonts/source/public/cmtiup/"
+                   "fonts/tfm/public/cmtiup/"
+                   "fonts/vf/public/cmtiup/"
+                   "tex/latex/cmtiup/")
+             (base32
+              "0cdm10aybgc8ifi11fahl3hb18blmibk08b4b5m8q88150ic563r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/cmtiup")
+    (synopsis "Upright punctuation with CM italic")
+    (description
+     "The @code{cmtiup} fonts address a problem with the appearance of
+punctuation in italic text in mathematical documents.  To achieve this, all
+punctuation characters are upright, and kerning between letters and
+punctuation is adjusted to allow for the italic correction.  The fonts are
+implemented as a set of @file{.vf} files; a package for support in LaTeX is
+provided.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-cmupint
+  (package
+    (name "texlive-cmupint")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cmupint/"
+                   "fonts/afm/public/cmupint/"
+                   "fonts/map/dvips/cmupint/"
+                   "fonts/source/public/cmupint/"
+                   "fonts/tfm/public/cmupint/"
+                   "fonts/type1/public/cmupint/"
+                   "tex/latex/cmupint/")
+             (base32
+              "1acgzx5b02900vzwvaq0j8w6x8jc1650kfhp992f3bcyd658aj62")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/cmupint")
+    (synopsis "Upright integral symbols for Computer Modern")
+    (description
+     "This package contains various upright integral symbols to match the
+Computer Modern font.")
     (license license:lppl)))
 
 (define-public texlive-cochineal
@@ -6829,6 +8591,34 @@ quickly verifies the consistency of the fiscal code string, and can therefore
 be useful for lawyers and accountants that use fiscal codes very frequently.")
     (license license:lppl1.3+)))
 
+(define-public texlive-coelacanth
+  (package
+    (name "texlive-coelacanth")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/coelacanth/"
+                   "fonts/enc/dvips/coelacanth/"
+                   "fonts/map/dvips/coelacanth/"
+                   "fonts/opentype/public/coelacanth/"
+                   "fonts/tfm/public/coelacanth/"
+                   "fonts/type1/public/coelacanth/"
+                   "fonts/vf/public/coelacanth/"
+                   "tex/latex/coelacanth/")
+             (base32
+              "1cwk36rm1m2qaphwlpnw6rhmsmkvsdpzqs7sv1c39qcyq853q4yj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/coelacanth")
+    (synopsis "Coelacanth fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX, and LuaLaTeX support for
+Coelecanth fonts, designed by Ben Whitmore.  Coelacanth is inspired by the
+classic Centaur type design of Bruce Rogers, described by some as the most
+beautiful typeface ever designed.  It aims to be a professional quality type
+family for general book typesetting.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-collref
   (package
     (name "texlive-collref")
@@ -6864,6 +8654,58 @@ which always appear in the same sequence in @code{\\cite}, into a single
     (description
      "This package provides support for colour separation when using Dvips.")
     (license license:public-domain)))
+
+(define-public texlive-comfortaa
+  (package
+    (name "texlive-comfortaa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/comfortaa/"
+                   "fonts/enc/dvips/comfortaa/"
+                   "fonts/map/dvips/comfortaa/"
+                   "fonts/tfm/aajohan/comfortaa/"
+                   "fonts/truetype/aajohan/comfortaa/"
+                   "fonts/type1/aajohan/comfortaa/"
+                   "fonts/vf/aajohan/comfortaa/"
+                   "tex/latex/comfortaa/")
+             (base32
+              "1ayh1f0f1a0qkngsk84zwzyx5kidb2n5wq2ksk0d7r68m8cbs981")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/comfortaa")
+    (synopsis "Sans serif font, with LaTeX support")
+    (description
+     "Comfortaa is a sans-serif font, comfortable in every aspect, designed by
+Johan Aakerlund.  This package provides support for this font in LaTeX, and
+includes both the TrueType fonts, and conversions to Adobe Type 1 format.")
+    (license (list license:silofl1.1 license:lppl1.3c))))
+
+(define-public texlive-comicneue
+  (package
+    (name "texlive-comicneue")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/comicneue/"
+                   "fonts/enc/dvips/comicneue/"
+                   "fonts/map/dvips/comicneue/"
+                   "fonts/opentype/rozynski/comicneue/"
+                   "fonts/tfm/rozynski/comicneue/"
+                   "fonts/type1/rozynski/comicneue/"
+                   "fonts/vf/rozynski/comicneue/"
+                   "tex/latex/comicneue/")
+             (base32
+              "0q9ckbypx5hn9004pgfyqnf1ddniqwq0fixps0acmifz8qspjih6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/comicneue")
+    (synopsis "Use Comic Neue with TeX(-alike) systems")
+    (description
+     "Comic Neue is a well-known redesign of the (in)famous Comic Sans font.
+The package provides the original OpenType font for XeTeX and LuaTeX users,
+and also has converted Type1 files for pdfTeX users.")
+    (license license:silofl1.1)))
 
 (define-public texlive-commath
   (package
@@ -7008,6 +8850,50 @@ access the Concrete mathematics fonts, which were derived from Computer Modern
 math fonts using parameters from Concrete Roman text fonts.")
     (license license:lppl)))
 
+(define-public texlive-concmath-fonts
+  (package
+    (name "texlive-concmath-fonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/concmath-fonts/"
+                   "fonts/source/public/concmath-fonts/"
+                   "fonts/tfm/public/concmath-fonts/")
+             (base32
+              "09frgpcwpfkj9j9aaj5psb8kr12vgbr10plcvcipn0mjahdw9nnz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-amsfonts texlive-metafont))
+    (home-page "https://ctan.org/pkg/concmath-fonts")
+    (synopsis "Concrete mathematics fonts")
+    (description
+     "The fonts are derived from the Computer Modern Mathematics fonts and
+from Knuth's Concrete Roman fonts; they are distributed as Metafont source.
+LaTeX support is offered by the @code{concmath} package.")
+    (license license:lppl)))
+
+(define-public texlive-concmath-otf
+  (package
+    (name "texlive-concmath-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/concmath-otf/"
+                   "fonts/opentype/public/concmath-otf/"
+                   "tex/latex/concmath-otf/")
+             (base32
+              "00vs2c2lxdrqiwf4scni0yv4kz0mkigqv5kpsrak62j8vb7piv7b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/concmath-otf")
+    (synopsis "Concrete based OpenType Math font")
+    (description
+     "This package provides an OpenType version of the Concrete Math font
+created by Ulrik Vieth in Metafont.  @file{concmath-otf.sty} is a replacement
+for the original @file{concmath.sty} package to be used with LuaTeX or XeTeX
+engines.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
 (define-public texlive-concrete
   (package
     (name "texlive-concrete")
@@ -7075,6 +8961,83 @@ the equalities are provided, and the user may define their own.")
 files created by pLaTeX or upLaTeX, using @code{hyperref}.")
     (license license:expat)))
 
+(define-public texlive-cookingsymbols
+  (package
+    (name "texlive-cookingsymbols")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cookingsymbols/"
+                   "fonts/source/public/cookingsymbols/"
+                   "fonts/tfm/public/cookingsymbols/"
+                   "source/latex/cookingsymbols/"
+                   "tex/latex/cookingsymbols/")
+             (base32
+              "1cqz5hvb1vcf4mgk7i960kjdbg9cbxkik62riy6l2n1ld2cnl81x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/cookingsymbols")
+    (synopsis "Symbols for recipes")
+    (description
+     "The package provides 11 symbols for typesetting recipes: oven, gasstove,
+topheat, fanoven, gloves and dish symbol (among others).  The symbols are
+defined using Metafont.")
+    (license license:lppl)))
+
+
+(define-public texlive-cooperhewitt
+  (package
+    (name "texlive-cooperhewitt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cooperhewitt/"
+                   "fonts/enc/dvips/cooperhewitt/"
+                   "fonts/map/dvips/cooperhewitt/"
+                   "fonts/opentype/public/cooperhewitt/"
+                   "fonts/tfm/public/cooperhewitt/"
+                   "fonts/type1/public/cooperhewitt/"
+                   "fonts/vf/public/cooperhewitt/"
+                   "tex/latex/cooperhewitt/")
+             (base32
+              "1m81sxrwwsmzsan4iln2lsf16pijay7w9k29gjwlwikivvy21kj7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cooperhewitt")
+    (synopsis "Cooper Hewitt family of sans serif fonts")
+    (description
+     "Cooper Hewitt is a contemporary sans serif, with characters composed of
+modified-geometric curves and arches, by Chester Jenkins.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-cormorantgaramond
+  (package
+    (name "texlive-cormorantgaramond")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cormorantgaramond/"
+                   "fonts/enc/dvips/cormorantgaramond/"
+                   "fonts/map/dvips/cormorantgaramond/"
+                   "fonts/tfm/catharsis/cormorantgaramond/"
+                   "fonts/truetype/catharsis/cormorantgaramond/"
+                   "fonts/type1/catharsis/cormorantgaramond/"
+                   "fonts/vf/catharsis/cormorantgaramond/"
+                   "tex/latex/cormorantgaramond/")
+             (base32
+              "0sd4g4s3d3nk4wrav3szzbihdj6saznnzm6kiyr4qqqgi5ib3ami")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cormorantgaramond")
+    (synopsis "Cormorant Garamond family of fonts")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Cormorant Garamond family of fonts, designed by Christian Thalman.  The
+family includes light, regular, medium, semi-bold, and bold weights, with
+italics.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-correctmathalign
   (package
     (name "texlive-correctmathalign")
@@ -7093,6 +9056,78 @@ files created by pLaTeX or upLaTeX, using @code{hyperref}.")
      "This package realigns the horizontal spacing of the alignments in some
 mathematical environments.")
     (license license:bsd-2)))
+
+(define-public texlive-countriesofeurope
+  (package
+    (name "texlive-countriesofeurope")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/countriesofeurope/"
+                   "fonts/afm/public/countriesofeurope/"
+                   "fonts/enc/dvips/countriesofeurope/"
+                   "fonts/map/dvips/countriesofeurope/"
+                   "fonts/opentype/public/countriesofeurope/"
+                   "fonts/tfm/public/countriesofeurope/"
+                   "fonts/type1/public/countriesofeurope/"
+                   "tex/latex/countriesofeurope/")
+             (base32
+              "07q0hrrlvadcc3vcl97gsgp1pbkmfhy60zm8ib65qd79m81kyxs0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/countriesofeurope")
+    (synopsis "Font with the images of the countries of Europe")
+    (description
+     "The bundle provides a font CountriesOfEurope (in Adobe Type 1 format)
+and the necessary metrics, together with LaTeX macros for its use.  The font
+provides glyphs with a filled outline of the shape of each country; each glyph
+is at the same cartographic scale.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-courier-scaled
+  (package
+    (name "texlive-courier-scaled")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/courier-scaled/"
+                   "tex/latex/courier-scaled/")
+             (base32
+              "1d61afhvx9s70mg9d97m0zyzqfdlwbgljwgkv0z87khxy4z33wy6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/courier-scaled")
+    (synopsis "Provides a scaled Courier font")
+    (description
+     "This package sets the default typewriter font to Courier with a possible
+scale factor (in the same way as the @code{helvet} package for Helvetica works
+for sans serif).")
+    (license license:lppl1.2+)))
+
+(define-public texlive-courierten
+  (package
+    (name "texlive-courierten")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/courierten/"
+                   "fonts/enc/dvips/courierten/"
+                   "fonts/map/dvips/courierten/"
+                   "fonts/opentype/public/courierten/"
+                   "fonts/tfm/public/courierten/"
+                   "fonts/type1/public/courierten/"
+                   "fonts/vf/public/courierten/"
+                   "tex/latex/courierten/")
+             (base32
+              "0xfra9x03zjx7jsk48kj7mmjng3rs45ydj258c4s6inl91m7i9w0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/courierten")
+    (synopsis "Courier 10 Pitch BT with LaTeX support")
+    (description
+     "This is the font Courier 10 Pitch BT, with LaTeX support and an OpenType
+conversion as well.")
+    (license license:expat)))
 
 (define-public texlive-covington
   (package
@@ -7113,6 +9148,57 @@ mathematical environments.")
 including multiple accents on the same letter, interline glosses (word-by-word
 translations), Discourse Representation Structures, and example numbering.")
     (license license:lppl1.3+)))
+
+(define-public texlive-crimson
+  (package
+    (name "texlive-crimson")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/crimson/"
+                   "fonts/enc/dvips/crimson/"
+                   "fonts/map/dvips/crimson/"
+                   "fonts/opentype/kosch/crimson/"
+                   "fonts/tfm/kosch/crimson/"
+                   "fonts/type1/kosch/crimson/"
+                   "fonts/vf/kosch/crimson/"
+                   "tex/latex/crimson/")
+             (base32
+              "14zrb015cs5f5kdyjy987mx4jdvi7vr1830dvnnygvkpcacvc3mc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/crimson")
+    (synopsis "Crimson fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX, and LuaLaTeX support for
+the Crimson family of fonts, designed by Sebastian Kosch.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-crimsonpro
+  (package
+    (name "texlive-crimsonpro")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/crimsonpro/"
+                   "fonts/enc/dvips/crimsonpro/"
+                   "fonts/map/dvips/crimsonpro/"
+                   "fonts/tfm/public/crimsonpro/"
+                   "fonts/truetype/public/crimsonpro/"
+                   "fonts/type1/public/crimsonpro/"
+                   "fonts/vf/public/crimsonpro/"
+                   "tex/latex/crimsonpro/")
+             (base32
+              "1pzsdm4i32pgwf726q5waga8lr37xfj1qj417kkblw3q3fgb4jsd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/crimsonpro")
+    (synopsis "CrimsonPro fonts with LaTeX support")
+    (description
+     "The CrimsonPro fonts are designed by Jacques Le Bailly and derived
+from the Crimson Text fonts designed by Sebastian Kosch.  The family
+includes eight weights and italics for each weight.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-crossrefenum
   (package
@@ -7293,6 +9379,29 @@ advantage terms but also flexible and powerful environments to layout
 game-based proofs or black-box reductions.")
     (license license:lppl1.3+)))
 
+(define-public texlive-cryst
+  (package
+    (name "texlive-cryst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cryst/" "fonts/afm/public/cryst/"
+                   "fonts/source/public/cryst/"
+                   "fonts/tfm/public/cryst/"
+                   "fonts/type1/public/cryst/")
+             (base32
+              "05lbldwghpdrmw0ffncs86k5pn04zi0shkk40ycca3kb0h3fa3h8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/cryst")
+    (synopsis "Font for graphical symbols used in crystallography")
+    (description
+     "This package provides the Cryst font, which contains graphical symbols
+used in crystallography.  It provided as an Adobe Type 1 font, and as Metafont
+source.")
+    (license license:lppl)))
+
 (define-public texlive-csassignments
   (package
     (name "texlive-csassignments")
@@ -7316,6 +9425,27 @@ computer science, but easily extensible to other fields.  It provides macros
 for structuring exercises, aggregating points, and displaying a grading table,
 as well as several macros for easier math mode usage.")
     (license license:expat)))
+
+(define-public texlive-cuprum
+  (package
+    (name "texlive-cuprum")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/cuprum/"
+                   "fonts/map/dvips/cuprum/"
+                   "fonts/tfm/public/cuprum/"
+                   "fonts/truetype/public/cuprum/"
+                   "tex/latex/cuprum/")
+             (base32
+              "1wimmwjpx6dg41ncpjbrsxfv41ayppy87f1b8r38vyg0vw6vcsz5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cuprum")
+    (synopsis "Cuprum font family support for LaTeX")
+    (description
+     "This package provides support for the Cuprum font family.")
+    (license license:silofl1.1)))
 
 (define-public texlive-custom-bib
   (package
@@ -7438,6 +9568,62 @@ allowing the user to choose the most appropriate approach for every
 situation.")
     (license license:lppl)))
 
+(define-public texlive-dancers
+  (package
+    (name "texlive-dancers")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "fonts/source/public/dancers/"
+                   "fonts/tfm/public/dancers/")
+             (base32
+              "0nni21f6y9gynx1lsymb3pmh6w761q21idq60fib90hvv9jjd85q")))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/dancers")
+    (synopsis "Font for Conan Doyle's @emph{The Dancing Men}")
+    (description
+     "The (Sherlock Holmes) book contains a code which uses dancing men as
+glyphs.  The alphabet as given is not complete, lacking @samp{f}, @samp{j},
+@samp{k}, @samp{q}, @samp{u}, @samp{w}, @samp{x} and @samp{z}, so those
+letters in the font are not due to Conan Doyle.
+
+The code required word endings to be marked by the dancing man representing
+the last letter to be holding a flag: these are coded as A-Z.  In some cases,
+the man has no arms, making it impossible for him to hold a flag.  In these
+cases, he is wearing a flag on his hat in the character.  The font is
+distributed as Metafont source.")
+    ;; "This font may be freely used, modified and distributed."
+    (license
+     (license:fsf-free "file://fonts/source/public/dancers/dancers.mf"))))
+
+(define-public texlive-dantelogo
+  (package
+    (name "texlive-dantelogo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/dantelogo/"
+                   "fonts/enc/dvips/dantelogo/"
+                   "fonts/map/dvips/dantelogo/"
+                   "fonts/opentype/public/dantelogo/"
+                   "fonts/tfm/public/dantelogo/"
+                   "fonts/type1/public/dantelogo/"
+                   "fonts/vf/public/dantelogo/"
+                   "tex/latex/dantelogo/")
+             (base32
+              "19wz5qyr4bhd0dwp0y38ql87s3103yimg5b6r2mjz4mz0dsiyy1b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dantelogo")
+    (synopsis "Font for DANTE's logo")
+    (description
+     "The DANTE font for the logo of @url{https://www.dante.de, DANTE}, the
+German speaking TeX users group.  The font includes only the five characters
+@samp{d}, @samp{a}, @samp{n}, @samp{t}, and @samp{e}.  @file{dantelogo.sty}
+provides an interface for LuaLaTeX, XeLaTeX, and pdfLaTeX.")
+    (license license:lppl)))
+
 (define-public texlive-decision-table
   (package
     (name "texlive-decision-table")
@@ -7465,6 +9651,25 @@ within a @code{table} or @code{figure} environment.  Furthermore, this allows
 labels and captions to be added seamlessly.  It is also possible to place
 multiple DMN tables in one table/figure environment.")
     (license license:lppl1.3c)))
+
+(define-public texlive-dejavu-otf
+  (package
+    (name "texlive-dejavu-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/dejavu-otf/"
+                   "tex/latex/dejavu-otf/")
+             (base32
+              "0vn16rb816w7kdqkyqxr01w1qd654s1f3k368q0cj0ab1247q7q8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dejavu-otf")
+    (synopsis "Support for the TTF and OTF DejaVu fonts")
+    (description
+     "The @code{dejavu-otf} package supports the TTF fonts from the DejaVu
+project and the OpenType version of the TeXGyre Math.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-delim
   (package
@@ -7607,6 +9812,52 @@ may be controlled.  The package also provides @code{\\slashbox} and
 package, which it supersedes.")
     (license license:lppl1.3+)))
 
+(define-public texlive-dice
+  (package
+    (name "texlive-dice")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/dice/"
+                   "fonts/source/public/dice/"
+                   "fonts/tfm/public/dice/")
+             (base32
+              "0ky33hg66d0x8bcjmdq4ilynpb25mm82x93wzwnz11y59nv4cvsl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/dice")
+    (synopsis "Font for die faces")
+    (description
+     "This package provides a Metafont font that can produce die faces in 2D
+or with various 3D effects.")
+    (license license:lppl)))
+
+(define-public texlive-dictsym
+  (package
+    (name "texlive-dictsym")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/dictsym/"
+                   "fonts/afm/public/dictsym/"
+                   "fonts/map/dvips/dictsym/"
+                   "fonts/tfm/public/dictsym/"
+                   "fonts/type1/public/dictsym/"
+                   "tex/latex/dictsym/")
+             (base32
+              "0wycv2i0pgmjs9al5zzxa8s5lj13sj6rlhga1271xypxpcyf3804")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dictsym")
+    (synopsis "DictSym font and macro package")
+    (description
+     "This directory contains the DictSym Type1 font designed by Georg
+Verweyen and all files required to use it with LaTeX.  The font provides
+a number of symbols commonly used in dictionaries.  The accompanying macro
+package makes the symbols accessible as LaTeX commands.")
+    (license license:lppl)))
+
 (define-public texlive-din1505
   (package
     (name "texlive-din1505")
@@ -7626,6 +9877,30 @@ package, which it supersedes.")
 @code{alpha} and @code{abbrv}), together with a style @code{natdin} to work with
 @code{natbib}.")
     (license license:knuth)))
+
+(define-public texlive-dingbat
+  (package
+    (name "texlive-dingbat")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/dingbat/"
+                   "fonts/source/public/dingbat/"
+                   "fonts/tfm/public/dingbat/"
+                   "source/latex/dingbat/" "tex/latex/dingbat/")
+             (base32
+              "12vhykmz1xzvrdzp61qy0q69fnxjjvc9m8v8kras92v49f6m4z7a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/dingbat")
+    (synopsis "Two dingbat symbol fonts")
+    (description
+     "The package provides the fonts (@code{ark10} and @code{dingbat}),
+specified in Metafont; support macros are also provided for use in LaTeX.  An
+Adobe Type 1 version of the fonts is available in the @code{niceframe} fonts
+bundle.")
+    (license license:lppl)))
 
 (define-public texlive-diffcoeff
   (package
@@ -7842,6 +10117,36 @@ programming languages.")
 bibliographies.  A @code{LaTeX2HTML} style file is also provided.")
     (license license:lppl)))
 
+(define-public texlive-domitian
+  (package
+    (name "texlive-domitian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/domitian/"
+                   "fonts/enc/dvips/domitian/"
+                   "fonts/map/dvips/domitian/"
+                   "fonts/opentype/public/domitian/"
+                   "fonts/tfm/public/domitian/"
+                   "fonts/type1/public/domitian/"
+                   "fonts/vf/public/domitian/"
+                   "tex/latex/domitian/")
+             (base32
+              "10pg90kdwklz2rsbcafhcld4zdchmxzr6cszrajwrky8hfz67dkg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/domitian")
+    (synopsis "Drop-in replacement for Palatino")
+    (description
+     "The Domitian fonts are an OpenType font family, based on the Palatino
+design by Hermann Zapf (1918-2015), as implemented in Palladio.  Domitian is
+meant as a drop-in replacement for Adobe's version of Palatino.  It extends
+Palladio with small capitals, old-style figures and scientific inferiors.  The
+metrics have been adjusted to more closely match Adobe Palatino, and hinting
+has been improved.")
+    ;; Use any of the three licenses.
+    (license (list license:lppl1.3c license:silofl1.1 license:agpl3))))
+
 (define-public texlive-dosepsbin
   (package
     (name "texlive-dosepsbin")
@@ -7872,6 +10177,34 @@ package provides a Perl program that will extract any of the sections of such
 a file, in particular providing a text'-form EPS file for use with (La)TeX.")
     (license license:artistic2.0)))
 
+(define-public texlive-doublestroke
+  (package
+    (name "texlive-doublestroke")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/doublestroke/"
+                   "fonts/map/dvips/doublestroke/"
+                   "fonts/source/public/doublestroke/"
+                   "fonts/tfm/public/doublestroke/"
+                   "fonts/type1/public/doublestroke/"
+                   "tex/latex/doublestroke/")
+             (base32
+              "0v9g025l0qfw4zrjkm9yypcsramwl2di997jgnznxpxms0v6ib7c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/doublestroke")
+    (synopsis "Typeset mathematical double stroke symbols")
+    (description
+     "This package provides a font based on Computer Modern Roman useful for
+typesetting the mathematical symbols for the natural numbers, whole numbers,
+rational numbers, real numbers and complex numbers; coverage includes all
+Roman capital letters, @samp{1}, @samp{h} and @samp{k}.  The font is available
+both as Metafont source and in Adobe Type 1 format, and LaTeX macros for its
+use are provided.")
+    (license license:knuth)))
+
 (define-public texlive-dowith
   (package
     (name "texlive-dowith")
@@ -7892,6 +10225,38 @@ a file, in particular providing a text'-form EPS file for use with (La)TeX.")
 a list without separators, and also for extending and reducing macros storing
 such lists.  Applications in mind belonged to LaTeX, but the package should
 work with other formats as well.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-dozenal
+  (package
+    (name "texlive-dozenal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/dozenal/"
+                   "fonts/afm/public/dozenal/"
+                   "fonts/map/dvips/dozenal/"
+                   "fonts/source/public/dozenal/"
+                   "fonts/tfm/public/dozenal/"
+                   "fonts/type1/public/dozenal/"
+                   "source/fonts/dozenal/"
+                   "tex/latex/dozenal/")
+             (base32
+              "0fhdcnpjpfxaqshddw6vxy0f8c1c3yn8p11aab8fkhnfg3pnllck")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/dozenal")
+    (synopsis "Typeset documents using base twelve numbering")
+    (description
+     "The package supports typesetting documents whose counters are
+represented in base twelve, also called @dfn{dozenal}.  It includes a macro
+for converting positive whole numbers to dozenal from decimal (base ten)
+representation.  The package also includes a few other macros and redefines
+all the standard counters to produce dozenal output.  Fonts, in Roman, italic,
+slanted, and boldface versions, provide ten and eleven.  The fonts were
+designed to blend well with the Computer Modern fonts, and are available both
+as Metafont source and in Adobe Type 1 format.")
     (license license:lppl1.3+)))
 
 (define-public texlive-dramatist
@@ -7978,6 +10343,74 @@ BibLaTeX package, a practical example of french thesis document, and
 documentation.  The class assumes use of Biber and BibLaTeX.")
     (license license:lppl1.3+)))
 
+(define-public texlive-drm
+  (package
+    (name "texlive-drm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/drm/"
+                   "fonts/afm/public/drm/"
+                   "fonts/map/dvips/drm/"
+                   "fonts/opentype/public/drm/"
+                   "fonts/source/public/drm/"
+                   "fonts/tfm/public/drm/"
+                   "fonts/type1/public/drm/"
+                   "source/fonts/drm/"
+                   "tex/latex/drm/")
+             (base32
+              "0fxmwakgy7inin85pjad5rdqg11flrw8mlsh86ga6ghqcw69zhwq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/drm")
+    (synopsis "Complete family of fonts written in Metafont")
+    (description
+     "The package provides access to the DRM (Don's Revised Modern) family of
+fonts, which includes a variety of optical sizes in Roman (in four weights),
+italic, and small caps, among other shapes, along with a set of symbols and
+ornaments.  It is intended to be a full-body text font, but its larger sizes
+can also be used for simple display purposes, and its significant body of
+symbols can stand on its own.  It comes complete with textual (old-style) and
+lining figures, and even has small-caps figures.  It also comes with
+extensible decorative rules to be used with ornaments from itself or other
+fonts, along with an extremely flexible ellipsis package.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-droid
+  (package
+    (name "texlive-droid")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/droid/"
+                   "fonts/enc/dvips/droid/"
+                   "fonts/map/dvips/droid/"
+                   "fonts/tfm/ascender/droid/droidsans/"
+                   "fonts/tfm/ascender/droid/droidsansmono/"
+                   "fonts/tfm/ascender/droid/droidserif/"
+                   "fonts/truetype/ascender/droid/droidsans/"
+                   "fonts/truetype/ascender/droid/droidsansmono/"
+                   "fonts/truetype/ascender/droid/droidserif/"
+                   "fonts/type1/ascender/droid/droidsans/"
+                   "fonts/type1/ascender/droid/droidsansmono/"
+                   "fonts/type1/ascender/droid/droidserif/"
+                   "fonts/vf/ascender/droid/droidsans/"
+                   "fonts/vf/ascender/droid/droidsansmono/"
+                   "fonts/vf/ascender/droid/droidserif/"
+                   "tex/latex/droid/")
+             (base32
+              "10lgw5yv0s48rwydycq6lxj5dfyna7iflnhz1zq42akg21n595vx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/droid")
+    (synopsis "LaTeX support for the Droid font families")
+    (description
+     "The Droid typeface family was designed by Steve Matteson.  The Droid
+family consists of Droid Serif, Droid Sans and Droid Sans Mono fonts.  The
+bundle includes the fonts in both TrueType and Adobe Type 1 formats.")
+    (license (list license:lppl1.3c license:asl2.0))))
+
 (define-public texlive-dsptricks
   (package
     (name "texlive-dsptricks")
@@ -8001,6 +10434,98 @@ and pole-zero plots.  The companion package
 DSPFunctions (@file{dspfunctions.sty}) provides macros for computing frequency
 responses and DFTs, while the package DSPBlocks (@file{dspblocks.sty})
 supports DSP block diagrams.")
+    (license license:lppl)))
+
+(define-public texlive-dsserif
+  (package
+    (name "texlive-dsserif")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/dsserif/"
+                   "fonts/afm/public/dsserif/"
+                   "fonts/map/dvips/dsserif/"
+                   "fonts/tfm/public/dsserif/"
+                   "fonts/type1/public/dsserif/"
+                   "source/fonts/dsserif/"
+                   "tex/latex/dsserif/")
+             (base32
+              "0dl8380lyv8r5kfrlhi5r4iwadb52m1397z68qwa65c5p2px1y3i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dsserif")
+    (synopsis "Double-struck serifed font for mathematical use")
+    (description
+     "DSSerif is a mathematical font package with double struck serifed
+digits, upper and lower case letters, in regular and bold weights.  The design
+was inspired by the STIX double struck fonts, which are sans serif, but
+starting from a Courier-like base.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-duerer
+  (package
+    (name "texlive-duerer")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/duerer/"
+                   "fonts/source/public/duerer/"
+                   "fonts/tfm/public/duerer/")
+             (base32
+              "1x5s9qnmhhpj54l6cd0pzd9gmd0ipr95j60rcs73c66wwfjw0xki")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/duerer")
+    (synopsis "Computer Duerer fonts")
+    (description
+     "These fonts are designed for titling use, and consist of capital roman
+letters only.  Together with the normal set of base shapes, the family also
+offers an informal shape.  The distribution is as Metafont source.  LaTeX
+support is available in the @code{duerer-latex} bundle.")
+    (license license:public-domain)))
+
+(define-public texlive-duerer-latex
+  (package
+    (name "texlive-duerer-latex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/duerer-latex/"
+                   "tex/latex/duerer-latex/")
+             (base32
+              "17ni6hrcblkbzn1f8cn2mvrc01sjqmi8qi2dxy82z14llr23qmbh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/duerer-latex")
+    (synopsis "LaTeX support for the Duerer fonts")
+    (description
+     "This package provides LaTeX support for Hoenig's Computer Duerer fonts,
+using their standard fontname names.")
+    (license license:gpl3+)))
+
+(define-public texlive-dutchcal
+  (package
+    (name "texlive-dutchcal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/dutchcal/"
+                   "fonts/afm/public/dutchcal/"
+                   "fonts/map/dvips/dutchcal/"
+                   "fonts/tfm/public/dutchcal/"
+                   "fonts/type1/public/dutchcal/"
+                   "fonts/vf/public/dutchcal/"
+                   "tex/latex/dutchcal/")
+             (base32
+              "173c5k6q35ljbqdi00kplxss0n1aiss8nvigdv33mlkqpg7i74qg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dutchcal")
+    (synopsis "Reworking of ESSTIX13, adding a bold version")
+    (description
+     "This package reworks the mathematical calligraphic font ESSTIX13,
+adding a bold version.  LaTeX support files are included.")
     (license license:lppl)))
 
 (define-public texlive-dvgloss
@@ -8068,6 +10593,22 @@ Gaulle (now deceased), under a free licence.  It replaces the old full
 @code{frenchle} packages.")
     (license license:lppl1.3+)))
 
+(define-public texlive-ean
+  (package
+    (name "texlive-ean")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/generic/ean/" "tex/generic/ean/")
+             (base32
+              "1zyxjpc0ggas43lpvl1l1mknqmd94q0cqgw6w2by29w3r8wafjh9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ean")
+    (synopsis "Macros for making EAN barcodes")
+    (description "This package provides EAN-8 and EAN-13 forms.")
+    (license license:gpl3+)))
+
 (define-public texlive-easing
   (package
     (name "texlive-easing")
@@ -8085,6 +10626,77 @@ Gaulle (now deceased), under a free licence.  It replaces the old full
      "This library implements a collection of easing functions and adds them
 to the PGF mathematical engine.")
     (license license:lppl1.3+)))
+
+(define-public texlive-ebgaramond
+  (package
+    (name "texlive-ebgaramond")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ebgaramond/"
+                   "fonts/enc/dvips/ebgaramond/"
+                   "fonts/map/dvips/ebgaramond/"
+                   "fonts/opentype/public/ebgaramond/"
+                   "fonts/tfm/public/ebgaramond/"
+                   "fonts/type1/public/ebgaramond/"
+                   "fonts/vf/public/ebgaramond/"
+                   "tex/latex/ebgaramond/")
+             (base32
+              "1pa3zrlp9pr31mqir22nfz3rpvv63qnc85xi1bc8vw71pgfymdws")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ebgaramond")
+    (synopsis "LaTeX support for EBGaramond fonts")
+    (description
+     "EB Garamond is a revival by Georg Duffner of the 16th century fonts
+designed by Claude Garamond.  The LaTeX support package works for (pdf)LaTeX,
+XeLaTeX and LuaLaTeX users; configuration files for use with @code{microtype}
+are provided.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-ebgaramond-maths
+  (package
+    (name "texlive-ebgaramond-maths")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ebgaramond-maths/"
+                   "fonts/enc/dvips/ebgaramond-maths/"
+                   "fonts/map/dvips/ebgaramond-maths/"
+                   "fonts/tfm/public/ebgaramond-maths/"
+                   "tex/latex/ebgaramond-maths/")
+             (base32
+              "0rjrf360d7nsny4cxn5fa0gwpph28cx0v9mrr20sbx1vrv9aqvp9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ebgaramond-maths")
+    (synopsis "LaTeX support for EBGaramond fonts in mathematics")
+    (description
+     "This package provides some LaTeX support for the use of EBGaramond12 in
+mathematics.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ecc
+  (package
+    (name "texlive-ecc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ecc/" "fonts/source/public/ecc/"
+                   "fonts/tfm/public/ecc/")
+             (base32
+              "06mznqh1k9ff8rpifxkphv3yk9ym6zcvz3x1ksk677n6fp5a5jkh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-ec texlive-metafont))
+    (home-page "https://ctan.org/pkg/ecc")
+    (synopsis "Sources for the European Concrete fonts")
+    (description
+     "The Metafont sources and TFM files of the European Concrete Fonts.
+This is the T1-encoded extension of Knuth's Concrete fonts, including also the
+corresponding text companion fonts.  Adobe Type 1 versions of the fonts are
+available as part of the @code{cm-super} font bundle.")
+    (license license:lppl)))
 
 (define-public texlive-ecltree
   (package
@@ -8104,6 +10716,28 @@ to the PGF mathematical engine.")
 a @code{bundle} environment, with a set of leaves described by @code{\\chunk}
 macros.  A chunk may have a @code{bundle} environment inside it.")
     (license license:lppl)))
+
+(define-public texlive-eco
+  (package
+    (name "texlive-eco")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/eco/" "fonts/tfm/public/eco/"
+                   "fonts/vf/public/eco/" "source/fonts/eco/"
+                   "tex/latex/eco/")
+             (base32
+              "0b2g3bmldad4vfx9qd3sakhayl9knijwn26xwysxrzc3rnfnz5w2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/eco")
+    (synopsis "Old style numerals using EC fonts")
+    (description
+     "This package provides a set of font metric files and virtual fonts for
+using the EC fonts with old-style numerals.  The style file @file{eco.sty} is
+sufficient to use the @code{eco} fonts but if you intend to use other font
+families as well, e.g., PostScript fonts, try @code{altfont}.")
+    (license license:gpl3+)))
 
 (define-public texlive-ecobiblatex
   (package
@@ -8194,6 +10828,25 @@ The macro sets are based on (and require) the @code{harvard} package, and all
 provide variations of author-date styles of presentation.")
     (license license:lppl)))
 
+(define-public texlive-eczar
+  (package
+    (name "texlive-eczar")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/eczar/"
+                   "fonts/opentype/public/eczar/")
+             (base32
+              "1r7alay4g12gn7sr6d584y04qzi77qiialmsq1wfxay7a2h8c3rn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/eczar")
+    (synopsis "Font family supporting Devanagari and Latin script")
+    (description
+     "Eczar is a type family designed by Vaibhav Singh.  The fonts support
+over 45+3 languages in Latin and Devanagari scripts in 5 weights.")
+    (license license:silofl1.1)))
+
 (define-public texlive-edfnotes
   (package
     (name "texlive-edfnotes")
@@ -8251,6 +10904,101 @@ editions.")
      "The style is intended to have enough features to draw any extensive game
 with relative ease.  The facilities of PSTricks are used for graphics.")
     (license license:lppl)))
+
+(define-public texlive-eiad
+  (package
+    (name "texlive-eiad")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/eiad/"
+                   "fonts/source/public/eiad/"
+                   "fonts/tfm/public/eiad/" "tex/latex/eiad/")
+             (base32
+              "0il058v1x79w5faxyalysdmfsgbxc3a1nq8kraffawpqw6wjcrbj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont texlive-sauter))
+    (home-page "https://ctan.org/pkg/eiad")
+    (synopsis "Traditional style Irish fonts")
+    (description
+     "This package provides traditional style Irish fonts, in both lower and
+upper case 32 letters are defined (18 plain ones, 5 long vowels and
+9 aspirated consonants).  The ligature agus is also made available.  The
+remaining characters (digits, punctuation and accents) are inherited from the
+Computer Modern family of fonts.")
+    (license license:public-domain)))
+
+(define-public texlive-eiad-ltx
+  (package
+    (name "texlive-eiad-ltx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/eiad-ltx/"
+                   "fonts/source/public/eiad-ltx/"
+                   "source/latex/eiad-ltx/"
+                   "tex/latex/eiad-ltx/")
+             (base32
+              "0qqwzl345v6hn0gp46flvhhzacgv810qjn575bhigqq726zl4kz7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/eiad-ltx")
+    (synopsis "LaTeX support for the @code{eiad} font")
+    (description
+     "The package provides macros to support use of the @code{eiad} fonts in
+OT1 encoding.  Also offered are a couple of Metafont files described in the
+font package, but not provided there.")
+    (license license:lppl)))
+
+(define-public texlive-ektype-tanka
+  (package
+    (name "texlive-ektype-tanka")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ektype-tanka/"
+                   "fonts/truetype/public/ektype-tanka/")
+             (base32
+              "05jyx7dgbi19n6g8f4a5f8lkalld2p7lrlrfy1pj961hx65zbj80")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ektype-tanka")
+    (synopsis "Devanagari fonts by EkType")
+    (description
+     "This package provides a collection of some Devanagari fonts by EkType:
+Mukta, Baloo, Modak, and Jaini.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-electrum
+  (package
+    (name "texlive-electrum")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/electrum/"
+                   "fonts/afm/arkandis/electrum/"
+                   "fonts/enc/dvips/electrum/"
+                   "fonts/map/dvips/electrum/"
+                   "fonts/tfm/arkandis/electrum/"
+                   "fonts/type1/arkandis/electrum/"
+                   "fonts/vf/arkandis/electrum/"
+                   "source/fonts/electrum/"
+                   "tex/latex/electrum/")
+             (base32
+              "0k8yckfh7pw2p3gy2j4ss9l42dmdbdnb7nsliz0j05g7wkkcp05w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/electrumadf")
+    (synopsis "Electrum ADF fonts collection")
+    (description
+     "Electrum ADF is a slab-serif font featuring optical and italic
+small-caps; additional ligatures and an alternate @samp{Q}; lining, hanging,
+inferior and superior digits; and four weights.  The fonts are provided in
+Adobe Type 1 format and the support material enables use with LaTeX. Licence
+is mixed: LPPL for LaTeX support; GPL with font exception for the fonts.")
+    ;; LPPL for LaTeX support, GPL with font exception for the fonts.
+    (license (list license:lppl license:gpl2+))))
 
 (define-public texlive-eledform
   (package
@@ -8313,6 +11061,30 @@ picture environment, with no need of special resources.  The macros are
 appropriate for drawing for school materials.  The circuit symbols accord to
 the various parts of the standard IEC 617.")
     (license license:lppl)))
+
+(define-public texlive-elvish
+  (package
+    (name "texlive-elvish")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/elvish/"
+                   "fonts/source/public/elvish/"
+                   "fonts/tfm/public/elvish/")
+             (base32
+              "1vmvkc97a7j93jhdp0wbz4mqvk5q2kxjy5dlklwl5jawggagm7r4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/elvish")
+    (synopsis "Fonts for typesetting Tolkien Elvish scripts")
+    (description
+     "The bundle provides fonts for Cirth and for Tengwar.  The Tengwar fonts
+are supported by macros in @file{teng.tex}, or by the (better documented)
+@code{tengtex} package.")
+    ;; "If you produce modifications that seem useful, you are asked to send
+    ;; them to me, so that they can be incorporated into the master files."
+    (license (license:non-copyleft "file://doc/fonts/elvish/README"))))
 
 (define-public texlive-emf
   (package
@@ -8420,6 +11192,31 @@ you use any special symbols inside your command.")
 @url{https://www.eolang.org, EO} programming language.")
     (license license:expat)))
 
+(define-public texlive-epigrafica
+  (package
+    (name "texlive-epigrafica")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/epigrafica/"
+                   "fonts/afm/public/epigrafica/"
+                   "fonts/enc/dvips/epigrafica/"
+                   "fonts/map/dvips/epigrafica/"
+                   "fonts/tfm/public/epigrafica/"
+                   "fonts/type1/public/epigrafica/"
+                   "fonts/vf/public/epigrafica/"
+                   "tex/latex/epigrafica/")
+             (base32
+              "1s18ykapm50xyvrw5ls9gzc3m8r6pnjaplryr7q469k69455fh6z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/epigrafica")
+    (synopsis "Greek and Latin font")
+    (description
+     "Epigrafica is a Greek and Latin font, forked from the development of the
+Cosmetica font, which is a similar design to Optima and includes Greek.")
+    (license license:gpl3+)))
+
 (define-public texlive-eplain
   (package
     (name "texlive-eplain")
@@ -8467,6 +11264,27 @@ load some of the more useful LaTeX packages, notably @code{graphics},
 @code{autopict} (a package instance of the LaTeX picture code), @code{psfrag},
 and @code{url}.")
     (license license:gpl2+)))
+
+(define-public texlive-epsdice
+  (package
+    (name "texlive-epsdice")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/epsdice/" "source/latex/epsdice/"
+                   "tex/latex/epsdice/")
+             (base32
+              "09h3jqb44vl1jpb3hf6gbpfpbvfv6lvdvjmp4xpzhl1zs672wccj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/epsdice")
+    (synopsis "Scalable dice font")
+    (description
+     "The @code{epsdice} package defines a single command @code{\\epsdice}
+that takes a numeric argument (in the range 1-6), and selects a face image
+from a file that contains each of the 6 possible die faces.  The graphic file
+is provided in both Encapsulated PostScript and PDF formats.")
+    (license license:lppl)))
 
 (define-public texlive-epslatex-fr
   (package
@@ -8548,6 +11366,162 @@ standard @code{amsmath} numbered equation environments to throw a warning
 whenever this occurs.")
     (license license:lppl1.3+)))
 
+(define-public texlive-erewhon
+  (package
+    (name "texlive-erewhon")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/erewhon/"
+                   "fonts/afm/public/erewhon/"
+                   "fonts/enc/dvips/erewhon/"
+                   "fonts/map/dvips/erewhon/"
+                   "fonts/opentype/public/erewhon/"
+                   "fonts/tfm/public/erewhon/"
+                   "fonts/type1/public/erewhon/"
+                   "fonts/vf/public/erewhon/"
+                   "tex/latex/erewhon/")
+             (base32
+              "02qhg27y24b533gnx90f8a1b7j06i369qswmpccq5a6gaaab8xcv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/erewhon")
+    (synopsis "Font package derived from Heuristica and Utopia")
+    (description
+     "Erewhon is based on the Heuristica package, which is based in turn on
+Utopia.  Erewhon adds a number of new features --- small caps in all styles
+rather than just regular, added figure styles (proportional, inferior,
+numerator, denominator) and superior letters.  The size is 6% smaller than
+Heuristica, matching that of UtopiaStd.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-erewhon-math
+  (package
+    (name "texlive-erewhon-math")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/erewhon-math/"
+                   "fonts/opentype/public/erewhon-math/"
+                   "tex/latex/erewhon-math/")
+             (base32
+              "03p3aiw4ha3rkb6z4z2nwmwv18krkii989a8dvqgignbh9100ck8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/erewhon-math")
+    (synopsis "Utopia based OpenType math font")
+    (description
+     "Erewhon Math is an OpenType version of the Fourier Type1 fonts designed
+by Michel Bovani.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-esrelation
+  (package
+    (name "texlive-esrelation")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/esrelation/"
+                   "fonts/map/dvips/esrelation/"
+                   "fonts/source/public/esrelation/"
+                   "fonts/tfm/public/esrelation/"
+                   "fonts/type1/public/esrelation/"
+                   "source/fonts/esrelation/"
+                   "tex/latex/esrelation/")
+             (base32
+              "168pjrn3pgyqb79nvwk4rykb214jj1fvygnlb18rx7nrnzdmagjw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/esrelation")
+    (synopsis "Symbol set for describing relations between ordered pairs")
+    (description
+     "This package provides an math symbol font, by Tauba Auerbach, for
+describing relations between ordered pairs, using Metafont.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-esstix
+  (package
+    (name "texlive-esstix")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/esstix/"
+                   "fonts/afm/esstix/"
+                   "fonts/map/dvips/esstix/"
+                   "fonts/tfm/public/esstix/"
+                   "fonts/type1/public/esstix/"
+                   "fonts/vf/public/esstix/"
+                   "tex/latex/esstix/")
+             (base32
+              "1wfl7q6yx7pflzy402ldx7p3zw3xgvgvilrdzv7pm0w937a3qkm9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/esstix")
+    (synopsis "PostScript versions of the ESSTIX, with macro support")
+    (description
+     "These fonts represent translation to PostScript Type 1 of the ESSTIX
+fonts.  ESSTIX seem to have been a precursor to the STIX project.  The
+accompanying virtual fonts with customized metrics and LaTeX support files
+allow their use as @code{calligraphic}, @code{fraktur} and
+@code{double-struck} (blackboard bold) in maths mode.")
+    (license license:silofl1.1)))
+
+(define-public texlive-esvect
+  (package
+    (name "texlive-esvect")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/esvect/"
+                   "fonts/map/dvips/esvect/"
+                   "fonts/source/public/esvect/"
+                   "fonts/tfm/public/esvect/"
+                   "fonts/type1/public/esvect/"
+                   "source/latex/esvect/"
+                   "tex/latex/esvect/")
+             (base32
+              "15sr1rm86aamfy186v2zvvcjsw5rhcq6ph5ckpfn275vjp3fazrf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/esvect")
+    (synopsis "Vector arrows")
+    (description
+     "This package can be used to write vectors using an arrow which differs
+from the Computer Modern one.  You have the choice between several kinds of
+arrows.  The package consists of the relevant Metafont code and a package to
+use it.")
+    (license license:gpl3+)))
+
+(define-public texlive-etbb
+  (package
+    (name "texlive-etbb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/etbb/"
+                   "fonts/afm/public/etbb/"
+                   "fonts/enc/dvips/etbb/"
+                   "fonts/map/dvips/etbb/"
+                   "fonts/opentype/public/etbb/"
+                   "fonts/tfm/public/etbb/"
+                   "fonts/type1/public/etbb/"
+                   "fonts/vf/public/etbb/"
+                   "tex/latex/etbb/")
+             (base32
+              "1mbzbcj0dl6wzl3x8rq9nxsjf8i240zcz3gahhpy273yj42n8313")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/etbb")
+    (synopsis "Expansion of Edward Tufte's ET-Bembo family")
+    (description
+     "The Bembo-like font family, ETbb, expands ET-Bembo features to include
+a full set of figure styles, small caps in all styles, superior letters and
+figures, inferior figures, a new capital Sharp @samp{S} with small caps
+version, along with macros to activate these features in LaTeX.")
+    (license (list license:expat license:lppl1.3+))))
+
 (define-public texlive-euclideangeometry
   (package
     (name "texlive-euclideangeometry")
@@ -8571,6 +11545,46 @@ his times calculations were made with ruler, compass and also with
 ellipsograph.  This package extends the functionalities of the @code{curve2e}
 package.")
     (license license:lppl1.3c)))
+
+(define-public texlive-euler-math
+  (package
+    (name "texlive-euler-math")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/euler-math/"
+                   "fonts/opentype/public/euler-math/"
+                   "tex/latex/euler-math/")
+             (base32
+              "01vj4nqmac078176m3cj97lx4nnrs395208vxc6671c90fvirg1s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/euler-math")
+    (synopsis "OpenType version of Hermann Zapf's Euler maths font")
+    (description
+     "@file{Euler-Math.otf} is an OpenType version of Hermann Zapf's Euler
+maths font.  A style file @file{euler-math.sty} is provided as a replacement
+of the @code{eulervm} package for LuaLaTeX and XeLaTeX users.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-euxm
+  (package
+    (name "texlive-euxm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "fonts/source/public/euxm/"
+                   "fonts/tfm/public/euxm/")
+             (base32
+              "10dqknqlqrga9m2lgd74zx5hk4qcbkfvlzjgr304p94w3k7pclqc")))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/euxm")
+    (synopsis "Extended Euler")
+    (description
+     "This package extends Euler font to include two additional characters
+needed for Concrete Math.")
+    (license license:knuth)))
 
 (define-public texlive-evangelion-jfm
   (package
@@ -8743,6 +11757,35 @@ the chapters.  Each chapter can consist of three sections: the lesson, the
 exercises and the activities.")
     (license license:lppl)))
 
+(define-public texlive-fbb
+  (package
+    (name "texlive-fbb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fbb/"
+                   "fonts/enc/dvips/fbb/"
+                   "fonts/map/dvips/fbb/"
+                   "fonts/opentype/public/fbb/"
+                   "fonts/tfm/public/fbb/"
+                   "fonts/type1/public/fbb/"
+                   "fonts/vf/public/fbb/"
+                   "tex/latex/fbb/")
+             (base32
+              "012zfxq6hdz9m4pn6dxqv3lsbr809r10mj795w96cijzrys4zww1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fbb")
+    (synopsis "Bembo-like font")
+    (description
+     "The package provides a Bembo-like font package based on Cardo but with
+many modifications, adding Bold Italic, small caps in all styles, six figure
+choices in all styles, updated kerning tables, added figure tables and
+corrected f-ligatures.  Both OpenType and Adobe Type 1 versions are provided;
+all necessary support files are provided.  The font works well with
+@code{newtxmath}'s @code{libertine} option.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
 (define-public texlive-fbs
   (package
     (name "texlive-fbs")
@@ -8759,6 +11802,34 @@ exercises and the activities.")
      "This package provides a BibTeX style file made with @code{custom}-bib to
 fit @emph{Frontiers in Bioscience} requirements.")
     (license license:lppl)))
+
+(define-public texlive-fdsymbol
+  (package
+    (name "texlive-fdsymbol")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fdsymbol/"
+                   "doc/latex/fdsymbol/"
+                   "fonts/enc/dvips/fdsymbol/"
+                   "fonts/map/dvips/fdsymbol/"
+                   "fonts/opentype/public/fdsymbol/"
+                   "fonts/source/public/fdsymbol/"
+                   "fonts/tfm/public/fdsymbol/"
+                   "fonts/type1/public/fdsymbol/"
+                   "source/latex/fdsymbol/"
+                   "tex/latex/fdsymbol/")
+             (base32
+              "1qw2bmw48xppn9jj5m46l3lr1zja6nall0a3vvpcfjd66ai3hmca")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/fdsymbol")
+    (synopsis "Maths symbol font")
+    (description
+     "FdSymbol is a maths symbol font, designed as a companion to the Fedra
+family, but it might also fit other contemporary typefaces.")
+    (license license:silofl1.1)))
 
 (define-public texlive-fduthesis
   (package
@@ -8779,6 +11850,91 @@ fit @emph{Frontiers in Bioscience} requirements.")
      "This package is a LaTeX thesis template package for Fudan University.
 It can make it easy to write theses both in Chinese and English.")
     (license license:lppl1.3c)))
+
+(define-public texlive-fetamont
+  (package
+    (name "texlive-fetamont")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fetamont/"
+                   "fonts/afm/public/fetamont/"
+                   "fonts/map/dvips/fetamont/"
+                   "fonts/opentype/public/fetamont/"
+                   "fonts/source/public/fetamont/"
+                   "fonts/tfm/public/fetamont/"
+                   "fonts/type1/public/fetamont/"
+                   "metapost/fetamont/"
+                   "source/fonts/fetamont/"
+                   "tex/latex/fetamont/")
+             (base32
+              "0bs911vyn54i61vv3rhr0xcp6myap2s8ww6p1fd30ld1ha6nsrf6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    ;; FIXME: Generating font metrics require unpackaged "mf2outline.py"
+    ;; script.
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'generate-font-metrics))))
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/fetamont")
+    (synopsis "Extended version of Knuth's Logo typeface")
+    (description
+     "The @code{fetamont} typeface was designed in Metafont and extends the
+Logo fonts to complete the Type 1 encoding.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-feyn
+  (package
+    (name "texlive-feyn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/feyn/"
+                   "fonts/source/public/feyn/"
+                   "fonts/tfm/public/feyn/"
+                   "source/fonts/feyn/" "tex/latex/feyn/")
+             (base32
+              "0kd5xs1xffgplpapj6rjv4aaz7pfjfh8rspy2xrabbf03npkdqz5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont texlive-sauter))
+    (home-page "https://ctan.org/pkg/feyn")
+    (synopsis "Font for in-text Feynman diagrams")
+    (description
+     "Feyn may be used to produce relatively simple Feynman diagrams within
+equations in a LaTeX document.  While the @code{feynmf} package is good at
+drawing large diagrams for figures, the present package and its fonts allow
+diagrams within equations or text, at a matching size.  The fonts are
+distributed as Metafont source, and macros for their use are also provided.")
+    (license license:bsd-2)))
+
+(define-public texlive-fge
+  (package
+    (name "texlive-fge")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fge/"
+                   "fonts/map/dvips/fge/"
+                   "fonts/source/public/fge/"
+                   "fonts/tfm/public/fge/"
+                   "fonts/type1/public/fge/"
+                   "source/fonts/fge/"
+                   "tex/latex/fge/")
+             (base32
+              "00q9rf8jrb6jl5c10kn6axnlza6q02xan2gf88rd736v0wpi4936")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/fge")
+    (synopsis "Font for Frege's @emph{Grundgesetze der Arithmetik}")
+    (description
+     "The package provides fonts for Frege's @emph{Grundgesetze der
+Arithmetik}.  The fonts are provided as Metafont source and Adobe Type 1 (pfb)
+files.  A small LaTeX package (@code{fge}) is included.")
+    (license license:lppl)))
 
 (define-public texlive-figbas
   (package
@@ -8861,6 +12017,47 @@ the package to display TeX code verbatim in documentation and the same time
 produce the corresponding files during the LaTeX run in order to embed them in
 the PDF as file attachment annotations (by using Scott Pakin's package
 @code{attachfile}).")
+    (license license:lppl1.3+)))
+
+(define-public texlive-firamath
+  (package
+    (name "texlive-firamath")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/firamath/"
+                   "fonts/opentype/public/firamath/")
+             (base32
+              "0sc3ip9mvyqlbsj7vfcb1yaxlc32w18kqrqm051v5y2bbvp53s0p")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/firamath")
+    (synopsis "Fira sans serif font with Unicode math support")
+    (description
+     "Fira Math is a sans-serif font with Unicode math support.  The design of
+this font is based on Fira Sans and FiraGO.  Fira Math is distributed in
+OpenType format and can be used with the @code{unicode-math} package under
+XeLaTeX or LuaLaTeX.  More support is offered by the @code{firamath-otf}
+package.")
+    (license license:silofl1.1)))
+
+(define-public texlive-firamath-otf
+  (package
+    (name "texlive-firamath-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/firamath-otf/"
+                   "tex/latex/firamath-otf/")
+             (base32
+              "1ai8qsxx6laxl12n2fivl08xywzf1y8rd2n839v8z5bjfsjznqk6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/firamath-otf")
+    (synopsis "Use OpenType math font Fira Math")
+    (description
+     "The package offers XeTeX and LuaTeX support for the sans serif OpenType
+Fira Math font.")
     (license license:lppl1.3+)))
 
 (define-public texlive-fixdif
@@ -8972,6 +12169,124 @@ and complex notation.  Further many macros and shortcuts are added, e.g., for
 spaces, operators, physics unit, etc.")
     (license license:lppl)))
 
+(define-public texlive-foekfont
+  (package
+    (name "texlive-foekfont")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/foekfont/"
+                   "fonts/map/dvips/foekfont/"
+                   "fonts/tfm/public/foekfont/"
+                   "fonts/type1/public/foekfont/"
+                   "tex/latex/foekfont/")
+             (base32
+              "01l6mj5dh52cdaqdkv74j8qw2pfd6w7x53n856vsjgdha4r8362y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/foekfont")
+    (synopsis "Title font of the @emph{Mads Fok} magazine")
+    (description
+     "The bundle provides the Foek font, an Adobe Type 1 font, and LaTeX
+support for its use.")
+    (license license:gpl3+)))
+
+(define-public texlive-fonetika
+  (package
+    (name "texlive-fonetika")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fonetika/"
+                   "fonts/afm/public/fonetika/"
+                   "fonts/map/dvips/fonetika/"
+                   "fonts/tfm/public/fonetika/"
+                   "fonts/truetype/public/fonetika/"
+                   "fonts/type1/public/fonetika/"
+                   "tex/latex/fonetika/")
+             (base32
+              "1d19a9v3innfq9602w8rd2ffn0yd52fz4wmdva6qnix0jgadc1ka")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fonetika")
+    (synopsis "Support for the Danish Dania phonetic system")
+    (description
+     "Fonetika Dania is a font bundle with a serif font and a sans serif font
+for the Danish phonetic system Dania.  Both fonts exist in regular and bold
+weights.  LaTeX support is provided.")
+    ;; The license is GPL3+, except for the fonts and metrics of the Fonetika
+    ;; Dania Iwonae, which are under GUST Font Nosource License.
+    (license (list license:gpl3+ license:gfl1.0))))
+
+(define-public texlive-fontawesome
+  (package
+    (name "texlive-fontawesome")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fontawesome/"
+                   "fonts/enc/dvips/fontawesome/"
+                   "fonts/map/dvips/fontawesome/"
+                   "fonts/opentype/public/fontawesome/"
+                   "fonts/tfm/public/fontawesome/"
+                   "fonts/type1/public/fontawesome/"
+                   "tex/latex/fontawesome/")
+             (base32
+              "0m3wl0jc00h8r4w3fa5vkf062hmaadb2rvf3x9lm4pb0c99ia5x9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fontawesome")
+    (synopsis "Font containing web-related icons")
+    (description
+     "The package offers access to the large number of web-related icons
+provided by the FontAwesome font.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-fontawesome5
+  (package
+    (name "texlive-fontawesome5")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fontawesome5/"
+                   "fonts/enc/dvips/fontawesome5/"
+                   "fonts/map/dvips/fontawesome5/"
+                   "fonts/opentype/public/fontawesome5/"
+                   "fonts/tfm/public/fontawesome5/"
+                   "fonts/type1/public/fontawesome5/"
+                   "tex/latex/fontawesome5/")
+             (base32
+              "17cfqa2jjg3lp0damwy8kfdihmchx55994rrc897kcdba865rrwg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fontawesome5")
+    (synopsis "Font Awesome 5 with LaTeX support")
+    (description
+     "This package provides LaTeX support for the included Font Awesome 5 icon
+set.")
+    (license (list license:silofl1.1 license:lppl1.3c))))
+
+(define-public texlive-fontmfizz
+  (package
+    (name "texlive-fontmfizz")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fontmfizz/"
+                   "fonts/truetype/public/fontmfizz/"
+                   "tex/latex/fontmfizz/")
+             (base32
+              "1z0k7n1yyisv3igw77bj3r8hywyz55ciylb3fjx9dpdcrwv3kngd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fontmfizz")
+    (synopsis "Font Mfizz icons for use in LaTeX")
+    (description
+     "The MFizz font provides scalable vector icons representing programming
+languages, operating systems, software engineering, and technology.  It can be
+seen as an extension to FontAwesome.")
+    (license license:expat)))
+
 (define-public texlive-fontsize
   (package
     (name "texlive-fontsize")
@@ -9038,6 +12353,27 @@ spaces, operators, physics unit, etc.")
      "The package allows you to set arbitrary sizes for the main font of the
 document, through the @emph{fontsize=<size>} option.")
     (license license:lppl1.3+)))
+
+(define-public texlive-fonttable
+  (package
+    (name "texlive-fonttable")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/fonttable/"
+                   "source/latex/fonttable/"
+                   "tex/latex/fonttable/")
+             (base32
+              "1mb83zzx5wk92x6zz28k42wmi82hyd1h7fb3p9imjssn6qb73356")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fonttable")
+    (synopsis "Print font tables from a LaTeX document")
+    (description
+     "This is a package version of @file{nfssfont.tex}; it enables you to
+print a table of the characters of a font and/or some text (for demonstration
+or testing purposes), from within a document.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-footbib
   (package
@@ -9108,6 +12444,35 @@ and templates for an introductory LaTeX course (in French) prepared for
 Universite Laval, Quebec, Canada.")
     (license license:cc-by4.0)))
 
+(define-public texlive-forum
+  (package
+    (name "texlive-forum")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/forum/"
+                   "fonts/enc/dvips/forum/"
+                   "fonts/map/dvips/forum/"
+                   "fonts/opentype/public/forum/"
+                   "fonts/tfm/public/forum/"
+                   "fonts/type1/public/forum/"
+                   "fonts/vf/public/forum/"
+                   "tex/latex/forum/")
+             (base32
+              "07sbzd2da3i5adlbgrrxd7igyailzjwxvr3pcwmb9wl9jry1gg9m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/forum")
+    (synopsis "Forum fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Forum font, designed by Denis Masharov.  Forum has antique, classic Roman
+proportions.  It can be used to set body texts and works well in titles and
+headlines too.  It is truly multilingual, with glyphs for Central and Eastern
+Europe, Baltics, Cyrillic and Asian Cyrillic communities.  There is currently
+just a regular weight and an artificially emboldened bold.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-fouridx
   (package
     (name "texlive-fouridx")
@@ -9128,6 +12493,28 @@ sub- and superscripts are raised for optimum fitting to the symbol indexed, in
 such a way that left and right sub- and superscripts are set on the same
 level, as appropriate.  The package provides an alternative to the use of the
 @code{\\sideset} command in the @code{amsmath} package.")
+    (license license:lppl)))
+
+(define-public texlive-fouriernc
+  (package
+    (name "texlive-fouriernc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/fouriernc/"
+                   "fonts/afm/public/fouriernc/"
+                   "fonts/tfm/public/fouriernc/"
+                   "fonts/vf/public/fouriernc/"
+                   "tex/latex/fouriernc/")
+             (base32
+              "1gg9l6zvyi98jg1w7z33pxsnmh7lqjcs2zakhj3pbv2q7ysxnppw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fouriernc")
+    (synopsis "Use New Century Schoolbook text with Fourier maths fonts")
+    (description
+     "This package provides a LaTeX mathematics font setup for use with New
+Century Schoolbook text.")
     (license license:lppl)))
 
 (define-public texlive-francais-bst
@@ -9151,6 +12538,51 @@ in @emph{Guide de la communication ecrite} (Malo, M., Quebec Amerique, 1996).
 The BibTeX styles were generated using @code{custom-bib} and they are
 compatible with @code{natbib}.")
     (license license:lppl1.3+)))
+
+(define-public texlive-frcursive
+  (package
+    (name "texlive-frcursive")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/frcursive/"
+                   "fonts/map/dvips/frcursive/"
+                   "fonts/source/public/frcursive/"
+                   "fonts/tfm/public/frcursive/"
+                   "fonts/type1/public/frcursive/"
+                   "tex/latex/frcursive/")
+             (base32
+              "04pqic407b0pfri5sydhbani0fxw0bxy3fl6x4isg2m2z73p4qqa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/frcursive")
+    (synopsis "French cursive hand fonts")
+    (description
+     "This package provides a hand-writing font in the style of the French
+academic running-hand.  The font was written in Metafont and has been
+converted to Adobe Type 1 format.  LaTeX support is provided.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-frederika2016
+  (package
+    (name "texlive-frederika2016")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/frederika2016/"
+                   "fonts/opentype/public/frederika2016/")
+             (base32
+              "10pvx4n4ahn8b251fzz8crg9pijpclan5w4b6jc7m7jjsykzw8xj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/frederika2016")
+    (synopsis "OpenType Greek calligraphy font")
+    (description
+     "Frederika2016 is an attempt to digitize Hermann Zapf's Frederika font.
+The font is the Greek companion of Virtuosa by the same designer.  This font
+is a calligraphy font and this is an initial release.")
+    (license license:silofl1.1)))
 
 (define-public texlive-frenchmath
   (package
@@ -9182,6 +12614,30 @@ writing french operator names like @emph{pgcd}, @emph{ppcm}, @emph{Card},
 @emph{rg}, @emph{Vect}.
 @end itemize")
     (license license:lppl1.3+)))
+
+(define-public texlive-frimurer
+  (package
+    (name "texlive-frimurer")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/frimurer/"
+                   "fonts/afm/public/frimurer/"
+                   "fonts/enc/dvips/frimurer/"
+                   "fonts/tfm/public/frimurer/"
+                   "fonts/type1/public/frimurer/"
+                   "source/fonts/frimurer/"
+                   "tex/latex/frimurer/")
+             (base32
+              "072mbcn6272rs1sw85xznk0f7psqh3dkz8y0hayn8y7a83vcrfgr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/frimurer")
+    (synopsis "Access to the @emph{frimurer} cipher for use with LaTeX")
+    (description
+     "This package provides access to the @emph{frimurer} cipher for use with
+LaTeX.")
+    (license license:gpl3)))
 
 (define-public texlive-frletter
   (package
@@ -9320,6 +12776,58 @@ the formatting of entries rather than their order.  The two packages can be
 used together or separately.")
     (license license:lppl1.3+)))
 
+(define-public texlive-garamond-libre
+  (package
+    (name "texlive-garamond-libre")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/garamond-libre/"
+                   "fonts/enc/dvips/garamond-libre/"
+                   "fonts/map/dvips/garamond-libre/"
+                   "fonts/opentype/public/garamond-libre/"
+                   "fonts/tfm/public/garamond-libre/"
+                   "fonts/type1/public/garamond-libre/"
+                   "fonts/vf/public/garamond-libre/"
+                   "tex/latex/garamond-libre/")
+             (base32
+              "0mmfxpdy2r5wd51b8f2l0qb7d6nncypzfs4bmimcm68s4l0rzsw4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/garamond-libre")
+    (synopsis "Garamond Libre font face")
+    (description
+     "Garamond Libre is an old-style font family.  It is a true Garamond,
+i.e., it is based off the designs of 16th-century French engraver Claude
+Garamond (also spelled Garamont).  The Roman design is Garamond's; the italics
+are from a design by Robert Granjon.  The upright Greek font is after a design
+by Firmin Didot; the italic Greek font is after a design by Alexander Wilson.
+The font family includes support for Latin, Greek (monotonic and polytonic)
+and Cyrillic scripts, as well as small capitals, old-style figures, superior
+and inferior figures, historical ligatures, Byzantine musical symbols, the IPA
+and swash capitals.")
+    (license (list license:expat license:lppl))))
+
+(define-public texlive-garamond-math
+  (package
+    (name "texlive-garamond-math")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/garamond-math/"
+                   "fonts/opentype/public/garamond-math/")
+             (base32
+              "1ay8qmcn8glzn0bpg4qqs3k6dr9h7lljal239qvxfvg1fzj76h4n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/garamond-math")
+    (synopsis "An OTF math font matching EB Garamond")
+    (description
+     "Garamond-Math is an OpenType math font matching EB Garamond (Octavio
+Pardo) and EB Garamond (Georg Mayr-Duffner).  Many mathematical symbols are
+derived from other fonts, others are made from scratch.")
+    (license license:silofl1.1)))
+
 (define-public texlive-gastex
   (package
     (name "texlive-gastex")
@@ -9424,6 +12932,29 @@ provides an environment like @code{eqnarray}, a @code{newtheorem}-like
 environment (NewTheorem), and several macros.")
     (license license:isc)))
 
+(define-public texlive-genealogy
+  (package
+    (name "texlive-genealogy")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/genealogy/"
+                   "fonts/source/public/genealogy/"
+                   "fonts/tfm/public/genealogy/")
+             (base32
+              "155ifff77s5cwjk1gkib7gcdx1mcrzzbca35mm8f9w5rzg1d5x7k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/genealogy")
+    (synopsis "Compilation of genealogy fonts")
+    (description
+     "This package provides a simple compilation of the genealogical symbols
+found in the @code{wasy} and @code{gen} fonts, adding the male and female
+symbols to Knuth's @code{gen} font, and so avoiding loading two fonts when you
+need only genealogical symbols.  The font is distributed as Metafont source.")
+    (license license:lppl)))
+
 (define-public texlive-geschichtsfrkl
   (package
     (name "texlive-geschichtsfrkl")
@@ -9443,6 +12974,219 @@ environment (NewTheorem), and several macros.")
      "The package provides a BibLaTeX style, (mostly) meeting the requirements
 of the History Faculty of the University of Freiburg (Germany).")
     (license license:lppl)))
+
+(define-public texlive-gfsartemisia
+  (package
+    (name "texlive-gfsartemisia")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfsartemisia/"
+                   "fonts/afm/public/gfsartemisia/"
+                   "fonts/enc/dvips/gfsartemisia/"
+                   "fonts/map/dvips/gfsartemisia/"
+                   "fonts/opentype/public/gfsartemisia/"
+                   "fonts/tfm/public/gfsartemisia/"
+                   "fonts/type1/public/gfsartemisia/"
+                   "fonts/vf/public/gfsartemisia/"
+                   "tex/latex/gfsartemisia/")
+             (base32
+              "09kk65sn5wj70dksrywszdbwg2gg9wzdy9m25xj09d8k7hdirayn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfsartemisia")
+    (synopsis "Modern Greek font design")
+    (description
+     "GFS Artemisia is a relatively modern font, designed as a general purpose
+font in the same sense as Times is nowadays treated.  The font supports the
+Greek and Latin alphabets.  LaTeX support is provided, using the OT1, T1 and
+LGR encodings.")
+    (license (list license:silofl1.1 license:lppl1.0+))))
+
+(define-public texlive-gfsbodoni
+  (package
+    (name "texlive-gfsbodoni")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfsbodoni/"
+                   "fonts/afm/public/gfsbodoni/"
+                   "fonts/enc/dvips/gfsbodoni/"
+                   "fonts/map/dvips/gfsbodoni/"
+                   "fonts/opentype/public/gfsbodoni/"
+                   "fonts/tfm/public/gfsbodoni/"
+                   "fonts/type1/public/gfsbodoni/"
+                   "fonts/vf/public/gfsbodoni/"
+                   "tex/latex/gfsbodoni/")
+             (base32
+              "0a4l6ijf7lqb8g7cz1fly3c73aq14pybr0cvpn86lsw3sg7cy9jk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfsbodoni")
+    (synopsis "Greek and Latin font based on Bodoni")
+    (description
+     "Bodoni's Greek fonts in the 18th century broke, for the first time,
+with the Byzantine cursive tradition of Greek fonts.  GFS Bodoni resurrects
+his work for general use.  The font family supports both Greek and Latin
+letters.  LaTeX support of the fonts is provided, offering OT1, T1 and LGR
+encodings.  The fonts themselves are provided in Adobe Type 1 and OpenType
+formats.")
+    (license license:silofl1.1)))
+
+(define-public texlive-gfscomplutum
+  (package
+    (name "texlive-gfscomplutum")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfscomplutum/"
+                   "fonts/afm/public/gfscomplutum/"
+                   "fonts/enc/dvips/gfscomplutum/"
+                   "fonts/map/dvips/gfscomplutum/"
+                   "fonts/opentype/public/gfscomplutum/"
+                   "fonts/tfm/public/gfscomplutum/"
+                   "fonts/type1/public/gfscomplutum/"
+                   "fonts/vf/public/gfscomplutum/"
+                   "tex/latex/gfscomplutum/")
+             (base32
+              "018hpaijnky23brhqmqsq2zm7h5w4y42vdfawba62qlz5m1zijn1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfscomplutum")
+    (synopsis "Greek font with a long history")
+    (description
+     "GFS Complutum derives from a minuscule-only font cut in the 16th
+century.  An unsatisfactory set of majuscules were added in the early 20th
+century, but its author died before he could complete the revival of the font.
+The Greek Font Society has released this version, which has a new set of
+majuscules.")
+    (license license:silofl1.1)))
+
+(define-public texlive-gfsdidot
+  (package
+    (name "texlive-gfsdidot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfsdidot/"
+                   "fonts/afm/public/gfsdidot/"
+                   "fonts/enc/dvips/gfsdidot/"
+                   "fonts/map/dvips/gfsdidot/"
+                   "fonts/opentype/public/gfsdidot/"
+                   "fonts/tfm/public/gfsdidot/"
+                   "fonts/type1/public/gfsdidot/"
+                   "fonts/vf/public/gfsdidot/"
+                   "tex/latex/gfsdidot/")
+             (base32
+              "1cnl5m6g3c7brkx9jfwx6lw83ypl5a7cjqjj4hyf65q12m4250db")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfsdidot")
+    (synopsis "Greek font based on Didot's work")
+    (description
+     "The design of Didot's 1805 Greek typeface was influenced by the
+neoclassical ideals of the late 18th century.  The font was brought to Greece
+at the time of the 1821 Greek Revolution, by Didot's son, and was very widely
+used.  The font supports the Greek alphabet, and is accompanied by a matching
+Latin alphabet based on Zapf's Palatino.  LaTeX support is provided, using the
+OT1, T1, TS1, and LGR encodings.")
+    (license license:silofl1.1)))
+
+(define-public texlive-gfsdidotclassic
+  (package
+    (name "texlive-gfsdidotclassic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfsdidotclassic/"
+                   "fonts/opentype/public/gfsdidotclassic/")
+             (base32
+              "1cpsmgrq2x6ym9xb63msvm6pc4p2qyi2k40hmxmzhi979ch8gkaz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfsdidotclassic")
+    (synopsis "Classic version of GFSDidot")
+    (description
+     "This is the classic version of GFSDidot provided for Unicode TeX
+engines.")
+    (license license:silofl1.1)))
+
+(define-public texlive-gfsneohellenic
+  (package
+    (name "texlive-gfsneohellenic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfsneohellenic/"
+                   "fonts/afm/public/gfsneohellenic/"
+                   "fonts/enc/dvips/gfsneohellenic/"
+                   "fonts/map/dvips/gfsneohellenic/"
+                   "fonts/opentype/public/gfsneohellenic/"
+                   "fonts/tfm/public/gfsneohellenic/"
+                   "fonts/type1/public/gfsneohellenic/"
+                   "fonts/vf/public/gfsneohellenic/"
+                   "tex/latex/gfsneohellenic/")
+             (base32
+              "109zgqj63ffryy42zi64p6r37jmzj5ma3d8bgn7mz3gc2scr1bpc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfsneohellenic")
+    (synopsis "Font in the Neo-Hellenic style")
+    (description
+     "The Neo-Hellenic style evolved in academic circles in the 19th and 20th
+century; the present font follows a cut commissioned from Monotype in 1927.
+The font supports both Greek and Latin characters, and has been adjusted to
+work well with the @code{cmbright} fonts for mathematics support.  LaTeX
+support of the fonts is provided, offering OT1, T1 and LGR encodings.")
+    (license license:silofl1.1)))
+
+(define-public texlive-gfsneohellenicmath
+  (package
+    (name "texlive-gfsneohellenicmath")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfsneohellenicmath/"
+                   "fonts/opentype/public/gfsneohellenicmath/"
+                   "tex/latex/gfsneohellenicmath/")
+             (base32
+              "08yzv6qww3qvbg8bp4k8ibd46j1a41ysw4k8fi5nazchf3py7qb0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfsneohellenicmath")
+    (synopsis "Math font in the Neo-Hellenic style")
+    (description
+     "The GFSNeohellenic font, a historic font first designed by Victor
+Scholderer, now has native support for Mathematics.  A useful application is
+in Beamer documents since this is a sans math font.")
+    (license license:silofl1.1)))
+
+(define-public texlive-gfssolomos
+  (package
+    (name "texlive-gfssolomos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gfssolomos/"
+                   "fonts/afm/public/gfssolomos/"
+                   "fonts/enc/dvips/gfssolomos/"
+                   "fonts/map/dvips/gfssolomos/"
+                   "fonts/opentype/public/gfssolomos/"
+                   "fonts/tfm/public/gfssolomos/"
+                   "fonts/type1/public/gfssolomos/"
+                   "fonts/vf/public/gfssolomos/"
+                   "tex/latex/gfssolomos/")
+             (base32
+              "0zjbmnkfnaiq7pmpv0xhp5vag2dww70049knf759lf2s0ygnmaaa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfssolomos")
+    (synopsis "Greek-alphabet font")
+    (description
+     "Solomos is a font which traces its descent from
+a calligraphically-inspired font of the mid-19th century.  LaTeX support, for
+use with the LGR encoding only, is provided.")
+    (license license:silofl1.1)))
 
 (define-public texlive-ghab
   (package
@@ -9483,6 +13227,54 @@ using an optional argument.")
 precautionary statements and pictograms in a straightforward way.  The
 statements are taken from EU regulation 1272/2008.")
     (license license:lppl1.3+)))
+
+(define-public texlive-gillcm
+  (package
+    (name "texlive-gillcm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gillcm/"
+                   "fonts/map/dvips/gillcm/"
+                   "fonts/tfm/public/gillcm/"
+                   "fonts/vf/public/gillcm/"
+                   "tex/latex/gillcm/")
+             (base32
+              "0cz6aqcq2fv6hb2yv2ymc3j6myb8y73gyqbyigabwc909fmh5qdm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gillcm")
+    (synopsis "Alternative unslanted italic Computer Modern fonts")
+    (description
+     "This is a demonstration of the use of virtual fonts for unusual effects:
+the package implements unslanted italic Computer Modern fonts.")
+    (license license:bsd-3)))
+
+(define-public texlive-gillius
+  (package
+    (name "texlive-gillius")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gillius/"
+                   "fonts/enc/dvips/gillius/"
+                   "fonts/map/dvips/gillius/"
+                   "fonts/opentype/arkandis/gillius/"
+                   "fonts/tfm/arkandis/gillius/"
+                   "fonts/type1/arkandis/gillius/"
+                   "fonts/vf/arkandis/gillius/"
+                   "tex/latex/gillius/")
+             (base32
+              "0f2jr70ab5qnmla1n7iwhiw9x9q5fdzw9lcgjzji8rdqlsgq1451")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gillius")
+    (synopsis "Gillius fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Gillius and Gillius No.@: 2 families of sans serif fonts and condensed
+versions of them, designed by Hirwen Harendal.")
+    (license (list license:gpl2+ license:lppl))))
 
 (define-public texlive-glosmathtools
   (package
@@ -9575,6 +13367,29 @@ a possibility of optical centering and right-hanging alignment of lines broken
 because of length.")
     (license license:lppl)))
 
+(define-public texlive-gnu-freefont
+  (package
+    (name "texlive-gnu-freefont")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gnu-freefont/"
+                   "fonts/opentype/public/gnu-freefont/"
+                   "fonts/truetype/public/gnu-freefont/"
+                   "source/fonts/gnu-freefont/")
+             (base32
+              "14bq8i7n6zhy8352pmhd5d9l4p152c6bgarz17wfp2p00kzs47aw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gnu-freefont")
+    (synopsis "Unicode font, with rather wide coverage")
+    (description
+     "The package provides a set of outline (i.e., OpenType} fonts covering as
+much as possible of the Unicode character set.  The set consists of three
+typefaces: one monospaced and two proportional (one with uniform and one with
+modulated stroke).")
+    (license license:gpl3)))
+
 (define-public texlive-go
   (package
     (name "texlive-go")
@@ -9595,6 +13410,34 @@ because of length.")
      "The macros provide for nothing more complicated than the standard
 19x19 board; the fonts are written in Metafont.")
     (license license:public-domain)))
+
+(define-public texlive-gofonts
+  (package
+    (name "texlive-gofonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gofonts/"
+                   "fonts/enc/dvips/gofonts/"
+                   "fonts/map/dvips/gofonts/"
+                   "fonts/tfm/bh/gofonts/"
+                   "fonts/truetype/bh/gofonts/"
+                   "fonts/type1/bh/gofonts/"
+                   "fonts/vf/bh/gofonts/"
+                   "tex/latex/gofonts/")
+             (base32
+              "07ysxm10xwg6cc781gdppidq1s87bqli4x6shkarjl29pxcncn61")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gofonts")
+    (synopsis "GoSans and GoMono fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the GoSans and GoMono families of fonts designed by the Bigelow & Holmes
+foundry.  GoSans is available in three weights: Regular, Medium, and
+Bold (with corresponding italics).  GoMono is available in regular and bold,
+with italics.")
+    (license (list license:bsd-3 license:lppl))))
 
 (define-public texlive-gost
   (package
@@ -9619,6 +13462,39 @@ styles (which do not conform to current standards) are retained for backwards
 compatibility.")
     (license license:lppl1.3c)))
 
+(define-public texlive-gothic
+  (package
+    (name "texlive-gothic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gothic/"
+                   "fonts/source/public/gothic/"
+                   "fonts/tfm/public/gothic/"
+                   "source/fonts/gothic/")
+             (base32
+              "08hqp2a0ch67d38p2jca6cvx72vc6dagb04a9w6ff7dniqp6gps2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    ;; FIXME: Font metrics generation fails with "! Strange path (turning
+    ;; number is zero)." error.
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'generate-font-metrics))))
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/gothic")
+    (synopsis "Collection of old German-style fonts")
+    (description
+     "This package provides a collection of fonts that reproduce those used in
+old German printing and handwriting.  The set comprises Gothic, Schwabacher
+and Fraktur fonts, a pair of handwriting fonts, Sutterlin and Schwell, and
+a font containing decorative initials.  In addition, there are two re-encoding
+packages for Haralambous's fonts, providing T1, using virtual fonts, and OT1
+and T1, using Metafont.")
+    ;; This is a collection of packages, with various licenses.
+    (license (list license:lppl1.2+ license:lppl1.3c license:public-domain))))
+
 (define-public texlive-gotoh
   (package
     (name "texlive-gotoh")
@@ -9638,6 +13514,29 @@ compatibility.")
 The package also provides an interface to control various settings including
 algorithm parameters.")
     (license license:expat)))
+
+(define-public texlive-greenpoint
+  (package
+    (name "texlive-greenpoint")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/greenpoint/"
+                   "fonts/source/public/greenpoint/"
+                   "fonts/tfm/public/greenpoint/")
+             (base32
+              "1y5an7lgx975ppb8s1abx494s4m115k137f82hy08iwdx9l1plj5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/greenpoint")
+    (synopsis "Green Point logo")
+    (description
+     "This package provides a Metafont-implementation of the logo commonly
+known as @emph{Der Grune Punkt} (``The Green Point'').  In Austria, it can be
+found on nearly every bottle.  It should not be confused with the Recycle
+logo.")
+    (license license:gpl3+)))
 
 (define-public texlive-gregoriotex
   (package
@@ -9664,6 +13563,30 @@ on a computer.  Gregorio's main job is to convert a gabc file (simple text
 representation of a score) into a GregorioTeX file, which makes TeX able to
 create a PDF of your score.")
     (license license:gpl3)))
+
+(define-public texlive-grotesq
+  (package
+    (name "texlive-grotesq")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/grotesq/"
+                   "fonts/afm/urw/grotesq/"
+                   "fonts/map/dvips/grotesq/"
+                   "fonts/tfm/urw/grotesq/"
+                   "fonts/type1/urw/grotesq/"
+                   "fonts/vf/urw/grotesq/"
+                   "tex/latex/grotesq/")
+             (base32
+              "12q0n6z442j725drp3919k2qk7kg9fas4cqz415a8lj1nmvg60i4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/urw-grotesq")
+    (synopsis "URW Grotesq font pack for LaTeX")
+    (description
+     "The directory contains a copy of the Type 1 font URW Grotesq 2031
+Bold, with supporting files for use with (La)TeX.")
+    (license license:gpl3+)))
 
 (define-public texlive-grundgesetze
   (package
@@ -9727,6 +13650,30 @@ environment @code{stammbaum}, wherein all elements of the scheme are defined.
 Afterwards all necessary dimensions are calculated and the scheme is drawn.
 Currently two steps of symmetry reduction are supported.")
     (license license:lppl)))
+
+(define-public texlive-gudea
+  (package
+    (name "texlive-gudea")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/gudea/"
+                   "fonts/enc/dvips/gudea/"
+                   "fonts/map/dvips/gudea/"
+                   "fonts/tfm/public/gudea/"
+                   "fonts/type1/public/gudea/"
+                   "fonts/vf/public/gudea/"
+                   "tex/latex/gudea/")
+             (base32
+              "0kj53idgxyqwishg0vibhhrj443016z61c0jl7rx91a508vbwbn2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gudea")
+    (synopsis "Gudea font face with support for LaTeX and pdfLaTeX")
+    (description
+     "This package provides the Gudea family of fonts designed by Agustina
+Mingote, with support for LaTeX and pdfLaTeX.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-guide-to-latex
   (package
@@ -9876,6 +13823,73 @@ manipulation, and tables.")
      "This package provides utility programs for Polish users of TeX.  These
 programs are provided as sources, not installed in the @file{bin}
 directories.")
+    (license license:public-domain)))
+
+(define-public texlive-hacm
+  (package
+    (name "texlive-hacm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/hacm/"
+                   "fonts/map/dvips/hacm/"
+                   "fonts/tfm/public/hacm/"
+                   "fonts/type1/public/hacm/"
+                   "fonts/vf/public/hacm/"
+                   "tex/latex/hacm/")
+             (base32
+              "19n0mlb96ix4vlqaw95fgwah7mbn80l6jm1dim8sigagmhh3bimd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hacm")
+    (synopsis "Font support for the Arka language")
+    (description
+     "The package supports typesetting @emph{hacm}, the alphabet of the
+constructed language Arka.  The bundle provides nine official fonts, in Adobe
+Type 1 format.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-hamnosys
+  (package
+    (name "texlive-hamnosys")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/hamnosys/"
+                   "fonts/truetype/public/hamnosys/"
+                   "source/fonts/hamnosys/"
+                   "tex/latex/hamnosys/")
+             (base32
+              "1iilp1npy23azk7gjb3m6g9p9f853lbpn9cvply90g2s9jdw0bd9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hamnosys")
+    (synopsis "Font for sign languages")
+    (description
+     "The Hamburg Notation System, HamNoSys for short, is a system for the
+phonetic transcription of signed languages.  This package makes HamNoSys
+available in XeLaTeX and LuaLaTeX.  The package provides a Unicode font for
+rendering HamNoSys symbols as well as three methods for entering them.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-hands
+  (package
+    (name "texlive-hands")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "fonts/source/public/hands/"
+                   "fonts/tfm/public/hands/")
+             (base32
+              "0x0vdn7hq6k7wr7yxn8pnkvjhjq3mfl781ijrs2mpvjqygqffzag")))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/hands")
+    (synopsis "Pointing hand font")
+    (description
+     "This package provides right- and left-pointing hands in both
+black-on-white and white-on-black realisation.  The font is distributed as
+Metafont source.")
     (license license:public-domain)))
 
 (define-public texlive-hanoi
@@ -10097,6 +14111,49 @@ makes full use of all BibTeX fields provided by Discover High-Energy
 Physics.")
     (license license:lppl1.3c)))
 
+(define-public texlive-hep-font
+  (package
+    (name "texlive-hep-font")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/hep-font/"
+                   "source/fonts/hep-font/"
+                   "tex/latex/hep-font/")
+             (base32
+              "0wf39qf896abj0ypgz0655pm055ywch3jlpnxd8pgaip6igbs5g9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hep-font")
+    (synopsis "Latin modern extended by Computer Modern")
+    (description
+     "The @code{hep-font} package loads standard font packages and extends the
+usual Latin Modern implementations by replacing missing fonts with Computer
+Modern counterparts.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-hep-math-font
+  (package
+    (name "texlive-hep-math-font")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/hep-math-font/"
+                   "source/fonts/hep-math-font/"
+                   "tex/latex/hep-math-font/")
+             (base32
+              "07lb2sxzdff9arpfksz186dvpgr6slfz637xinhf95npbylpyww3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hep-math-font")
+    (synopsis "Extended Greek and sans-serif math")
+    (description
+     "The @code{hep-math-font} package adjust the math fonts to be sans-serif
+if the document is sans-serif.  Additionally Greek letters are redefined to be
+always italic and upright in math and text mode respectively.  Some math font
+macros are adjusted to give more consistently the naively expected results.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-hep-reference
   (package
     (name "texlive-hep-reference")
@@ -10226,6 +14283,54 @@ adds a collection of useful @acronym{HEP, High Energy Physics} units to the
 existing SIunits set.")
     (license license:lppl)))
 
+(define-public texlive-heros-otf
+  (package
+    (name "texlive-heros-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/heros-otf/"
+                   "tex/latex/heros-otf/")
+             (base32
+              "17ac8a8r5hvf76lifap070c4746jdhva9arcn1s0bqrs6kydfm56")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/heros-otf")
+    (synopsis "Using the OpenType fonts TeX Gyre Heros")
+    (description
+     "This package can only be used with LuaLaTeX or XeLaTeX.  It does the
+font setting for the OpenType font TeX Gyre Heros.  The condensed versions of
+the fonts are also supported.  The missing typefaces for slanted text are
+defined.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-heuristica
+  (package
+    (name "texlive-heuristica")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/heuristica/"
+                   "fonts/enc/dvips/heuristica/"
+                   "fonts/map/dvips/heuristica/"
+                   "fonts/opentype/public/heuristica/"
+                   "fonts/tfm/public/heuristica/"
+                   "fonts/type1/public/heuristica/"
+                   "fonts/vf/public/heuristica/"
+                   "tex/latex/heuristica/")
+             (base32
+              "0jl7mrhbm5z8dncin65qlpdrmkix5cff8h307h4gg5bzcjgsbb4a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/heuristica")
+    (synopsis "Fonts extending Utopia, with LaTeX support files")
+    (description
+     "The fonts extend the Utopia set with Cyrillic glyphs, additional figure
+styles, ligatures and Small Caps in Regular style only.  Macro support, and
+maths fonts that match the Utopia family, are provided by the Fourier and the
+Mathdesign font packages.")
+    (license license:silofl1.1)))
+
 (define-public texlive-hexboard
   (package
     (name "texlive-hexboard")
@@ -10264,6 +14369,78 @@ and XeTeX, that provides functionality for drawing Hex boards and games.")
 Hein and independently by the mathematician John Nash.  This package defines
 an environment that enables the user to draw such a game in a trivial way.")
     (license license:lppl)))
+
+(define-public texlive-hfbright
+  (package
+    (name "texlive-hfbright")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/hfbright/"
+                   "fonts/afm/public/hfbright/"
+                   "fonts/enc/dvips/hfbright/"
+                   "fonts/map/dvips/hfbright/"
+                   "fonts/type1/public/hfbright/")
+             (base32
+              "1aw4h2law9q7sn2ppf3pxdazsk9kypss3chvca3741w8bzhxq5qr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hfbright")
+    (synopsis "@code{hfbright} fonts")
+    (description
+     "These are Adobe Type 1 versions of the OT1-encoded and maths parts of
+the Computer Modern Bright fonts.")
+    (license license:lppl)))
+
+(define-public texlive-hfoldsty
+  (package
+    (name "texlive-hfoldsty")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/hfoldsty/"
+                   "fonts/tfm/public/hfoldsty/"
+                   "fonts/vf/public/hfoldsty/"
+                   "source/fonts/hfoldsty/"
+                   "tex/latex/hfoldsty/")
+             (base32
+              "0skzw845i1b3lq76m4an4mpkm2w82hlpirnx4pckz3138nr1rlpf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hfoldsty")
+    (synopsis "Old style numerals with EC fonts")
+    (description
+     "The @code{hfoldsty} package provides virtual fonts for using old-style
+figures with the European Computer Modern fonts.  It does a similar job as the
+@code{eco} package but includes a couple of improvements, i.e., better kerning
+with guillemets, and support for character protruding using the
+@code{pdfcprot} package.")
+    (license license:gpl3+)))
+
+(define-public texlive-hindmadurai
+  (package
+    (name "texlive-hindmadurai")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/hindmadurai/"
+                   "fonts/enc/dvips/hindmadurai/"
+                   "fonts/map/dvips/hindmadurai/"
+                   "fonts/opentype/public/hindmadurai/"
+                   "fonts/tfm/public/hindmadurai/"
+                   "fonts/type1/public/hindmadurai/"
+                   "fonts/vf/public/hindmadurai/"
+                   "tex/latex/hindmadurai/")
+             (base32
+              "15bf8hka7f04l7zpkaav1azbailjv21w15iidbaxx9n2d4plf2kk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hindmadurai")
+    (synopsis "HindMadurai font face with support for LaTeX and pdfLaTeX")
+    (description
+     "This package provides the HindMadurai family of fonts designed by the
+Indian Type Foundry, with support for LaTeX and pdfLaTeX.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-historische-zeitschrift
   (package
@@ -10468,6 +14645,32 @@ uses by default the Arabic fonts Scheherazade and ALM fixed, the only
 monospaced Arabic font.  The package only works with LuaLaTeX or XeLaTeX.")
     (license license:lppl1.3c)))
 
+(define-public texlive-ibarra
+  (package
+    (name "texlive-ibarra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ibarra/"
+                   "fonts/enc/dvips/ibarra/"
+                   "fonts/map/dvips/ibarra/"
+                   "fonts/opentype/public/ibarra/"
+                   "fonts/tfm/public/ibarra/"
+                   "fonts/type1/public/ibarra/"
+                   "fonts/vf/public/ibarra/"
+                   "tex/latex/ibarra/")
+             (base32
+              "0gfvrb1dm2hw8j10l93xv0rrd7kar2009lycsvmw66m1a31c0yd9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ibarra")
+    (synopsis "LaTeX support for the Ibarra Real Nova family of fonts")
+    (description
+     "The Ibarra Real Nova is a revival of a typeface designed by Geronimo Gil
+for the publication of @emph{Don Quixote} for the Real Academia de la Lengua
+in 1780.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-ibrackets
   (package
     (name "texlive-ibrackets")
@@ -10528,6 +14731,30 @@ which are called indices locorum citatorum.  It relies on a specific
 files.")
     (license license:expat)))
 
+(define-public texlive-ifsym
+  (package
+    (name "texlive-ifsym")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ifsym/"
+                   "fonts/source/public/ifsym/"
+                   "fonts/tfm/public/ifsym/" "tex/latex/ifsym/")
+             (base32
+              "07r16sgqc65wf8c8ijgmnmwq50yrlvjlmzbnk0czgnwqrbdz642g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/ifsym")
+    (synopsis "Collection of symbols")
+    (description
+     "This package provides a set of symbol fonts, written in Metafont, offering
+(respectively) clock-face symbols, geometrical symbols, weather symbols,
+mountaineering symbols, electronic circuit symbols and a set of miscellaneous
+symbols.  A LaTeX package is provided, that allows the user to load only those
+symbols needed in a document.")
+    (license license:lppl1.0+)))
+
 (define-public texlive-ijqc
   (package
     (name "texlive-ijqc")
@@ -10545,6 +14772,33 @@ files.")
      "@file{ijqc.bst} is a BibTeX style file to support publication in Wiley's
 @emph{International Journal of Quantum Chemistry}.")
     (license license:lppl)))
+
+(define-public texlive-imfellenglish
+  (package
+    (name "texlive-imfellenglish")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/imfellenglish/"
+                   "fonts/enc/dvips/imfellenglish/"
+                   "fonts/map/dvips/imfellenglish/"
+                   "fonts/opentype/iginomarini/imfellenglish/"
+                   "fonts/tfm/iginomarini/imfellenglish/"
+                   "fonts/type1/iginomarini/imfellenglish/"
+                   "fonts/vf/iginomarini/imfellenglish/"
+                   "tex/latex/imfellenglish/")
+             (base32
+              "0pw4nsw4pl1nf99j58sy37064712by6kqcb40xkrcl5d9czx45bh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/imfellenglish")
+    (synopsis "IM Fell English fonts with LaTeX support")
+    (description
+     "Igino Marini has implemented digital revivals of fonts bequeathed to
+Oxford University by Dr.@: John Fell, Bishop of Oxford and Dean of Christ
+Church in 1686.  This package provides the English family, consisting of
+Roman, Italic and Small-Cap fonts.")
+    (license license:silofl1.1)))
 
 (define-public texlive-impatient
   (package
@@ -10658,6 +14912,31 @@ conference proceedings.  The class uses the XePersian package.")
 installed.")
     (license license:lppl1.3c)))
 
+(define-public texlive-initials
+  (package
+    (name "texlive-initials")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/initials/"
+                   "dvips/initials/"
+                   "fonts/afm/public/initials/"
+                   "fonts/map/dvips/initials/"
+                   "fonts/tfm/public/initials/"
+                   "fonts/type1/public/initials/"
+                   "tex/latex/initials/")
+             (base32
+              "0hbvk2qjrhcx2l8nkca1s5lj65k5xd2v2fnk4zjxjpwdcwxf09zp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/initials")
+    (synopsis "Adobe Type 1 decorative initial fonts")
+    (description
+     "This package provides Adobe Type 1 decorative initial fonts.  For each
+font, at least a @file{.pfb} and a @file{.tfm} file is provided, with an
+@file{.fd} file for use with LaTeX.")
+    (license license:lppl)))
+
 (define-public texlive-inlinebib
   (package
     (name "texlive-inlinebib")
@@ -10696,6 +14975,35 @@ footnotes.")
      "This package will introduce the operations related to installing TeX
 Live and mainly introducing command line operations, in Chinese.")
     (license license:lppl1.3c)))
+
+(define-public texlive-inter
+  (package
+    (name "texlive-inter")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/inter/"
+                   "fonts/enc/dvips/inter/"
+                   "fonts/map/dvips/inter/"
+                   "fonts/opentype/public/inter/"
+                   "fonts/tfm/public/inter/"
+                   "fonts/type1/public/inter/"
+                   "fonts/vf/public/inter/"
+                   "tex/latex/inter/")
+             (base32
+              "1rvh2f066lkdbr8754r0a016k9imcjpia9wdi46x70d96wgcb5vm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/inter")
+    (synopsis "Inter font face with support for LaTeX, XeLaTeX, and LuaLaTeX")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Inter Sans family of fonts, designed by Rasmus Andersson.  Inter is
+a typeface specially designed for user interfaces with focus on high
+legibility of small-to-medium sized text on computer screens.  The family
+features a tall x-height to aid in readability of mixed-case and lower-case
+text.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-interval
   (package
@@ -10812,6 +15120,29 @@ journals, including @emph{Journal of Physics}.")
 proportional width glyphs for Western characters.")
     (license license:ipa)))
 
+(define-public texlive-ipaex-type1
+  (package
+    (name "texlive-ipaex-type1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ipaex-type1/"
+                   "fonts/enc/dvips/ipaex-type1/"
+                   "fonts/map/dvips/ipaex-type1/"
+                   "fonts/tfm/public/ipaex-type1/"
+                   "fonts/type1/public/ipaex-type1/"
+                   "tex/latex/ipaex-type1/")
+             (base32
+              "123m8i8gvyq3cncn8s11qzk976ml89aqcyapx2zs6phg9h090bc8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ipaex-type1")
+    (synopsis "IPAex fonts converted to Type-1 format Unicode sub-fonts")
+    (description
+     "The package contains the IPAex Fonts converted into Unicode sub-fonts in
+Type 1 format, which is most suitable for use with the CJK package.")
+    (license license:ipa)))
+
 (define-public texlive-is-bst
   (package
     (name "texlive-is-bst")
@@ -10876,6 +15207,48 @@ of ``Capitolo 1'', that is, spelling the number in words instead of the usual
 digit form.  This package provides support for spelling out numbers in Italian
 words, both in cardinal and in ordinal form.")
     (license license:lppl)))
+
+(define-public texlive-jablantile
+  (package
+    (name "texlive-jablantile")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/jablantile/"
+                   "fonts/source/public/jablantile/")
+             (base32
+              "14cxmph6hhzvb06jdqr6d428p1kg3mvbgw2nk133ggrr2k3wjppg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jablantile")
+    (synopsis "Metafont version of tiles in the style of Slavik Jablan")
+    (description
+     "This is a Metafont font to implement the modular tiles described by
+Slavik Jablan. ")
+    (license license:public-domain)))
+
+(define-public texlive-jamtimes
+  (package
+    (name "texlive-jamtimes")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jamtimes/"
+                   "fonts/map/dvips/jamtimes/"
+                   "fonts/tfm/public/jamtimes/"
+                   "fonts/vf/public/jamtimes/"
+                   "tex/latex/jamtimes/")
+             (base32
+              "03ww7w963hgsxazlrabg4f0h35rd8jbr9ga11lrhqf66b6zvpyv1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jamtimes")
+    (synopsis "Expanded Times Roman fonts")
+    (description
+     "The package offers LaTeX support for the expanded Times Roman font,
+which has been used for many years in the @emph{Journal d'Analyse
+Mathematique}.  Mathematics support is based on the Belleek fonts.")
+    (license license:bsd-3)))
 
 (define-public texlive-jbact
   (package
@@ -11028,6 +15401,58 @@ fully conforms with the @emph{Journal of Neuroscience} citation style.  It
 should be characterised as an author-date citation style; a BibTeX style and
 a LaTeX package are provided.")
     (license license:lppl)))
+
+(define-public texlive-josefin
+  (package
+    (name "texlive-josefin")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/josefin/"
+                   "fonts/enc/dvips/josefin/"
+                   "fonts/map/dvips/josefin/"
+                   "fonts/tfm/public/josefin/"
+                   "fonts/truetype/public/josefin/"
+                   "fonts/type1/public/josefin/"
+                   "fonts/vf/public/josefin/"
+                   "tex/latex/josefin/")
+             (base32
+              "1ja91mkcpgvdycqxlfa1xfay427b3d7akq8pcdwvgakzgf9bkb1s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/josefin")
+    (synopsis "Josefin fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Josefin Sans family of fonts, designed by Santiago Orozco.  Josefin Sans
+is available in seven weights, with corresponding italics.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-junicode
+  (package
+    (name "texlive-junicode")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/junicode/"
+                   "fonts/enc/dvips/junicode/"
+                   "fonts/map/dvips/junicode/"
+                   "fonts/tfm/public/junicode/"
+                   "fonts/truetype/public/junicode/"
+                   "fonts/vf/public/junicode/"
+                   "tex/latex/junicode/")
+             (base32
+              "0i19bycw48mygvjm6ysawghj7wgb7md7gsvnrbhhfprmabl47j49")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/junicode")
+    (synopsis "TrueType font for medievalists")
+    (description
+     "Junicode is a TrueType font with many OpenType features for
+antiquarians (especially medievalists) based on typefaces used by the Oxford
+Press in the late 17th and early 18th centuries.  It works well with
+Xe(La)TeX.")
+    (license license:silofl1.1)))
 
 (define-public texlive-jupynotex
   (package
@@ -11250,6 +15675,30 @@ document author needs.  So it can be a useful guide for beginners as well as
 a reference manual for advanced users.")
     (license license:cc-by-sa4.0)))
 
+(define-public texlive-kixfont
+  (package
+    (name "texlive-kixfont")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/kixfont/"
+                   "fonts/source/public/kixfont/"
+                   "fonts/tfm/public/kixfont/")
+             (base32
+              "0w6fjsws26plm9p74c3qcvvgx5hhlabfbhpc046rb31183f7h0q5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/kixfont")
+    (synopsis "Font for KIX codes")
+    (description
+     "The KIX code is a barcode-like format used by the Dutch PTT to encode
+country codes, zip codes and street numbers in a machine-readable format.  If
+printed below the address line on bulk mailings, a discount can be obtained.
+The font is distributed in Metafont format, and covers the numbers and
+upper-case letters.")
+    (license license:public-domain)))
+
 (define-public texlive-kotex-oblivoir
   (package
     (name "texlive-kotex-oblivoir")
@@ -11451,6 +15900,33 @@ KSFH (@emph{Katholische Stiftungsfachhochschule}) Munich.  BibTeX entries in
 It provides a tabular-like input syntax and support for drawing bundles
 (implicants) around adjacent values.")
     (license license:lppl1.3c)))
+
+(define-public texlive-lato
+  (package
+    (name "texlive-lato")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/lato/"
+                   "fonts/enc/dvips/lato/"
+                   "fonts/map/dvips/lato/"
+                   "fonts/tfm/typoland/lato/"
+                   "fonts/truetype/typoland/lato/"
+                   "fonts/type1/typoland/lato/"
+                   "fonts/vf/typoland/lato/"
+                   "tex/latex/lato/")
+             (base32
+              "1ykwm108zh79dv96axl74izzhzvmbx74pcl46i99ix2qpicyvcf7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lato")
+    (synopsis "Lato font family and LaTeX support")
+    (description
+     "Lato is a sanserif typeface family designed by Lukasz Dziedzic.  This
+font, which includes five weights (hairline, light, regular, bold and black),
+is available as TrueType files.  The package provides support for this font in
+LaTeX.")
+    (license (list license:silofl1.1 license:lppl1.3c))))
 
 (define-public texlive-l2picfaq
   (package
@@ -11859,6 +16335,27 @@ with the symbols.  While it is possible to set arrows over longer strings of
 symbols, the focus lies on single characters.")
     (license license:lppl1.3+)))
 
+(define-public texlive-lexend
+  (package
+    (name "texlive-lexend")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/lexend/"
+                   "fonts/truetype/public/lexend/"
+                   "tex/latex/lexend/")
+             (base32
+              "0jk9m3zb3xik463nwsjh003ly3xrrph7kam519b9lyqybyxb16xs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lexend")
+    (synopsis "Lexend fonts for XeLaTeX and LuaLaTeX")
+    (description
+     "The purpose of this package is pretty straightforward: the Lexend font
+collection has been designed by Dr.@: Bonnie Shaver-Troup and Thomas Jockin to
+make reading easier for everyone.")
+    (license (list license:lppl1.3c license:silofl1.1))))
+
 (define-public texlive-lexikon
   (package
     (name "texlive-lexikon")
@@ -11896,6 +16393,303 @@ provisions conveniently and uniformly.  The package also allows the user to
 add cited Acts to a nomenclature list (automatically), and to build specific
 indexes for each cited Act.")
     (license license:lppl1.3+)))
+
+(define-public texlive-lfb
+  (package
+    (name "texlive-lfb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/lfb/" "fonts/source/public/lfb/"
+                   "fonts/tfm/public/lfb/")
+             (base32
+              "1n0cf7igvhqnmdk8hjj1lahzr3iaiaqsq01pxkphg6myab127x71")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/lfb")
+    (synopsis "Greek font with normal and bold variants")
+    (description
+     "This is a Greek font written in Metafont, with inspiration from the
+Bodoni typefaces in old books.  It is stylistically a little more exotic than
+the standard textbook Greek fonts, particularly in glyphs like the lowercase
+rho and kappa.  It aims for a rather calligraphic feel, but seems to blend
+well with Computer Modern.  There is a ligature scheme which automatically
+inserts the breathings required for ancient texts, making the input text more
+readable than in some schemes.")
+    (license license:lppl)))
+
+(define-public texlive-libertinegc
+  (package
+    (name "texlive-libertinegc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/libertinegc/"
+                   "fonts/enc/dvips/libertinegc/"
+                   "fonts/map/dvips/libertinegc/"
+                   "fonts/tfm/public/libertinegc/"
+                   "tex/latex/libertinegc/")
+             (base32
+              "17712j1gb38l4c5b2br7db8ix36kc8kwfpa7d6ass32wz5jck656")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/libertinegc")
+    (synopsis "Libertine add-on to support Greek and Cyrillic")
+    (description
+     "The package provides LaTeX support files to access the Greek and
+Cyrillic glyphs in Linux Libertine.  It functions as an add-on to the
+@code{libertine} package, using filenames and macro names that are compatible
+with that package.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-libertinus
+  (package
+    (name "texlive-libertinus")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/libertinus/"
+                   "tex/latex/libertinus/")
+             (base32
+              "13m20jkrf0sp39f0ihc0fw7spzc3gys5xdc720r5gzdnbdqdvih4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/libertinus")
+    (synopsis
+     "Use the correct @code{libertinus} package according to current TeX
+engine")
+    (description
+     "This package is only a wrapper for the two packages @code{libertinus-type1}
+(pdfLaTeX) and @code{libertinus-otf} (LuaLaTeX and XeLaTeX).  The Libertinus
+fonts are similiar to Libertine and Biolinum, but come with math symbols.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-libertinus-fonts
+  (package
+    (name "texlive-libertinus-fonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/libertinus-fonts/"
+                   "fonts/opentype/public/libertinus-fonts/")
+             (base32
+              "1g4y3v7i8bs1677rj56v3kw5q3nkl9ksljmly4m7n42dlpggxiaj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/libertinus-fonts")
+    (synopsis "Libertinus font family")
+    (description
+     "This is a fork of the Linux Libertine and Linux Biolinum fonts that
+started as an OpenType math companion of the Libertine font family, but grown
+as a full fork.  The family consists of Libertinus Serif, Libertinus Sans,
+Libertinus Mono, and Libertinus Math, an OpenType math font for use in
+OpenType math-capable applications.")
+    (license license:silofl1.1)))
+
+(define-public texlive-libertinus-otf
+  (package
+    (name "texlive-libertinus-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/libertinus-otf/"
+                   "tex/latex/libertinus-otf/")
+             (base32
+              "0rd4jr67j9744fm18vps0brwsa9880jdq4vj4s7dl80aylp8djz4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/libertinus-otf")
+    (synopsis "Support for Libertinus OpenType")
+    (description
+     "This package offers LuaLaTeX and XeLaTeX support for the Libertinus
+OpenType fonts.  Missing fonts are defined via several font feature settings.
+The Libertinus fonts are similiar to Libertine and Biolinum, but come with
+math symbols.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-libertinus-type1
+  (package
+    (name "texlive-libertinus-type1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/libertinus-type1/"
+                   "fonts/enc/dvips/libertinus-type1/"
+                   "fonts/map/dvips/libertinus-type1/"
+                   "fonts/tfm/public/libertinus-type1/"
+                   "fonts/type1/public/libertinus-type1/"
+                   "fonts/vf/public/libertinus-type1/"
+                   "tex/latex/libertinus-type1/")
+             (base32
+              "1vzvli3sbyxdsqzb3qk03mbl0qg4q7ihipddd1n6bdbjriv67zz6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/libertinus-type1")
+    (synopsis "Support for using Libertinus fonts with LaTeX")
+    (description
+     "This package provides support for use of Libertinus fonts with
+traditional processing engines (LaTeX with Dvips or Dvipdfmx, or pdfLaTeX).")
+    (license (list license:gpl2 license:silofl1.1 license:lppl))))
+
+(define-public texlive-libertinust1math
+  (package
+    (name "texlive-libertinust1math")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/libertinust1math/"
+                   "fonts/afm/public/libertinust1math/"
+                   "fonts/enc/dvips/libertinust1math/"
+                   "fonts/map/dvips/libertinust1math/"
+                   "fonts/tfm/public/libertinust1math/"
+                   "fonts/type1/public/libertinust1math/"
+                   "fonts/vf/public/libertinust1math/"
+                   "tex/latex/libertinust1math/")
+             (base32
+              "0hjv2p2sj1wmxg727490m8jn08p1alc9gyfigvy0k65c5lghhs7s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/libertinust1math")
+    (synopsis "Type 1 font and LaTeX support for Libertinus Math")
+    (description
+     "The package provides a Type 1 version of Libertinus Math, with a number
+of additions and changes, plus LaTeX support files that allow it to serve as
+a math accompaniment to Libertine under LaTeX.  In addition, with option
+@code{sansmath}, it can function as a standalone math font with sans serif
+Roman and Greek letters.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-librebaskerville
+  (package
+    (name "texlive-librebaskerville")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/librebaskerville/"
+                   "fonts/enc/dvips/librebaskerville/"
+                   "fonts/map/dvips/librebaskerville/"
+                   "fonts/tfm/impallari/librebaskerville/"
+                   "fonts/truetype/impallari/librebaskerville/"
+                   "fonts/type1/impallari/librebaskerville/"
+                   "fonts/vf/impallari/librebaskerville/"
+                   "tex/latex/librebaskerville/")
+             (base32
+              "1rjac2w8q0m4a6qcdjphv3rgws19vbg65wv6gk1frl0d14bijqdy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/librebaskerville")
+    (synopsis "Libre Baskerville family of fonts with LaTeX support")
+    (description
+     "This package provides the Libre Baskerville family of fonts, designed by
+Pablo Impallari, for use with LaTeX, pdfLaTeX, XeLaTeX or LuaLaTeX.  It is
+primarily intended to be a web font but is also attractive as a text font.
+A BoldItalic variant has been artificially generated.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-librebodoni
+  (package
+    (name "texlive-librebodoni")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/librebodoni/"
+                   "fonts/enc/dvips/librebodoni/"
+                   "fonts/map/dvips/librebodoni/"
+                   "fonts/opentype/impallari/librebodoni/"
+                   "fonts/tfm/impallari/librebodoni/"
+                   "fonts/type1/impallari/librebodoni/"
+                   "fonts/vf/impallari/librebodoni/"
+                   "tex/latex/librebodoni/")
+             (base32
+              "1skyjmb0drrs6z8bhmdyx7q9wqz9vbyi6nkif5rj95kqxxwznkyz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/librebodoni")
+    (synopsis "Libre Bodoni fonts with LaTeX support")
+    (description
+     "The Libre Bodoni fonts are designed by Pablo Impallari and Rodrigo
+Fuenzalida, based on the 19th century Morris Fuller Benton's.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-librecaslon
+  (package
+    (name "texlive-librecaslon")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/librecaslon/"
+                   "fonts/enc/dvips/librecaslon/"
+                   "fonts/map/dvips/librecaslon/"
+                   "fonts/opentype/impallari/librecaslon/"
+                   "fonts/tfm/impallari/librecaslon/"
+                   "fonts/type1/impallari/librecaslon/"
+                   "fonts/vf/impallari/librecaslon/"
+                   "tex/latex/librecaslon/")
+             (base32
+              "16lmaa0rsrgrib00r8rsj9librkybq2zf1as11l3hiw5zcq3wj0w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/librecaslon")
+    (synopsis "Libre Caslon fonts, with LaTeX support")
+    (description
+     "The Libre Caslon fonts are designed by Pablo Impallari.  Although they
+have been designed for use as web fonts, they work well as conventional text
+fonts.  An artificially generated BoldItalic variant has been added.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-librefranklin
+  (package
+    (name "texlive-librefranklin")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/librefranklin/"
+                   "fonts/enc/dvips/librefranklin/"
+                   "fonts/map/dvips/librefranklin/"
+                   "fonts/opentype/impallari/librefranklin/"
+                   "fonts/tfm/impallari/librefranklin/"
+                   "fonts/type1/impallari/librefranklin/"
+                   "fonts/vf/impallari/librefranklin/"
+                   "tex/latex/librefranklin/")
+             (base32
+              "1vkc2sj7689zn2rxc03q2spvs10865jrnv37s9dgw35hifb69m5s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/librefranklin")
+    (synopsis "LaTeX support for the Libre-Franklin family of fonts")
+    (description
+     "Libre Franklin is an interpretation and expansion based on the 1912
+Morris Fuller Benton's classic, designed by Pablo Impallari, Rodrigo
+Fuenzalida and Nhung Nguyen.")
+    (license (list license:lppl license:silofl1.1))))
+
+(define-public texlive-libris
+  (package
+    (name "texlive-libris")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/libris/"
+                   "fonts/afm/arkandis/libris/"
+                   "fonts/enc/dvips/libris/"
+                   "fonts/map/dvips/libris/"
+                   "fonts/tfm/arkandis/libris/"
+                   "fonts/type1/arkandis/libris/"
+                   "fonts/vf/arkandis/libris/"
+                   "source/fonts/libris/"
+                   "tex/latex/libris/")
+             (base32
+              "0ky2b4knhfd51yz6ycsly6q5rz2fk4h3rhnxmcx3qnhnai6cf9fc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/libris")
+    (synopsis "Libris ADF fonts, with LaTeX support")
+    (description
+     "LibrisADF is a sans-serif family designed to mimic Lydian.  The bundle
+includes: fonts, in Adobe Type 1, TrueType and OpenType formats, and LaTeX
+support macros, for use with the Type 1 versions of the fonts.")
+    (license license:gpl3+)))
 
 (define-public texlive-lie-hasse
   (package
@@ -11949,6 +16743,32 @@ document.  The package uses OpenType fonts, and as a result must be compiled
 with LuaLaTeX or XeLaTeX.")
     (license license:lppl1.3c)))
 
+(define-public texlive-lineara
+  (package
+    (name "texlive-lineara")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/lineara/"
+                   "fonts/afm/public/lineara/"
+                   "fonts/map/dvips/lineara/"
+                   "fonts/tfm/public/lineara/"
+                   "fonts/type1/public/lineara/"
+                   "source/fonts/lineara/"
+                   "tex/latex/lineara/")
+             (base32
+              "1k3frdshsc2cj1y61bcpz9fcs1rw1rkzh8fk3fzbaqyqmyka3yl7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lineara")
+    (synopsis "Linear A script fonts")
+    (description
+     "The @code{lineara} package provides a simple interface to two fonts
+which include all known symbols, simple and complex, of the Linear A script.
+This way one can easily replicate Linear A texts using modern typographic
+technology.")
+    (license license:lppl)))
+
 (define-public texlive-ling-macros
   (package
     (name "texlive-ling-macros")
@@ -11988,6 +16808,32 @@ example numbering, indentations, indexed brackets, and the @samp{*} in
 grammaticality judgments.  The @code{ps-trees} package provides linguistic
 trees.")
     (license license:lppl)))
+
+(define-public texlive-linguisticspro
+  (package
+    (name "texlive-linguisticspro")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/linguisticspro/"
+                   "fonts/enc/dvips/linguisticspro/"
+                   "fonts/map/dvips/linguisticspro/"
+                   "fonts/opentype/public/linguisticspro/"
+                   "fonts/tfm/public/linguisticspro/"
+                   "fonts/type1/public/linguisticspro/"
+                   "fonts/vf/public/linguisticspro/"
+                   "tex/latex/linguisticspro/")
+             (base32
+              "0yyclkwsa4ibsdc60mw22f2skq2wify9ic4lzvkjsaigvq28zj3y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/linguisticspro")
+    (synopsis "LinguisticsPro fonts with LaTeX support")
+    (description
+     "The package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the LinguisticsPro family of fonts.  This family is derived from the Utopia
+Nova font family, by Andreas Nolda.")
+    (license (list license:lppl license:silofl1.1))))
 
 (define-public texlive-listbib
   (package
@@ -12063,6 +16909,34 @@ and @file{latin7.def}.
 texts, particularly @code{Missal} and @code{Breviary} texts.  The package
 assumes availability of Latin typesetting packages.")
     (license license:lppl)))
+
+(define-public texlive-lobster2
+  (package
+    (name "texlive-lobster2")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/lobster2/"
+                   "fonts/enc/dvips/lobster2/"
+                   "fonts/map/dvips/lobster2/"
+                   "fonts/opentype/impallari/lobster2/"
+                   "fonts/tfm/impallari/lobster2/"
+                   "fonts/type1/impallari/lobster2/"
+                   "fonts/vf/impallari/lobster2/"
+                   "tex/latex/lobster2/")
+             (base32
+              "0jq6287n0c0qzcx6jch0d9k7axg119z2p2mw6i3s40jdyg67m3a4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lobster2")
+    (synopsis "Lobster Two fonts, with support for all LaTeX engines")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Lobster Two family of fonts, designed by Pablo Impallari.  This is
+a family of script fonts with many ligatures and terminal forms; for the best
+results, use XeLaTeX or LuaLaTeX.  There are two weights and italic variants
+for both.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-logicproof
   (package
@@ -12171,6 +17045,29 @@ Great Wall of China, Loop the Loop, Rundweg, Gartenzaun, ...),
 
 @end itemize")
     (license license:lppl1.3+)))
+
+(define-public texlive-logix
+  (package
+    (name "texlive-logix")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/logix/"
+                   "fonts/opentype/public/logix/"
+                   "fonts/truetype/public/logix/"
+                   "tex/latex/logix/")
+             (base32
+              "19ak3zfqnx04rb5wcmzc5z3g8sp2wphi83lx9i58y41y3lp2z4kq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/logix")
+    (synopsis "Supplement to the Unicode math symbols")
+    (description
+     "The package provides a Unicode font with over 4,000 symbols to
+supplement the Unicode math symbols.  It is compatible with and
+complements the AMS STIX2 math fonts, but focuses on new symbols and
+symbol variants more suited to work in logic.")
+    (license (list license:silofl1.1 license:lppl1.3c))))
 
 (define-public texlive-lollipop
   (package
@@ -12784,6 +17681,34 @@ of his own packages.")
      "The package reimplements @code{bibentry}, for use in LuaLaTeX.")
     (license license:lppl1.3+)))
 
+(define-public texlive-lxfonts
+  (package
+    (name "texlive-lxfonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/lxfonts/"
+                   "fonts/map/dvips/lxfonts/"
+                   "fonts/source/public/lxfonts/"
+                   "fonts/tfm/public/lxfonts/"
+                   "fonts/type1/public/lxfonts/"
+                   "source/fonts/lxfonts/"
+                   "tex/latex/lxfonts/")
+             (base32
+              "1n7bznkcc1ma2k977306rjg1mlpcspc46xg14abnc2d4k2970bfg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-ec texlive-metafont))
+    (home-page "https://ctan.org/pkg/lxfonts")
+    (synopsis "Set of slide fonts based on CM")
+    (description
+     "The bundle contains the traditional slides fonts revised to be
+completely usable both as text fonts and mathematics fonts; they are fully
+integrate with the new operators, letters, symbols and extensible delimiter
+fonts, as well as with the AMS fonts, all redone with the same stylistic
+parameters.")
+    (license license:lppl)))
+
 (define-public texlive-lyluatex
   (package
     (name "texlive-lyluatex")
@@ -12873,6 +17798,30 @@ classes, @code{fiche} and @code{cours}, useful to create short high school
 documents such as tests or lessons.  The documentation is in French.")
     (license license:gpl3+)))
 
+(define-public texlive-magra
+  (package
+    (name "texlive-magra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/magra/"
+                   "fonts/enc/dvips/magra/"
+                   "fonts/map/dvips/magra/"
+                   "fonts/tfm/public/magra/"
+                   "fonts/type1/public/magra/"
+                   "fonts/vf/public/magra/"
+                   "tex/latex/magra/")
+             (base32
+              "0bbybiv6v05886qydj1c7l2ja520j15jgz6jz4g8qa58ycrls4kl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/magra")
+    (synopsis "Magra font face with support for LaTeX and pdfLaTeX")
+    (description
+     "This package provides the Magra family of fonts designed by FontFuror,
+with support for LaTeX and pdfLaTeX.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-mahjong
   (package
     (name "texlive-mahjong")
@@ -12896,6 +17845,34 @@ and an optional argument of @code{\\mahjong}.  It is primarily aimed at
 Riichi (aka Japanese) Mahjong but can be used to typeset any style of
 mahjong.")
     (license (list license:expat license:cc-by4.0))))
+
+(define-public texlive-marcellus
+  (package
+    (name "texlive-marcellus")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/marcellus/"
+                   "fonts/enc/dvips/marcellus/"
+                   "fonts/map/dvips/marcellus/"
+                   "fonts/tfm/public/marcellus/"
+                   "fonts/truetype/public/marcellus/"
+                   "fonts/type1/public/marcellus/"
+                   "fonts/vf/public/marcellus/"
+                   "tex/latex/marcellus/")
+             (base32
+              "1nnc0v15sjwzivy504lvrrfyzjhha7p42nwp0qqy7pwspb7cqsm5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/marcellus")
+    (synopsis "Marcellus fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Marcellus family of fonts, designed by Brian J. Bonislawsky.  Marcellus is
+a flared-serif family, inspired by classic Roman inscription letterforms.
+There is currently just a regular weight and small-caps.  The regular weight
+will be silently substituted for bold.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-margbib
   (package
@@ -12952,6 +17929,50 @@ Mathématiques Appliquées et Industrielles (SMAI).")
      "This package contains samples for the book @emph{(More) Math into LaTeX},
 4th edition.")
     (license license:public-domain)))
+
+(define-public texlive-mathabx
+  (package
+    (name "texlive-mathabx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/mathabx/"
+                   "fonts/source/public/mathabx/"
+                   "fonts/tfm/public/mathabx/"
+                   "tex/generic/mathabx/")
+             (base32
+              "0kj95jl89wh43b9mfqp05hpa5jqyxca7hp9pfk21js2dhysr7x18")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/mathabx")
+    (synopsis "Three series of mathematical symbols")
+    (description
+     "Mathabx is a set of three mathematical symbols font series.
+They are defined by Metafont code.  The package includes Plain TeX and LaTeX
+support macros.  A version of the fonts, in Adobe Type 1 format, is also
+available.")
+    (license license:lppl)))
+
+(define-public texlive-mathabx-type1
+  (package
+    (name "texlive-mathabx-type1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/mathabx-type1/"
+                   "fonts/map/dvips/mathabx-type1/"
+                   "fonts/type1/public/mathabx-type1/")
+             (base32
+              "1j9aiwxq512bnwjvah06rygd8m6b68dpfkynagad627sfyrblcaa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-mathabx))
+    (home-page "https://ctan.org/pkg/mathabx-type1")
+    (synopsis "Outline version of the @code{mathabx} fonts")
+    (description
+     "This is an Adobe Type 1 outline version of the @code{mathabx} fonts.")
+    (license license:lppl)))
 
 (define-public texlive-mathalpha
   (package
@@ -13230,6 +18251,58 @@ The mazes generated by this package are natural and their solution is not too
 obvious.  The output it based on the @code{picture} environment.")
     (license license:lppl1.3c)))
 
+(define-public texlive-mdputu
+  (package
+    (name "texlive-mdputu")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mdputu/"
+                   "fonts/tfm/public/mdputu/"
+                   "fonts/vf/public/mdputu/"
+                   "tex/latex/mdputu/")
+             (base32
+              "01baplnisdakypsrzcvz1hibqw2gq70hyk2dwgljhwcb14rcxylw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mdputu")
+    (synopsis "Upright digits in Adobe Utopia Italic")
+    (description
+     "The @emph{Annals of Mathematics} uses italics for theorems.  However,
+slanted digits and parentheses look disturbing when surrounded by (upright)
+mathematics.  This package provides virtual fonts with italics and upright
+digits and punctuation, as an extension to Mathdesign's Utopia bundle.")
+    (license license:bsd-3)))
+
+(define-public texlive-mdsymbol
+  (package
+    (name "texlive-mdsymbol")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/mdsymbol/"
+                   "doc/latex/mdsymbol/"
+                   "fonts/enc/dvips/mdsymbol/"
+                   "fonts/map/dvips/mdsymbol/"
+                   "fonts/opentype/public/mdsymbol/"
+                   "fonts/source/public/mdsymbol/"
+                   "fonts/tfm/public/mdsymbol/"
+                   "fonts/type1/public/mdsymbol/"
+                   "source/latex/mdsymbol/"
+                   "tex/latex/mdsymbol/")
+             (base32
+              "1ssvyqyh3k8q2snj8wk0xdbxgnafacsyj4iyh14hrxybknxxqh22")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/mdsymbol")
+    (synopsis "Symbol fonts to match Adobe Myriad Pro")
+    (description
+     "The package provides a font of mathematical symbols, MyriadPro.  The
+font is designed as a companion to Adobe Myriad Pro, but it might also fit
+well with other contemporary typefaces.")
+    (license license:silofl1.1)))
+
 (define-public texlive-mecaso
   (package
     (name "texlive-mecaso")
@@ -13350,6 +18423,35 @@ that represent the memory of a computer program during its execution.")
      "This package provides documentation for Mendex (Japanese index
 processor).")
     (license license:bsd-3)))
+
+(define-public texlive-merriweather
+  (package
+    (name "texlive-merriweather")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/merriweather/"
+                   "fonts/enc/dvips/merriweather/"
+                   "fonts/map/dvips/merriweather/"
+                   "fonts/opentype/sorkin/merriweather/"
+                   "fonts/tfm/sorkin/merriweather/"
+                   "fonts/type1/sorkin/merriweather/"
+                   "fonts/vf/sorkin/merriweather/"
+                   "tex/latex/merriweather/")
+             (base32
+              "1dgjw3ld1srv2irnhn6b592y9q9917y6w1x1kcqb4a7dv8s7wpzj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/merriweather")
+    (synopsis "Merriweather and MerriweatherSans fonts, with LaTeX support")
+    (description
+     "This package provides the Merriweather and MerriweatherSans families of
+fonts, designed by Eben Sorkin, with support for LaTeX, pdfLaTeX, XeLaTeX, and
+LuaLaTeX.  Merriweather features a very large x-height, slightly condensed
+letterforms, a mild diagonal stress, sturdy serifs and open forms.  The Sans
+family closely harmonizes with the weights and styles of the serif family.
+There are four weights and italics for each.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-messagepassing
   (package
@@ -13545,6 +18647,32 @@ equation number if and only if the equation actually has a label, which
 reduces visual clutter.")
     (license license:public-domain)))
 
+(define-public texlive-miama
+  (package
+    (name "texlive-miama")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/miama/"
+                   "fonts/afm/public/miama/"
+                   "fonts/enc/dvips/miama/"
+                   "fonts/map/dvips/miama/"
+                   "fonts/opentype/public/miama/"
+                   "fonts/tfm/public/miama/"
+                   "fonts/type1/public/miama/"
+                   "source/fonts/miama/"
+                   "tex/latex/miama/")
+             (base32
+              "07a2i250himdjnphq39kq08ycl7mgi9v1w3cnsg1q2c7qwwizrkw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/miama")
+    (synopsis "Miama Nueva handwriting font with LaTeX support")
+    (description
+     "Miama Nueva is a handwriting and script font with over 1300 glyphs that
+supports Latin, Cyrillic, and Greek.  It comes complete with LaTeX support.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
 (define-public texlive-miller
   (package
     (name "texlive-miller")
@@ -13564,6 +18692,34 @@ reduces visual clutter.")
 with an easy syntax.  Minus signs are printed as bar above the corresponding
 number.")
     (license license:lppl)))
+
+(define-public texlive-mintspirit
+  (package
+    (name "texlive-mintspirit")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/mintspirit/"
+                   "fonts/enc/dvips/mintspirit/"
+                   "fonts/map/dvips/mintspirit/"
+                   "fonts/opentype/arkandis/mintspirit/"
+                   "fonts/tfm/arkandis/mintspirit/"
+                   "fonts/type1/arkandis/mintspirit/"
+                   "fonts/vf/arkandis/mintspirit/"
+                   "tex/latex/mintspirit/")
+             (base32
+              "0rh8xjrxm996k2qkd42r27fz8ir8cg8bpy1fgbdbbjyd3a6xpic3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mintspirit")
+    (synopsis "LaTeX support for MintSpirit font families")
+    (description
+     "The package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the MintSpirit and MintSpiritNo2 families of fonts, designed by Hirwen
+Harendal.  MintSpirit was originally designed for use as a system font on
+a Linux Mint system.  The No.@: 2 variant provides more conventional shapes
+for some glyphs.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-mismath
   (package
@@ -13587,6 +18743,62 @@ some standard operator names, improved spacings in mathematical formulas,
 systems of equations and small matrices, @code{displaymath} in double columns
 for long calculations.")
     (license license:lppl1.3+)))
+
+(define-public texlive-missaali
+  (package
+    (name "texlive-missaali")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/missaali/"
+                   "fonts/opentype/public/missaali/"
+                   "tex/latex/missaali/")
+             (base32
+              "1wa6knx1s82q86rl2icd9nqlh5ppa3636f28ns6g1l5fag6wd283")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/missaali")
+    (synopsis "Late medieval OpenType Textura font")
+    (description
+     "This package contains the OpenType Textura font Missaali and a style
+file for using it with XeLaTeX.  Textura is a typeface based on the
+@emph{textus quadratus} form of the @emph{textualis formata} that late
+medieval scribes used for the most valuable manuscripts.  The font Missaali is
+based on Textura that German printer Bartholomew Ghotan used for printing
+missals and psalters in the 1480s.
+
+This font has two intended use cases: as a Gothic display font; and for
+emulating late-medieval manuscripts.  In addition to the basic Textura
+letters, the font contains a large number of abbreviation sigla as well as
+a set of Lombardic initials.  As modern typesetting algorithms are not
+intended for creating 15th century style layout, the package contains
+a XeLaTeX style file that makes it easier to achieve the classic incunabula
+look.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-mlmodern
+  (package
+    (name "texlive-mlmodern")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/mlmodern/"
+                   "fonts/map/dvips/mlmodern/"
+                   "fonts/tfm/public/mlmodern/"
+                   "fonts/type1/public/mlmodern/"
+                   "tex/latex/mlmodern/")
+             (base32
+              "0cw802x67yqh6zlkf89pdjlx0r5lmwdca5vcqxmv24c5gx2bc666")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mlmodern")
+    (synopsis
+     "Blacker Type 1 version of Computer Modern, with multilingual support")
+    (description
+     "MLModern is a text and math font family with (La)TeX support, based on
+the design of Donald Knuth's Computer Modern and the Latin Modern project.  It
+avoids the spindliness of most other Type 1 versions of Computer Modern.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-mltex
   (package
@@ -13626,6 +18838,99 @@ for long calculations.")
 accented letters using ordinary Computer Modern (CM) fonts.  The system is
 distributed as a TeX change file.")
     (license license:knuth)))
+
+(define-public texlive-mnsymbol
+  (package
+    (name "texlive-mnsymbol")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mnsymbol/"
+                   "fonts/enc/dvips/mnsymbol/"
+                   "fonts/map/dvips/mnsymbol/"
+                   "fonts/map/vtex/mnsymbol/"
+                   "fonts/opentype/public/mnsymbol/"
+                   "fonts/source/public/mnsymbol/"
+                   "fonts/tfm/public/mnsymbol/"
+                   "fonts/type1/public/mnsymbol/"
+                   "source/latex/mnsymbol/"
+                   "tex/latex/mnsymbol/")
+             (base32
+              "164zspl0wcpmba9j0kl6wy8k46xaafjvwjp0dn82dzh73r85jdk2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/mnsymbol")
+    (synopsis "Mathematical symbol font for Adobe MinionPro")
+    (description
+     "MnSymbol is a symbol font family, designed to be used in conjunction
+with Adobe Minion Pro (via the MinionPro package).  Almost all of LaTeX and
+AMS mathematical symbols are provided; remaining coverage is available from
+the MinionPro font with the MinionPro package.  The fonts are available both
+as Metafont source and as Adobe Type 1 format, and a comprehensive support
+package is provided.")
+    (license license:public-domain)))
+
+(define-public texlive-montserrat
+  (package
+    (name "texlive-montserrat")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/montserrat/"
+                   "fonts/enc/dvips/montserrat/"
+                   "fonts/map/dvips/montserrat/"
+                   "fonts/opentype/public/montserrat/"
+                   "fonts/tfm/public/montserrat/"
+                   "fonts/type1/public/montserrat/"
+                   "fonts/vf/public/montserrat/"
+                   "tex/latex/montserrat/")
+             (base32
+              "08aaypw8l30sb0rvv2s9jcw15k3909xam98z2c6vj2x5jyi9wzn7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/montserrat")
+    (synopsis "Montserrat sans serif, with LaTeX support files")
+    (description
+     "Montserrat is a geometric sans-serif typeface designed by Julieta
+Ulanovsky.  It is rather close in spirit to Gotham and Proxima Nova, but has
+its own individual appearance --- more informal, less extended, and more
+idiosyncratic.  It is provided in a total of nine different weights, each
+having eight figure styles and small caps in both upright and italic shapes.
+There are two quite different versions that don't fit into the usual LaTeX
+classifications.  The version having the appellation Alternates has letter
+shapes that are much more rounded than the default version, reflecting the
+signage in the neighborhood of Montserrat.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-mpfonts
+  (package
+    (name "texlive-mpfonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/mpfonts/"
+                   "fonts/map/dvips/mpfonts/"
+                   "fonts/type3/mpfonts/")
+             (base32
+              "1z6pdjwi14fq6y1s39gxyqlpg6p5j09psjv1cyp7xjwjffdikgaf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mpfonts")
+    (synopsis "Computer Modern Type 3 fonts converted using MetaPost")
+    (description
+     "The Computer Modern fonts are available in Type 1 format, but these
+renditions are somewhat thin and spindly, and produce much lighter results
+than the originals.  These fonts are conversions to Type 3 fonts, done
+entirely in MetaPost; they are vector fonts which are a direct conversion from
+the original Metafont files, so they are the design most authentic to the
+originals.  However, these fonts, because they are PostScript Type 3 fonts,
+are not suitable for on-screen reading, and should probably only be used for
+printing.")
+    (license (list license:knuth
+                   license:lppl1.2+
+                   license:silofl1.1
+                   license:public-domain))))
 
 (define-public texlive-multibib
   (package
@@ -14210,6 +19515,125 @@ Harvard at Newcastle style recommended by Newcastle University.  It should be
 used alongside @code{natbib} for citations.")
     (license license:lppl1.3c)))
 
+(define-public texlive-newcomputermodern
+  (package
+    (name "texlive-newcomputermodern")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/newcomputermodern/"
+                   "fonts/opentype/public/newcomputermodern/"
+                   "tex/latex/newcomputermodern/")
+             (base32
+              "0b2iingsax99r551150w26zwmlr6a8yjwb00amfa2id390r1yjp5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/newcomputermodern")
+    (synopsis "Computer Modern fonts including matching non-Latin alphabets")
+    (description
+     "This is a new assembly of Computer Modern fonts including extensions in
+many directions for both Latin based languages, non-Latin based languages and
+Mathematics, all compatible in style to CM fonts.  In addition to the Regular
+weight of Computer Modern, it provides a Book weight for heavier printing.")
+    (license license:gfl1.0)))
+
+(define-public texlive-newpx
+  (package
+    (name "texlive-newpx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/newpx/"
+                   "fonts/afm/public/newpx/"
+                   "fonts/enc/dvips/newpx/"
+                   "fonts/map/dvips/newpx/"
+                   "fonts/opentype/public/newpx/"
+                   "fonts/tfm/public/newpx/"
+                   "fonts/type1/public/newpx/"
+                   "fonts/vf/public/newpx/"
+                   "tex/latex/newpx/")
+             (base32
+              "1c58073pzqa9sl69rfqy8b4j8i3fy3hil57fh51icvr5ggq5vyfn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/newpx")
+    (synopsis "Alternative uses of the PX fonts, with improved metrics")
+    (description
+     "This package, initially based on @code{pxfonts}, provides many fixes and
+enhancements to that package, and splits it in two parts (@code{newpxtext} and
+@code{newpxmath}) which may be run independently of one another.  It provides
+scaling, improved metrics, and other options.")
+    (license (list license:lppl license:silofl1.1))))
+
+(define-public texlive-newtxsf
+  (package
+    (name "texlive-newtxsf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/newtxsf/"
+                   "fonts/map/dvips/newtxsf/"
+                   "fonts/tfm/public/newtxsf/"
+                   "fonts/type1/public/newtxsf/"
+                   "fonts/vf/public/newtxsf/"
+                   "tex/latex/newtxsf/")
+             (base32
+              "1nmbh566ifkglk4wdgp297q5nab52ykda4xfi9q5w3c5rzw53y0v")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/newtxsf")
+    (synopsis "Sans-math fonts for use with @code{newtx}")
+    (description
+     "The package provides a maths support that amounts to modifications of
+the STIX sans serif Roman and Greek letters with most symbols taken from
+@code{newtxmath}.")
+    (license license:silofl1.1)))
+
+(define-public texlive-newtxtt
+  (package
+    (name "texlive-newtxtt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/newtxtt/"
+                   "fonts/enc/dvips/newtxtt/"
+                   "fonts/map/dvips/newtxtt/"
+                   "fonts/tfm/public/newtxtt/"
+                   "fonts/type1/public/newtxtt/"
+                   "tex/latex/newtxtt/")
+             (base32
+              "0x53dqf1mflh00r9v3zj2jqqbabk084zgcbz92x5icvmysrvk92a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/newtxtt")
+    (synopsis "Enhancement of typewriter fonts from @code{newtx}")
+    (description
+     "The package provides enhanced fonts with LaTeX support files providing
+access to the typewriter fonts from @code{newtx}.  Regular and bold weights,
+slanted variants and a choice of four different styles for zero.")
+    (license (list license:gpl3 license:lppl))))
+
+(define-public texlive-niceframe-type1
+  (package
+    (name "texlive-niceframe-type1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/niceframe-type1/"
+                   "fonts/afm/public/niceframe-type1/"
+                   "fonts/map/dvips/niceframe-type1/"
+                   "fonts/type1/public/niceframe-type1/")
+             (base32
+              "0np6m165d5xa4y68hy62q39wp069darx63snzl168flj0j1q6qbl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/niceframe-type1")
+    (synopsis "Type 1 versions of the fonts recommended in @code{niceframe}")
+    (description
+     "The bundle provides Adobe Type 1 versions of the fonts @code{bbding10},
+@code{dingbat}, @code{karta15}, @code{umranda} and @code{umrandb}.")
+    (license license:lppl)))
+
 (define-public texlive-nicematrix
   (package
     (name "texlive-nicematrix")
@@ -14235,6 +19659,36 @@ the columns; tools to color rows and columns with a good PDF result; blocks of
 cells; etc.")
     (license license:lppl1.3+)))
 
+(define-public texlive-nimbus15
+  (package
+    (name "texlive-nimbus15")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/nimbus15/"
+                   "fonts/afm/public/nimbus15/"
+                   "fonts/enc/dvips/nimbus15/"
+                   "fonts/map/dvips/nimbus15/"
+                   "fonts/opentype/public/nimbus15/"
+                   "fonts/tfm/public/nimbus15/"
+                   "fonts/type1/public/nimbus15/"
+                   "fonts/vf/public/nimbus15/"
+                   "tex/latex/nimbus15/")
+             (base32
+              "1x5y8jcwg3ns4jdz3rqzmd1xsfsdjbab70dnlm3n7lgs64ljlzyk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-fontools))
+    (home-page "https://ctan.org/pkg/nimbus15")
+    (synopsis "Support files for Nimbus 2015 Core fonts")
+    (description
+     "The Nimbus 2015 Core fonts added Greek and Cyrillic glyphs.  This
+package may be best suited as an add-on to the comprehensive Times package,
+providing support for Greek and Cyrillic.  A new intermediate weight of
+NimbusMono (AKA Courier) is provided, along with a narrower version which may
+be useful for rendering code.")
+    (license (list license:agpl3 license:lppl1.3+))))
+
 (define-public texlive-nimsticks
   (package
     (name "texlive-nimsticks")
@@ -14258,6 +19712,29 @@ together and not too regular.  The package also provides options to customise
 the size and colour of the sticks, and flexibility to draw heaps of different
 objects.")
     (license license:expat)))
+
+(define-public texlive-nkarta
+  (package
+    (name "texlive-nkarta")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/nkarta/"
+                   "fonts/source/public/nkarta/"
+                   "fonts/tfm/public/nkarta/"
+                   "metapost/nkarta/" "source/latex/nkarta/")
+             (base32
+              "0x5rdacf3d2jm4rgcvmpz76icga4gis4ykmsmp745xb7kh99npjv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/nkarta")
+    (synopsis "New version of the Karta cartographic fonts")
+    (description
+     "This package provides a development of the Karta font, offering more
+mathematical stability in Metafont.  A version that will produce the glyphs as
+Encapsulated PostScript is also provided.")
+    (license license:public-domain)))
 
 (define-public texlive-nmbib
   (package
@@ -14343,6 +19820,48 @@ Both sorted and unsorted bibliography styles are supported.")
 @samp{P} elements instead of TeX code.  It can be used to automatically
 generate bibliographies to be served on the web starting from BibTeX files.")
     (license license:public-domain)))
+
+(define-public texlive-noto-emoji
+  (package
+    (name "texlive-noto-emoji")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/noto-emoji/"
+                   "fonts/truetype/google/noto-emoji/")
+             (base32
+              "117mj4w0gvbndhm7mcxbxzxscd73np5s35467jr2sq2pwbv87i8r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/noto-emoji")
+    (synopsis "Noto Emoji fonts")
+    (description
+     "Noto Color Emoji supports all emoji defined in the latest Unicode
+version.")
+    (license license:silofl1.1)))
+
+(define-public texlive-notomath
+  (package
+    (name "texlive-notomath")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/notomath/"
+                   "fonts/map/dvips/notomath/"
+                   "fonts/tfm/public/notomath/"
+                   "fonts/type1/public/notomath/"
+                   "fonts/vf/public/notomath/"
+                   "tex/latex/notomath/")
+             (base32
+              "1m7b7blmbc6ypv737qhav6np3ri1a7cl14wnhpd5bgs89v9mkafd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/notomath")
+    (synopsis "Math support for Noto fonts")
+    (description
+     "This package provides math support via @code{newtxmath} for NotoSerif
+and NotoSans.  (Regular and Bold weights only.)")
+    (license (list license:silofl1.1 license:lppl1.3+))))
 
 (define-public texlive-nuc
   (package
@@ -14489,6 +20008,31 @@ terms of recurrence relations.")
 mathematical function values.")
     (license license:lppl1.3c)))
 
+(define-public texlive-nunito
+  (package
+    (name "texlive-nunito")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/nunito/"
+                   "fonts/enc/dvips/nunito/"
+                   "fonts/map/dvips/nunito/"
+                   "fonts/opentype/public/nunito/"
+                   "fonts/tfm/public/nunito/"
+                   "fonts/type1/public/nunito/"
+                   "fonts/vf/public/nunito/"
+                   "tex/latex/nunito/")
+             (base32
+              "0arx54h5hw50rlikw3sdxgqwhn1sr2jss30103cjip9wff606pa7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nunito")
+    (synopsis "The Nunito font face with support for LaTeX and pdfLaTeX")
+    (description
+     "This package provides LaTeX and pdfLaTeX support for the Nunito family
+of fonts, designed by Vernon Adams.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-objectz
   (package
     (name "texlive-objectz")
@@ -14505,6 +20049,58 @@ mathematical function values.")
     (synopsis "Macros for typesetting Object Z")
     (description
      "The package will typeset both Z and Object-Z specifications.")
+    (license license:lppl)))
+
+(define-public texlive-obnov
+  (package
+    (name "texlive-obnov")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/obnov/"
+                   "fonts/source/public/obnov/"
+                   "fonts/tfm/public/obnov/" "tex/latex/obnov/")
+             (base32
+              "0hjc381fw38qr7rkj137d5rp2jjv002g29bx5g3jjaxl9civvplq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/obnov")
+    (synopsis "Obyknovennaya Novaya fonts")
+    (description
+     "The Obyknovennaya Novaya (Ordinary New Face) typeface was widely used in
+the USSR for scientific and technical publications, as well as textbooks.  The
+fonts are encoded to KOI8-R (which is a long-established Russian font
+encoding, rather than a TeX/LaTeX encoding).  To use the fonts, the user needs
+Cyrillic font support.")
+    (license license:lppl)))
+
+(define-public texlive-ocherokee
+  (package
+    (name "texlive-ocherokee")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/omega/ocherokee/"
+                   "fonts/afm/public/ocherokee/"
+                   "fonts/map/dvips/ocherokee/"
+                   "fonts/ofm/public/ocherokee/"
+                   "fonts/ovf/public/ocherokee/"
+                   "fonts/ovp/public/ocherokee/"
+                   "fonts/tfm/public/ocherokee/"
+                   "fonts/type1/public/ocherokee/"
+                   "omega/ocp/ocherokee/"
+                   "omega/otp/ocherokee/"
+                   "tex/lambda/ocherokee/")
+             (base32
+              "1j2giz3rjr8hdzca5hny31zklnl721mhsgxm575fhh82qrpvdx26")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ocherokee")
+    (synopsis "LaTeX Support for the Cherokee language")
+    (description
+     "This package provides macros and Type 1 fonts for Typesetting the
+Cherokee language with the Omega version of LaTeX (known as Lambda).")
     (license license:lppl)))
 
 (define-public texlive-octave
@@ -14526,6 +20122,181 @@ the octave in either the Helmholtz system (with octave numbers), or the
 traditional system (with prime symbols).  The system can also be changed
 mid-document.")
     (license license:lppl1.3+)))
+
+(define-public texlive-ocr-b
+  (package
+    (name "texlive-ocr-b")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ocr-b/"
+                   "fonts/source/public/ocr-b/"
+                   "fonts/tfm/public/ocr-b/")
+             (base32
+              "089y4hihxdln1rvn87lmmiamcy8xc0niiv4gqxivahwkdjl8w0zw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/ocr-b")
+    (synopsis "Fonts for OCR-B")
+    (description
+     "This package includes Metafont source for OCR-B at several sizes.")
+    ;; "you may freely use, modify, and/or distribute any of these files or
+    ;; the resulting fonts, without limitation."
+    (license (license:fsf-free "file://doc/fonts/ocr-b-outline/README"))))
+
+(define-public texlive-ocr-b-outline
+  (package
+    (name "texlive-ocr-b-outline")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ocr-b-outline/"
+                   "fonts/map/dvips/ocr-b-outline/"
+                   "fonts/opentype/public/ocr-b-outline/"
+                   "fonts/type1/public/ocr-b-outline/"
+                   "source/fonts/ocr-b-outline/")
+             (base32
+              "1wlgwz91iv3ck8qmwgqda1kmijs3076hccfvbk6v7dkrcy726014")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ocr-b-outline")
+    (synopsis "OCR-B fonts in Type 1 and OpenType")
+    (description
+     "The package contains OCR-B fonts in Type1 and OpenType formats.")
+    ;; "You may freely use, modify, and/or distribute any of these files,
+    ;; without limitation."
+    (license (license:fsf-free "file://doc/fonts/ocr-b-outline/README"))))
+
+(define-public texlive-ogham
+  (package
+    (name "texlive-ogham")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/ogham/"
+                   "fonts/source/public/ogham/"
+                   "fonts/tfm/public/ogham/")
+             (base32
+              "0lk419jbg3ahgcrmffl7snbgv521fccjpsx5i0nq55cs9vrsnav1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/ogham")
+    (synopsis "Fonts for typesetting Ogham script")
+    (description
+     "The font provides the Ogham alphabet, which is found on a number of
+Irish and Pictish carvings dating from the 4th century AD.  The font is
+distributed as Metafont source.")
+    (license license:public-domain)))
+
+(define-public texlive-oinuit
+  (package
+    (name "texlive-oinuit")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/oinuit/"
+                   "fonts/map/dvips/oinuit/"
+                   "fonts/ofm/public/oinuit/"
+                   "fonts/ovf/public/oinuit/"
+                   "fonts/tfm/public/oinuit/"
+                   "fonts/type1/public/oinuit/"
+                   "omega/ocp/oinuit/"
+                   "omega/otp/oinuit/"
+                   "source/lambda/oinuit/"
+                   "tex/lambda/oinuit/")
+             (base32
+              "1f5rlqgdz4r93z5prxjq7z7591frqz89gplj3y0dscjnlc98wxy4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/oinuit")
+    (synopsis "LaTeX Support for the Inuktitut Language")
+    (description
+     "The package provides a set of Lambda (Omega LaTeX) typesetting tools for
+the Inuktitut language.  Five different input methods are supported and with
+the necessary fonts are also provided.")
+    (license license:lppl)))
+
+(define-public texlive-old-arrows
+  (package
+    (name "texlive-old-arrows")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/old-arrows/"
+                   "fonts/afm/public/old-arrows/"
+                   "fonts/enc/dvips/old-arrows/"
+                   "fonts/map/dvips/old-arrows/"
+                   "fonts/tfm/public/old-arrows/"
+                   "fonts/type1/public/old-arrows/"
+                   "tex/latex/old-arrows/")
+             (base32
+              "0lrw3r982646pdp5nf9y9s8w85c2zw7cvbq3lqa3d3lsnykvn3y7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/old-arrows")
+    (synopsis "Computer Modern old-style arrows with smaller arrowheads")
+    (description
+     "This package provides Computer Modern old-style arrows with smaller
+arrowheads, associated with the usual LaTeX commands.  It can be used in
+documents that contain other amssymb arrow characters that also have small
+arrowheads.  It is also possible to use the usual new-style Computer Modern
+arrows together with the old-style ones.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-oldlatin
+  (package
+    (name "texlive-oldlatin")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/oldlatin/"
+                   "fonts/source/public/oldlatin/"
+                   "fonts/tfm/public/oldlatin/")
+             (base32
+              "1fvy8myxxa3a5g2s8b5m57a9ijg1qanwcrf701s9lix5yxaqn474")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/oldlatin")
+    (synopsis "Compute Modern-like font with long @emph{s}")
+    (description
+     "This package provides Metafont sources modified from Computer Modern in
+order to generate long @emph{s}, which was used in old text.")
+    (license license:lppl)))
+
+(define-public texlive-oldstandard
+  (package
+    (name "texlive-oldstandard")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/oldstandard/"
+                   "fonts/enc/dvips/oldstandard/"
+                   "fonts/map/dvips/oldstandard/"
+                   "fonts/opentype/public/oldstandard/"
+                   "fonts/tfm/public/oldstandard/"
+                   "fonts/type1/public/oldstandard/"
+                   "fonts/vf/public/oldstandard/"
+                   "tex/latex/oldstandard/")
+             (base32
+              "0rqx0i13q5axcnilggy9zgi28z2c3xl23dfxjdlsjdkyxvpfl44y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/oldstandard")
+    (synopsis "OldStandard fonts with LaTeX support")
+    (description
+     "Old Standard is designed to reproduce the actual printing style of the
+early 20th century, reviving a specific type of Modern (classicist) style of
+serif typefaces, very commonly used in various editions of the late 19th and
+early 20th century.
+
+The font supports typesetting of Old and Middle English, Old Icelandic,
+Cyrillic (with historical characters, extensions for Old Slavonic and
+localised forms), Gothic transliterations, critical editions of Classical
+Greek and Latin, and many more.")
+    (license (list license:silofl1.1 license:lppl license:gpl3+))))
 
 (define-public texlive-omega
   (package
@@ -14602,6 +20373,32 @@ LuaTeX.")
      "This package provides the documentation for Omega executables.")
     (license license:gpl3+)))
 
+(define-public texlive-opensans
+  (package
+    (name "texlive-opensans")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/opensans/"
+                   "fonts/enc/dvips/opensans/"
+                   "fonts/map/dvips/opensans/"
+                   "fonts/tfm/ascender/opensans/"
+                   "fonts/truetype/ascender/opensans/"
+                   "fonts/type1/ascender/opensans/"
+                   "fonts/vf/ascender/opensans/"
+                   "tex/latex/opensans/")
+             (base32
+              "1l81y548cslwsy7m06pckf5w33gq53ly3a35zkd9jzfz6yg6w4bq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/opensans")
+    (synopsis "Open Sans font family, and LaTeX support")
+    (description
+     "Open Sans is a humanist sans serif typeface designed by Steve Matteson.
+The package provides support for this font family in LaTeX. It includes the
+original TrueType fonts, as well as Type 1 versions.")
+    (license (list license:asl2.0 license:lppl1.3c))))
+
 (define-public texlive-oplotsymbl
   (package
     (name "texlive-oplotsymbl")
@@ -14645,6 +20442,27 @@ so on up to 1999th.  Separate counter commands are provided for different
 letter case variants, and for masculine and feminine gender inflections.")
     (license license:lppl)))
 
+(define-public texlive-orkhun
+  (package
+    (name "texlive-orkhun")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/orkhun/"
+                   "fonts/source/public/orkhun/"
+                   "fonts/tfm/public/orkhun/")
+             (base32
+              "18p78sprnig93iq74y1vb1ai3ixqqj1pssrqczr1fiy0rnxsjdig")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/orkhun")
+    (synopsis "Font for Orkhun script")
+    (description
+     "The Orkhun font covers an old Turkic script.  It is provided as Metafont
+source.")
+    (license license:lppl)))
+
 (define-public texlive-oscola
   (package
     (name "texlive-oscola")
@@ -14668,6 +20486,30 @@ widely-used Oxford Standard for the Citation of Legal Authorities.  It also
 includes facilities for constructing tables of cases and legislation from
 citations (in conjunction with appropriate indexing packages).")
     (license license:lppl1.3+)))
+
+(define-public texlive-oswald
+  (package
+    (name "texlive-oswald")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/oswald/"
+                   "fonts/enc/dvips/oswald/"
+                   "fonts/map/dvips/oswald/"
+                   "fonts/tfm/public/oswald/"
+                   "fonts/type1/public/oswald/"
+                   "fonts/vf/public/oswald/"
+                   "tex/latex/oswald/")
+             (base32
+              "0ib7k3vgzmsjaxhfb3zcpy3m0yx8p5yyc2hr8x7b8ik7n1ik5sgm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/oswald")
+    (synopsis "Oswald family of fonts with support for LaTeX and pdfLaTeX")
+    (description
+     "This package provides the Oswald family of fonts, designed by Vernon Adams,
+Kalapi Gajjar, Cyreal, with support for LaTeX and pdfLaTeX.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-ot-tableau
   (package
@@ -14807,6 +20649,57 @@ kerning when a subscript follows.  Some predefined commands are also
 provided.")
     (license license:lppl1.3c)))
 
+(define-public texlive-overlock
+  (package
+    (name "texlive-overlock")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/overlock/"
+                   "fonts/enc/dvips/overlock/"
+                   "fonts/map/dvips/overlock/"
+                   "fonts/opentype/tipo/overlock/"
+                   "fonts/tfm/tipo/overlock/"
+                   "fonts/type1/tipo/overlock/"
+                   "fonts/vf/tipo/overlock/"
+                   "tex/latex/overlock/")
+             (base32
+              "0rpqpd5ja32i44lf8szr2hn0dz5dh2p238iid0dnkpylf006wni2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/overlock")
+    (synopsis "Overlock sans fonts with LaTeX support")
+    (description
+     "The package provides the Overlock and OverlockSC families of fonts,
+designed by Dario Manuel Muhafara, rounded sans-serif fonts in three
+weights (Regular, Bold, Black) with italic variants for each of them.  There
+are also small-caps and old-style figures in the Regular weight.")
+    (license license:silofl1.1)))
+
+(define-public texlive-pacioli
+  (package
+    (name "texlive-pacioli")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/pacioli/"
+                   "fonts/source/public/pacioli/"
+                   "fonts/tfm/public/pacioli/"
+                   "source/fonts/pacioli/" "tex/latex/pacioli/")
+             (base32
+              "100fs89b2nfybnjdg8b4v3z8q982b6x0azn0sc31533pkkkp19i3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/pacioli")
+    (synopsis "Fonts designed by Fra Luca de Pacioli in 1497")
+    (description
+     "Pacioli was a 15th century mathematician, and his font was designed
+according to the divine proportion.  The font consists of uppercase letters
+together with punctuation and some analphabetics; no lowercase or digits.  The
+package provides Metafont source for the font together with LaTeX support.")
+    (license license:lppl)))
+
 (define-public texlive-padauk
   (package
     (name "texlive-padauk")
@@ -14826,6 +20719,26 @@ provided.")
      "Padauk is a Unicode-based font family with broad support for writing
 systems that use the Myanmar script.")
     (license license:silofl1.1)))
+
+(define-public texlive-pagella-otf
+  (package
+    (name "texlive-pagella-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/pagella-otf/"
+                   "tex/latex/pagella-otf/")
+             (base32
+              "0yi5d5wffqcrlslk9gxifnx4imhpi1hqya6x7k1qq9znvlf97inl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pagella-otf")
+    (synopsis "Using the OpenType fonts TeX Gyre Pagella")
+    (description
+     "This package can only be used with LuaLaTeX or XeLaTeX.  It does the
+font setting for the OpenType font TeX Gyre Pagella for text and math.  The
+missing typefaces like bold math and slanted text are also defined.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-parallel
   (package
@@ -14848,6 +20761,46 @@ potentially different texts to be typeset in two columns, while maintaining
 alignment.  The two columns may be on the same page, or on facing pages.  This
 arrangement of text is commonly used when typesetting translations, but it can
 have value when comparing any two texts.")
+    (license license:lppl)))
+
+(define-public texlive-paratype
+  (package
+    (name "texlive-paratype")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/paratype/"
+                   "fonts/afm/paratype/ptmono/"
+                   "fonts/afm/paratype/ptsans/"
+                   "fonts/afm/paratype/ptserif/"
+                   "fonts/enc/dvips/paratype/"
+                   "fonts/map/dvips/paratype/"
+                   "fonts/tfm/paratype/ptmono/"
+                   "fonts/tfm/paratype/ptsans/"
+                   "fonts/tfm/paratype/ptserif/"
+                   "fonts/truetype/paratype/ptmono/"
+                   "fonts/truetype/paratype/ptsans/"
+                   "fonts/truetype/paratype/ptserif/"
+                   "fonts/type1/paratype/ptmono/"
+                   "fonts/type1/paratype/ptsans/"
+                   "fonts/type1/paratype/ptserif/"
+                   "fonts/vf/paratype/ptmono/"
+                   "fonts/vf/paratype/ptsans/"
+                   "fonts/vf/paratype/ptserif/"
+                   "tex/latex/paratype/")
+             (base32
+              "0k93y4xlng9b9cwa9mk7bdxj2zzbyigv02z358lm0vpr7nw8vxig")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/paratype")
+    (synopsis "LaTeX support for ParaType fonts")
+    (description
+     "The package offers LaTeX support for the fonts PT Sans, PT Serif and PT
+Mono developed by ParaType for the project @emph{Public Types of Russian
+Federation}.  The fonts themselves are provided in both the TrueType and Type
+1 formats.  The fonts provide encodings OT1, T1, IL2, TS1, T2* and X2.  The
+package provides a convenient replacement of the two packages @code{ptsans}
+and @code{ptserif}.")
     (license license:lppl)))
 
 (define-public texlive-parrun
@@ -15022,6 +20975,56 @@ number of units provided should cover--in Turton's estimate--about 90 percent
 of all fluid processing operations.")
     (license license:lppl1.3c)))
 
+(define-public texlive-phaistos
+  (package
+    (name "texlive-phaistos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/phaistos/"
+                   "fonts/afm/public/phaistos/"
+                   "fonts/map/dvips/phaistos/"
+                   "fonts/opentype/public/phaistos/"
+                   "fonts/tfm/public/phaistos/"
+                   "fonts/type1/public/phaistos/"
+                   "source/fonts/phaistos/"
+                   "tex/latex/phaistos/")
+             (base32
+              "0b5mjfzmhr6dw6i90mjym2hwi4cm2jfwfagl41dm6grnznwcn8bb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/phaistos")
+    (synopsis "Disk of Phaistos font")
+    (description
+     "This package provides a font that contains all the symbols of the famous
+Disc of Phaistos, together with a LaTeX package.  The disc was printed by
+stamping the wet clay with some sort of punches, probably around 1700 BCE.
+The font is available in Adobe Type 1 and OpenType formats (the latter using
+the Unicode positions for the symbols).")
+    (license license:lppl)))
+
+(define-public texlive-phonetic
+  (package
+    (name "texlive-phonetic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/phonetic/"
+                   "fonts/source/public/phonetic/"
+                   "fonts/tfm/public/phonetic/"
+                   "tex/latex/phonetic/")
+             (base32
+              "0f1z1kzfyxap4hbmpjfhy417n3jcg3rv0m8f5ab1wlil64jn0rgb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/phonetic")
+    (synopsis "Metafont Phonetic fonts, based on Computer Modern")
+    (description
+     "The Phonetic fonts are based on Computer Modern, and specified in
+Metafont.  Macros for the fonts use are provided for LaTeX.")
+    (license license:lppl)))
+
 (define-public texlive-physconst
   (package
     (name "texlive-physconst")
@@ -15136,6 +21139,32 @@ project.  When used, it draws a small 2 octaves piano keyboard on your
 document, with up to 7 keys highlighted.")
     (license license:lppl)))
 
+(define-public texlive-pigpen
+  (package
+    (name "texlive-pigpen")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pigpen/"
+                   "fonts/map/dvips/pigpen/"
+                   "fonts/source/public/pigpen/"
+                   "fonts/tfm/public/pigpen/"
+                   "fonts/type1/public/pigpen/"
+                   "tex/latex/pigpen/")
+             (base32
+              "0cvccvk3yhjpv9kxdzwaq8a2ql0vramlpzpd4l4my6g44k6cf2yf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/pigpen")
+    (synopsis "Font for the Pigpen (or masonic) cipher")
+    (description
+     "The Pigpen cipher package provides the font and the necessary
+wrappers (style file, etc.) in order to write Pigpen ciphers, a simple
+substitution cipher.  The package provides a font (available both as Metafont
+source, and as an Adobe Type 1 file), and macros for its use.")
+    (license license:lppl)))
+
 (define-public texlive-pinoutikz
   (package
     (name "texlive-pinoutikz")
@@ -15210,6 +21239,112 @@ paragraphs vertically separated rather than indented.")
      "This package provides a class and style file that supports the
 typesetting of plays, including options for line numbering.")
     (license license:lppl)))
+
+(define-public texlive-playfair
+  (package
+    (name "texlive-playfair")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/playfair/"
+                   "fonts/enc/dvips/playfair/"
+                   "fonts/map/dvips/playfair/"
+                   "fonts/opentype/public/playfair/"
+                   "fonts/tfm/public/playfair/"
+                   "fonts/type1/public/playfair/"
+                   "fonts/vf/public/playfair/"
+                   "tex/latex/playfair/")
+             (base32
+              "060l6q6m410nn31mn09v3gy5nvbimplraifqcqlp3h8pzcrc3akf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/playfair")
+    (synopsis "Playfair Display fonts with LaTeX support")
+    (description
+     "This package provides the PlayFairDisplay family of fonts, designed by
+Claus Eggers Sorensen, for use with LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX.
+PlayFairDisplay is well suited for titling and headlines.  It has an extra
+large x-height and short descenders.  It can be set with no leading if space
+is tight, for instance in news headlines, or for stylistic effect in titles.
+Capitals are extra short, and only very slightly heavier than the lowercase
+characters.  This helps achieve a more even typographical colour when
+typesetting proper nouns and initialisms.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-plex
+  (package
+    (name "texlive-plex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/plex/"
+                   "fonts/enc/dvips/plex/"
+                   "fonts/map/dvips/plex/"
+                   "fonts/opentype/ibm/plex/"
+                   "fonts/tfm/ibm/plex/"
+                   "fonts/type1/ibm/plex/"
+                   "fonts/vf/ibm/plex/"
+                   "tex/latex/plex/")
+             (base32
+              "0lvv5p2jmkr7cb0rml4iyzr5pf7bfks0a44sv49v1d2492j57jmv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/plex")
+    (synopsis "Support for IBM Plex fonts")
+    (description
+     "The package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the IBM Plex families of fonts.  Serif, Sans and Mono families are available
+in eight weights: Regular, Light, ExtraLight, Thin, Bold, Text, Medium and
+SemiBold (with corresponding italics).")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-plex-otf
+  (package
+    (name "texlive-plex-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/plex-otf/" "tex/latex/plex-otf/")
+             (base32
+              "0xasayka8lhkn01l1535a2jy7xsp7s01hvw3kn3jk4h569dvp21g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/plex-otf")
+    (synopsis "Support for the OpenType font IBM Plex")
+    (description
+     "This package supports the OTF fonts from the IBM Plex project.  This
+package supports only XeLaTeX or LuaLaTeX; for pdfLaTeX use
+@code{}plex-mono.sty}, @code{}plex-sans.sty}, and @code{plex-serif.sty} from
+the @code{plex} package.  IBM Plex has no math symbols.  You will have to use
+one of the existing math fonts if you need them.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-plimsoll
+  (package
+    (name "texlive-plimsoll")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/plimsoll/"
+                   "fonts/afm/public/plimsoll/"
+                   "fonts/enc/dvips/plimsoll/"
+                   "fonts/map/dvips/plimsoll/"
+                   "fonts/tfm/public/plimsoll/"
+                   "fonts/type1/public/plimsoll/"
+                   "source/fonts/plimsoll/"
+                   "tex/latex/plimsoll/")
+             (base32
+              "1cxvlpb7z83ajyqh5nw1596i7ak582pp2mmqmfjqk2bffv6jqay1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/plimsoll")
+    (synopsis "Fonts with the Plimsoll symbol and LaTeX support")
+    (description
+     "This package provides access to the Plimsoll symbol for use with LaTeX.
+The Plimsoll symbol is sometimes used in chemistry for denoting standard
+states and values.  The LaTeX package provides access to this notation as
+well.")
+    (license license:gpl3+)))
 
 (define-public texlive-pm-isomath
   (package
@@ -15415,6 +21550,34 @@ anthologies of poetry and other writings; it does not concern itself with
 actually typesetting the verse itself.")
     (license license:lppl1.3+)))
 
+(define-public texlive-poiretone
+  (package
+    (name "texlive-poiretone")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/poiretone/"
+                   "fonts/enc/dvips/poiretone/"
+                   "fonts/map/dvips/poiretone/"
+                   "fonts/tfm/public/poiretone/"
+                   "fonts/truetype/public/poiretone/"
+                   "fonts/type1/public/poiretone/"
+                   "fonts/vf/public/poiretone/"
+                   "tex/latex/poiretone/")
+             (base32
+              "1zdncw8pj0x8nwgk7b5lgqldiifqjnsci57jnkf5vyhzsxx1c8kr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/poiretone")
+    (synopsis "PoiretOne family of fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the PoiretOne family of fonts, designed by Denis Masharov.  PoiretOne is
+a decorative geometric grotesque with a hint of Art Deco and constructivism.
+There is currently just a regular weight and an artificially emboldened
+bold.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-polexpr
   (package
     (name "texlive-polexpr")
@@ -15495,6 +21658,32 @@ probability texts, e.g., probability, expectation, variance, etc.  It also
 includes some short commands for set (blackboard) or
 filtrations (calligraphic).")
     (license license:lppl)))
+
+(define-public texlive-prodint
+  (package
+    (name "texlive-prodint")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/prodint/"
+                   "fonts/afm/public/prodint/"
+                   "fonts/map/dvips/prodint/"
+                   "fonts/tfm/public/prodint/"
+                   "fonts/type1/public/prodint/"
+                   "tex/latex/prodint/")
+             (base32
+              "0k354qidij22mwxafh2zbam7qb4jd5pb8jakw0c660xdxaxrdxx3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/prodint")
+    (synopsis "Font that provides the product integral symbol")
+    (description
+     "Product integrals are to products, as integrals are to sums.  They have
+been around for more than a hundred years, they have not become part of the
+standard mathematician's toolbox, possibly because no-one invented the right
+mathematical symbol for them.  The authors have remedied that situation by
+proposing the symbol and providing this font.")
+    (license license:silofl1.1)))
 
 (define-public texlive-profcollege
   (package
@@ -15679,6 +21868,95 @@ as a result, some of the descriptions of limitations look rather quaint to
 modern eyes.")
     (license license:lppl)))
 
+(define-public texlive-punk
+  (package
+    (name "texlive-punk")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/punk/"
+                   "fonts/source/public/punk/"
+                   "fonts/tfm/public/punk/")
+             (base32
+              "0ncarqjmwrsiw65p7mr44gjy0h90q5hw5n4jb5y2fxr1kgbzmz1p")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/punk")
+    (synopsis "Donald Knuth's Punk font")
+    (description
+     "This package provides a response to the assertion in a lecture that
+``typography tends to lag behind other stylistic changes by about 10 years''.
+Knuth felt it was (in 1988) time to design a replacement for his designs of
+the 1970s, and came up with the Punk font!  The fonts are distributed as
+Metafont source.  The package also offers LaTeX support for them, although
+@code{punk-latex} is a better choice.")
+    (license license:knuth)))
+
+(define-public texlive-punk-latex
+  (package
+    (name "texlive-punk-latex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/punk-latex/"
+                   "tex/latex/punk-latex/")
+             (base32
+              "1gkbv3fwlfq8f3nn9zibhzwa5xw2scaf3xnkvlbxqcslmi129b2l")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/punk-latex")
+    (synopsis "LaTeX support for Punk fonts")
+    (description
+     "The package and @file{.fd} file provide support for Knuth's Punk fonts.
+Although that bundle also offers support within LaTeX; the present package is
+to be preferred.")
+    (license license:gpl3+)))
+
+(define-public texlive-punknova
+  (package
+    (name "texlive-punknova")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/punknova/"
+                   "fonts/opentype/public/punknova/")
+             (base32
+              "07g0j329bgyzn3f3ac8gf9m6jh6zpwirw5l72mzzm8n32sgajym0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/punknova")
+    (synopsis "OpenType version of Knuth's Punk font")
+    (description
+     "Knuth's original Punk fonts generated different shapes at random.
+This isn't actually possible in an OpenType font; rather, the font contains
+several variants of each glyph, and uses the OpenType randomize function to
+select a variant for each invocation.")
+    (license license:knuth)))
+
+(define-public texlive-pxtxalfa
+  (package
+    (name "texlive-pxtxalfa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/pxtxalfa/"
+                   "fonts/tfm/public/pxtxalfa/"
+                   "fonts/vf/public/pxtxalfa/"
+                   "tex/latex/pxtxalfa/")
+             (base32
+              "1zanrgazaffpby6jmfncyq2g4sgi23p27wi2dx18zp0350ai55ia")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pxtxalfa")
+    (synopsis
+     "Virtual maths alphabets based on @code{pxfonts} and @code{txfonts}")
+    (description
+     "The package provides virtual math alphabets based on @code{pxfonts} and
+@code{txfonts}, with LaTeX support files and adjusted metrics.  The
+@code{mathalpha} package offers support for this collection.")
+    (license license:lppl)))
+
 (define-public texlive-pythonhighlight
   (package
     (name "texlive-pythonhighlight")
@@ -15758,6 +22036,81 @@ DVI/PostScript and PDF output by use of @code{pict2e} facilities.  The package
 is a development of the existing @code{qobitree} package, offering a new front
 end.")
     (license license:lppl)))
+
+(define-public texlive-qualitype
+  (package
+    (name "texlive-qualitype")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/qualitype/"
+                   "fonts/opentype/public/qualitype/")
+             (base32
+              "027n3i9cy4p7wkbj1zrlsvagplxk74gz5cwv7mr4yl8gqzd41058")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/qualitype")
+    (synopsis "QualiType font collection")
+    (description
+     "This is a collection of 45 fonts, created by QualiType.")
+    (license (list license:silofl1.1 license:gpl2+))))
+
+(define-public texlive-quattrocento
+  (package
+    (name "texlive-quattrocento")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/quattrocento/"
+                   "fonts/enc/dvips/quattrocento/"
+                   "fonts/map/dvips/quattrocento/"
+                   "fonts/tfm/impallari/quattrocento/"
+                   "fonts/truetype/impallari/quattrocento/"
+                   "fonts/type1/impallari/quattrocento/"
+                   "fonts/vf/impallari/quattrocento/"
+                   "tex/latex/quattrocento/")
+             (base32
+              "1mgsyl3xc9274mdh3ssd9ifxb0d9rlv0y33nlw9pwnl9y9f9gd9a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/quattrocento")
+    (synopsis "Quattrocento and Quattrocento Sans fonts with LaTeX support")
+    (description
+     "The package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Quattrocento and Quattrocento Sans families of fonts, designed by Pablo
+Impallari; the fonts themselves are also provided, in both TrueType and Type1
+format.  Quattrocento is a classic typeface with wide and open letterforms,
+and great x-height, which makes it very legible for body text at small sizes.
+Tiny details that only show up at bigger sizes make it also great for display
+use.  Quattrocento Sans is the perfect sans-serif companion for
+Quattrocento.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-raleway
+  (package
+    (name "texlive-raleway")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/raleway/"
+                   "fonts/enc/dvips/raleway/"
+                   "fonts/map/dvips/raleway/"
+                   "fonts/opentype/impallari/raleway/"
+                   "fonts/tfm/impallari/raleway/"
+                   "fonts/type1/impallari/raleway/"
+                   "fonts/vf/impallari/raleway/"
+                   "tex/latex/raleway/")
+             (base32
+              "1pp5m31rr4lww0z92q3vsaz1l01nb78ll5mn2l9w469hpghf2gd3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/raleway")
+    (synopsis "Use Raleway with TeX(-alike) systems")
+    (description
+     "The package provides the Raleway family in an easy to use way.  For
+XeLaTeX and LuaLaTeX users the original OpenType fonts are used.  The entire
+font family is included.")
+    (license license:silofl1.1)))
 
 (define-public texlive-rank-2-roots
   (package
@@ -15860,6 +22213,37 @@ diagrams for baroque fingering recorders.  Standard fingerings are provided
 for recorders in both C and F, along with methods to create and display
 alternate fingerings for trills, etc.")
     (license license:lppl1.3+)))
+
+(define-public texlive-recycle
+  (package
+    (name "texlive-recycle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/recycle/"
+                   "fonts/map/dvips/recycle/"
+                   "fonts/source/public/recycle/"
+                   "fonts/tfm/public/recycle/"
+                   "fonts/type1/public/recycle/"
+                   "tex/latex/recycle/")
+             (base32
+              "16kmi7a75vrv3pfnxydxb21pafvi98q39jrdd10a94vxx6fdlx7s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    ;; FIXME: Font metrics generation fails with "! Inconsistent equation (off
+    ;; by 0.00162)." errors.
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'generate-font-metrics))))
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/recycle")
+    (synopsis "Font providing the ``recyclable'' logo")
+    (description
+     "This single-character font is provided as Metafont source, and in Adobe
+Type 1 format.  It is accompanied by a trivial LaTeX package to use the logo
+at various sizes.")
+    (license license:gpl3+)))
 
 (define-public texlive-reledmac
   (package
@@ -16027,6 +22411,113 @@ package solves the problem by extending ideas described in M. I. Grinchuk
 mathematical packages.")
     (license license:lppl1.3+)))
 
+(define-public texlive-roboto
+  (package
+    (name "texlive-roboto")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/roboto/"
+                   "fonts/enc/dvips/roboto/"
+                   "fonts/map/dvips/roboto/"
+                   "fonts/opentype/google/roboto/"
+                   "fonts/tfm/google/roboto/"
+                   "fonts/type1/google/roboto/"
+                   "fonts/vf/google/roboto/"
+                   "tex/latex/roboto/")
+             (base32
+              "1gbg9p9y6a2fis88qfcsscksrkkcnqvsrhdkak2jm2dfjnq6v2n8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/roboto")
+    (synopsis "Support for the Roboto family of fonts")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Roboto Sans, Roboto Condensed, Roboto Mono, Roboto Slab and Roboto Serif
+families of fonts, designed by Christian Robertson and Greg Gazdowicz.")
+    (license (list license:asl2.0 license:silofl1.1 license:lppl))))
+
+(define-public texlive-romande
+  (package
+    (name "texlive-romande")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/romande/"
+                   "fonts/afm/arkandis/romande/"
+                   "fonts/enc/dvips/romande/"
+                   "fonts/map/dvips/romande/"
+                   "fonts/tfm/arkandis/romande/"
+                   "fonts/type1/arkandis/romande/"
+                   "fonts/vf/arkandis/romande/"
+                   "source/fonts/romande/"
+                   "tex/latex/romande/")
+             (base32
+              "0xvahacjs8g5bl7yy89wi50m894r2402d5203ai79fk9d7rbc116")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/romandeadf")
+    (synopsis "Romande ADF fonts and LaTeX support")
+    (description
+     "Romande ADF is a serif font family with oldstyle figures, designed as
+a substitute for Times, Tiffany or Caslon.  The family currently includes
+upright, italic and small-caps shapes in each of regular and demi-bold weights
+and an italic script in regular.  The support package renames the fonts
+according to the Karl Berry fontname scheme and defines four families.  Two of
+these primarily provide access to the standard, or default, characters while
+the alternate families support alternate characters, additional ligatures and
+the long @emph{s}.  The included package files provide access to these
+features in LaTeX.")
+    (license license:lppl)))
+
+(define-public texlive-rosario
+  (package
+    (name "texlive-rosario")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/rosario/"
+                   "fonts/enc/dvips/rosario/"
+                   "fonts/map/dvips/rosario/"
+                   "fonts/opentype/public/rosario/"
+                   "fonts/tfm/public/rosario/"
+                   "fonts/type1/public/rosario/"
+                   "fonts/vf/public/rosario/"
+                   "source/fonts/rosario/"
+                   "tex/latex/rosario/")
+             (base32
+              "0bmz2xzx1xi3vn9s4wqij65nq54k9bc0kbxgnzd0p6q030g5yqby")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/rosario")
+    (synopsis "Using the Rosario fonts with LaTeX")
+    (description
+     "The package provides the files required to use the Rosario fonts with
+LaTeX.  Rosario is a set of four fonts provided by Hector Gatti.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-rsfso
+  (package
+    (name "texlive-rsfso")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/rsfso/" "fonts/map/dvips/rsfso/"
+                   "fonts/tfm/public/rsfso/"
+                   "fonts/vf/public/rsfso/" "tex/latex/rsfso/")
+             (base32
+              "1fm65p7k0kfiksap2f2g8lqmgdykmhq80ff5qgma4cnqa4sa3jza")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/rsfso")
+    (synopsis "Mathematical calligraphic font based on @code{rsfs}")
+    (description
+     "The package provides virtual fonts and LaTeX support files for
+mathematical calligraphic fonts based on the @code{rsfs} Adobe Type 1 fonts,
+with the slant substantially reduced.  The output is quite similar to that
+from the Adobe Mathematical Pi script font.")
+    (license license:lppl)))
+
 (define-public texlive-rrgtrees
   (package
     (name "texlive-rrgtrees")
@@ -16150,6 +22641,30 @@ diagrams, i.e., flow diagrams in which the width of the arrows is proportional
 to the flow rate.")
     (license (list license:lppl1.3+ license:gpl3+))))
 
+(define-public texlive-sansmathaccent
+  (package
+    (name "texlive-sansmathaccent")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/sansmathaccent/"
+                   "fonts/map/dvips/sansmathaccent/"
+                   "fonts/tfm/public/sansmathaccent/"
+                   "fonts/vf/public/sansmathaccent/"
+                   "tex/latex/sansmathaccent/")
+             (base32
+              "03xd3wpmzrggpmjrff4ka56v2zycbznlcdfyvz74xxjnngxz81qm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sansmathaccent")
+    (synopsis "Correct placement of accents in sans-serif maths")
+    (description
+     "Sans serif maths (produced by the @code{beamer} class or the
+@code{sfmath} package) often has accents positioned incorrectly.  This package
+fixes the positioning of such accents when the default font (@code{cmssi}) is
+used for sans serif maths.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-sasnrdisplay
   (package
     (name "texlive-sasnrdisplay")
@@ -16170,6 +22685,129 @@ permits statisticians and others to import source code and the results of
 their calculations or simulations into LaTeX projects.  The package is also
 capable of overloading the Sweave User Manual and SASweave packages.")
     (license license:lppl1.3+)))
+
+(define-public texlive-sauterfonts
+  (package
+    (name "texlive-sauterfonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sauterfonts/"
+                   "source/latex/sauterfonts/"
+                   "tex/latex/sauterfonts/")
+             (base32
+              "0h34vp94i16al0z8zw5xn3igk2hg4nnb507kiv87qxrr3gl11zy4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sauterfonts")
+    (synopsis "Use Sauter's fonts in LaTeX")
+    (description
+     "The package provides font definition files (plus a replacement for the
+package @code{exscale}) to access many of the fonts in Sauter's collection.
+These fonts are available in all point sizes and look nicer for such
+intermediate document sizes as 11pt.  Also included is the package
+@code{sbbm}, an alternative to access the BBM fonts.")
+    (license license:gpl3+)))
+
+(define-public texlive-schola-otf
+  (package
+    (name "texlive-schola-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/schola-otf/"
+                   "tex/latex/schola-otf/")
+             (base32
+              "1ygc9bhdc9qgp20r17am8k7zmc1c1rdra0a56davw5y93zjvyzji")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/schola-otf")
+    (synopsis "Using the OpenType fonts TeX Gyre Schola")
+    (description
+     "This package can only be used with LuaLaTeX or XeLaTeX.  It does the
+font setting for the OpenType font TeX Gyre Schola for text and math.  The
+missing typefaces like bold math and slanted text are also defined.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-scholax
+  (package
+    (name "texlive-scholax")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/scholax/"
+                   "fonts/afm/public/scholax/"
+                   "fonts/enc/dvips/scholax/"
+                   "fonts/map/dvips/scholax/"
+                   "fonts/opentype/public/scholax/"
+                   "fonts/tfm/public/scholax/"
+                   "fonts/type1/public/scholax/"
+                   "fonts/vf/public/scholax/"
+                   "tex/latex/scholax/")
+             (base32
+              "1jw09a75gw9favzpfkp4kmwf6wz9kp4jsk8f838rk1x76q213rrw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/scholax")
+    (synopsis
+     "Extension of TeXGyreSchola (New Century Schoolbook) with math support")
+    (description
+     "This package contains an extension of TeXGyreSchola with extensive
+superiors, inferior figures, upright punctuation glyphs added to the Italic
+face for a theorem font, plus slanted and bold slanted faces.  Math support is
+provided by one of two options to @code{newtxmath}, one of which uses an
+adaptation of the Fourier math Greek letters.")
+    (license license:lppl)))
+
+(define-public texlive-schulschriften
+  (package
+    (name "texlive-schulschriften")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/schulschriften/"
+                   "fonts/source/public/schulschriften/"
+                   "fonts/tfm/public/schulschriften/"
+                   "tex/latex/schulschriften/")
+             (base32
+              "14nbgqr213zfm1y50bh0ggs40zpi1lfjmc4yc5mprwf7q174zrbr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/schulschriften")
+    (synopsis "German school scripts from Suetterlin to the present day")
+    (description
+     "This package provides the Metafont sources for the following school
+fonts: Das Paket enthalt im wesentlichen die Metafont-Quellfiles fur die
+folgenden Schulausgangsschriften: Suetterlinschrift, Deutsche Normalschrift,
+Lateinische Ausgangsschrift, Schulausgangsschrift, and Vereinfachte
+Ausgangsschrift.")
+    (license license:lppl)))
+
+(define-public texlive-shobhika
+  (package
+    (name "texlive-shobhika")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/shobhika/"
+                   "fonts/opentype/public/shobhika/")
+             (base32
+              "0a9l8gdn9ddz334dwfdn7vjgrq9jz6b41wph9sgchank4yj0sc64")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/shobhika")
+    (synopsis "OpenType Devanagari font designed for scholars")
+    (description
+     "This package provides a Unicode compliant OpenType font with support for
+Devanagari, Latin, and Cyrillic scripts.  It is available in two
+weights--regular and bold.  The font is designed with over 1600 Devanagari
+glyphs, including support for over 1100 conjunct consonants, as well as vedic
+accents.  The Latin component of the font not only supports a wide range of
+characters required for Roman transliteration of Sanskrit, but also provides
+a subset of regularly used mathematical symbols for scholars working with
+scientific and technical documents.")
+    (license license:silofl1.1)))
 
 (define-public texlive-schwalbe-chess
   (package
@@ -16529,6 +23167,31 @@ The included @code{bnfgrammar} environment parses BNF expressions (possibly
 annotated), so users can write readable BNF expressions in their documents.")
     (license license:expat)))
 
+(define-public texlive-simpleicons
+  (package
+    (name "texlive-simpleicons")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/simpleicons/"
+                   "fonts/enc/dvips/simpleicons/"
+                   "fonts/map/dvips/simpleicons/"
+                   "fonts/opentype/public/simpleicons/"
+                   "fonts/tfm/public/simpleicons/"
+                   "fonts/type1/public/simpleicons/"
+                   "tex/latex/simpleicons/")
+             (base32
+              "0ngjx0z1ldpc6a31maw9kbsxf910qkgcndsqibfanc5mb8ygb6zn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/simpleicons")
+    (synopsis "Simple Icons for LaTeX")
+    (description
+     "Similar to FontAwesome icons being provided on LaTeX by the
+@code{fontawesome} package, this package aims to do the same with
+@url{https://simpleicons.org/, Simple Icons}.")
+    (license license:cc0)))
+
 (define-public texlive-simpler-wick
   (package
     (name "texlive-simpler-wick")
@@ -16703,6 +23366,27 @@ Metafont source by the @code{skak} bundle.")
 re-definitions of existing commands.")
     (license license:lppl1.3+)))
 
+(define-public texlive-skull
+  (package
+    (name "texlive-skull")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "fonts/source/public/skull/"
+                   "fonts/tfm/public/skull/"
+                   "source/fonts/skull/" "tex/latex/skull/")
+             (base32
+              "0vnqi8c5f1a78naa9pvsl43748bm52i3qhjcv96bwcf59miih730")))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/skull")
+    (synopsis "Font to draw a skull")
+    (description
+     "The font (defined in Metafont) defines a single character, a black solid
+skull.  A package is supplied to make this character available as a symbol in
+maths mode.")
+    (license license:gpl3+)))
+
 (define-public texlive-songbook
   (package
     (name "texlive-songbook")
@@ -16875,6 +23559,33 @@ can be adjusted with respect to relative position and format, and can be used
 in text and math mode.")
     (license license:cc-by4.0)))
 
+(define-public texlive-spectral
+  (package
+    (name "texlive-spectral")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/spectral/"
+                   "fonts/enc/dvips/spectral/"
+                   "fonts/map/dvips/spectral/"
+                   "fonts/tfm/production/spectral/"
+                   "fonts/truetype/production/spectral/"
+                   "fonts/type1/production/spectral/"
+                   "fonts/vf/production/spectral/"
+                   "tex/latex/spectral/")
+             (base32
+              "1i5ijzzk18m65ibf8igll22992wgfxrgr4qpxki0dpynfm0wiwjj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/spectral")
+    (synopsis "Spectral fonts with LaTeX support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the Spectral family of fonts, designed by Jean-Baptiste Levee.  Spectral is
+a new and versatile serif face available in seven weights of roman and italic,
+with small caps.")
+    (license (list license:silofl1.1 license:lppl))))
+
 (define-public texlive-splitbib
   (package
     (name "texlive-splitbib")
@@ -16895,6 +23606,30 @@ in text and math mode.")
 and subcategories.  It does not depend on BibTeX: any bibliography may be
 split and reordered.")
     (license license:lppl)))
+
+(define-public texlive-srbtiks
+  (package
+    (name "texlive-srbtiks")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/srbtiks/"
+                   "fonts/enc/dvips/srbtiks/"
+                   "fonts/map/dvips/srbtiks/"
+                   "fonts/tfm/public/srbtiks/"
+                   "fonts/vf/public/srbtiks/"
+                   "tex/latex/srbtiks/")
+             (base32
+              "12b4xigicn259ghi5kc6nyk0bqr81kdiqfg0hql9fpwrldvbj4k6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/srbtiks")
+    (synopsis "Font STIX2 for Serbian and Macedonian")
+    (description
+     "The @code{srbtiks} package is the extension of the @code{stix2-type1}
+package that enables usage of the STIX2 font in LaTeX for the Serbian and
+Macedonian languages.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
 
 (define-public texlive-stage
   (package
@@ -16935,6 +23670,31 @@ especially when this includes drawing graphics.  In the field of structural
 engineering, those small structures are a key part for teaching.  This package
 permits to create such 2D and 3D structures in a very fast and simple way.")
     (license (list license:gpl3+ license:lppl1.3+))))
+
+(define-public texlive-starfont
+  (package
+    (name "texlive-starfont")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/starfont/"
+                   "fonts/afm/public/starfont/"
+                   "fonts/map/dvips/starfont/"
+                   "fonts/tfm/public/starfont/"
+                   "fonts/type1/public/starfont/"
+                   "tex/latex/starfont/")
+             (base32
+              "1c2vnd5mycr6mnhwxz9gkjvfxwq0l91h2lhvpf49fjlfc3hdnd3l")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/starfont")
+    (synopsis "StarFont Sans astrological font")
+    (description
+     "The package contains StarFontSans and StarFontSerif, two astrological
+fonts designed by Anthony I.P. Owen, and the appropriate macros to use them
+with TeX and LaTeX.  The fonts are supplied both in the original TrueType
+Format and in Adobe Type 1 format.")
+    (license license:public-domain)))
 
 (define-public texlive-startex
   (package
@@ -17063,6 +23823,30 @@ applied and theoretical papers in statistics which are currently lacking in
 the popular @code{amsmath} package.")
     (license license:lppl1.3+)))
 
+(define-public texlive-staves
+  (package
+    (name "texlive-staves")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/staves/"
+                   "fonts/map/dvips/staves/"
+                   "fonts/tfm/public/staves/"
+                   "fonts/type1/public/staves/"
+                   "source/latex/staves/"
+                   "tex/latex/staves/")
+             (base32
+              "1wa4zx4c439q6ahs1fwa55dcxzrx382ksrj0bv1jnck6j3iw2dlc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/staves")
+    (synopsis "Typeset Icelandic staves and runic letters")
+    (description
+     "This package contains all the necessary tools to typeset the magical
+Icelandic staves plus the runic letters used in Iceland.  Included are a font
+in Adobe Type 1 format and LaTeX support.")
+    (license license:lppl)))
+
 (define-public texlive-steinmetz
   (package
     (name "texlive-steinmetz")
@@ -17082,6 +23866,157 @@ the popular @code{amsmath} package.")
      "The @code{steinmetz} package provides a command for typesetting complex
 numbers in the Steinmetz notation used in electrotechnics.")
     (license license:lppl)))
+
+(define-public texlive-step
+  (package
+    (name "texlive-step")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/step/"
+                   "fonts/enc/dvips/step/"
+                   "fonts/map/dvips/step/"
+                   "fonts/opentype/public/step/"
+                   "fonts/tfm/public/step/"
+                   "fonts/type1/public/step/"
+                   "fonts/vf/public/step/"
+                   "tex/latex/step/")
+             (base32
+              "1p2fzbsxrq98hlykw23j26xi936vnnd95qggjcn5a4jjwfrzbx1g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/step")
+    (synopsis "Times-like font")
+    (description
+     "The STEP fonts are a Times-like (i.e., Times replacement) font family,
+implementing a design first created for The Times of London in 1932.  These
+fonts are meant to be compatible in design with Adobe's digitization of
+Linotype Times, commonly used in publishing.  Type 1 support is provided for
+legacy TeX engines.")
+    (license license:silofl1.1)))
+
+(define-public texlive-stepgreek
+  (package
+    (name "texlive-stepgreek")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/stepgreek/"
+                   "fonts/enc/dvips/stepgreek/"
+                   "fonts/map/dvips/stepgreek/"
+                   "fonts/tfm/public/stepgreek/"
+                   "fonts/type1/public/stepgreek/"
+                   "fonts/vf/public/stepgreek/"
+                   "tex/latex/stepgreek/")
+             (base32
+              "00yh96gdk854yg61hgl7n938lyw11v9kdmwl7klriyq7wjy0zcaw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/stepgreek")
+    (synopsis "Times/Elsevier-style Greek font")
+    (description
+     "This is a beta version of the STEP Greek font.  Only a regular face is
+available at present, though there are plans to add italic, bold and bold
+italic in the future.  The font only supports LGR in TeX and is meant to serve
+as a Greek complement to a Times-like font such as STEP.  The font supports
+polytonic Greek.")
+    (license license:silofl1.1)))
+
+(define-public texlive-stickstoo
+  (package
+    (name "texlive-stickstoo")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/stickstoo/"
+                   "fonts/afm/public/stickstoo/"
+                   "fonts/enc/dvips/stickstoo/"
+                   "fonts/map/dvips/stickstoo/"
+                   "fonts/tfm/public/stickstoo/"
+                   "fonts/type1/public/stickstoo/"
+                   "fonts/vf/public/stickstoo/"
+                   "tex/latex/stickstoo/")
+             (base32
+              "15hmplphlg5vc3a966x379bkn74vb39pv73w0py65nd9zbb7z27i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/stickstoo")
+    (synopsis "Reworking of STIX2")
+    (description
+     "SticksToo is a reworking of the STIX2 fonts with support files focussing
+on enhancements of support for LaTeX users wishing to be able to access more
+of its features.  A companion addition to the @code{newtxmath} package
+provides a matching math package using STIX2 letters (Roman and Greek) with
+@code{newtxmath} symbols.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-stix
+  (package
+    (name "texlive-stix")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/stix/"
+                   "fonts/enc/dvips/stix/"
+                   "fonts/map/dvips/stix/"
+                   "fonts/opentype/public/stix/"
+                   "fonts/tfm/public/stix/"
+                   "fonts/type1/public/stix/"
+                   "fonts/vf/public/stix/"
+                   "source/fonts/stix/"
+                   "tex/latex/stix/")
+             (base32
+              "1ixxglx4azdnppiqhlkgyahj9a67zamljzv98n6hycp7y6jbd1x0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:tex-format "latex"
+           ;; FIXME: I cannot build this package from source.
+           #:phases #~(modify-phases %standard-phases (delete 'build))))
+    (native-inputs
+     (list (texlive-updmap.cfg
+            (list texlive-accents
+                  texlive-caption
+                  texlive-enumitem
+                  texlive-fonttable
+                  texlive-hypdoc))))
+    (home-page "https://ctan.org/pkg/stix")
+    (synopsis "OpenType Unicode maths fonts")
+    (description
+     "The STIX fonts are a suite of unicode OpenType fonts containing
+a complete set of mathematical glyphs.  This package is considered obsolete.
+See @code{stix2-otf} and @code{stix2-type1} instead.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-stix2-type1
+  (package
+    (name "texlive-stix2-type1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/stix2-type1/"
+                   "fonts/enc/dvips/stix2-type1/"
+                   "fonts/map/dvips/stix2-type1/"
+                   "fonts/tfm/public/stix2-type1/"
+                   "fonts/type1/public/stix2-type1/"
+                   "source/fonts/stix2-type1/"
+                   "tex/latex/stix2-type1/")
+             (base32
+              "0jsnyxbi5054fw0j5jw9cisj9xm8i8gf1f48m9l77bkybq0qviwp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/stix2-type1")
+    (synopsis "Type1 versions of the STIX Two OpenType fonts")
+    (description
+     "The @code{stix2} package provides minimal support for using the STIX Two
+fonts with versions of TeX that are limited to TFM files, Type 1 PostScript
+fonts, and 8-bit font encodings.
+
+Some glyphs that are traditionally available in TeX math fonts are not yet
+available in the STIX Two OpenType fonts.  In such cases, we have chosen to
+omit them from the @code{stix2} package rather than create incompatibilities
+between the OpenType and Type 1 versions.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
 
 (define-public texlive-structmech
   (package
@@ -17232,6 +24167,31 @@ of parameters that the user sets via macros.
 The bundle comes with a set of ready-prepared puzzle files.")
     (license license:lppl)))
 
+(define-public texlive-superiors
+  (package
+    (name "texlive-superiors")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/superiors/"
+                   "fonts/enc/dvips/superiors/"
+                   "fonts/map/dvips/superiors/"
+                   "fonts/tfm/public/superiors/"
+                   "fonts/type1/public/superiors/"
+                   "tex/latex/superiors/")
+             (base32
+              "0f50v8dal93vq8mfxs6m5n9d56ciy7f88343s6g1jsv2zf1xb7ng")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/superiors")
+    (synopsis "Attach superior figures to a font family")
+    (description
+     "The package allows the attachment of an arbitrary superior figures font
+to a font family that lacks one. (Superior figures are commonly used as
+footnote markers.)  Two superior figures fonts are provided --- one matching
+Times, the other matching Libertine.")
+    (license license:lppl)))
+
 (define-public texlive-susy
   (package
     (name "texlive-susy")
@@ -17248,6 +24208,32 @@ The bundle comes with a set of ready-prepared puzzle files.")
     (description "The package macros for SuperSymmetry-related work, such as
 abbreviations of longer expressions.")
     (license license:lppl)))
+
+(define-public texlive-svrsymbols
+  (package
+    (name "texlive-svrsymbols")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/svrsymbols/"
+                   "fonts/afm/public/svrsymbols/"
+                   "fonts/map/dvips/svrsymbols/"
+                   "fonts/opentype/public/svrsymbols/"
+                   "fonts/tfm/public/svrsymbols/"
+                   "fonts/type1/public/svrsymbols/"
+                   "source/fonts/svrsymbols/"
+                   "tex/latex/svrsymbols/")
+             (base32
+              "0l1pj97pqlh9mq3m3zswnxm2vws916yjlx0pq1gr3bc23kwvhhl3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/svrsymbols")
+    (synopsis "Font with symbols for use in physics texts")
+    (description
+     "The @code{svrsymbols} package is a LaTeX interface to the SVRsymbols
+font.  The glyphs of this font are ideograms that have been designed for use
+in physics texts.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-syllogism
   (package
@@ -17268,6 +24254,24 @@ abbreviations of longer expressions.")
 syllogisms and syllogistic-like arguments, composed of two premises and
 a conclusion.")
     (license license:lppl)))
+
+(define-public texlive-symbats3
+  (package
+    (name "texlive-symbats3")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/symbats3/" "tex/latex/symbats3/")
+             (base32
+              "0xr5m2irkbv376im1m5vms6gcpq3asj03dpfck2x1ccrywn4k3w2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/symbats3")
+    (synopsis "Macros to use the Symbats3 dingbats fonts")
+    (description
+     "This package makes available for LaTeX the glyphs in Feorag's OpenType
+Symbats3 neopagan dingbats fonts.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-sympytexpackage
   (package
@@ -17429,6 +24433,29 @@ work with tangram puzzles: @code{\\begin{EnvTangramTikz}} and
 a predefined tangram.")
     (license license:lppl1.3c)))
 
+(define-public texlive-tapir
+  (package
+    (name "texlive-tapir")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/tapir/"
+                   "fonts/source/public/tapir/"
+                   "fonts/type1/public/tapir/")
+             (base32
+              "1b1r2zg8m46zd2cb8l3vglncvixzhcfq75s0s86pyn9f88b17w57")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tapir")
+    (synopsis "Simple geometrical font")
+    (description
+     "Tapir is a simple geometrical font mostly created of line and circular
+segments with constant thickness.  The font is available as Metafont source
+and in Adobe Type 1 format.  The character set contains all ASCII characters
+in the range 0-127 (as in @code{cmr10}), accented characters used in the
+Czech, Slovak and Polish languages.")
+    (license license:gpl3+)))
+
 (define-public texlive-tdsfrmath
   (package
     (name "texlive-tdsfrmath")
@@ -17448,6 +24475,64 @@ a predefined tangram.")
      "This package provides a collection of macros for French maths teachers
 in colleges and lycées (and perhaps elsewhere).  It is hoped that the package
 will facilitate the everyday use of LaTeX by mathematics teachers.")
+    (license license:lppl)))
+
+(define-public texlive-tempora
+  (package
+    (name "texlive-tempora")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/tempora/"
+                   "fonts/afm/public/tempora/"
+                   "fonts/enc/dvips/tempora/"
+                   "fonts/map/dvips/tempora/"
+                   "fonts/opentype/public/tempora/"
+                   "fonts/tfm/public/tempora/"
+                   "fonts/type1/public/tempora/"
+                   "fonts/vf/public/tempora/"
+                   "tex/latex/tempora/")
+             (base32
+              "0vcg6al4navxhaha78zxigpwaj631hgm47z3ic36335rb80p8b83")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tempora")
+    (synopsis "Greek and Cyrillic to accompany Times")
+    (description
+     "This package, derived from TemporaLGCUni by Alexej Kryukov, is meant as
+a companion to Times text font packages, providing Greek and Cyrillic in
+matching weights and styles.  OpenType and Type1 fonts are provided, with
+LaTeX support files giving essentially complete LGR coverage of monotonic,
+polytonic and ancient Greek, and almost full T2A coverage of Cyrillic.")
+    (license license:gpl2)))
+
+(define-public texlive-tengwarscript
+  (package
+    (name "texlive-tengwarscript")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tengwarscript/"
+                   "fonts/enc/dvips/tengwarscript/"
+                   "fonts/map/dvips/tengwarscript/"
+                   "fonts/tfm/public/tengwarscript/"
+                   "fonts/vf/public/tengwarscript/"
+                   "source/latex/tengwarscript/"
+                   "tex/latex/tengwarscript/")
+             (base32
+              "1k3wgg8cj9n4ijj5qdbm74snwzdyabh1c93zm75p4x9pmawlpaa4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tengwarscript")
+    (synopsis "LaTeX support for using Tengwar fonts")
+    (description
+     "The package provides mid-level access to Tengwar fonts, providing good
+quality output.  Each tengwar sign is represented by a command, which will
+place the sign nicely in relation to previous signs.  A transcription package
+is available from the package's home page: writing all those tengwar commands
+would quickly become untenable.  The package supports the use of a wide
+variety of tengwar fonts that are available from the net; metric and map files
+are provided for all the supported fonts.")
     (license license:lppl)))
 
 (define-public texlive-tensind
@@ -17488,6 +24573,26 @@ offsets between successive indices.  It supports the typesetting of tensors
 with mixed upper and lower indices with spacing, also typeset preposed
 indices.")
     (license license:lppl)))
+
+(define-public texlive-termes-otf
+  (package
+    (name "texlive-termes-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/termes-otf/"
+                   "tex/latex/termes-otf/")
+             (base32
+              "1z8a1d2k4170n14hf8faimwfd26cshsww1ypa8im937lna7c0j39")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/termes-otf")
+    (synopsis "Using the OpenType fonts TeX Gyre Termes")
+    (description
+     "This package provides the OpenType version of the TeX Gyre Termes font,
+including text and math fonts.  The package needs LuaLaTeX or XeLaTeX.  The
+missing typefaces like bold math and slanted text are also defined.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-tex-ewd
   (package
@@ -17639,6 +24744,30 @@ symbols.")
 membrane protein topology plots and helical wheels.")
     (license license:gpl3+)))
 
+(define-public texlive-tfrupee
+  (package
+    (name "texlive-tfrupee")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/tfrupee/"
+                   "fonts/afm/public/tfrupee/"
+                   "fonts/map/dvips/tfrupee/"
+                   "fonts/tfm/public/tfrupee/"
+                   "fonts/type1/public/tfrupee/"
+                   "source/fonts/tfrupee/"
+                   "tex/latex/tfrupee/")
+             (base32
+              "0qhgxn5g4wzhi81xgb30giw542nprlmf0ryyq6jy752jccl07b7j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tfrupee")
+    (synopsis "Font offering the new (Indian) Rupee symbol")
+    (description
+     "The package provides LaTeX support for the (Indian) Rupee symbol font.
+Simple LaTeX support written for its use.")
+    (license license:gpl3)))
+
 (define-public texlive-thaienum
   (package
     (name "texlive-thaienum")
@@ -17700,6 +24829,87 @@ tools.")
 to introduce characters lines, to render stage directions, to divide a play
 into acts and scenes and to build the dramatis personae automatically.")
     (license license:lppl1.3+)))
+
+(define-public texlive-theanodidot
+  (package
+    (name "texlive-theanodidot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/theanodidot/"
+                   "fonts/enc/dvips/theanodidot/"
+                   "fonts/map/dvips/theanodidot/"
+                   "fonts/tfm/public/theanodidot/"
+                   "fonts/truetype/public/theanodidot/"
+                   "fonts/type1/public/theanodidot/"
+                   "fonts/vf/public/theanodidot/"
+                   "tex/latex/theanodidot/")
+             (base32
+              "00qf03ssh7ncpl6l33zcmqkhbylv77w3d0jdvxv9pcbbsn3rzk7v")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/theanodidot")
+    (synopsis "TheanoDidot fonts with LaTeX support")
+    (description
+     "This package provides the TheanoDidot font designed by Alexey Kryukov,
+in both TrueType and Type1 formats, with support for both traditional and
+modern LaTeX processors.  An artificially-emboldened variant has been provided
+but there are no italic variants.")
+    (license (list license:lppl license:silofl1.1))))
+
+(define-public texlive-theanomodern
+  (package
+    (name "texlive-theanomodern")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/theanomodern/"
+                   "fonts/enc/dvips/theanomodern/"
+                   "fonts/map/dvips/theanomodern/"
+                   "fonts/tfm/public/theanomodern/"
+                   "fonts/truetype/public/theanomodern/"
+                   "fonts/type1/public/theanomodern/"
+                   "fonts/vf/public/theanomodern/"
+                   "tex/latex/theanomodern/")
+             (base32
+              "17s04wcliqn5sgg5d6axc5ky3wg7xzh62c83hgrf3fq3pbykwm77")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/theanomodern")
+    (synopsis "Theano Modern fonts with LaTeX support")
+    (description
+     "This package provides the TheanoModern font designed by Alexey Kryukov,
+in both TrueType and Type1 formats, with support for both traditional and
+modern LaTeX processors.  An artificially-emboldened variant has been provided
+but there are no italic variants.")
+    (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-theanooldstyle
+  (package
+    (name "texlive-theanooldstyle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/theanooldstyle/"
+                   "fonts/enc/dvips/theanooldstyle/"
+                   "fonts/map/dvips/theanooldstyle/"
+                   "fonts/tfm/public/theanooldstyle/"
+                   "fonts/truetype/public/theanooldstyle/"
+                   "fonts/type1/public/theanooldstyle/"
+                   "fonts/vf/public/theanooldstyle/"
+                   "tex/latex/theanooldstyle/")
+             (base32
+              "1jkfdfrpp6v12mw5khw51ib9dsjnc5bz3y6bazyabx8z7lgksig5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/theanooldstyle")
+    (synopsis "Theano OldStyle fonts with LaTeX support")
+    (description
+     "This package provides the Theano OldStyle font designed by Alexey
+Kryukov, in both TrueType and Type1 formats, with support for both traditional
+and modern LaTeX processors.  An artificially-emboldened variant has been
+provided but there are no italic variants.")
+    (license (list license:silofl1.1 license:lppl))))
 
 (define-public texlive-theatre
   (package
@@ -17766,6 +24976,31 @@ aesthetic features.  The standard macro @code{\\newtheorem} may be redefined
 to use the environment.")
     (license license:lppl)))
 
+(define-public texlive-tinos
+  (package
+    (name "texlive-tinos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/tinos/"
+                   "fonts/enc/dvips/tinos/"
+                   "fonts/map/dvips/tinos/"
+                   "fonts/tfm/google/tinos/"
+                   "fonts/truetype/google/tinos/"
+                   "fonts/type1/google/tinos/"
+                   "fonts/vf/google/tinos/"
+                   "tex/latex/tinos/")
+             (base32
+              "06cckhcjxrg1x2jb8w1y3k0sb5bb6nfs3k9qdjc9mywji4a20g18")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tinos")
+    (synopsis "Tinos fonts with LaTeX support")
+    (description
+     "Tinos, designed by Steve Matteson, is an innovative serif design that is
+metrically compatible with Times New Roman.")
+    (license (list license:asl2.0 license:lppl))))
+
 (define-public texlive-tiscreen
   (package
     (name "texlive-tiscreen")
@@ -17783,6 +25018,61 @@ to use the environment.")
      "This package mimics the screen of older Texas Instruments dot matrix
 display calculators, specifically the TI-82 STATS.")
     (license license:lppl1.3c)))
+
+(define-public texlive-tpslifonts
+  (package
+    (name "texlive-tpslifonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tpslifonts/"
+                   "source/latex/tpslifonts/"
+                   "tex/latex/tpslifonts/")
+             (base32
+              "1i713qbhbv6yhax667igabfal1p2f8r6w0hgvs4y4pbpv4ffyqf6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tpslifonts")
+    (synopsis "LaTeX package for configuring presentation fonts")
+    (description
+     "This package aims to improve of font readability in presentations,
+especially with maths.  The standard CM maths fonts at large design sizes are
+difficult to read from far away, especially at low resolutions and low
+contrast color choice.  Using this package leads to much better overall
+readability of some font combinations.  The package offers a couple of
+harmonising combinations of text and maths fonts from the (distant) relatives
+of Computer Modern fonts, with a couple of extras for optimising readability.
+Text fonts from Computer Modern roman, Computer Modern sans serif, SliTeX
+Computer Modern sans serif, Computer Modern Bright, or Concrete Roman are
+available, in addition to maths fonts from Computer Modern maths, Computer
+Modern Bright maths, or Euler fonts.")
+    (license license:gpl3+)))
+
+(define-public texlive-trajan
+  (package
+    (name "texlive-trajan")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/trajan/"
+                   "fonts/afm/public/trajan/"
+                   "fonts/map/dvips/trajan/"
+                   "fonts/tfm/public/trajan/"
+                   "fonts/type1/public/trajan/"
+                   "source/latex/trajan/"
+                   "tex/latex/trajan/")
+             (base32
+              "1yjx252c6a3bf1k2646sqf3n3s09x2gxya3ypn1zz9scn5kkh1wa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/trajan")
+    (synopsis "Fonts from the Trajan's Column in Rome")
+    (description
+     "This package provides fonts (both as Metafont source and in Adobe Type
+1 format) based on the capitals carved on the Trajan's Column in Rome in 114
+AD, together with macros to access the fonts.  The font is uppercase letters
+together with some punctuation and analphabetics; no lowercase or digits.")
+    (license license:lppl)))
 
 (define-public texlive-translation-array-fr
   (package
@@ -17923,6 +25213,96 @@ is used by logicians for denoting a consequence relation, related to a given
 logic, between a collection of formulas and a derived formula.")
     (license license:lppl)))
 
+(define-public texlive-twemoji-colr
+  (package
+    (name "texlive-twemoji-colr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/twemoji-colr/"
+                   "fonts/truetype/public/twemoji-colr/")
+             (base32
+              "0qadwv7malbji28pxjpz3r53kb94grp435yk8h7i93x143vd8p9n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/twemoji-colr")
+    (synopsis "Twemoji font in COLR/CPAL layered format")
+    (description
+     "This is a COLR/CPAL-based color OpenType font from the Twemoji
+collection of emoji images.")
+    (license (list license:cc-by-sa4.0 license:asl2.0))))
+
+(define-public texlive-txfontsb
+  (package
+    (name "texlive-txfontsb")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/txfontsb/"
+                   "fonts/afm/public/txfontsb/"
+                   "fonts/enc/dvips/txfontsb/"
+                   "fonts/map/dvips/txfontsb/"
+                   "fonts/opentype/public/txfontsb/"
+                   "fonts/tfm/public/txfontsb/"
+                   "fonts/type1/public/txfontsb/"
+                   "fonts/vf/public/txfontsb/"
+                   "source/fonts/txfontsb/"
+                   "tex/latex/txfontsb/")
+             (base32
+              "0y7af1n1dymi6723jvn01rcjfwr6p47wr5y4c33wa4cgaa9m39hn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/txfontsb")
+    (synopsis "Extensions to @code{txfonts}, using GNU Freefont")
+    (description
+     "This package provides a set of fonts that extend the @code{txfonts}
+bundle with small caps and old style numbers, together with Greek support.
+The extensions are made with modifications of the GNU Freefont.")
+    (license (list license:gpl3+ license:lppl1.0+))))
+
+(define-public texlive-txuprcal
+  (package
+    (name "texlive-txuprcal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/txuprcal/"
+                   "fonts/map/dvips/txuprcal/"
+                   "fonts/tfm/public/txuprcal/"
+                   "fonts/type1/public/txuprcal/"
+                   "tex/latex/txuprcal/")
+             (base32
+              "033h3rqj7kf0rx0kdy9s1kwhk1hkrc6z70ga6ky7xy79mc3k2vgp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/txuprcal")
+    (synopsis "Upright calligraphic font based on TX calligraphic")
+    (description
+     "This small package provides a means of loading as @code{\\mathcal} an
+uprighted version of the calligraphic fonts from the TX font package.
+A scaled option is provided to allow arbitrary scaling.")
+    (license license:gpl3)))
+
+(define-public texlive-typicons
+  (package
+    (name "texlive-typicons")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/typicons/"
+                   "fonts/truetype/public/typicons/"
+                   "tex/latex/typicons/")
+             (base32
+              "1p82gq8jy0brvps6y6qdw8bldfsck9fw1qy84vrzfjz65435dzvh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/typicons")
+    (synopsis "Font containing a set of web-related icons")
+    (description
+     "This package grants access to 336 web-related icons provided by the
+included Typicons font, designed by Stephen Hutchings.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-ulqda
   (package
     (name "texlive-ulqda")
@@ -17958,6 +25338,27 @@ analysis of textual data such as interview transcripts and field notes by
 providing the LaTeX user with macros which are used to markup textual
 information.")
     (license license:lppl)))
+
+(define-public texlive-umtypewriter
+  (package
+    (name "texlive-umtypewriter")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/umtypewriter/"
+                   "fonts/opentype/public/umtypewriter/")
+             (base32
+              "19skqmchglac4lrk4qhvb4rabi73qmypdi20sbjxnvb8abw0pf3i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/umtypewriter")
+    (synopsis "Fonts to typeset with the @code{xgreek} package")
+    (description
+     "The UMTypewriter font family is a monospaced font family that was built
+from glyphs from the CB Greek fonts, the CyrTUG Cyrillic alphabet fonts (LH),
+and the standard Computer Modern font family.  It contains four OpenType fonts
+which are required for use of the @code{xgreek} package for XeLaTeX.")
+    (license license:silofl1.1)))
 
 (define-public texlive-unfonts-core
   (package
@@ -18101,6 +25502,82 @@ to define new units and changes the output concerning to the surrounding font
 settings.")
     (license license:lppl)))
 
+(define-public texlive-universa
+  (package
+    (name "texlive-universa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/universa/"
+                   "fonts/source/public/universa/"
+                   "fonts/tfm/public/universa/"
+                   "source/fonts/universa/"
+                   "tex/latex/universa/")
+             (base32
+              "1w1cw2236aj37iggxck1drsfbwsiap8mc3lrkqrimmz2rgixycdp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/universa")
+    (synopsis "Herbert Bayer's Universal font")
+    (description
+     "This package provides an implementation of the Universal by Herbert
+Bayer.  The Metafont sources of the fonts, and their LaTeX support, are
+supplied.")
+    (license license:gpl3+)))
+
+(define-public texlive-universalis
+  (package
+    (name "texlive-universalis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/universalis/"
+                   "fonts/enc/dvips/universalis/"
+                   "fonts/map/dvips/universalis/"
+                   "fonts/opentype/arkandis/universalis/"
+                   "fonts/tfm/arkandis/universalis/"
+                   "fonts/type1/arkandis/universalis/"
+                   "fonts/vf/arkandis/universalis/"
+                   "tex/latex/universalis/")
+             (base32
+              "1hqlpyh3g682vwdxbgyp7jrswvf16ds8i4mqb6yyv00h3rv11cxk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/universalis")
+    (synopsis "Universalis font, with support")
+    (description
+     "This package provides LaTeX, pdfLaTeX, XeLaTeX and LuaLaTeX support for
+the UniversalisADFStd family of fonts, designed by Hirwin Harendal.  The font
+is suitable as an alternative to fonts such as Adrian Frutiger's Univers and
+Frutiger.")
+    (license (list license:gpl2+ license:lppl))))
+
+(define-public texlive-uppunctlm
+  (package
+    (name "texlive-uppunctlm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/uppunctlm/"
+                   "fonts/tfm/public/uppunctlm/"
+                   "fonts/vf/public/uppunctlm/"
+                   "tex/latex/uppunctlm/")
+             (base32
+              "0d9x56rlxjavamx361582khj5idhy692hxm5wwwcc5y5i3xsc4pp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uppunctlm")
+    (synopsis
+     "Always keep upright shape for some punctuation marks and Arabic numerals")
+    (description
+     "The package provides a mechanism to keep punctuation always in upright
+shape even if italic was specified.  It is directed to Latin Modern fonts, and
+provides @file{.tfm}, @file{.vf}, @file{.fd}, and @file{.sty} files.  Here
+a list of punctuation characters always presented in upright shapes: comma,
+period, semicolon, colon, parentheses, square brackets, and Arabic numerals.")
+    (license license:gfl1.0)))
+
 (define-public texlive-urlbst
   (package
     (name "texlive-urlbst")
@@ -18124,6 +25601,30 @@ settings.")
 file which has a reasonably conventional structure.  The result is meant to be
 robust rather than pretty.")
     (license (list license:gpl2 license:lppl))))
+
+(define-public texlive-urwchancal
+  (package
+    (name "texlive-urwchancal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/urwchancal/"
+                   "fonts/tfm/urw/urwchancal/"
+                   "fonts/vf/urw/urwchancal/"
+                   "tex/latex/urwchancal/")
+             (base32
+              "05mwicyb46hjlqpq432z4b3f0q566xplzp1fjiw1ijmns5xhvig9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/urwchancal")
+    (synopsis "Use URW's clone of Zapf Chancery as a maths alphabet")
+    (description
+     "The package allows (the URW clone of) Zapf Chancery to function as
+a maths alphabet, the target of @code{\\mathcal} or @code{\\mathscr}, with
+accents appearing where they should, and other spacing parameters set to
+reasonable (not very tight) values.  The font itself may be found in the URW
+basic fonts collection.  This package supersedes the @code{pzccal} package.")
+    (license license:lppl)))
 
 (define-public texlive-usebib
   (package
@@ -18219,6 +25720,61 @@ fonts, in both Metafont and Type 1 formats.")
     (synopsis "Creating Venn diagrams with MetaPost")
     (description "This package provides MetaPost macros for Venn diagrams.")
     (license license:lppl)))
+
+(define-public texlive-venturisadf
+  (package
+    (name "texlive-venturisadf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/venturisadf/"
+                   "fonts/afm/arkandis/venturis/"
+                   "fonts/afm/arkandis/venturis2/"
+                   "fonts/afm/arkandis/venturisold/"
+                   "fonts/afm/arkandis/venturissans/"
+                   "fonts/afm/arkandis/venturissans2/"
+                   "fonts/enc/dvips/venturisadf/"
+                   "fonts/map/dvips/venturis/"
+                   "fonts/map/dvips/venturis2/"
+                   "fonts/map/dvips/venturisold/"
+                   "fonts/map/dvips/venturissans/"
+                   "fonts/map/dvips/venturissans2/"
+                   "fonts/tfm/arkandis/venturis/"
+                   "fonts/tfm/arkandis/venturis2/"
+                   "fonts/tfm/arkandis/venturisold/"
+                   "fonts/tfm/arkandis/venturissans/"
+                   "fonts/tfm/arkandis/venturissans2/"
+                   "fonts/type1/arkandis/venturis/"
+                   "fonts/type1/arkandis/venturis2/"
+                   "fonts/type1/arkandis/venturisold/"
+                   "fonts/type1/arkandis/venturissans/"
+                   "fonts/type1/arkandis/venturissans2/"
+                   "fonts/vf/arkandis/venturis/"
+                   "fonts/vf/arkandis/venturis2/"
+                   "fonts/vf/arkandis/venturisold/"
+                   "fonts/vf/arkandis/venturissans/"
+                   "fonts/vf/arkandis/venturissans2/"
+                   "source/fonts/venturisadf/"
+                   "tex/latex/venturis/"
+                   "tex/latex/venturis2/"
+                   "tex/latex/venturisadf/"
+                   "tex/latex/venturisold/"
+                   "tex/latex/venturissans/"
+                   "tex/latex/venturissans2/")
+             (base32
+              "0nvr9g1zzm51zjws52y8cyyi3y1z77q8s7iwgcb6jq4s9n4b4xbc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/venturisadf")
+    (synopsis "Venturis ADF fonts collection")
+    (description
+     "This package provides Venturis ADF fonts collection, serif and sans
+serif complete text font families, in both Adobe Type 1 and OpenType formats
+for publication.  The family is based on Utopia family.  Support for using the
+fonts, in LaTeX, is also provided.")
+    (license (list license:lppl1.3+
+                   (license:fsf-free
+                    "http://mirrors.ctan.org/fonts/utopia/README")))))
 
 (define-public texlive-verse
   (package
@@ -18427,6 +25983,56 @@ Native American languages.")
      "This package provides LaTeX support for the @code{wnri} fonts.")
     (license license:gpl2)))
 
+(define-public texlive-wsuipa
+  (package
+    (name "texlive-wsuipa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/wsuipa/"
+                   "fonts/source/public/wsuipa/"
+                   "fonts/tfm/public/wsuipa/"
+                   "tex/latex/wsuipa/")
+             (base32
+              "0gj7d68gb82dxmrbz69ibgpw2q2h6sb22k8nl569r27m2sli60jy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    ;; FIXME: Font metrics generation fails with "! Strange path (turning
+    ;; number is zero)" error.
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               (delete 'generate-font-metrics))))
+    (native-inputs (list texlive-metafont))
+    (home-page "https://ctan.org/pkg/wsuipa")
+    (synopsis "International Phonetic Alphabet fonts")
+    (description
+     "The package provides a 7-bit IPA font, as Metafont source, and macros
+for support under TeXt1 and LaTeX.  The fonts (and macros) are now largely
+superseded by the @code{tipa} fonts.")
+    (license license:knuth)))
+
+(define-public texlive-xcharter-math
+  (package
+    (name "texlive-xcharter-math")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/xcharter-math/"
+                   "fonts/opentype/public/xcharter-math/"
+                   "tex/latex/xcharter-math/")
+             (base32
+              "1p0wqn9877xshwlayba8v62dvx4m0widl9pd42aixll0snc6p67s")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xcharter-math")
+    (synopsis "XCharter-based OpenType Math font for LuaTeX and XeTeX")
+    (description
+     "This package provides an Unicode Math font XCharter-Math.otf meant to be
+used together with XCharter Opentype Text fonts (extension of Bitstream
+Charter) in LuaLaTeX or XeLaTeX documents.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
 (define-public texlive-xcite
   (package
     (name "texlive-xcite")
@@ -18597,6 +26203,71 @@ structural formulas in a way that reflects their structure.  The package
 provides three output modes: LaTeX, PostScript and PDF.")
     (license license:lppl1.3+)))
 
+(define-public texlive-yfonts
+  (package
+    (name "texlive-yfonts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/yfonts/" "source/latex/yfonts/"
+                   "tex/latex/yfonts/")
+             (base32
+              "021sb52516ksxs1pb8nb1gchaagb0hblx55yyxzpywrryfkjd3rx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/yfonts")
+    (synopsis "Support for old German fonts")
+    (description
+     "This package provides a LaTeX interface to the old German Gothic,
+Schwabacher, Fraktur and the baroque initials.")
+    (license license:lppl)))
+
+(define-public texlive-yfonts-otf
+  (package
+    (name "texlive-yfonts-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/yfonts-otf/"
+                   "fonts/opentype/public/yfonts-otf/"
+                   "tex/latex/yfonts-otf/")
+             (base32
+              "0dnif4hiwqri67cx6bjzs0rvz3ayrkn6fs99qn4q9qggs6s25l0j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/yfonts-otf")
+    (synopsis "OpenType version of the Old German fonts")
+    (description
+     "This is an OpenType version of the Old German fonts @code{yfrak},
+@code{ygoth}, @code{yswab} designed by Yannis Haralambous in Metafont.  The
+OpenType features make it easier to deal with the long/round @samp{s} and with
+older forms of umlauts (small @samp{e} over the letter).  A style file
+@file{yfonts-otf.sty} is provided as a replacement, for LuaLaTeX and XeLaTeX,
+of @file{yfonts.sty} or @file{oldgerm.sty}.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-yfonts-t1
+  (package
+    (name "texlive-yfonts-t1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/yfonts-t1/" "dvips/yfonts-t1/"
+                   "fonts/afm/public/yfonts-t1/"
+                   "fonts/map/dvips/yfonts-t1/"
+                   "fonts/type1/public/yfonts-t1/")
+             (base32
+              "1w92sgkarqx7z2ai6z059bml0kbh05fjyy9fl12x3nb0f5agjs7n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/yfonts-t1")
+    (synopsis "Old German-style fonts, in Adobe type 1 format")
+    (description
+     "This package comprises type 1 versions of the Gothic, Schwabacher and
+Fraktur fonts of Yannis Haralambous set of old German fonts.")
+    ;; "Freely available for general use."
+    (license (license:fsf-free "file://doc/fonts/yfonts-otf/README.md"))))
+
 (define-public texlive-yhmath
   (package
     (name "texlive-yhmath")
@@ -18622,6 +26293,26 @@ provides three output modes: LaTeX, PostScript and PDF.")
      "The @code{yhmath} bundle contains fonts (in Metafont and type 1 format)
 and a LaTeX package for using them.")
     (license license:lppl1.3c)))
+
+(define-public texlive-yinit-otf
+  (package
+    (name "texlive-yinit-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/yinit-otf/"
+                   "fonts/opentype/public/yinit-otf/")
+             (base32
+              "0p3a56kg63smsgwr0vlfzjxrdw11j3777y09gdbdd1cc50r9p3zx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/yinit-otf")
+    (synopsis
+     "OTF conversion of Yannis Haralambous' Old German decorative initials")
+    (description
+     "This package is a conversion of the @code{yinit} font into OTF.
+Original Metafont files for @code{yinit} are in the @code{yinit} package.")
+    (license license:public-domain)))
 
 (define-public texlive-youngtab
   (package
@@ -18707,6 +26398,24 @@ pgfkeys-enabled options are provided both at package load and configurably.")
      "This is a LaTeX package for creating CJK character calligraphy
 practicing sheets (copybooks).  Currently, only XeTeX is supported.")
     (license license:lppl1.3c)))
+
+(define-public texlive-zlmtt
+  (package
+    (name "texlive-zlmtt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/zlmtt/" "tex/latex/zlmtt/")
+             (base32
+              "014zchb0s9fj33d6h8r851v7v4cvpqzd97xaq4nv2l1lnxlii536")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/zlmtt")
+    (synopsis "Use Latin Modern Typewriter fonts")
+    (description
+     "The package allows selection of Latin Modern Typewriter fonts with
+scaling and access to all its features.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-zootaxa-bst
   (package
@@ -31429,6 +39138,32 @@ mathematics both upright and slanted shapes for Greek letters, as well as
 default and narrow versions of multiple integrals.")
     (license license:gpl3+)))
 
+(define-public texlive-kpfonts-otf
+  (package
+    (name "texlive-kpfonts-otf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/fonts/kpfonts-otf/"
+                   "fonts/opentype/public/kpfonts-otf/"
+                   "tex/latex/kpfonts-otf/")
+             (base32
+              "1byad0cjpp7np6xsqs71hkxn7aali5r77qv1n280p8b5w3z788iy")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/kpfonts-otf")
+    (synopsis "OTF version of the Kp-fonts")
+    (description
+     "This bundle provides OpenType versions of the Type1 Kp-fonts designed by
+Christophe Caignaert.  It is usable with LuaTeX or XeTeX engines only.  It
+consists of sixteen Text fonts (eight Serif, four Sans-Serif, four Monotype)
+and six Math fonts.  Serif and Sans-Serif families have small caps available
+in two sizes (SmallCaps and PetitesCaps), upper and lowercase digits, real
+superscripts and subscripts; ancient ligatures (@samp{ct} and @samp{st}),
+ancient long-@samp{s} and a long-tailed capital @samp{Q} are available via
+font features.  Math fonts cover all usual symbols including AMS'.")
+    (license (list license:silofl1.1 license:lppl1.3+))))
+
 (define-public texlive-latexconfig
   (package
     (name "texlive-latexconfig")
@@ -34191,14 +41926,7 @@ with the XeTeX engine.")
              (base32
               "0nzzcg1yvbslhqm5lsfcpqh6sbzkmnmmgyakg9l8855qpa8g9bf3")))
     (build-system texlive-build-system)
-    (arguments
-     (list
-      #:phases
-      ;; FIXME: The phase fails for multiple font files with error: "cannot
-      ;; find cmb12".
-      #~(modify-phases %standard-phases
-          (delete 'generate-font-metrics))))
-    (native-inputs (list texlive-cm texlive-metafont))
+    (native-inputs (list texlive-metafont texlive-sauter))
     (propagated-inputs (list texlive-cmexb))
     (home-page "https://ctan.org/pkg/csfonts")
     (synopsis "Czech/Slovak-tuned Computer Modern fonts")
@@ -49472,6 +57200,368 @@ programming, patgen, and plenty more.")
     (description
      "This package provides Hans Hagen's powerful ConTeXt system, along with
 third-party ConTeXt packages.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
+(define-public texlive-collection-fontsextra
+  (package
+    (name "texlive-collection-fontsextra")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-aboensis
+           texlive-academicons
+           texlive-accanthis
+           texlive-adforn
+           texlive-adfsymbols
+           texlive-aesupp
+           texlive-alegreya
+           texlive-alfaslabone
+           texlive-algolrevived
+           texlive-allrunes
+           texlive-almendra
+           texlive-almfixed
+           texlive-andika
+           texlive-anonymouspro
+           texlive-antiqua
+           texlive-antt
+           texlive-archaic
+           texlive-archivo
+           texlive-arev
+           texlive-arimo
+           texlive-arvo
+           texlive-asana-math
+           texlive-asapsym
+           texlive-ascii-font
+           texlive-aspectratio
+           texlive-astro
+           texlive-atkinson
+           texlive-augie
+           texlive-auncial-new
+           texlive-aurical
+           texlive-b1encoding
+           texlive-barcodes
+           texlive-baskervald
+           texlive-baskervaldx
+           texlive-baskervillef
+           texlive-bbding
+           texlive-bbm
+           texlive-bbm-macros
+           texlive-bbold
+           texlive-bbold-type1
+           texlive-bboldx
+           texlive-belleek
+           texlive-bera
+           texlive-berenisadf
+           texlive-beuron
+           texlive-bguq
+           texlive-bitter
+           texlive-blacklettert1
+           texlive-boisik
+           texlive-bookhands
+           texlive-boondox
+           texlive-braille
+           texlive-brushscr
+           texlive-cabin
+           texlive-caladea
+           texlive-calligra
+           texlive-calligra-type1
+           texlive-cantarell
+           texlive-carlito
+           texlive-carolmin-ps
+           texlive-cascadia-code
+           texlive-ccicons
+           texlive-cfr-initials
+           texlive-cfr-lm
+           texlive-charissil
+           texlive-cherokee
+           texlive-chivo
+           texlive-cinzel
+           texlive-clara
+           texlive-clearsans
+           texlive-cm-lgc
+           texlive-cm-mf-extra-bold
+           texlive-cm-unicode
+           texlive-cmathbb
+           texlive-cmbright
+           texlive-cmexb
+           texlive-cmll
+           texlive-cmpica
+           texlive-cmsrb
+           texlive-cmtiup
+           texlive-cmupint
+           texlive-cochineal
+           texlive-coelacanth
+           texlive-collection-basic
+           texlive-comfortaa
+           texlive-comicneue
+           texlive-concmath-fonts
+           texlive-concmath-otf
+           texlive-cookingsymbols
+           texlive-cooperhewitt
+           texlive-cormorantgaramond
+           texlive-countriesofeurope
+           texlive-courier-scaled
+           texlive-courierten
+           texlive-crimson
+           texlive-crimsonpro
+           texlive-cryst
+           texlive-cuprum
+           texlive-cyklop
+           texlive-dancers
+           texlive-dantelogo
+           texlive-dejavu
+           texlive-dejavu-otf
+           texlive-dice
+           texlive-dictsym
+           texlive-dingbat
+           texlive-domitian
+           texlive-doublestroke
+           texlive-doulossil
+           texlive-dozenal
+           texlive-drm
+           texlive-droid
+           texlive-dsserif
+           texlive-duerer
+           texlive-duerer-latex
+           texlive-dutchcal
+           texlive-ean
+           texlive-ebgaramond
+           texlive-ebgaramond-maths
+           texlive-ecc
+           texlive-eco
+           texlive-eczar
+           texlive-eiad
+           texlive-eiad-ltx
+           texlive-ektype-tanka
+           texlive-electrum
+           texlive-elvish
+           texlive-epigrafica
+           texlive-epsdice
+           texlive-erewhon
+           texlive-erewhon-math
+           texlive-esrelation
+           texlive-esstix
+           texlive-esvect
+           texlive-etbb
+           texlive-euler-math
+           texlive-eulervm
+           texlive-euxm
+           texlive-fbb
+           texlive-fdsymbol
+           texlive-fetamont
+           texlive-feyn
+           texlive-fge
+           texlive-fira
+           texlive-firamath
+           texlive-firamath-otf
+           texlive-foekfont
+           texlive-fonetika
+           texlive-fontawesome
+           texlive-fontawesome5
+           texlive-fontmfizz
+           texlive-fonts-churchslavonic
+           texlive-forum
+           texlive-fourier
+           texlive-fouriernc
+           texlive-frcursive
+           texlive-frederika2016
+           texlive-frimurer
+           texlive-garamond-libre
+           texlive-garamond-math
+           texlive-genealogy
+           texlive-gentium-tug
+           texlive-gfsartemisia
+           texlive-gfsbodoni
+           texlive-gfscomplutum
+           texlive-gfsdidot
+           texlive-gfsdidotclassic
+           texlive-gfsneohellenic
+           texlive-gfsneohellenicmath
+           texlive-gfssolomos
+           texlive-gillcm
+           texlive-gillius
+           texlive-gnu-freefont
+           texlive-gofonts
+           texlive-gothic
+           texlive-greenpoint
+           texlive-grotesq
+           texlive-gudea
+           texlive-hacm
+           texlive-hamnosys
+           texlive-hands
+           texlive-hep-font
+           texlive-hep-math-font
+           texlive-heros-otf
+           texlive-heuristica
+           texlive-hfbright
+           texlive-hfoldsty
+           texlive-hindmadurai
+           texlive-ibarra
+           texlive-ifsym
+           texlive-imfellenglish
+           texlive-inconsolata
+           texlive-initials
+           texlive-inriafonts
+           texlive-inter
+           texlive-ipaex-type1
+           texlive-iwona
+           texlive-jablantile
+           texlive-jamtimes
+           texlive-josefin
+           texlive-junicode
+           texlive-kixfont
+           texlive-kpfonts
+           texlive-kpfonts-otf
+           texlive-kurier
+           texlive-lato
+           texlive-lexend
+           texlive-lfb
+           texlive-libertine
+           texlive-libertinegc
+           texlive-libertinus
+           texlive-libertinus-fonts
+           texlive-libertinus-otf
+           texlive-libertinus-type1
+           texlive-libertinust1math
+           texlive-librebaskerville
+           texlive-librebodoni
+           texlive-librecaslon
+           texlive-librefranklin
+           texlive-libris
+           texlive-lineara
+           texlive-linguisticspro
+           texlive-lobster2
+           texlive-logix
+           texlive-lxfonts
+           texlive-ly1
+           texlive-magra
+           texlive-marcellus
+           texlive-mathabx
+           texlive-mathabx-type1
+           texlive-mathdesign
+           texlive-mdputu
+           texlive-mdsymbol
+           texlive-merriweather
+           texlive-miama
+           texlive-mintspirit
+           texlive-missaali
+           texlive-mlmodern
+           texlive-mnsymbol
+           texlive-montserrat
+           texlive-mpfonts
+           texlive-mweights
+           texlive-newcomputermodern
+           texlive-newpx
+           texlive-newtx
+           texlive-newtxsf
+           texlive-newtxtt
+           texlive-niceframe-type1
+           texlive-nimbus15
+           texlive-nkarta
+           texlive-noto
+           texlive-noto-emoji
+           texlive-notomath
+           texlive-nunito
+           texlive-obnov
+           texlive-ocherokee
+           texlive-ocr-b
+           texlive-ocr-b-outline
+           texlive-ogham
+           texlive-oinuit
+           texlive-old-arrows
+           texlive-oldlatin
+           texlive-oldstandard
+           texlive-opensans
+           texlive-orkhun
+           texlive-oswald
+           texlive-overlock
+           texlive-pacioli
+           texlive-pagella-otf
+           texlive-paratype
+           texlive-phaistos
+           texlive-phonetic
+           texlive-pigpen
+           texlive-playfair
+           texlive-plex
+           texlive-plex-otf
+           texlive-plimsoll
+           texlive-poiretone
+           texlive-poltawski
+           texlive-prodint
+           texlive-punk
+           texlive-punk-latex
+           texlive-punknova
+           texlive-pxtxalfa
+           texlive-qualitype
+           texlive-quattrocento
+           texlive-raleway
+           texlive-recycle
+           texlive-roboto
+           texlive-romande
+           texlive-rosario
+           texlive-rsfso
+           texlive-sansmathaccent
+           texlive-sansmathfonts
+           texlive-sauter
+           texlive-sauterfonts
+           texlive-schola-otf
+           texlive-scholax
+           texlive-schulschriften
+           texlive-semaphor
+           texlive-shobhika
+           texlive-simpleicons
+           texlive-skull
+           texlive-sourcecodepro
+           texlive-sourcesanspro
+           texlive-sourceserifpro
+           texlive-spectral
+           texlive-srbtiks
+           texlive-starfont
+           texlive-staves
+           texlive-step
+           texlive-stepgreek
+           texlive-stickstoo
+           texlive-stix
+           texlive-stix2-otf
+           texlive-stix2-type1
+           texlive-superiors
+           texlive-svrsymbols
+           texlive-symbats3
+           texlive-tapir
+           texlive-tempora
+           texlive-tengwarscript
+           texlive-termes-otf
+           texlive-tfrupee
+           texlive-theanodidot
+           texlive-theanomodern
+           texlive-theanooldstyle
+           texlive-tinos
+           texlive-tpslifonts
+           texlive-trajan
+           texlive-twemoji-colr
+           texlive-txfontsb
+           texlive-txuprcal
+           texlive-typicons
+           texlive-umtypewriter
+           texlive-universa
+           texlive-universalis
+           texlive-uppunctlm
+           texlive-urwchancal
+           texlive-venturisadf
+           texlive-wsuipa
+           texlive-xcharter
+           texlive-xcharter-math
+           texlive-xits
+           texlive-yfonts
+           texlive-yfonts-otf
+           texlive-yfonts-t1
+           texlive-yinit-otf
+           texlive-zlmtt))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Additional fonts")
+    (description "This collection provides additional fonts.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
 (define-public texlive-collection-fontsrecommended
