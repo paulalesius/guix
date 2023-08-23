@@ -430,7 +430,7 @@ mouse and joystick control, and original music.")
      `(#:tests? #f                      ; no check target
        #:make-flags
        (list "CC=gcc"
-             "CFLAGS=-D_FILE_OFFSET_BITS=64"
+             "CFLAGS=-D_FILE_OFFSET_BITS=64 -fcommon"
              (string-append "PREFIX=" (assoc-ref %outputs "out")))
        #:phases
        (modify-phases %standard-phases
@@ -713,7 +713,8 @@ canyons and wait for the long I-shaped block to clear four rows at a time.")
      (list ncurses))
     (arguments
      `(#:tests? #f                      ;no tests
-       #:make-flags '("CC=gcc")
+       #:make-flags '("CC=gcc"
+                      "CFLAGS=-O2 -DHAVE_IPV6 -g -Wall -fcommon")
        #:phases
        (modify-phases %standard-phases
          (delete 'configure)            ;no configure script
@@ -1890,7 +1891,13 @@ built-in level editor.")
                                   version "_src.tar.gz"))
               (sha256
                (base32
-                "18vp2ygvn0s0jz8rm585jqf6hjqkam1ximq81k0r9hpmfj7wb88f"))))
+                "18vp2ygvn0s0jz8rm585jqf6hjqkam1ximq81k0r9hpmfj7wb88f"))
+              (modules '((guix build utils)))
+              (snippet
+               ;; Fix a missing include for std::map.
+               #~(substitute* "src/shared/impl/lua_func_wrapper.cpp"
+                   (("#include \"misc[.]hpp\"" x)
+                    (string-append "#include <map>\n" x))))))
     (build-system gnu-build-system)
     (arguments
      '(#:make-flags
@@ -2376,7 +2383,7 @@ Every puzzle has a complete solution, although there may be more than one.")
                 #t))))
    (build-system gnu-build-system)
    (arguments
-    '(#:configure-flags '("--disable-cpu-opt")
+    '(#:configure-flags '("--disable-cpu-opt" "CFLAGS=-fcommon")
       #:make-flags `(,(string-append "gamesdir="
                                      (assoc-ref %outputs "out") "/bin"))
       #:phases
@@ -8250,7 +8257,8 @@ ncurses for text display.")
            physfs
            python
            python-pyyaml
-           (sdl-union (list sdl2 sdl2-image sdl2-mixer))
+           sdl2
+           sdl2-image
            suitesparse))
     (home-page "https://naev.org/")
     (synopsis "Game about space exploration, trade and combat")
