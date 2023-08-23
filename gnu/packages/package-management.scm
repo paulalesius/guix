@@ -175,8 +175,8 @@
   ;; Note: the 'update-guix-package.scm' script expects this definition to
   ;; start precisely like this.
   (let ((version "1.4.0")
-        (commit "0e6215ac72cf642b0bafc4e1ea3120535bd7245a")
-        (revision 8))
+        (commit "4dfdd822102690b5687acf28365ab707b68d9476")
+        (revision 10))
     (package
       (name "guix")
 
@@ -192,7 +192,7 @@
                       (commit commit)))
                 (sha256
                  (base32
-                  "1c6bmv03vgng4g56xx7jpg0q0frfsvy9kv84qr04a1sk24s7zbxb"))
+                  "1p21gz2lr7iqvma1m83k2r04w201rzvk31d5kfn2qkr9l0gds4cx"))
                 (file-name (string-append "guix-" version "-checkout"))))
       (build-system gnu-build-system)
       (arguments
@@ -263,6 +263,46 @@ $(prefix)/etc/openrc\n")))
                             (lambda _
                               (substitute* "tests/gexp.scm"
                                 (("2\\.0") "3.0")))))
+                        '())
+                    ,@(if (system-hurd?)
+                          `((add-after 'unpack 'disable-tests/hurd
+                              (lambda _
+                                (substitute* "Makefile.am"
+                                  (("tests/derivations.scm") "")
+                                  (("tests/grafts.scm") "")
+                                  (("tests/graph.scm") "")
+                                  (("tests/lint.scm") "")
+                                  (("tests/nar.scm") "")
+                                  (("tests/offload.scm") "")
+                                  (("tests/pack.scm") "")
+                                  (("tests/packages.scm") "")
+                                  (("tests/processes.scm") "")
+                                  (("tests/publish.scm") "")
+                                  (("tests/pypi.scm") "")
+                                  (("tests/size.scm") "")
+                                  (("tests/store.scm") "")
+                                  (("tests/substitute.scm") "")
+                                  (("tests/syscalls.scm") "")
+                                  (("tests/union.scm") "")
+                                  (("tests/guix-build.sh") "")
+                                  (("tests/guix-build-branch.sh") "")
+                                  (("tests/guix-hash.sh") "")
+                                  (("tests/guix-locate.sh") "")
+                                  (("tests/guix-pack.sh") "")
+                                  (("tests/guix-pack-relocatable.sh") "")
+                                  (("tests/guix-package-aliases.sh") "")
+                                  (("tests/guix-package-net.sh") "")
+                                  (("tests/guix-home.sh") "")
+                                  (("tests/guix-archive.sh") "")
+                                  (("tests/guix-environment.sh") "")
+                                  (("tests/guix-package.sh") "")
+                                  (("tests/guix-refresh.sh") "")
+                                  (("tests/guix-shell.sh") "")
+                                  (("tests/guix-shell-export-manifest.sh") "")
+                                  (("tests/guix-system.sh") "")
+                                  (("tests/guix-graph.sh") "")
+                                  (("tests/guix-gc.sh") "")
+                                  (("tests/guix-daemon.sh") "")))))
                         '())
                     (add-before 'build 'use-host-compressors
                       (lambda* (#:key inputs target #:allow-other-keys)
