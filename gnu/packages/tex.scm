@@ -1286,6 +1286,27 @@ a Marathi journal, with LaTeX.")
                    (license:fsf-free "file://doc/latex/aalok/README.txt")
                    license:fdl1.3+))))
 
+(define-public texlive-aastex
+  (package
+    (name "texlive-aastex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/aastex/" "doc/latex/aastex/"
+                   "tex/latex/aastex/")
+             (base32
+              "07kbrv0vhlpdaxqkiwn2q4psldn5p2x5mmpaw70g6pgcbhk7r74h")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aastex")
+    (synopsis "Macros for manuscript preparation for AAS journals")
+    (description
+     "The bundle provides a document class for preparing papers for
+@acronym{AAS, American Astronomical Society} publications.  Authors who wish
+to submit papers to AAS journals are strongly urged to use this class in
+preference to any of the alternatives available.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-abc
   (package
     (name "texlive-abc")
@@ -1307,6 +1328,66 @@ convert your notation to PostScript (using the established utility
 @command{abcm2ps}) and hence to the format needed for inclusion in your
 document.")
     (license license:lppl1.2+)))
+
+(define-public texlive-abnt
+  (package
+    (name "texlive-abnt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/abnt/" "tex/latex/abnt/")
+             (base32
+              "1zjsvp6ng6vf87mmnv18q435h6p3ygs512pk0m05yd8gyrmhmrxr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/abnt")
+    (synopsis "Typesetting academic works according to ABNT rules")
+    (description
+     "The ABNT package provides a clean and practical implementation of the
+@acronym{ABNT, Associacao Brasileira de Normas Tecnicas} rules for academic
+texts.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-abntex2
+  (package
+    (name "texlive-abntex2")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/abntex2/" "bibtex/bst/abntex2/"
+                   "doc/latex/abntex2/" "tex/latex/abntex2/")
+             (base32
+              "07752n6s2nl4h8j1wg7hjx2wisn505asb1r1i38z7qjbzg7lwqq5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/abntex2")
+    (synopsis
+     "Typeset technical and scientific Brazilian documents based on ABNT rules")
+    (description
+     "The bundle provides support for typesetting technical and scientific
+Brazilian documents (like academic thesis, articles, reports, research project
+and others) based on the @acronym{ABNT, Associacao Brasileira de Normas
+Tecnicas} rules.  It replaces the old @code{abntex}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-abntexto
+  (package
+    (name "texlive-abntexto")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/abntexto/" "tex/latex/abntexto/")
+             (base32
+              "1c560h2555hx1pcq70yg9qdgqp1bkxidabp53fd0gyvb141s3d79")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/abntexto")
+    (synopsis "LaTeX class for formatting academic papers in ABNT standards")
+    (description
+     "This is a LaTeX class created for Brazilian students to facilitate the
+use of standards from the @acronym{ABNT, Associacao Brasileira de Normas
+Tecnicas} in academic works like TCCs, dissertations, theses.")
+    (license license:public-domain)))
 
 (define-public texlive-aboensis
   (package
@@ -1438,6 +1519,27 @@ works on TeX virtual fonts and @command{vpl2ovp} transforms a TeX font to an
 Omega one.")
     (license license:gpl3+)))
 
+(define-public texlive-accsupp
+  (package
+    (name "texlive-accsupp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/accsupp/" "source/latex/accsupp/"
+                   "tex/latex/accsupp/")
+             (base32
+              "10xdg3gk5madpb131lhc9x2sxzby4rvqycbfzb5kl2zkwr1qw5v7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/accsupp")
+    (synopsis "Better accessibility support for PDF files")
+    (description
+     "Since PDF 1.5 portions of a page can be marked for better accessibility
+support.  For example, replacement texts or expansions of abbreviations can be
+provided.  This package starts with providing a minimal low-level interface
+for programmers; its status is experimental.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-abbr
   (package
     (name "texlive-abbr")
@@ -1483,6 +1585,69 @@ adaptation for working with Babel.")
      (list license:isc                  ;apreamble
            license:knuth                ;bxabst
            license:public-domain))))    ;docmac
+
+(define-public texlive-acmconf
+  (package
+    (name "texlive-acmconf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/acmconf/" "source/latex/acmconf/"
+                   "tex/latex/acmconf/")
+             (base32
+              "0j30krvxzps7ka3xzv0qifrzxhxzkr3b3f9gska6najp1dvygs3a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/acmconf")
+    (synopsis "Class for ACM conference proceedings")
+    (description
+     "This class may be used to typeset articles to be published in the
+proceedings of @acronym{ACM, Association for Computing Machinery} conferences
+and workshops.  The layout produced by the @code{acmconf} class is based on
+the ACM's own specification.")
+    (license license:lppl)))
+
+(define-public texlive-active-conf
+  (package
+    (name "texlive-active-conf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/active-conf/"
+                   "source/latex/active-conf/"
+                   "tex/latex/active-conf/")
+             (base32
+              "12krmwspwkhcwk5q0qf2hldnsk44vd2jfssfdiwm97alicc3cpj1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/active-conf")
+    (synopsis "Class for typesetting ACTIVE conference papers")
+    (description
+     "Active-conf is a class for typesetting papers for the Active conference
+on noise and vibration control.  The class is based on @code{article} with
+more flexible front-matter, and can be customised for conferences in future
+years with a header file.")
+    (license license:lppl)))
+
+(define-public texlive-adfathesis
+  (package
+    (name "texlive-adfathesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/adfathesis/"
+                   "doc/latex/adfathesis/"
+                   "source/latex/adfathesis/"
+                   "tex/latex/adfathesis/")
+             (base32
+              "0zi91xc3sbdjvp87zgrb7g3l5hxqig33fchlhg2i8gjya9ij67p6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/adfathesis")
+    (synopsis "Australian Defence Force Academy thesis format")
+    (description "The package provides the Australian Defence Force Academy
+thesis format.  The bundle also includes a BibTeX style file.")
+    (license license:public-domain)))
 
 (define-public texlive-adforn
   (package
@@ -1640,6 +1805,87 @@ a @file{.pl} (Property List) file, which in its turn can be converted to
 a @file{.tfm} (TeX Font Metric) file.  It normally preserves kerns and
 ligatures, but also offers additional control over them.")
     (license license:gpl2)))
+
+(define-public texlive-afparticle
+  (package
+    (name "texlive-afparticle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/afparticle/"
+                   "source/latex/afparticle/"
+                   "tex/latex/afparticle/")
+             (base32
+              "1g7dk32la2zlspdsw1pz15bf90jjycblgpg91m24bx70svdv67kv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/afparticle")
+    (synopsis "Typesetting articles for @emph{Archives of Forensic Psychology}")
+    (description
+     "This package provides a class for typesetting articles for the open
+access journal @emph{Archives of Forensic Psychology}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-afthesis
+  (package
+    (name "texlive-afthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/afthesis/" "doc/latex/afthesis/"
+                   "tex/latex/afthesis/")
+             (base32
+              "1db9fzs4rf1d86n2gcn0zs255nlwc8i1yl5n9qzsn6xf5as7zz1i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/afthesis")
+    (synopsis "Air Force Institute of Technology thesis class")
+    (description
+     "This is a LaTeX thesis and dissertation class for US Air Force Institute
+Of Technology.")
+    (license license:public-domain)))
+
+(define-public texlive-aguplus
+  (package
+    (name "texlive-aguplus")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/aguplus/" "doc/latex/aguplus/"
+                   "tex/latex/aguplus/")
+             (base32
+              "0qpi5r4y70cmxinr9y46rw6dfd337l5xhnqfvbkz27nw98j87fi3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aguplus")
+    (synopsis "Styles for American Geophysical Union")
+    (description
+     "This bundle started as an extension to the @acronym{AGU, American
+Geophysical Union}'s own published styles, providing extra facilities and
+improved usability.  The AGU now publishes satisfactory LaTeX materials of its
+own; it is recommended to switch to the official distribution.")
+    (license license:lppl)))
+
+(define-public texlive-aiaa
+  (package
+    (name "texlive-aiaa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/aiaa/" "doc/latex/aiaa/"
+                   "source/latex/aiaa/" "tex/latex/aiaa/")
+             (base32
+              "0l6sp7q53nr1ppxaynfc0q3kf1hg5v22yxyvzjdg028rf1nvbhww")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aiaa")
+    (synopsis "Typeset AIAA conference papers")
+    (description
+     "This package provides a bundle of LaTeX and BibTeX files and sample
+documents to aid those producing papers and journal articles according to the
+guidelines of the @acronym{AIAA, American Institute of Aeronautics and
+Astronautics}.")
+    (license license:lppl)))
 
 (define-public texlive-aichej
   (package
@@ -2382,6 +2628,31 @@ equations and add annotation labels using TikZ.  It should work with pdfLaTeX
 as well as LuaLaTeX.")
     (license license:expat)))
 
+(define-public texlive-anonymous-acm
+  (package
+    (name "texlive-anonymous-acm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/anonymous-acm/"
+                   "tex/latex/anonymous-acm/")
+             (base32
+              "05csmx485sjky64d2hwlb5f7mrkixhw1gn3nl7p7lng9sd8qh25k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/anonymous-acm")
+    (synopsis "Typeset anonymous versions for ACM articles")
+    (description
+     "Academics often need to submit anonymous versions of their papers for
+peer-review.  This often requires anonymization which at some future date
+needs to be reversed.  However de-anonymizing an anonymized paper can be
+laborious and error-prone.  This LaTeX package allows anonymization options to
+be specified at the time of writing for authors using @code{acmart.cls}, the
+official @acronym{ACM, Association of Computing Machinery} master
+@code{article} template.  Anonymization or deanonymization is carried out by
+simply changing one option and recompiling.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-anonymouspro
   (package
     (name "texlive-anonymouspro")
@@ -2491,6 +2762,144 @@ This replaces the original Omega package for use with Lambda, and provides
 extra facilities (including Babel-like language switching, which eases porting
 of LaTeX documents to Lambda).")
     (license license:lppl)))
+
+(define-public texlive-anufinalexam
+  (package
+    (name "texlive-anufinalexam")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/anufinalexam/")
+             (base32
+              "1v1k74vxidgxn5zzqz6v9zga468kcf7hwdrnvw44cd318221y396")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/anufinalexam")
+    (synopsis "LaTeX document shell for ANU final exam")
+    (description
+     "This LaTeX document shell is created for the standard formatting of
+final exams in the @acronym{ANU, Australian National University}.")
+    (license license:gpl3+)))
+
+(define-public texlive-anyfontsize
+  (package
+    (name "texlive-anyfontsize")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/anyfontsize/"
+                   "tex/latex/anyfontsize/")
+             (base32
+              "0wr4brhggmkb1rwzmcc2r5ygzqp6090z0bp3sfbarwvwz903wpdn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/anyfontsize")
+    (synopsis "Select any font size in LaTeX")
+    (description
+     "The package allows the to user select any font size , even those sizes
+that are not listed in the @file{.fd} file.  If such a size is requested,
+LaTeX will search for and select the nearest listed size; @code{anyfontsize}
+will then scale the font to the size actually requested.  Similar
+functionality is available for the CM family, for the EC family, or for either
+Computer Modern encoding; the present package generalises the facility.")
+    (license license:lppl)))
+
+(define-public texlive-aomart
+  (package
+    (name "texlive-aomart")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/aomart/" "doc/latex/aomart/"
+                   "source/latex/aomart/" "tex/latex/aomart/")
+             (base32
+              "0gdi54qi0m96pwwn59r9qjlkw0986z9ra57g1vf11h67zwmrgrv9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aomart")
+    (synopsis "Typeset articles for the @emph{Annals of Mathematics}")
+    (description
+     "The package provides a class for typesetting articles for the
+@emph{Annals of Mathematics}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-apa
+  (package
+    (name "texlive-apa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/apa/" "tex/latex/apa/")
+             (base32
+              "0slrvw7awva4d2zf7a6qyvh85qhrp8ml4ncdzjfizr5xz4ki6gs2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/apa")
+    (synopsis "American Psychological Association format")
+    (description
+     "This package provides a LaTeX class to format text according to the
+@emph{American Psychological Association Publication Manual} (5th ed.)
+specifications for manuscripts or to the @acronym{APA, Americal Psychological
+Association} journal look found in journals like the @emph{Journal of
+Experimental Psychology} etc.  In addition, it provides regular LaTeX-like
+output with a few enhancements and APA-motivated changes.  Note that the
+@code{apa7} class (covering the 7th edition of the manual) and
+@code{apa6} (covering the 6th edition of the manual) are now commonly in use.
+Apacite, which used to work with this class, has been updated for use with
+@code{apa6}.")
+    (license license:lppl)))
+
+(define-public texlive-apa6e
+  (package
+    (name "texlive-apa6e")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/apa6e/" "source/latex/apa6e/"
+                   "tex/latex/apa6e/")
+             (base32
+              "1dksjpdywwvyj9mfhaghsrf935p061gsnx4lf5s6pkv5nxn2pbln")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/apa6e")
+    (synopsis "Format manuscripts to APA 6th edition guidelines")
+    (description
+     "This is a minimalist class file for formatting manuscripts in the style
+described in the @acronym{APA, American Psychological Association} 6th edition
+guidelines.  The @code{apa6} class provides better coverage of the
+requirements.")
+    (license license:bsd-2)))
+
+(define-public texlive-apa7
+  (package
+    (name "texlive-apa7")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/apa7/" "source/latex/apa7/"
+                   "tex/latex/apa7/")
+             (base32
+              "0kifjg61s16cn7zvmix2yqdz26spr7f9gsxkiv822qs3y337l6ry")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               ;; ".ins" file writes files to "./config" and "./build".
+               ;; Create these directories first to prevent an error.
+               (add-before 'build 'prepare-build
+                 (lambda _
+                   (for-each mkdir-p (list "build/config" "build/samples")))))))
+    (home-page "https://ctan.org/pkg/apa7")
+    (synopsis "Format documents in APA style (7th edition)")
+    (description
+     "This class formats documents in @acronym{APA, American Psychological
+Association} style (7th Edition).  It provides a full set of facilities in
+four different output modes (journal-like appearance, double-spaced
+manuscript, double-spaced student manuscript, LaTeX-like document).  The class
+can mask author identity for copies for use in masked peer review.  It is
+a development of the @code{apa6} class.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-apalike-ejor
   (package
@@ -3031,6 +3440,46 @@ pdfLaTeX and the @code{cjk} package, are provided by the @code{arphic}
 package.")
     (license license:arphic-1999)))
 
+(define-public texlive-arsclassica
+  (package
+    (name "texlive-arsclassica")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/arsclassica/"
+                   "tex/latex/arsclassica/")
+             (base32
+              "0cxmp68na3ww565r7ixqbhsy2mp063wwq5p6gwvq5fdrk34ci2a5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/arsclassica")
+    (synopsis "Different view of the ClassicThesis package")
+    (description
+     "The package changes some typographical points of the ClassicThesis
+style.  It enables the user to reproduce the look of the guide @emph{The art
+of writing with LaTeX} (the web page is in Italian).")
+    (license license:lppl)))
+
+(define-public texlive-articleingud
+  (package
+    (name "texlive-articleingud")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/articleingud/"
+                   "source/latex/articleingud/"
+                   "tex/latex/articleingud/")
+             (base32
+              "1iprjpjr3yav8afmgirrfmdipxb1fmdwa3b0ss5y8l7wspijmmp8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/articleingud")
+    (synopsis "LaTeX class for articles published in INGENIERIA review")
+    (description
+     "The package provides a class for articles published in INGENIERIA
+review.  This class is derived from the standard LaTeX class @code{article}.")
+    (license license:lppl1.2+)))
+
 (define-public texlive-arvo
   (package
     (name "texlive-arvo")
@@ -3054,6 +3503,27 @@ package.")
      "This package provides the Arvo family of fonts, designed by Anton
 Koovit, with support for LaTeX and pdfLaTeX.")
     (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-asaetr
+  (package
+    (name "texlive-asaetr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/asaetr/" "doc/latex/asaetr/"
+                   "tex/latex/asaetr/")
+             (base32
+              "1yms34l9nx151vgjrjsa94801q0bgp2khjgk933iy1bpkmm7jf2d")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/asaetr")
+    (synopsis "Transactions of the ASAE")
+    (description
+     "This package provides a class and BibTeX style for submissions to the
+@emph{Transactions of the American Society of Agricultural Engineers}.  Also
+included is the Metafont source of a slanted Computer Modern Caps and Small
+Caps font.")
+    (license license:public-domain)))
 
 (define-public texlive-asapsym
   (package
@@ -3079,6 +3549,27 @@ the ASAP Symbol font, which is also included.  The font is distributed in
 OpenType format, and makes extensive use of OpenType features.  Therefore, at
 this time, only XeTeX and LuaTeX are supported.")
     (license license:lppl1.3+)))
+
+(define-public texlive-ascelike
+  (package
+    (name "texlive-ascelike")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/ascelike/" "doc/latex/ascelike/"
+                   "tex/latex/ascelike/")
+             (base32
+              "14n4z4agsnnvms51r142q0r5bv9yqp4gchrr7zvakkp2r3232dai")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ascelike")
+    (synopsis "Bibliography style for the ASCE")
+    (description
+     "This package provides a document class and bibliographic style that
+prepares documents in the style required by the @acronym{ASCE, American
+Society of Civil Engineers}.  These are unofficial files, not sanctioned by
+that organization.")
+    (license license:lppl)))
 
 (define-public texlive-ascii-chart
   (package
@@ -3147,6 +3638,54 @@ according to the IBM PC Code Page 437 C0 Graphics.")
 writing support.  It uses only native picture macros and fonts for drawing
 boxes and is thus driver independent.")
     (license license:bsd-3)))
+
+(define-public texlive-asmeconf
+  (package
+    (name "texlive-asmeconf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/asmeconf/" "doc/latex/asmeconf/"
+                   "tex/latex/asmeconf/")
+             (base32
+              "05wic7mb1flxdnl27lbhkjnbalnc8bqy4xj1w2rk5kzxmw525288")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/asmeconf")
+    (synopsis "LaTeX template for ASME conference papers")
+    (description
+     "The @code{asmeconf} class provides a LaTeX template for ASME conference
+papers, following ASME's guidelines for margins, fonts, headings, captions,
+and reference formats as of 2022.  This LaTeX template is intended to be used
+with the @file{asmeconf.bst} BibTeX style, for reference formatting, which is
+part of this distribution.  The code is compatible with pdfLaTeX or LuaLaTeX.
+
+This LaTeX template is not a publication of ASME.")
+    (license license:expat)))
+
+(define-public texlive-asmejour
+  (package
+    (name "texlive-asmejour")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/asmejour/" "doc/latex/asmejour/"
+                   "tex/latex/asmejour/")
+             (base32
+              "09zncjbvdrqkr8g131mx0m73km4d270sn9782knl5qj6gxh98940")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/asmejour")
+    (synopsis "Template for ASME journal papers")
+    (description
+     "The @code{asmejour} class provides a template to format preprints
+submitted to ASME journals.  The layout and reference formats closely follow
+the style that is currently being used for published papers.  The class is
+intended to be used with the @file{asmejour.bst} BibTeX style, which is part
+of this distribution. The class is compatible with pdfLaTeX or LuaLaTeX.
+
+This package is not a publication of ASME.")
+    (license license:expat)))
 
 (define-public texlive-aspectratio
   (package
@@ -3295,6 +3834,27 @@ increase character recognition, ultimately improving readability.")
      (list license:lppl
            (license:fsdg-compatible
             "file://doc/Atkinson-Hyperlegible-Font-License-2020-1104.pdf")))))
+
+(define-public texlive-aucklandthesis
+  (package
+    (name "texlive-aucklandthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/aucklandthesis/"
+                   "tex/latex/aucklandthesis/")
+             (base32
+              "1bdm6crn17a0rrszx28r6bn8v9w6z4rwfz2r8avd5fc3byl5dix8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/aucklandthesis")
+    (synopsis "Memoir-based class for formatting University of Auckland theses")
+    (description
+     "This package provides a @code{memoir}-based class for formatting
+University of Auckland masters and doctors thesis dissertations in any
+discipline.  The title page does not handle short dissertations for
+diplomas.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-augie
   (package
@@ -3651,6 +4211,48 @@ package provides specialized and re-defined macros to simplify this task.")
 language and comes with some fonts of its own.")
     (license (list license:lppl1.3c license:silofl1.1))))
 
+(define-public texlive-bangorcsthesis
+  (package
+    (name "texlive-bangorcsthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bangorcsthesis/"
+                   "source/latex/bangorcsthesis/"
+                   "tex/latex/bangorcsthesis/")
+             (base32
+              "138h5q8060z7frb6krrzcx49pd0ifqh1lizi465gs6x7q7cdagz8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bangorcsthesis")
+    (synopsis "Typeset a thesis at Bangor University")
+    (description
+     "The class typesets thesis or dissertation documents for all
+levels (i.e., both undergraduate and graduate students may use the class).  It
+also provides macros designed to optimise the process of producing a thesis.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-bangorexam
+  (package
+    (name "texlive-bangorexam")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bangorexam/"
+                   "source/latex/bangorexam/"
+                   "tex/latex/bangorexam/")
+             (base32
+              "09pp88415mba65icf6cx4vqn3an54hrgkd8s677ndlf2ml7n0lhs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bangorexam")
+    (synopsis "Typeset an examination at Bangor University")
+    (description
+     "The package allows typesetting of Bangor Univesity's exam style.  It
+currently supports a standard A/B choice, A-only compulsory and n from m exam
+styles.  Marks are totalled and checked automatically.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-bangtex
   (package
     (name "texlive-bangtex")
@@ -3844,6 +4446,28 @@ Basque according to the correct forms ruled by The Basque Language Academy
 issues of numbers in Basque.")
     (license license:lppl1.2+)))
 
+(define-public texlive-bath-bst
+  (package
+    (name "texlive-bath-bst")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/bath-bst/"
+                   "doc/bibtex/bath-bst/"
+                   "source/bibtex/bath-bst/")
+             (base32
+              "06v5icy6537d69g5in7ps322wgnkf0imd93gnmh2y7fladsmvp06")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bath-bst")
+    (synopsis
+     "Harvard referencing style recommended by the University of Bath Library")
+    (description
+     "This package provides a BibTeX style to format reference lists in the
+Harvard style recommended by the University of Bath Library.  It should be
+used in conjunction with @code{natbib} for citations.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-bbding
   (package
     (name "texlive-bbding")
@@ -3937,6 +4561,45 @@ bold.")
 It may use either TikZ or PSTricks as graphics engine.")
     (license license:lppl1.3+)))
 
+(define-public texlive-beamer-fuberlin
+  (package
+    (name "texlive-beamer-fuberlin")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/beamer-fuberlin/"
+                   "tex/latex/beamer-fuberlin/")
+             (base32
+              "03zp6gpzilcfgrbz1lh8lpldvkf9g98f45fhsb72ikgjnka6211c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/beamer-fuberlin")
+    (synopsis "Beamer, using the style of FU Berlin")
+    (description
+     "The bundle provides a @code{beamer}-derived class and a theme style file
+for the corporate design of the Free University in Berlin.  Users may use the
+class itself (FUbeamer) or use the theme in the usual way with
+@code{\\usetheme@{BerlinFU@}}.")
+    (license license:lppl)))
+
+(define-public texlive-beamer-verona
+  (package
+    (name "texlive-beamer-verona")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/beamer-verona/"
+                   "tex/latex/beamer-verona/")
+             (base32
+              "0q79bdsc98a3y5h0yb3qwpsd0yyfyaxfjfhn4xkxf2qzyfp1mgd5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/beamer-verona")
+    (synopsis "Theme for the @code{beamer} class")
+    (description
+     "This package provides the Verona theme for the @code{beamer} class.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-beebe
   (package
     (name "texlive-beebe")
@@ -3975,6 +4638,29 @@ includes a LaTeX wrapper file to typeset the bibliography.")
 only, that accepts an optional Greek font family name to type its contents
 with.  A similar @code{\\greektxt} command does a similar action for shorter
 texts.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-beilstein
+  (package
+    (name "texlive-beilstein")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/beilstein/"
+                   "doc/latex/beilstein/"
+                   "source/latex/beilstein/"
+                   "tex/latex/beilstein/")
+             (base32
+              "0gr4fb0g3449jx6mbwfl2g00anss6xbj9xiak83hkc7797jzmg2b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/beilstein")
+    (synopsis
+     "Support for submissions to the @emph{Beilstein Journal of Nanotechnology}")
+    (description
+     "The package provides a LaTeX class file and a BibTeX style file in
+accordance with the requirements of submissions to the @emph{Beilstein Journal
+of Nanotechnology}.")
     (license license:lppl1.3c)))
 
 (define-public texlive-belleek
@@ -4160,6 +4846,63 @@ capital letters only.  The fonts are provided as Metafont sources, in the
 Type1 and in the OpenType format.  The package includes suitable font
 selection commands for use with LaTeX.")
     (license license:lppl1.3+)))
+
+(define-public texlive-bfh-ci
+  (package
+    (name "texlive-bfh-ci")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bfh-ci/" "tex/latex/bfh-ci/")
+             (base32
+              "198r2xwki70hij36l596p9jldpzc1acna97mlszbbim2w6xj3qy8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bfh-ci")
+    (synopsis "Corporate design for Bern University of Applied Sciences")
+    (description
+     "This bundle provides possibilities to use the corporate design of Bern
+University of Applied Sciences (BFH) with LaTeX.  To this end it contains
+classes as well as some helper packages and config files.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-bgteubner
+  (package
+    (name "texlive-bgteubner")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/bgteubner/"
+                   "doc/latex/bgteubner/"
+                   "makeindex/bgteubner/"
+                   "source/latex/bgteubner/"
+                   "tex/latex/bgteubner/")
+             (base32
+              "1plc42glcq2pxyns6lm6fygicjm8whrls1qlfw00fccsw9v1hgxv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-build
+            ;; This phase is necessary because the build phase is reluctant to
+            ;; generate "ltxdoc.cfg" since there is another one among the
+            ;; inputs already.
+            (lambda _
+              (substitute* "source/latex/bgteubner/hhsubfigure.ins"
+                (("\\\\generateFile\\{ltxdoc\\.cfg\\}\\{t\\}")
+                 "\\generateFile{ltxdoc.cfg}{f}")))))))
+    (home-page "https://ctan.org/pkg/bgteubner")
+    (synopsis "Class for producing books for the publisher Teubner Verlag")
+    (description
+     "The @code{bgteubner} document class has been programmed by order of the
+Teubner Verlag, Wiesbaden, Germany, to ensure that books of this publisher
+have a unique layout.  Unfortunately, most of the documentation is only
+available in German.  Since the document class is intended to generate
+a unique layout, many things (layout etc.) are fixed and cannot be altered by
+the user.")
+    (license license:lppl)))
 
 (define-public texlive-bguq
   (package
@@ -6125,6 +6868,26 @@ the Bitter family of fonts.  Bitter is a contemporary slab-serif typeface for
 text.  There are regular and bold weights and an italic, but no bold italic.")
     (license (list license:lppl license:silofl1.1))))
 
+(define-public texlive-bjfuthesis
+  (package
+    (name "texlive-bjfuthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bjfuthesis/"
+                   "tex/latex/bjfuthesis/")
+             (base32
+              "0qhb9kighs4ljmnn94qaihpllhwvmi76j3p8yylyjw2hzip102wr")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bjfuthesis")
+    (synopsis "Thesis class for Beijing Forestry University")
+    (description
+     "This is a class file for producing dissertations and theses according to
+the @acronym{BJFU, Beijing Forestry University} guidelines for undergraduate
+theses and dissertations.")
+    (license license:gpl3)))
+
 (define-public texlive-blacklettert1
   (package
     (name "texlive-blacklettert1")
@@ -6148,6 +6911,52 @@ of old German fonts Gothic, Schwabacher and Fraktur (which are also available
 in Adobe type 1 format).  The package includes LaTeX macros to embed the fonts
 into the LaTeX font selection scheme.")
     (license license:lppl1.2+)))
+
+(define-public texlive-bmstu
+  (package
+    (name "texlive-bmstu")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bmstu/" "tex/latex/bmstu/")
+             (base32
+              "0ipdwd78b5w4v85nqlbxf8gi42mdz19r5mdjj3agwlgb0z6icjra")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bmstu")
+    (synopsis "LaTeX class for Bauman Moscow State Technical University")
+    (description
+     "The class defines commands and environments for creating reports and
+explanatory notes in Bauman Moscow State Technical University (Russia).")
+    (license
+     (list license:lppl1.3+
+           ;; File "bmstu-logo.pdf" is a logo of Bauman Moscow ;; State
+           ;; Technical University and complies with fair use (article 1274 of
+           ;; the Russian Civil Code).
+           (license:fsdg-compatible "file://doc/latex/bmstu/README.md")))))
+
+(define-public texlive-bmstu-iu8
+  (package
+    (name "texlive-bmstu-iu8")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/bmstu-iu8/"
+                   "tex/latex/bmstu-iu8/")
+             (base32
+              "1nb3dfaw0m3w179z46d7fbvibkp15wf4ws3xbvws0gymwyi4nx1m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/bmstu-iu8")
+    (synopsis "Class for IU8 reports")
+    (description
+     "This package consists of a class file and style files for writing
+reports at the IU8 department of IU faculty of @acronym{BMSTU, Bauman Moscow
+State Technical University}.  The class defines all headings, structure
+elements and other things in respect of Russian standard GOST 7.32-2017.  But
+there are correctives to be compatible with our local IU8 department
+requirements.")
+    (license license:expat)))
 
 (define-public texlive-bodeplot
   (package
@@ -6433,6 +7242,24 @@ those long IUPAC compound names, and some chemical idioms.  It also supports
 the labelling of compounds and reference to labelled compounds.")
     (license license:lppl)))
 
+(define-public texlive-br-lex
+  (package
+    (name "texlive-br-lex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/br-lex/" "tex/latex/br-lex/")
+             (base32
+              "154mjkywvyif57zvqbq5wxs84357148km2x0lqqdx6nanr3vwmxb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/br-lex")
+    (synopsis "Class for typesetting Brazilian legal texts")
+    (description
+     "This class implements rules to typeset Brazilian legal texts.  Its
+purpose is to be an easy-to-use implementation for the end-user.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-braille
   (package
     (name "texlive-braille")
@@ -6453,6 +7280,68 @@ the blind without knowing Braille.  Python scripts @file{grade1.py} and
 the LaTeX package takes the tags and prints out corresponding Braille
 symbols.")
     (license license:lppl1.3+)))
+
+(define-public texlive-brandeis-dissertation
+  (package
+    (name "texlive-brandeis-dissertation")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/brandeis-dissertation/"
+                   "source/latex/brandeis-dissertation/"
+                   "tex/latex/brandeis-dissertation/")
+             (base32
+              "12w95gcrdvxx54a2vajz71flarm82wppl1rbrxg9vxkmp1b9yham")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/brandeis-dissertation")
+    (synopsis "Class for Brandeis University dissertations")
+    (description
+     "The class will enable the user to typeset a dissertation which adheres
+to the formatting guidelines of Brandeis University @acronym{GSAS, Graduate
+School of Arts and Sciences}.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-brandeis-problemset
+  (package
+    (name "texlive-brandeis-problemset")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/brandeis-problemset/"
+                   "tex/latex/brandeis-problemset/")
+             (base32
+              "172l1jmvacjg9j5fkyrmsrhsj5pyaaq8g9pfvkahcnhk3jfc3pnp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/brandeis-problemset")
+    (synopsis "Document class for COSI Problem sets at Brandeis University")
+    (description
+     "Brandeis University's computer science courses often assign problem sets
+which require fairly rigorous formatting.  This document class, which extends
+@code{article}, provides a simple way to typeset these problem sets in LaTeX.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-brandeis-thesis
+  (package
+    (name "texlive-brandeis-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/brandeis-thesis/"
+                   "source/latex/brandeis-thesis/"
+                   "tex/latex/brandeis-thesis/")
+             (base32
+              "0gipdbnlh4jllfyhdw0i7zcypmi63p4ssv7q08gn6w2alfmffr69")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/brandeis-thesis")
+    (synopsis "Class for Brandeis University M.A. theses")
+    (description
+     "@file{brandeis-thesis.cls} provides the structures and formatting
+information for an M.A.@: thesis for the Brandeis University Graduate School
+of Arts and Sciences.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-breakcites
   (package
@@ -6526,6 +7415,26 @@ alternate form.")
 distributed in Adobe Type 1 format (but is available in italic shape only).
 The package includes the files needed by LaTeX in order to use that font.")
     (license license:public-domain)))
+
+(define-public texlive-buctthesis
+  (package
+    (name "texlive-buctthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/buctthesis/"
+                   "source/xelatex/buctthesis/"
+                   "tex/xelatex/buctthesis/")
+             (base32
+              "0qy9wknd91cj8b5lpdah773xqn29k5i0vfycyhax8fxzy3ss6bri")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/buctthesis")
+    (synopsis "Beijing University of Chemical Technology thesis template")
+    (description
+     "This package provides a LaTeX class and template for Beijing University
+of Chemical Technology, supporting bachelor, master, and doctor theses.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-burmese
   (package
@@ -7090,6 +7999,29 @@ for the deductions.")
 the Cascadia Code family of fonts with support for LaTeX and pdfLaTeX.")
     (license (list license:silofl1.1 license:lppl))))
 
+(define-public texlive-cascadilla
+  (package
+    (name "texlive-cascadilla")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/cascadilla/"
+                   "doc/latex/cascadilla/"
+                   "tex/latex/cascadilla/")
+             (base32
+              "0sl29gxjhkakaz7r48wfbvcxngnxdyixmh5awxnlsmrajxgdzh9l")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cascadilla")
+    (synopsis "Conform to the stylesheet of the Cascadilla Proceedings
+Project")
+    (description
+     "The class provides an extension of the standard LaTeX @code{article}
+class that may be used to typeset papers conforming to the stylesheet of the
+Cascadilla Proceedings Project, which is used by a number of linguistics
+conference proceedings.")
+    (license license:lppl)))
+
 (define-public texlive-catcodes
   (package
     (name "texlive-catcodes")
@@ -7206,6 +8138,25 @@ distribution), developed from the same author's JMB style.  A supporting LaTeX
 package is also provided.")
     (license license:public-domain)))
 
+(define-public texlive-cesenaexam
+  (package
+    (name "texlive-cesenaexam")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cesenaexam/"
+                   "source/latex/cesenaexam/"
+                   "tex/latex/cesenaexam/")
+             (base32
+              "05n61y7lqycnj22a80p5pa0ajr8c4zc5b73cc3c2x40w8yx85xcf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cesenaexam")
+    (synopsis "Class file to typeset exams")
+    (description
+     "This LaTeX document class has been designed to typeset exams.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-cfr-initials
   (package
     (name "texlive-cfr-initials")
@@ -7277,6 +8228,25 @@ by default, say, but tabular lining digits within a particular table.")
      "This package defines a single command, @code{\\setbibref}, which sets
 whichever of @code{\\bibname} and @code{\\refname} is in use.")
     (license license:lppl)))
+
+(define-public texlive-chem-journal
+  (package
+    (name "texlive-chem-journal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/chem-journal/")
+             (base32
+              "01s4sbmc4g96cmnbhx9a6bqjskkrr6saq91cly2pfy5gr256vmnq")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chem-journal")
+    (synopsis "Various BibTeX formats for journals in chemistry")
+    (description
+     "This package provides various BibTeX formats for journals in chemistry,
+including @emph{Reviews in Computational Chemistry}, @emph{Journal of Physical
+Chemistry}, @emph{Journal of Computational Chemistry}, and @emph{Physical
+Chemistry Chemical Physics}.")
+    (license license:gpl3+)))
 
 (define-public texlive-chemarrow
   (package
@@ -7779,6 +8749,26 @@ in place of the original's annotation.")
 an annotation field in bibliographies.")
     (license license:knuth)))
 
+(define-public texlive-chifoot
+  (package
+    (name "texlive-chifoot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chifoot/" "tex/latex/chifoot/")
+             (base32
+              "07hxfiasfbnmvq367nnjg56n21wxdw0r6i7bl5l4gxa0j9jvmpf0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chifoot")
+    (synopsis "Chicago-style footnote formatting")
+    (description
+     "This package provides a very short snippet that sets the footnotes to be
+conformant with the Chicago style, so the footnotes at the bottom of the page
+are now marked with a full-sized number, rather than with a superscript
+number.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-chinesechess
   (package
     (name "texlive-chinesechess")
@@ -7885,6 +8875,29 @@ appearance.")
      "This package provides macros to produce time line diagrams.
 Interfaces for Plain TeX, ConTeXt and LaTeX are provided.")
     (license license:lppl1.3+)))
+
+(define-public texlive-chs-physics-report
+  (package
+    (name "texlive-chs-physics-report")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/chs-physics-report/"
+                   "tex/latex/chs-physics-report/")
+             (base32
+              "195f66yffi96qkrxb044mcaycyds0mp3fg3c3lhz1mpvbz0calpl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/chs-physics-report")
+    (synopsis "Physics lab reports for Carmel High School")
+    (description
+     "This package may optionally be used by students at Carmel High School in
+Indiana in the United States to write physics lab reports for FW physics
+courses.  As many students are beginners at LaTeX, it also attempts to
+simplify the report-writing process by offering macros for commonly used
+notation and by automatically formatting the documents for students who will
+only use TeX for mathematics and not typesetting.")
+    (license (list license:public-domain license:cc-by-sa3.0))))
 
 (define-public texlive-chscite
   (package
@@ -8037,6 +9050,28 @@ a BibLaTeX (@file{.bbl}) file.")
 job without using the indexing facilities, and needs no special
 @code{\\cite}-replacement package.")
     (license license:bsd-4)))
+
+(define-public texlive-cje
+  (package
+    (name "texlive-cje")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/cje/" "doc/latex/cje/"
+                   "tex/latex/cje/")
+             (base32
+              "0mxd9z2myzj1pixv4rqib1l6ixj0lq0vy7izgl1gx7k5bwxq945m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cje")
+    (synopsis "LaTeX document class for CJE articles")
+    (description
+     "The @code{cje} article class allows authors to format their papers to
+@emph{Canadian Journal of Economics} style with minimum effort.  The class
+includes options for two other formats: @code{review} (double spaced, for use
+at the submission stage) and @code{proof} (used by the typesetters to prepare
+the proof authors will receive for approval).")
+    (license license:lppl1.3c)))
 
 (define-public texlive-cjhebrew
   (package
@@ -8233,6 +9268,46 @@ small capitals, and old-style numerals) and variant forms for particular
 languages.")
     (license (list license:silofl1.1 license:gpl2+))))
 
+(define-public texlive-classicthesis
+  (package
+    (name "texlive-classicthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/classicthesis/"
+                   "tex/latex/classicthesis/")
+             (base32
+              "0djx7vcrc1ksbgppdbwy31z5qd95flgsgqk6gpzpi3a5rc7h54nz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/classicthesis")
+    (synopsis "Classically styled thesis package")
+    (description
+     "This package provides an elegant layout designed in homage to
+Bringhurst's @emph{The Elements of Typographic Style}.  It makes use of
+a range of techniques to get the best results achievable using TeX.  Included
+in the bundle are templates to make thesis writing easier.")
+    (license license:gpl2+)))
+
+(define-public texlive-cleanthesis
+  (package
+    (name "texlive-cleanthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cleanthesis/"
+                   "tex/latex/cleanthesis/")
+             (base32
+              "11fv49w1nydm5fvkp1p2375ywdfd5yh8hayqfnr6wdidzdycpg85")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cleanthesis")
+    (synopsis "Clean LaTeX style for thesis documents")
+    (description
+     "The package offers a clean, simple, and elegant LaTeX style for thesis
+documents.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-clearsans
   (package
     (name "texlive-clearsans")
@@ -8264,6 +9339,34 @@ distracting ambiguity, making Clear Sans comfortable for reading short UI
 labels and long passages in both screen and print.  The fonts are available in
 both TrueType and Type 1 formats.")
     (license (list license:asl2.0 license:lppl))))
+
+(define-public texlive-cleveref
+  (package
+    (name "texlive-cleveref")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/cleveref/"
+                   "source/latex/cleveref/"
+                   "tex/latex/cleveref/")
+             (base32
+              "18r8g6ipn1ly60gnp0yi0m409gm8lssbpmka5813i4l45281fk43")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cleveref")
+    (synopsis "Intelligent cross-referencing")
+    (description
+     "The package enhances LaTeX's cross-referencing features, allowing the
+format of references to be determined automatically according to the type of
+reference.  The formats used may be customised in the preamble of a document;
+Babel support is available (though the choice of languages remains limited:
+currently Danish, Dutch, English, French, German, Italian, Norwegian, Russian,
+Spanish and Ukranian).
+
+The package also offers a means of referencing a list of references, each
+formatted according to its type.  In such lists, it can collapse sequences of
+numerically-consecutive labels to a reference range.")
+    (license license:lppl1.2+)))
 
 (define-public texlive-clrscode
   (package
@@ -8432,6 +9535,27 @@ font is a fixed-width one, rather less heavy than Computer Modern typewriter.
 Emphasis for bold-face comes from a wavy underline of each letter.  The two
 fonts are supplied as Metafont source.")
     (license license:public-domain)))
+
+(define-public texlive-cmpj
+  (package
+    (name "texlive-cmpj")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/cmpj/" "doc/latex/cmpj/"
+                   "tex/latex/cmpj/")
+             (base32
+              "1drmil2vba85wa7ykrma452hwh7ggzsq33zrhch7rjnqaw7xihwv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cmpj")
+    (synopsis "Style for the journal @emph{Condensed Matter Physics}")
+    (description
+     "The package contains macros and some documentation for typesetting
+papers for submission to the @emph{Condensed Matter Physics} journal published
+by the Institute for Condensed Matter Physics of the National Academy of
+Sciences of Ukraine.")
+    (license license:lppl)))
 
 (define-public texlive-cmsrb
   (package
@@ -8920,6 +10044,28 @@ the fonts are available in the @code{ecc} bundle, and Adobe Type 1 versions of
 the @code{ecc} fonts are part of the @code{cm-super} bundle.")
     (license license:knuth)))
 
+(define-public texlive-confproc
+  (package
+    (name "texlive-confproc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/confproc/" "doc/latex/confproc/"
+                   "makeindex/confproc/"
+                   "source/latex/confproc/"
+                   "tex/latex/confproc/")
+             (base32
+              "1v3ppwxss1ans62j1pss8mcfjqmx708za7pmcm1wic7z7byc6xdb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (home-page "https://ctan.org/pkg/confproc")
+    (synopsis "Set of tools for generating conference proceedings")
+    (description
+     "The @code{confproc} collection comprises a class, a BibTeX style, and
+some scripts for generating conference proceedings.")
+    (license license:lppl)))
+
 (define-public texlive-conteq
   (package
     (name "texlive-conteq")
@@ -9148,6 +10294,73 @@ conversion as well.")
 including multiple accents on the same letter, interline glosses (word-by-word
 translations), Discourse Representation Structures, and example numbering.")
     (license license:lppl1.3+)))
+
+(define-public texlive-cquthesis
+  (package
+    (name "texlive-cquthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/cquthesis/"
+                   "doc/latex/cquthesis/"
+                   "source/latex/cquthesis/"
+                   "tex/latex/cquthesis/")
+             (base32
+              "0591wd88zp4sgnv2avwqv8127c2g5zbhjr7y15xaahiy7s404hn2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/cquthesis")
+    (synopsis "LaTeX thesis template for Chongqing University")
+    (description
+     "CQUThesis stands for Chongqing University thesis template for LaTeX,
+bearing the ability to support bachelor, master, doctor dissertations with
+grace and speed.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-create-theorem
+  (package
+    (name "texlive-create-theorem")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/create-theorem/"
+                   "tex/latex/create-theorem/")
+             (base32
+              "0pnb2n79qyipa2izj5v81rk973psvcmslkqxpivzm9gghrajkk9m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-crefthe))
+    (home-page "https://ctan.org/pkg/create-theorem")
+    (synopsis "Multilingual support for @code{theorem}-like environments")
+    (description
+     "This package provides commands for naming, initializing and configuring
+@code{theorem}-like environments.  These commands have key-value based
+interfaces and are especially useful in multilingual documents, allowing the
+easy declaration of @code{theorem}-like environments that can automatically
+adapt to the language settings.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-crefthe
+  (package
+    (name "texlive-crefthe")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/crefthe/" "tex/latex/crefthe/")
+             (base32
+              "0gmyg9m4rma0qfg50d6i1lpdl4g71cx61517xl09vzy08r988i5j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/crefthe")
+    (synopsis "Cross referencing with proper definite articles")
+    (description
+     "By default, when using @code{cleveref}'s @code{\\cref} to reference
+@code{theorem}-like environments, the names do not contain definite articles.
+In languages such as French, Italian, Portuguese, Spanish, etc., this results
+in incorrect grammar.  For this purpose, the current package offers
+@code{\\crefthe}, which handles the definite articles properly (especially for
+the article contractions in many European languages).")
+    (license license:lppl1.3c)))
 
 (define-public texlive-crimson
   (package
@@ -9597,6 +10810,30 @@ distributed as Metafont source.")
     (license
      (license:fsf-free "file://fonts/source/public/dancers/dancers.mf"))))
 
+(define-public texlive-dashrule
+  (package
+    (name "texlive-dashrule")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/dashrule/"
+                   "source/latex/dashrule/"
+                   "tex/latex/dashrule/")
+             (base32
+              "0glnb77dmhl9svgxpz1s8ivsbmr0cy1a0sz68vfx1plfkxfglbyl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dashrule")
+    (synopsis "Draw dashed rules")
+    (description
+     "The @code{dashrule} package makes it easy to draw a huge variety of
+dashed rules (i.e., lines) in LaTeX.  It provides a command,
+@code{\\hdashrule}, which draws horizontally dashed rules using the same
+syntax as @code{\\rule}, but with an additional parameter that specifies the
+pattern of dash segments and the space between those segments.  Those rules
+are fully compatible with every @code{LaTeX} back-end processor.")
+    (license license:lppl)))
+
 (define-public texlive-dantelogo
   (package
     (name "texlive-dantelogo")
@@ -9623,6 +10860,31 @@ German speaking TeX users group.  The font includes only the five characters
 @samp{d}, @samp{a}, @samp{n}, @samp{t}, and @samp{e}.  @file{dantelogo.sty}
 provides an interface for LuaLaTeX, XeLaTeX, and pdfLaTeX.")
     (license license:lppl)))
+
+(define-public texlive-dccpaper
+  (package
+    (name "texlive-dccpaper")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/dccpaper/"
+                   "source/latex/dccpaper/"
+                   "tex/latex/dccpaper/")
+             (base32
+              "1hxn5lnxbcnwhyx9n275bml2bwy3gfkkkqg0s68skcxs843p55ad")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dccpaper")
+    (synopsis
+     "Typeset papers for the @emph{International Journal of Digital Curation}")
+    (description
+     "The LaTeX class @code{ijdc-v14} produces camera-ready papers and
+articles suitable for inclusion in the @emph{International Journal of Digital
+Curation}, with applicability from volume 14 onwards; a legacy class
+@code{ijdc-v9} is provided for papers and articles written for volumes 9-13.
+The similar @code{idcc} class can be used for submissions to the International
+Digital Curation Conference, beginning with the 2015 conference.")
+    (license (list license:lppl1.3c license:cc-by4.0))))
 
 (define-public texlive-decision-table
   (package
@@ -9732,6 +10994,25 @@ default.")
      "@code{delimset} is a LaTeX2e package to typeset and declare sets of
 delimiters in math mode whose size can be adjusted conveniently.")
     (license license:lppl1.3+)))
+
+(define-public texlive-denisbdoc
+  (package
+    (name "texlive-denisbdoc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/denisbdoc/"
+                   "source/latex/denisbdoc/"
+                   "tex/latex/denisbdoc/")
+             (base32
+              "0vfz81kqym5jj79y5f1fysyjxlhlr0zws553zx2mklixrs54bl0c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/denisbdoc")
+    (synopsis "Personal dirty package for documenting packages")
+    (description
+     "This package provides a personal dirty package for documenting packages.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-derivative
   (package
@@ -10032,6 +11313,26 @@ generated lists (table of contents, list of figures, etc).  Bibliography
 styles, that conform to the requirements of the Russian standard GOST
 R 7.0.11-2011, are provided.")
     (license license:lppl1.3+)))
+
+(define-public texlive-dithesis
+  (package
+    (name "texlive-dithesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/dithesis/" "tex/latex/dithesis/")
+             (base32
+              "1yz53jabca56k65pddhl68d3384k2f2jn4zrfkg2d4x8aa1dnvvx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/dithesis")
+    (synopsis "Class for undergraduate theses at the University of Athens")
+    (description
+     "The class conforms to the requirements of the Department of Informatics
+and Telecommunications at the University of Athens regarding the preparation
+of undergraduate theses, as of Sep 1, 2011.  The class is designed for use
+with XeLaTeX.")
+    (license license:lppl)))
 
 (define-public texlive-dk-bib
   (package
@@ -10676,6 +11977,47 @@ are provided.")
 mathematics.")
     (license license:lppl1.3+)))
 
+(define-public texlive-ebook
+  (package
+    (name "texlive-ebook")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ebook/" "tex/latex/ebook/")
+             (base32
+              "1i9zixl8wiwmfrhrzwm2adgwm5kzqk5xaq5nq9bks9i2ayvmiij2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ebook")
+    (synopsis "Helps creating an ebook by providing an @code{ebook} class")
+    (description
+     "The package defines a command @code{\\ebook} that defines page layout,
+fonts, and font-sizes for documents to be rendered as PDF-ebooks on small
+ebook-readers.")
+    (license license:public-domain)))
+
+(define-public texlive-ebsthesis
+  (package
+    (name "texlive-ebsthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ebsthesis/"
+                   "source/latex/ebsthesis/"
+                   "tex/latex/ebsthesis/")
+             (base32
+              "0vmnkjnpg840rdgbim7gz2frzgr9dycmzqyj9kylicz5nvc4nk5x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ebsthesis")
+    (synopsis "Typesetting theses for economics")
+    (description
+     "The @code{ebsthesis} class and @code{ebstools} package facilitate the
+production of camera-ready manuscripts in conformance with the guidelines of
+Gabler Verlag and typographical rules established by the European Business
+School.")
+    (license license:lppl)))
+
 (define-public texlive-ecc
   (package
     (name "texlive-ecc")
@@ -10828,6 +12170,24 @@ The macro sets are based on (and require) the @code{harvard} package, and all
 provide variations of author-date styles of presentation.")
     (license license:lppl)))
 
+(define-public texlive-ecothesis
+  (package
+    (name "texlive-ecothesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ecothesis/")
+             (base32
+              "1avnq2y5l2bc2lkf2g16p2vh77dabv52jr6jrm4jfm1wdapc6fmq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ecothesis")
+    (synopsis "LaTeX thesis template for the Universidade Federal de Vicosa")
+    (description
+     "The package provides a LaTeX thesis template for the @acronym{UFV,
+Universidade Federal de Vicosa}, Brazil.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-eczar
   (package
     (name "texlive-eczar")
@@ -10951,6 +12311,71 @@ OT1 encoding.  Also offered are a couple of Metafont files described in the
 font package, but not provided there.")
     (license license:lppl)))
 
+(define-public texlive-einfart
+  (package
+    (name "texlive-einfart")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/einfart/" "tex/latex/einfart/")
+             (base32
+              "11ibc51y76s1awp2flzfgkcbz26a6gr1dwl1d29jm4r9452acgnm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-minimalist))
+    (home-page "https://ctan.org/pkg/einfart")
+    (synopsis "Write your articles in a simple and clear way")
+    (description
+     "This package provides a LaTeX class for typesetting articles with a
+simple and clear design.  Currently, it has native support for Chinese
+(simplified and traditional), English, French, German, Italian, Japanese,
+Portuguese (European and Brazilian), Russian and Spanish typesetting.  It
+compiles with either XeLaTeX or LuaLaTeX.  This is part of the
+@code{minimalist} class series and depends on that package.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-ejpecp
+  (package
+    (name "texlive-ejpecp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ejpecp/" "source/latex/ejpecp/"
+                   "tex/latex/ejpecp/")
+             (base32
+              "083abggngg89nj4ra0a33j3s6wf0jba814lc4zp5sh64pc2x8h0j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ejpecp")
+    (synopsis "Class for EJP and ECP")
+    (description
+     "The class is designed for typesetting articles for the mathematical
+research periodicals @emph{Electronic Journal of Probability} (EJP) and
+@emph{Electronic Communications in Probability} (ECP).")
+    (license license:lppl1.2+)))
+
+(define-public texlive-ekaia
+  (package
+    (name "texlive-ekaia")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ekaia/" "source/latex/ekaia/"
+                   "tex/latex/ekaia/")
+             (base32
+              "1n6zinzcg3win9nn86ljf8fcwsxxn6dq1gjnnw1si8ca01zdyx45")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ekaia")
+    (synopsis
+     "Article format for the Basque Country Science and Technology Journal
+@emph{Ekaia}")
+    (description
+     "The package provides the article format for publishing the Basque
+Country Science and Technology Journal @emph{Ekaia} at the University of the
+Basque Country.")
+    (license license:lppl1.2+)))
+
 (define-public texlive-ektype-tanka
   (package
     (name "texlive-ektype-tanka")
@@ -10969,6 +12394,27 @@ font package, but not provided there.")
      "This package provides a collection of some Devanagari fonts by EkType:
 Mukta, Baloo, Modak, and Jaini.")
     (license license:lppl1.3c)))
+
+(define-public texlive-elbioimp
+  (package
+    (name "texlive-elbioimp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/elbioimp/"
+                   "source/latex/elbioimp/"
+                   "tex/latex/elbioimp/")
+             (base32
+              "1iwsahllfw975cs11llr0ghx80wf5kmw5zrbs4iqviai12ipnkd2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/elbioimp")
+    (synopsis
+     "LaTeX document class for the @emph{Journal of Electrical Bioimpedance}")
+    (description
+     "This package provides a document class for writing articles to the
+@emph{Journal of Electrical Bioimpedance}.")
+    (license license:lppl)))
 
 (define-public texlive-electrum
   (package
@@ -11042,6 +12488,70 @@ indexing by page and by line numbers, and simple @code{tabular}- and
 @code{eledpar} package.  The package is now superseded by @code{reledmac}.")
     (license license:lppl1.3+)))
 
+(define-public texlive-els-cas-templates
+  (package
+    (name "texlive-els-cas-templates")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/els-cas-templates/"
+                   "doc/latex/els-cas-templates/"
+                   "tex/latex/els-cas-templates/")
+             (base32
+              "1drp6gykqn4yaxjsiamsn8v5zv7nhvlqiblfhqg85fq3yl4q1sqk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/els-cas-templates")
+    (synopsis "Elsevier updated LaTeX templates")
+    (description
+     "This bundle provides two class and corresponding template files for
+typesetting journal articles supposed to go through Elsevier's updated
+workflow.  One of the sets is meant for one-column, the other for two-column
+layout.  These are now accepted for submitting articles both in Elsevier's
+electronic submission system and elsewhere.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-elsarticle
+  (package
+    (name "texlive-elsarticle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/elsarticle/"
+                   "doc/latex/elsarticle/"
+                   "source/latex/elsarticle/"
+                   "tex/latex/elsarticle/")
+             (base32
+              "1616ql7yhf6fr66szgnpkxd2sz8vx22w25annf11i2zmr698k3aa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/elsarticle")
+    (synopsis "Class for articles for submission to Elsevier journals")
+    (description
+     "This class for typesetting journal articles is accepted for submitted
+articles both in Elsevier's electronic submission system and elsewhere.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-elteikthesis
+  (package
+    (name "texlive-elteikthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/elteikthesis/"
+                   "tex/latex/elteikthesis/")
+             (base32
+              "0brfkpg32vqm42cwp10vbjbk752jcfq5g65znl0z539xdynf1nnp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/elteikthesis")
+    (synopsis "Thesis template for Eotvos Lorand University (Informatics)")
+    (description
+     "This package provides a bachelor and master thesis template for the
+Eotvos Lorand University, Faculty of Informatics (Budapest, Hungary).  The
+template supports producing both Hungarian and English theses.")
+    (license license:expat)))
+
 (define-public texlive-eltex
   (package
     (name "texlive-eltex")
@@ -11105,6 +12615,36 @@ electric circuits and electrodynamics.  It provides support for multiple
 symbols but does not provide any fonts.  The fonts themselves must be acquired
 otherwise.")
     (license license:gpl3)))
+
+(define-public texlive-emisa
+  (package
+    (name "texlive-emisa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/emisa/" "source/latex/emisa/"
+                   "tex/latex/emisa/")
+             (base32
+              "02f8blixqqbn7k3h2sn59b9d8i2lxqnh2zwdk4gv7wyjr9l0sc1x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               ;; "emisa.ins" apparently wants to generate itself!  Fix that.
+               (add-after 'unpack 'fix-ins
+                 (lambda _
+                   (substitute* "source/latex/emisa/emisa.ins"
+                     (("\\\\file\\{\\\\jobname\\.ins\\}.*") "")))))))
+    (home-page "https://ctan.org/pkg/emisa")
+    (synopsis "LaTeX package for preparing manuscripts for the journal
+@emph{EMISA}")
+    (description
+     "The EMISA LaTeX package is provided for preparing manuscripts for
+submission to @acronym{EMISA, Enterprise Modelling and Information Systems
+Architectures}, and for preparing accepted submissions for publication as well
+as for typesetting the final document by the editorial office.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-endiagram
   (package
@@ -11366,6 +12906,26 @@ standard @code{amsmath} numbered equation environments to throw a warning
 whenever this occurs.")
     (license license:lppl1.3+)))
 
+(define-public texlive-erdc
+  (package
+    (name "texlive-erdc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/erdc/" "source/latex/erdc/"
+                   "tex/latex/erdc/")
+             (base32
+              "0sqq0zd89jx2l4n1hpas4c4y4p3mh1mbnfigjbal9xg2h5pijkv1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/erdc")
+    (synopsis "Style for reports by US Army Corps of Engineers")
+    (description
+     "This package provides a class for typesetting Technical Information
+Reports of the Engineer Research and Development Center, US Army Corps of
+Engineers.")
+    (license license:lppl)))
+
 (define-public texlive-erewhon
   (package
     (name "texlive-erewhon")
@@ -11467,6 +13027,26 @@ allow their use as @code{calligraphic}, @code{fraktur} and
 @code{double-struck} (blackboard bold) in maths mode.")
     (license license:silofl1.1)))
 
+(define-public texlive-estcpmm
+  (package
+    (name "texlive-estcpmm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/estcpmm/" "source/latex/estcpmm/"
+                   "tex/latex/estcpmm/")
+             (base32
+              "09fp8vidb9wzdsm05nira4p8dyjn75i1jhhwnr6k17pdrad1sqrj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/estcpmm")
+    (synopsis "Style for Munitions Management Project Reports")
+    (description
+     "This package provides a class which supports typesetting Cost and
+Performance Reports and Final Reports for Munitions Management Reports, US
+Environmental Security Technology Certification Program.")
+    (license license:lppl)))
+
 (define-public texlive-esvect
   (package
     (name "texlive-esvect")
@@ -11521,6 +13101,26 @@ a full set of figure styles, small caps in all styles, superior letters and
 figures, inferior figures, a new capital Sharp @samp{S} with small caps
 version, along with macros to activate these features in LaTeX.")
     (license (list license:expat license:lppl1.3+))))
+
+(define-public texlive-etsvthor
+  (package
+    (name "texlive-etsvthor")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/etsvthor/" "tex/latex/etsvthor/")
+             (base32
+              "0lrvxr2lrfq1vkfkx7sjrm8fsxv8aalkpi0x0wmkdizc6n2wlhx4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/etsvthor")
+    (synopsis "Some useful abbreviations for members of e.t.s.v. Thor")
+    (description
+     "``e.t.s.v.  Thor'' stands for Elektrotechnische Studievereniging Thor,
+a study association of Electrical Engeering at the Eindhoven University of
+Technology.  This package provides abbreviations useful for creating meeting
+notes or other documents within the association.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-euclideangeometry
   (package
@@ -11712,6 +13312,30 @@ with or without VAT; different addresses for delivery and for billing are
 permitted.")
     (license license:cc-by-sa2.0)))
 
+(define-public texlive-facture-belge-simple-sans-tva
+  (package
+    (name "texlive-facture-belge-simple-sans-tva")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/facture-belge-simple-sans-tva/"
+                   "tex/xelatex/facture-belge-simple-sans-tva/")
+             (base32
+              "1zs2hcc5lhzvfkv83wym1rax58mryylq9b7i358ln0pklnm2gncx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/facture-belge-simple-sans-tva")
+    (synopsis "Simple Belgian invoice without VAT")
+    (description
+     "This package can be used to generate invoices for Belgian individuals
+who do not have a VAT number and who wish to do occasional work, or to carry
+out paid additional activities during their free time up to 6,000 euros per
+calendar year (amount indexed annually) without having to pay tax or social
+security contributions (see the website Activites complementaires).  The
+package can also generate expense reports.  All totals are calculated
+automatically, in the invoice and in the expense report.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-faktor
   (package
     (name "texlive-faktor")
@@ -11786,6 +13410,30 @@ all necessary support files are provided.  The font works well with
 @code{newtxmath}'s @code{libertine} option.")
     (license (list license:silofl1.1 license:lppl1.3+))))
 
+(define-public texlive-fbithesis
+  (package
+    (name "texlive-fbithesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/fbithesis/"
+                   "source/latex/fbithesis/"
+                   "tex/latex/fbithesis/")
+             (base32
+              "1650ilscm47x606piwx7a8z08lhkq87g8k0z40ii3ig0c3p9isgl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (home-page "https://ctan.org/pkg/fbithesis")
+    (synopsis "Computer Science thesis class for University of Dortmund")
+    (description
+     "At the department of computer science at the University of Dortmund
+there are cardboard cover pages for research or internal reports like master
+and phd theses.  The main function of this LaTeX2e document-class is
+a replacement for the @code{\\maketitle} command to typeset a title page that
+is adjusted to these cover pages.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-fbs
   (package
     (name "texlive-fbs")
@@ -11802,6 +13450,48 @@ all necessary support files are provided.  The font works well with
      "This package provides a BibTeX style file made with @code{custom}-bib to
 fit @emph{Frontiers in Bioscience} requirements.")
     (license license:lppl)))
+
+(define-public texlive-fcavtex
+  (package
+    (name "texlive-fcavtex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/fcavtex/" "doc/latex/fcavtex/"
+                   "tex/latex/fcavtex/")
+             (base32
+              "0l87wlh9mzh0hysfw35mlx3asqw7lvwc55yiqr01jbmv1hwgfnl6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fcavtex")
+    (synopsis "Thesis class for the FCAV/UNESP, Brazil")
+    (description
+     "This package provides a class and a bibliography style for the
+@acronym{FCAV-UNESP, Faculdade de Ciencias Agrarias e Veterinarias de
+Jaboticabal UNESP} Brazilian university, written based on the institution
+rules for thesis publications.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-fcltxdoc
+  (package
+    (name "texlive-fcltxdoc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/fcltxdoc/"
+                   "source/latex/fcltxdoc/"
+                   "tex/latex/fcltxdoc/")
+             (base32
+              "0qb0l622svj1bqs0p05mcf30f4xy432aa4qzk6w4rlckssdfiwva")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fcltxdoc")
+    (synopsis "Macros for use in the author's documentation")
+    (description
+     "The package is not advertised for public use, but is necessary for the
+support of others of the author's packages (which are compiled under the
+@code{ltxdoc} class).")
+    (license license:lppl1.3+)))
 
 (define-public texlive-fdsymbol
   (package
@@ -11849,6 +13539,32 @@ family, but it might also fit other contemporary typefaces.")
     (description
      "This package is a LaTeX thesis template package for Fudan University.
 It can make it easy to write theses both in Chinese and English.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-fei
+  (package
+    (name "texlive-fei")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/fei/" "source/latex/fei/"
+                   "tex/latex/fei/")
+             (base32
+              "13f2sn9pazq6ak37025wr20mi11069paw8hd7qlrcy10bn7bkbl7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fei")
+    (synopsis "Class for academic works at FEI University Center, Brazil")
+    (description
+     "@code{fei} is a class created by graduate students and LaTeX enthusiasts
+that allows students from FEI University Center to create their academic
+works, be it a monograph, masters dissertation or PhD thesis, under the
+typographic rules of the institution.  The class makes it possible to create
+a full academic work, supporting functionalities such as cover, title page,
+catalog entry, dedication, summary, lists of figures, tables, algorithms,
+acronyms and symbols, multiple authors, index, references, appendices and
+attachments.  @code{fei} is loosely based in the Brazilian National Standards
+Organization (@acronym{ABNT, Associacao Brasileira de Normas Tecnicas}).")
     (license license:lppl1.3c)))
 
 (define-public texlive-fetamont
@@ -12080,6 +13796,26 @@ interface to define new commands for differential operators.  It is compatible
 with pdfTeX, XeTeX and LuaTeX, and can also be used with the
 @code{unicode-math} package.")
     (license license:lppl1.3c)))
+
+(define-public texlive-fixfoot
+  (package
+    (name "texlive-fixfoot")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/fixfoot/" "tex/latex/fixfoot/")
+             (base32
+              "1anyswchln7y7a6x72ay6hm3ck36byxk2ciia0w6y100iqcpq2sl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/fixfoot")
+    (synopsis "Multiple use of the same footnote text")
+    (description
+     "This package provides a @code{\\DeclareFixedFootnote} command to provide
+a single command for a frequently-used footnote.  The package ensures that
+only one instance of the footnote text appears on each page (LaTeX needs to be
+run several times to achieve this).")
+    (license license:lppl)))
 
 (define-public texlive-fixjfm
   (package
@@ -12704,6 +14440,28 @@ Its aim is to provide a French translation of terms and words used in
 algorithms to make it integrate seamlessly in a French written document.")
     (license license:lppl1.3c)))
 
+(define-public texlive-ftc-notebook
+  (package
+    (name "texlive-ftc-notebook")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ftc-notebook/"
+                   "tex/latex/ftc-notebook/")
+             (base32
+              "068fc2wisryvgr8zqmkiwnyrrh5rmmw5njl41rn70bvv9qdgh31y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ftc-notebook")
+    (synopsis "Typeset FIRST Tech Challenge (FTC) notebooks")
+    (description
+     "This LaTeX package will greatly simplify filling entries for your FIRST
+Tech Challenge (FTC) engineering or outreach notebook.  We developed this
+package to support most frequently used constructs encountered in an FTC
+notebook: meetings, tasks, decisions with pros and cons, tables, figures with
+explanations, team stories and bios, and more.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-functan
   (package
     (name "texlive-functan")
@@ -12724,6 +14482,24 @@ functional spaces (mainly Sobolev spaces) in functional analysis and PDE
 theory.  It also provides a set of macros for dealing with norms, scalar
 products and convergence with some object oriented flavor (it gives the
 possibility to override the standard behavior of norms, ...).")
+    (license license:lppl)))
+
+(define-public texlive-gaceta
+  (package
+    (name "texlive-gaceta")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gaceta/" "tex/latex/gaceta/")
+             (base32
+              "17w2i3qmks9qpdwpx0hy0mjrl5xhrc8hmz9s0229xnhf6h12yb1r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gaceta")
+    (synopsis "Class to typeset @code{La Gaceta de la RSME}")
+    (description
+     "The class will typeset papers for @emph{La Gaceta de la Real Sociedad
+Matematica Espanola}.")
     (license license:lppl)))
 
 (define-public texlive-gamebook
@@ -12775,6 +14551,26 @@ This is unrelated to the @code{gamebook} package which is more concerned with
 the formatting of entries rather than their order.  The two packages can be
 used together or separately.")
     (license license:lppl1.3+)))
+
+(define-public texlive-gammas
+  (package
+    (name "texlive-gammas")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/gammas/" "doc/latex/gammas/"
+                   "tex/latex/gammas/")
+             (base32
+              "0jj8lbwlydsih01d637zxpj97ncd44qmf7azgpzn77s8fi760p8n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gammas")
+    (synopsis "Template for the @emph{GAMM Archive for Students}")
+    (description
+     "This is the official document class for typesetting journal articles for
+@emph{GAMM Archive for Students}, the open-access online journal run by the
+@acronym{GAMM, Gesellschaft fur angewandte Mathematik und Mechanik} Juniors.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-garamond-libre
   (package
@@ -12955,6 +14751,27 @@ symbols to Knuth's @code{gen} font, and so avoiding loading two fonts when you
 need only genealogical symbols.  The font is distributed as Metafont source.")
     (license license:lppl)))
 
+(define-public texlive-geradwp
+  (package
+    (name "texlive-geradwp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/geradwp/" "source/latex/geradwp/"
+                   "tex/latex/geradwp/")
+             (base32
+              "1g2kh2wdlf6y8wvs7r1zl2ws8ysrjzsk1k0032jci8ik9kx9wlg9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/geradwp")
+    (synopsis "Document class for the @emph{Cahiers du GERAD} series")
+    (description
+     "This package provides the @code{geradwp} class, a class based on
+@code{article} and compatible with LaTeX.  With this class, researchers at
+GERAD will be able to write their working paper while complying to all the
+presentation standards required by the @emph{Cahiers du GERAD} series.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-geschichtsfrkl
   (package
     (name "texlive-geschichtsfrkl")
@@ -12974,6 +14791,29 @@ need only genealogical symbols.  The font is distributed as Metafont source.")
      "The package provides a BibLaTeX style, (mostly) meeting the requirements
 of the History Faculty of the University of Freiburg (Germany).")
     (license license:lppl)))
+
+(define-public texlive-gfdl
+  (package
+    (name "texlive-gfdl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gfdl/" "source/latex/gfdl/"
+                   "tex/latex/gfdl/")
+             (base32
+              "1yiyhks3097sz686sar1jnkska669hp7v2sv1fm7n0d4j00zm816")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gfdl")
+    (synopsis "Support for using GFDL in LaTeX")
+    (description
+     "The @acronym{GFDL, GNU Free Documentation License} is a popular license
+used for programming manuals, documentations and various other textual works
+too, but using this license with LaTeX is not very convenient.  This package
+aims to help users in easily using the license without violating any rules of
+the license.  With a handful of commands, users can rest assured that their
+document will be perfectly licensed under GFDL.")
+    (license (list license:gpl3+ license:fdl1.3+))))
 
 (define-public texlive-gfsartemisia
   (package
@@ -13326,6 +15166,58 @@ package.  Its main features are:
 Polyglossia.")
     (license license:lppl1.3+)))
 
+(define-public texlive-glossaries
+  (package
+    (name "texlive-glossaries")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/glossaries/"
+                   "doc/man/man1/makeglossaries-lite.1"
+                   "doc/man/man1/makeglossaries-lite.man1.pdf"
+                   "doc/man/man1/makeglossaries.1"
+                   "doc/man/man1/makeglossaries.man1.pdf"
+                   "scripts/glossaries/"
+                   "source/latex/glossaries/"
+                   "tex/latex/glossaries/base/"
+                   "tex/latex/glossaries/expl/"
+                   "tex/latex/glossaries/rollback/"
+                   "tex/latex/glossaries/styles/"
+                   "tex/latex/glossaries/test-entries/")
+             (base32
+              "0k55k49sba80k51pjpb08zf9calnkchcxxsyajx8g3c33ah3j2i1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:link-scripts #~(list "makeglossaries" "makeglossaries-lite.lua")))
+    (propagated-inputs
+     (list texlive-amsmath
+           texlive-datatool
+           texlive-etoolbox
+           texlive-mfirstuc
+           texlive-tracklang
+           texlive-xfor
+           texlive-xkeyval))
+    (home-page "https://ctan.org/pkg/glossaries")
+    (synopsis "Create glossaries and lists of acronyms")
+    (description
+     "The glossaries package supports acronyms and multiple glossaries, and has
+provision for operation in several languages (using the facilities of either
+Babel or Polyglossia).  New entries are defined to have a name and description
+(and optionally an associated symbol).  Support for multiple languages is
+offered, and plural forms of terms may be specified.  An additional package,
+@code{glossaries-accsupp}, can make use of the @code{accsupp} package
+mechanisms for accessibility support for PDF files containing glossaries.  The
+user may define new glossary styles, and preambles and postambles can be
+specified.  There is provision for loading a database of terms, but only terms
+used in the text will be added to the relevant glossary.
+
+The package uses an indexing program to provide the actual glossary; either
+MakeIndex or Xindy may serve this purpose, and a Perl script is provided to
+serve as interface.  The package supersedes @code{glossary} package (which is
+now obsolete).")
+    (license license:lppl1.3+)))
+
 (define-public texlive-glossaries-extra
   (package
     (name "texlive-glossaries-extra")
@@ -13515,6 +15407,55 @@ The package also provides an interface to control various settings including
 algorithm parameters.")
     (license license:expat)))
 
+(define-public texlive-gradstudentresume
+  (package
+    (name "texlive-gradstudentresume")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gradstudentresume/"
+                   "tex/latex/gradstudentresume/")
+             (base32
+              "0jimvivx5vf1jy7yszvx2zbf13r0brqc0avz8lcx1rsqa3d7rjcn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gradstudentresume")
+    (synopsis "Generic template for graduate student resumes")
+    (description
+     "The package offers a template for graduate students writing an academic
+CV.  The goal is to create a flexible template that can be customized based on
+each specific individual's needs.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-grant
+  (package
+    (name "texlive-grant")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/grant/" "source/latex/grant/"
+                   "tex/latex/grant/")
+             (base32
+              "0cihhr3fqjbn2grkps5wl6aqx19s78vgklmriw2jqg27fqgv5q2p")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/grant")
+    (synopsis "Classes for formatting federal grant proposals")
+    (description
+     "This package provides LaTeX classes for formatting federal grant
+proposals:
+@itemize
+@item grant: base class for formatting grant proposals;
+@item grant-arl: Army Research Laboratory;
+@item grant-darpa: Defense Advanced Research Projects Agency;
+@item grant-doe: Department of Energy;
+@item grant-nih: National Institutes of Health;
+@item grant-nrl: Naval Research Laboratory;
+@item grant-nsf: National Science Foundation;
+@item grant-onr: Office of Naval Research.
+@end itemize")
+    (license license:expat)))
+
 (define-public texlive-greenpoint
   (package
     (name "texlive-greenpoint")
@@ -13608,6 +15549,29 @@ Bold, with supporting files for use with (La)TeX.")
 concept-script in the style of his @emph{Grundgesetze der Arithmetik} (Basic
 Laws of Arithmetic).")
     (license license:gpl2)))
+
+(define-public texlive-gsemthesis
+  (package
+    (name "texlive-gsemthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gsemthesis/"
+                   "source/latex/gsemthesis/"
+                   "tex/latex/gsemthesis/")
+             (base32
+              "0wwd6pddxb91gj6jr6zc0xy0sr0s0mbdjzyw856w9ds0lp0k6cl9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gsemthesis")
+    (synopsis "Geneva School of Economics and Management PhD thesis format")
+    (description
+     "The class provides a PhD thesis template for the @acronym{GSEM,
+Geneva School of Economics and Management}, University of Geneva, Switzerland.
+The class provides utilities to easily set up the cover page, the front matter
+pages, the page headers, etc., conformant to the official guidelines of the
+GSEM Faculty for writing PhD dissertations.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-gtrcrd
   (package
@@ -13825,6 +15789,51 @@ programs are provided as sources, not installed in the @file{bin}
 directories.")
     (license license:public-domain)))
 
+(define-public texlive-gzt
+  (package
+    (name "texlive-gzt")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/gzt/" "source/latex/gzt/"
+                   "tex/latex/gzt/")
+             (base32
+              "0gyiy9vzr760mkvaabd3aj3rgz60b9dhc7m5a2rnhzz5sz4a2yv3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/gzt")
+    (synopsis "Bundle of classes for @emph{La Gazette des Mathematiciens}")
+    (description
+     "This bundle provides two classes and BibLaTeX styles for the French
+journal @emph{La Gazette des Mathematiciens}: @code{gzt} for the complete
+issues of the journal, aimed at the Gazette's team, @code{gztarticle},
+intended for authors who wish to publish an article in the Gazette.  This
+class's goals are to faithfully reproduce the layout of the Gazette, thus
+enabling the authors to be able to work their document in actual conditions,
+and provide a number of tools (commands and environments) to facilitate the
+drafting of documents, in particular those containing mathematical formulas.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-h2020proposal
+  (package
+    (name "texlive-h2020proposal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/h2020proposal/"
+                   "tex/latex/h2020proposal/")
+             (base32
+              "0fq43vpq3ixj6fc99fbmj129487xxzcmz22gisqmn469bam5qxj5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/h2020proposal")
+    (synopsis "LaTeX class and template for EU H2020 RIA proposal")
+    (description
+     "This package consists of a class file as well as FET and ICT proposal
+templates for writing EU H2020 RIA proposals and generating automatically the
+many cross-referenced tables that are required.")
+    (license license:gpl3)))
+
 (define-public texlive-hacm
   (package
     (name "texlive-hacm")
@@ -13848,6 +15857,30 @@ directories.")
 constructed language Arka.  The bundle provides nine official fonts, in Adobe
 Type 1 format.")
     (license license:lppl1.3+)))
+
+(define-public texlive-hagenberg-thesis
+  (package
+    (name "texlive-hagenberg-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/hagenberg-thesis/"
+                   "tex/latex/hagenberg-thesis/")
+             (base32
+              "0dp2mrf4smpllrgszi0cx5w42lm144qs3jvr44h6k98ibsfxdv9h")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hagenberg-thesis")
+    (synopsis
+     "LaTeX classes, style files and example documents for academic
+manuscripts")
+    (description
+     "This package provides a collection of modern LaTeX classes, style files
+and example documents for authoring Bachelor, master or diploma theses and
+related academic manuscripts in English and German.  It includes comprehensive
+tutorials (in English and German) with detailed instructions and authoring
+guidelines.")
+    (license license:cc-by4.0)))
 
 (define-public texlive-hamnosys
   (package
@@ -13927,6 +15960,25 @@ the towers with (up to) 15 discs.")
      "The output PDF file gives an amusing display, as the reader pages
 through it.")
     (license license:public-domain)))
+
+(define-public texlive-har2nat
+  (package
+    (name "texlive-har2nat")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/har2nat/" "tex/latex/har2nat/")
+             (base32
+              "13akhwjx48lkch46pk2syzizham3rk81ihrzbwxsvapa1fw74dzg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/har2nat")
+    (synopsis "Replace the @code{harvard} package with @code{natbib}")
+    (description
+     "This small package allows a LaTeX document containing the citation
+commands provided by the @code{harvard} package to be compiled using the
+@code{natbib} package.")
+    (license license:lppl)))
 
 (define-public texlive-harmony
   (package
@@ -14038,6 +16090,37 @@ whose authors offer no description of their behaviour.")
      "This package defines macros for typesetting diagrams of board positions
 in the games of Havannah and Hex.")
     (license license:lppl1.2+)))
+
+(define-public texlive-hecthese
+  (package
+    (name "texlive-hecthese")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/hecthese/"
+                   "source/latex/hecthese/"
+                   "tex/latex/hecthese/")
+             (base32
+              "023yqg7g612c5jdla70m0afpk0249k07sbg3xba5l77pkjw6851c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hecthese")
+    (synopsis "Class for dissertations and theses at HEC Montreal")
+    (description
+     "This package provides the @code{hecthese} class, a class based on
+@code{memoir} and compatible with LaTeX.  Using this class, postgraduate
+students at HEC Montreal will be able to write their dissertation or thesis
+while complying with all the presentation standards required by the
+University.  This class is meant to be as flexible as possible; in particular,
+there are very few hard-coded features except those that take care of the
+document's layout.
+
+Dissertations and theses at HEC Montreal can be written on a per-chapter or
+per-article basis.  Documents that are written on a per-article basis require
+a bibliography for each of the included articles and a general bibliography
+for the entire document.  The @code{hecthese} class takes care of these
+requirements.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-helmholtz-ellis-ji-notation
   (package
@@ -14152,6 +16235,31 @@ Modern counterparts.")
 if the document is sans-serif.  Additionally Greek letters are redefined to be
 always italic and upright in math and text mode respectively.  Some math font
 macros are adjusted to give more consistently the naively expected results.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-hep-paper
+  (package
+    (name "texlive-hep-paper")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/hep-paper/"
+                   "source/latex/hep-paper/"
+                   "tex/latex/hep-paper/")
+             (base32
+              "05dx8vsyr8ylvfqs3s9krjrqml8qivwlwhga4ghbnd3nkkqkx95a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hep-paper")
+    (synopsis "Publications in @emph{High Energy Physics}")
+    (description
+     "This package aims to provide a single style file containing most
+configurations and macros necessary to write appealing publications in
+@emph{High Energy Physics}.  Instead of reinventing the wheel by introducing
+newly created macros, hep-paper preferably loads third party packages as long
+as they are light-weight enough.  For usual publications it suffices to load
+the @code{hep-paper} package, without optional arguments, in addition to the
+@code{article} class.")
     (license license:lppl1.3c)))
 
 (define-public texlive-hep-reference
@@ -14417,6 +16525,77 @@ with guillemets, and support for character protruding using the
 @code{pdfcprot} package.")
     (license license:gpl3+)))
 
+(define-public texlive-hfutexam
+  (package
+    (name "texlive-hfutexam")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/hfutexam/" "tex/latex/hfutexam/")
+             (base32
+              "0r2048lpvj213m3a90sw93gcfdjja3w3vkrq3z171ravpl8l0bsm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hfutexam")
+    (synopsis "Exam class for Hefei University of Technology, China")
+    (description
+     "This package provides an exam class for Hefei University of
+Technology (China).")
+    (license license:lppl1.3c)))
+
+(define-public texlive-hfutthesis
+  (package
+    (name "texlive-hfutthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/hfutthesis/"
+                   "tex/xelatex/hfutthesis/")
+             (base32
+              "1i7ljf5521f9dynrcnim0m4jzz2qkvpsb4pjvxbj5c7pr85gc34r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hfutthesis")
+    (synopsis "LaTeX thesis template for Hefei University of Technology")
+    (description
+     "This project is based on the HFUT_Thesis LaTeX template of Hefei
+University of Technology compiled on the basis of @code{ustctug} and
+@code{ustcthesis}, in accordance with the latest version of @emph{Hefei
+University of Technology Graduate Dissertation Writing Specifications} and
+@emph{Hefei University of Technology Undergraduate Graduation Project (Thesis)
+Work Implementation Rules}.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-hithesis
+  (package
+    (name "texlive-hithesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/hithesis/"
+                   "doc/xelatex/hithesis/"
+                   "makeindex/hithesis/"
+                   "source/xelatex/hithesis/"
+                   "tex/xelatex/hithesis/")
+             (base32
+              "0w701f0ivf7k8jb2jiy5lhns4qiflyrslyiplm6aca67g2rcqgwn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               ;; "hithesis.ins" writes files to "./figures" Create these
+               ;; directories first to prevent an error.
+               (add-before 'build 'prepare-build
+                 (lambda _
+                   (mkdir-p "build/figures"))))))
+    (home-page "https://ctan.org/pkg/hithesis")
+    (synopsis "Harbin Institute of Technology thesis template")
+    (description
+     "@code{hithesis} is a LaTeX thesis template package for Harbin Institute
+of Technology supporting bachelor, master, doctor dissertations.")
+    (license license:lppl1.3a)))
+
 (define-public texlive-hindmadurai
   (package
     (name "texlive-hindmadurai")
@@ -14515,6 +16694,55 @@ TeX to format a document for nearly-arbitrary values of @code{\\hsize} and
 @code{\\vsize}.")
     (license license:x11)))
 
+(define-public texlive-hitszbeamer
+  (package
+    (name "texlive-hitszbeamer")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/hitszbeamer/"
+                   "doc/latex/hitszbeamer/"
+                   "source/latex/hitszbeamer/"
+                   "tex/latex/hitszbeamer/")
+             (base32
+              "00c23sdhkvr79lzag8v1j5hyzf5iwmkr07xnz0s0n3haicbfzz44")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hitszbeamer")
+    (synopsis "Beamer theme for Harbin Institute of Technology, ShenZhen")
+    (description
+     ;; XXX: Cannot use @acronym and @comma here, because Guile Texinfo does
+     ;; not support this combination.
+     "This is a Beamer theme designed for HITSZ (Harbin Institute of
+Technology, ShenZhen).")
+    (license license:lppl1.3c)))
+
+(define-public texlive-hitszthesis
+  (package
+    (name "texlive-hitszthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/hitszthesis/"
+                   "doc/latex/hitszthesis/"
+                   "makeindex/hitszthesis/"
+                   "source/latex/hitszthesis/"
+                   "tex/latex/hitszthesis/")
+             (base32
+              "0m1wr3iq1nzcymvnamgna0iiqb3ndllflgawzjjv85aay9jszra0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hitszthesis")
+    (synopsis
+     "Dissertation template for Harbin Institute of Technology, ShenZhen")
+    (description
+     ;; XXX: Cannot use @acronym and @comma here, because Guile Texinfo does
+     ;; not support this combination.
+     "This package provides a dissertation template for HITSZ (Harbin
+Institute of Technology, ShenZhen), including bachelor, master and doctor
+dissertations.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-hmtrump
   (package
     (name "texlive-hmtrump")
@@ -14537,6 +16765,25 @@ card games.")
      (list (license:fsf-free
             "doc/lualatex/hmtrump/nkd04_playing_cards_index/LICENSE")
            license:cc-by-sa4.0))))
+
+(define-public texlive-hobete
+  (package
+    (name "texlive-hobete")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/hobete/" "tex/latex/hobete/")
+             (base32
+              "1gccpxh3bfj4sbnag8rjrz8hyrx3107mwxpydl0bcdn8dxyjkfi2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hobete")
+    (synopsis "Unofficial Beamer theme for the University of Hohenheim")
+    (description
+     "The package provides a Beamer theme which features the Ci colors of the
+University of Hohenheim.  Please note that this is not an official theme, and
+that there will be no support for it from the University.")
+    (license license:lppl)))
 
 (define-public texlive-horoscop
   (package
@@ -14582,6 +16829,27 @@ the graduation thesis at the University of Zagreb) and sample thesis documents
 are included.")
     (license license:lppl)))
 
+(define-public texlive-hu-berlin-bundle
+  (package
+    (name "texlive-hu-berlin-bundle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/lualatex/hu-berlin-bundle/"
+                   "source/lualatex/hu-berlin-bundle/"
+                   "tex/lualatex/hu-berlin-bundle/")
+             (base32
+              "05cwh97w954gz8dr56a2n06s312gg8r0zy9zxj6hv86z019wiq85")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hu-berlin-bundle")
+    (synopsis "LaTeX classes for the Humboldt-Universitat zu Berlin")
+    (description
+     "This package provides files according to the corporate design of the
+Humboldt-Universitat zu Berlin.  This is not an official package by the
+university itself, and not officially approved by it.")
+    (license (list license:lppl1.3c license:gpl2 license:bsd-3))))
+
 (define-public texlive-huaz
   (package
     (name "texlive-huaz")
@@ -14624,6 +16892,27 @@ elements of a document template.  Lorum ipse is a Hungarian variation of Lorem
 ipsum. (Lorum is a Hungarian card game, and ipse is a Hungarian slang word
 meaning bloke.)  With this package you can typeset 150 paragraphs of Lorum
 ipse.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-hustthesis
+  (package
+    (name "texlive-hustthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/hustthesis/"
+                   "doc/latex/hustthesis/"
+                   "source/latex/hustthesis/"
+                   "tex/latex/hustthesis/")
+             (base32
+              "12sacpq43wjkr0j0ziszw37achyc7cf0z5kajqdfb5d7ksas0j2n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/hustthesis")
+    (synopsis "Unofficial thesis template for Huazhong University")
+    (description
+     "The package provides an unofficial thesis template in LaTeX for Huazhong
+University of Science and Technology.")
     (license license:lppl1.3+)))
 
 (define-public texlive-hvarabic
@@ -15164,6 +17453,277 @@ and PRICE fields, extended PAGES fields, the PERIODICAL entry, and extended
 citation label suffixing.")
     (license license:knuth)))
 
+(define-public texlive-icsv
+  (package
+    (name "texlive-icsv")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/icsv/" "source/latex/icsv/"
+                   "tex/latex/icsv/")
+             (base32
+              "133rbbq86qkd749bd20wdnjqddpwydm27ndh5yp2waimgij3cm8d")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/icsv")
+    (synopsis "Class for typesetting articles for the ICSV conference")
+    (description
+     "This is an ad-hoc class for typesetting articles for the ICSV
+conference.")
+    (license license:lppl)))
+
+(define-public texlive-ieeeconf
+  (package
+    (name "texlive-ieeeconf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ieeeconf/"
+                   "source/latex/ieeeconf/"
+                   "tex/latex/ieeeconf/")
+             (base32
+              "1f7v199mc1dw2fhp30qdkx48dyzk5mqmbqr91c1jm235isgs4fam")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ieeeconf")
+    (synopsis "Macros for IEEE conference proceedings")
+    (description
+     "The IEEEconf class implements the formatting dictated by the IEEE
+Computer Society Press for conference proceedings.")
+    (license license:lppl)))
+
+(define-public texlive-ieeepes
+  (package
+    (name "texlive-ieeepes")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/ieeepes/" "doc/latex/ieeepes/"
+                   "tex/latex/ieeepes/")
+             (base32
+              "12nvllxxswww9p9l1h3ygak3g4j8ngmypxcbbw2jwwa8kh43yiqi")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ieeepes")
+    (synopsis "IEEE Power Engineering Society Transactions")
+    (description
+     "This package supports typesetting of transactions, as well as
+discussions and closures, for the IEEE Power Engineering Society Transactions
+journals.")
+    (license license:lppl)))
+
+(define-public texlive-ieeetran
+  (package
+    (name "texlive-ieeetran")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/ieeetran/"
+                   "bibtex/bst/ieeetran/" "doc/latex/ieeetran/"
+                   "tex/latex/ieeetran/")
+             (base32
+              "0j7vv8hp0ymzmclyrk23zmixcclhlm1g241y8dk3dl18zsj00f1c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ieeetran")
+    (synopsis "Document class for IEEE Transactions journals and conferences")
+    (description
+     "The class and its BibTeX style enable authors to produce
+officially-correct output for the @acronym{IEEE, Institute of Electrical and
+Electronics Engineers} transactions, journals and conferences.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ijmart
+  (package
+    (name "texlive-ijmart")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/ijmart/" "doc/latex/ijmart/"
+                   "source/latex/ijmart/" "tex/latex/ijmart/")
+             (base32
+              "18fpf0na5y1nxz0c7r43f560dp4r8yawx8vj8356vdmw6d5r15h0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ijmart")
+    (synopsis "LaTeX Class for the @emph{Israel Journal of Mathematics}")
+    (description
+     "The @emph{Israel Journal of Mathematics} is published by The Hebrew
+University Magnes Press.  This class provides LaTeX support for its authors
+and editors.  It strives to achieve the distinct look and feel of the journal,
+while having the interface similar to that of the @code{amsart} document
+class.  This will help authors already familiar with @code{amsart} to easily
+submit manuscripts for the @emph{Israel Journal of Mathematics} or to put the
+preprints in arXiv with minimal changes in the LaTeX source.")
+    (license license:lppl)))
+
+(define-public texlive-ijsra
+  (package
+    (name "texlive-ijsra")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ijsra/" "tex/latex/ijsra/")
+             (base32
+              "0k6a92c6fhwafrw3m4fcj0dj29ip0zb28aiz861cx2mac92hyqgs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ijsra")
+    (synopsis
+     "LaTeX document class for the International Journal of Student Research
+in Archaeology")
+    (description
+     "This is a document class called ijsra which is used for the
+International Journal of Student Research in Archaeology.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-imac
+  (package
+    (name "texlive-imac")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/imac/" "doc/latex/imac/"
+                   "tex/latex/imac/")
+             (base32
+              "06sc9irv318fc5zgngwrcdwx84pnhyhwh59jiq9sb8iayy1yxldh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/imac")
+    (synopsis "International Modal Analysis Conference format")
+    (description
+     "This package provides a set of files for producing correctly formatted
+documents for the International Modal Analysis Conference.  The bundle
+provides a LaTeX package and a BibTeX style file.")
+    (license license:gpl3+)))
+
+(define-public texlive-imakeidx
+  (package
+    (name "texlive-imakeidx")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/imakeidx/"
+                   "source/latex/imakeidx/"
+                   "tex/latex/imakeidx/")
+             (base32
+              "1s65kbzafx5q7519pbxjldb87flws0mgg76yxi7a5mgxrnkfy961")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/imakeidx")
+    (synopsis "Package for producing multiple indexes")
+    (description
+     "The package enables the user to produce and typeset one or more indexes
+simultaneously with a document.  The package is known to work in LaTeX
+documents processed with pdfLaTeX, XeLaTeX and LuaLaTeX.  If
+@command{makeindex} is used for processing the index entries, no particular
+setting up is needed.  When using Xindy or other programs, it is necessary to
+enable shell escape; shell escape is also needed if @command{splitindex} is
+used.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-imtekda
+  (package
+    (name "texlive-imtekda")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/imtekda/" "source/latex/imtekda/"
+                   "tex/latex/imtekda/")
+             (base32
+              "0pbv50c6g024dhyw8mpnnyafp18pvf0cqy7j1fvhrbqwf13bn37x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/imtekda")
+    (synopsis "IMTEK thesis class")
+    (description
+     "The class permits typesetting of diploma, bachelor's and master's theses
+for the @acronym{IMTEK, Institute of Microsystem Technology} at the University
+of Freiburg (Germany).  The class is based on the KOMA-Script class
+@code{scrbook}.")
+    (license license:lppl)))
+
+(define-public texlive-inkpaper
+  (package
+    (name "texlive-inkpaper")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/inkpaper/" "tex/latex/inkpaper/")
+             (base32
+              "0yybzasv4708cw139k2dcqgi85lm6ard4ra9j78hrcdbnpnkqmw0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/inkpaper")
+    (synopsis "Mathematical paper template")
+    (description
+     "InkPaper is designed to write mathematical papers, especially designed
+for mathematics students, ZJGS students, and magazine editors.")
+    (license license:gpl3)))
+
+(define-public texlive-iodhbwm
+  (package
+    (name "texlive-iodhbwm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/iodhbwm/" "tex/latex/iodhbwm/")
+             (base32
+              "10zqg2cyz7vcnsbgqajwlilakjzr23nhn49sqy82555zkqi27gsa")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/iodhbwm")
+    (synopsis "Unofficial template of the DHBW Mannheim")
+    (description
+     "This package provides an unofficial template of the DHBW Mannheim for
+the creation of bachelor thesis, studies or project work with LaTeX.  The aim
+of the package is the quick creation of a basic framework without much
+effort.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-iscram
+  (package
+    (name "texlive-iscram")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/iscram/" "tex/latex/iscram/")
+             (base32
+              "13p0nr6cwkchykdllf0ii035yjq7hxczb1g7qc7l7jaywfszr5ph")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/iscram")
+    (synopsis "LaTeX class to publish article to ISCRAM conferences")
+    (description
+     "This is a LaTeX class to publish article to @acronym{ISCRAM,
+International Conference on Information Systems for Crisis Response and
+Management}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-isodate
+  (package
+    (name "texlive-isodate")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/isodate/" "source/latex/isodate/"
+                   "tex/latex/isodate/")
+             (base32
+              "0bha4qpa1hi5i4npr00wz4qvzzc4yw4qydjjmm8n878p8cfygvga")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/isodate")
+    (synopsis "Tune the output format of dates according to language")
+    (description
+     "This package provides ten output formats of the commands @code{\\today},
+@code{\\printdate}, @code{\\printdateTeX}, and @code{\\daterange} (partly
+language dependent).  The commands @code{\\printdate} and
+@code{\\printdateTeX} print any date.  The command @code{\\daterange} prints
+a date range and leaves out unnecessary year or month entries.  This package
+supports German (old and new rules), Austrian, US English, British English,
+French, Danish, Swedish, and Norwegian.")
+    (license license:lppl)))
+
 (define-public texlive-isomath
   (package
     (name "texlive-isomath")
@@ -15226,6 +17786,27 @@ words, both in cardinal and in ordinal form.")
      "This is a Metafont font to implement the modular tiles described by
 Slavik Jablan. ")
     (license license:public-domain)))
+
+(define-public texlive-jacow
+  (package
+    (name "texlive-jacow")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jacow/" "tex/latex/jacow/")
+             (base32
+              "0wdmk9zl3916hgj3f16dlfvrxxlr7ffmjih2nipgfz376ryvnbgf")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jacow")
+    (synopsis
+     "Class for submissions to the proceedings of conferences on JACoW.org")
+    (description
+     "The @code{jacow} class is used for submissions to the proceedings of
+conferences on @acronym{JACoW, Joint Accelerator Conferences Website}, an
+international collaboration that publishes the proceedings of accelerator
+conferences held around the world.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-jamtimes
   (package
@@ -15380,6 +17961,27 @@ package is a close relative of @code{apalike.sty} in the BibTeX distribution;
 it features author-date references.")
     (license license:knuth)))
 
+(define-public texlive-jmlr
+  (package
+    (name "texlive-jmlr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jmlr/" "source/latex/jmlr/"
+                   "tex/latex/jmlr/")
+             (base32
+              "125zcy1363xlay5ss411x1rl7nyidbh5aygvcr8q8j3qp4yqajrn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jmlr")
+    (synopsis "Class files for the @emph{Journal of Machine Learning Research}")
+    (description
+     "The @code{jmlr} bundle provides a class for authors (@code{jmlr}) and
+a class for production editors (@code{jmlrbook}) for the @emph{Journal of
+Machine Learning Research}.  The @code{jmlrbook} class can be used to combine
+articles written using the @code{jmlr} class into a book.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-jneurosci
   (package
     (name "texlive-jneurosci")
@@ -15401,6 +18003,23 @@ fully conforms with the @emph{Journal of Neuroscience} citation style.  It
 should be characterised as an author-date citation style; a BibTeX style and
 a LaTeX package are provided.")
     (license license:lppl)))
+
+(define-public texlive-jnuexam
+  (package
+    (name "texlive-jnuexam")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jnuexam/" "tex/latex/jnuexam/")
+             (base32
+              "1l6r5cnr5wcxf6hn6ih87544845vcbcd4g3ah8wjl8vaina2j49w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jnuexam")
+    (synopsis "Exam class for Jinan University")
+    (description
+     "The package provides an exam class for Jinan University (China).")
+    (license license:lppl1.3+)))
 
 (define-public texlive-josefin
   (package
@@ -15427,6 +18046,67 @@ a LaTeX package are provided.")
 the Josefin Sans family of fonts, designed by Santiago Orozco.  Josefin Sans
 is available in seven weights, with corresponding italics.")
     (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-jourcl
+  (package
+    (name "texlive-jourcl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jourcl/" "tex/latex/jourcl/")
+             (base32
+              "1wbq0mjl6931267qiw0nrfqxa4blpddqyv27m3wggbpbrz9hvakb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jourcl")
+    (synopsis "Cover letter for journal submissions")
+    (description
+     "Paper submissions to journals are usually accompanied by a cover letter.
+This package provides a LaTeX class and a template for such a cover letter
+with the following main features:
+
+@itemize
+
+@item minimalistic design,
+
+@item custom image,
+
+@item pre-defined commands for journal name, author, date, etc.
+
+@item many macros contained in this package speed up the process of
+preparing the necessary ingredients for the cover letter;
+
+@item macros for recommending up to three reviewers and editors;
+
+@item ORCID logo and link to the submitting author's ORCID page;
+
+@item controls for adding a ``conflict of interest'' statement and declaration;
+
+@item custom greeting;
+
+@item predefined valedictions for different types of submissions.
+
+@end itemize")
+    (license license:cc-by-sa4.0)))
+
+(define-public texlive-jpsj
+  (package
+    (name "texlive-jpsj")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jpsj/" "tex/latex/jpsj/")
+             (base32
+              "0gvszj0igklm8b0p268j59ysfbahh03c6nbm6gpzkan3p4ijabdi")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/jpsj")
+    (synopsis
+     "Document class for @emph{Journal of the Physical Society of Japan}")
+    (description
+     "This package provides a document class for @emph{Journal of the Physical
+Society of Japan}.")
+    (license license:lppl)))
 
 (define-public texlive-junicode
   (package
@@ -15591,6 +18271,26 @@ It (ab)uses BibTeX for citations of judgements and official documents.  For
 this purpose, a special BibTeX-style is provided.")
     (license license:gpl3+)))
 
+(define-public texlive-jwjournal
+  (package
+    (name "texlive-jwjournal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/jwjournal/"
+                   "tex/latex/jwjournal/")
+             (base32
+              "098mh60qf77x12f6mnlpsl80imx97673wx3vxcndfjdmpmr5k9gk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-einfart))
+    (home-page "https://ctan.org/pkg/jwjournal")
+    (synopsis "Personal class for writing journals")
+    (description
+     "This LaTeX document class enables the user to turn simple pure text
+entries into a colorful and nicely formatted journal.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-karnaugh
   (package
     (name "texlive-karnaugh")
@@ -15675,6 +18375,86 @@ document author needs.  So it can be a useful guide for beginners as well as
 a reference manual for advanced users.")
     (license license:cc-by-sa4.0)))
 
+(define-public texlive-kdgdocs
+  (package
+    (name "texlive-kdgdocs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/kdgdocs/" "source/latex/kdgdocs/"
+                   "tex/latex/kdgdocs/")
+             (base32
+              "1yjd6y3h8m08zwhnd0bg3153xapxxqy2i23i30fcvv5mj5pnnql8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/kdgdocs")
+    (synopsis "Document classes for Karel de Grote University College")
+    (description
+     "The bundle provides two classes for usage by @acronym{KdG, Karel de
+Grote} University College professors and master students: @code{kdgcoursetext}
+for writing course texts, and @code{kdgmasterthesis} for writing master's
+theses.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-kdpcover
+  (package
+    (name "texlive-kdpcover")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/kdpcover/"
+                   "source/latex/kdpcover/"
+                   "tex/latex/kdpcover/")
+             (base32
+              "116pzg0bdrj78vs2sq196jcwnv16b734kqnhfcg3fka4mf6jk2d1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs
+     (list texlive-anyfontsize
+           texlive-geometry
+           texlive-graphics
+           texlive-microtype
+           texlive-pgf
+           texlive-setspace
+           texlive-textpos
+           texlive-tools
+           texlive-xcolor
+           texlive-xifthen
+           texlive-xkeyval))
+    (home-page "https://ctan.org/pkg/kdpcover")
+    (synopsis "Covers for books published by Kindle Direct Publishing")
+    (description
+     "The problem this class solves is the necessity to change the size of the
+cover PDF according to the number of pages in the book --- the bigger the
+book, the larger the spine of the book must be.  The provided class makes the
+necessary calculations on-the-fly, using the @code{qpdf} tool.")
+    (license license:expat)))
+
+(define-public texlive-kfupm-math-exam
+  (package
+    (name "texlive-kfupm-math-exam")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/kfupm-math-exam/"
+                   "source/latex/kfupm-math-exam/"
+                   "tex/latex/kfupm-math-exam/")
+             (base32
+              "1hgyasjhqpb1b9xnffzcwhsi8rr6wx929awn0sadx6rsabiamb16")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/kfupm-math-exam")
+    (synopsis
+     "LaTeX document style to produce homework, quiz and exam papers")
+    (description
+     "The package provides commands and environments that simplify and
+streamline the process of preparing homework, quiz and exam papers according
+to a preferred style.  The default style is based on the guidelines set by the
+department of mathematics at @acronym{KFUPM, King Fahd University of Petroleum
+and Minerals}.  It can be easily customized to fit any style for any
+institution.")
+    (license license:expat)))
+
 (define-public texlive-kixfont
   (package
     (name "texlive-kixfont")
@@ -15698,6 +18478,40 @@ printed below the address line on bulk mailings, a discount can be obtained.
 The font is distributed in Metafont format, and covers the numbers and
 upper-case letters.")
     (license license:public-domain)))
+
+(define-public texlive-kluwer
+  (package
+    (name "texlive-kluwer")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/kluwer/" "doc/latex/kluwer/"
+                   "source/latex/kluwer/" "tex/latex/kluwer/")
+             (base32
+              "14y95srzggd8kaiyjq0sz5amvmppl3rilhj9fr0vcjsy2g1ms52z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; The "kluwer.ins" file only generates "kluwer.cls".  To that
+          ;; effect, it needs data from files located in
+          ;; "tex/latex/kluwer/".  Bring them to build directory.
+          (add-before 'build 'bring-data-files
+            (lambda _
+              (for-each (lambda (f) (install-file f "build/"))
+                        (find-files "tex/latex/kluwer/" "\\.(clo|sty)$")))))))
+    (home-page "https://ctan.org/pkg/kluwer")
+    (synopsis "@emph{Kluwer} publication support")
+    (description
+     "This package provides a class file for @emph{Kluwer} journal
+submissions, and bibliography style for named references.  It also includes
+@file{klucite.sty}, which collapses bibliographic citations, and
+@file{klups.sty}, which attempts to select Times for text and MathTime for
+math instead of Computer Modern.  This package is most likely long obsolete,
+unfortunately.")
+    (license license:knuth)))
 
 (define-public texlive-kotex-oblivoir
   (package
@@ -15879,6 +18693,51 @@ KSFH (@emph{Katholische Stiftungsfachhochschule}) Munich.  BibTeX entries in
 @code{misc} formats are supported.")
     (license license:lppl1.3+)))
 
+(define-public texlive-ksp-thesis
+  (package
+    (name "texlive-ksp-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ksp-thesis/"
+                   "tex/latex/ksp-thesis/")
+             (base32
+              "03jklx2yym78b29y3s8fh91mfsn9p4w1cl7yisj3kyyawygzs6hp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ksp-thesis")
+    (synopsis
+     "LaTeX class for theses published with KIT Scientific Publishing")
+    (description
+     "This package provides a LaTeX class intended for authors who want to
+publish their thesis or other scientific work with @acronym{KSP, KIT
+Scientific Publishing}.  The class is based on the @code{scrbook} class of the
+KOMA-script bundle in combination with the ClassicThesis and ArsClassica
+packages.  It modifies some of the layout and style definitions of these
+packages in order to provide a document layout that should be compatible with
+the requirements by KSP.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ku-template
+  (package
+    (name "texlive-ku-template")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ku-template/"
+                   "tex/latex/ku-template/")
+             (base32
+              "1aa3rday97l1b7vca6sq1jwj81bqx6j7d0ijz0jr4vp3r27pxgs9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ku-template")
+    (synopsis "Copenhagen University or faculty logo for front page")
+    (description
+     "This package provides a comprehensive package for adding University of
+Copenhagen or faculty logo to your front page.  For use by student or staff at
+University of Copenhagen (Kobenhavns Universitet).")
+    (license license:expat)))
+
 (define-public texlive-kvmap
   (package
     (name "texlive-kvmap")
@@ -15899,6 +18758,50 @@ KSFH (@emph{Katholische Stiftungsfachhochschule}) Munich.  BibTeX entries in
      "This LaTeX package allows the creation of (even large) Karnaugh maps.
 It provides a tabular-like input syntax and support for drawing bundles
 (implicants) around adjacent values.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-langsci
+  (package
+    (name "texlive-langsci")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/langsci/"
+                   "tex/xelatex/langsci/")
+             (base32
+              "1kz8gf5w7xrgld5jpf1csdy334ng89hp5lbkgmgaal4m31svw03z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/langsci")
+    (synopsis "Typeset books for publication with Language Science Press")
+    (description
+     "This package allows you to typeset monographs and edited volumes for
+publication with @url{https://www.langsci-press.org, Language Science Press}.
+It includes all necessary files for title pages, frontmatter, main content,
+list of references and indexes.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-langsci-avm
+  (package
+    (name "texlive-langsci-avm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/langsci-avm/"
+                   "source/latex/langsci-avm/"
+                   "tex/latex/langsci-avm/")
+             (base32
+              "1n53syf2slndgjbndjhd3cl8y6bl9j3xgb86z9r1mwvdcdls5674")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/langsci-avm")
+    (synopsis "Feature structures and attribute-value matrices (AVM)")
+    (description
+     "This package provides a package for typesetting feature structures,
+also known as attribute-value matrices (AVMs), for use in linguistics.  The
+package provides a minimal and easy to read syntax.  The package serves the
+same purpose as @code{avm} package, but shares no code base with that
+package.")
     (license license:lppl1.3c)))
 
 (define-public texlive-lato
@@ -16743,6 +19646,26 @@ document.  The package uses OpenType fonts, and as a result must be compiled
 with LuaLaTeX or XeLaTeX.")
     (license license:lppl1.3c)))
 
+(define-public texlive-limecv
+  (package
+    (name "texlive-limecv")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/limecv/" "source/latex/limecv/"
+                   "tex/latex/limecv/")
+             (base32
+              "1bqqkbxzayb8wwlkj1vkf01lx78i7pq2kb9clrir0paxjm8xa6ja")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/limecv")
+    (synopsis "(Xe/Lua)LaTeX document class for curriculum vitae")
+    (description
+     "@code{limecv} is a LaTeX document class to write curriculum vitae.  It
+is designed with the following design rules: simple, elegant and clean.  To
+this end, it offers several environments and macros for convenience.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-lineara
   (package
     (name "texlive-lineara")
@@ -16835,6 +19758,32 @@ the LinguisticsPro family of fonts.  This family is derived from the Utopia
 Nova font family, by Andreas Nolda.")
     (license (list license:lppl license:silofl1.1))))
 
+(define-public texlive-lion-msc
+  (package
+    (name "texlive-lion-msc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/lion-msc/" "doc/latex/lion-msc/"
+                   "tex/latex/lion-msc/")
+             (base32
+              "1yj3xwbd4lb5vjkfqhwhy82pc9p59vffah6zmiqbgjaj10q1ihb5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lion-msc")
+    (synopsis
+     "LaTeX class for B.Sc.@: and M.Sc.@: reports at Leiden Institute of
+Physics (LION)")
+    (description
+     "This is a LaTeX class for B.Sc.@: and M.Sc.@: reports at Leiden
+Institute of Physics (LION).  The purpose of this class is twofold.  It
+creates a uniform layout of the student theses from our department.  More
+importantly, it contains several fields on the front-page that the user needs
+to fill that are used in the university administration (name, student number
+and name of supervisor).  Students are free to change the layout of the text
+but should leave the title page as it is.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-listbib
   (package
     (name "texlive-listbib")
@@ -16909,6 +19858,71 @@ and @file{latin7.def}.
 texts, particularly @code{Missal} and @code{Breviary} texts.  The package
 assumes availability of Latin typesetting packages.")
     (license license:lppl)))
+
+(define-public texlive-llncs
+  (package
+    (name "texlive-llncs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/llncs/" "doc/latex/llncs/"
+                   "tex/latex/llncs/")
+             (base32
+              "0drz45rmjprwy2019nkd6l5kjpqshfajqhg0x6jf5y9w1zbs1qv5")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/llncs")
+    (synopsis
+     "Document class and bibliography style for @acronym{LNCS, Lecture Notes
+in Computer Science}")
+    (description
+     "This is Springer's official macro package for typesetting contributions
+to be published in Springer's @acronym{LNCS, Lecture Notes in Computer
+Science} and its related proceedings series CCIS, LNBIP, LNICST, and IFIP
+AICT.")
+    (license license:cc-by4.0)))
+
+(define-public texlive-llncsconf
+  (package
+    (name "texlive-llncsconf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/llncsconf/"
+                   "tex/latex/llncsconf/")
+             (base32
+              "18z94lh90pzvbzfgxj27n2l12mfbcjd20vga16h8d2bln56lrfpm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/llncsconf")
+    (synopsis "LaTeX package extending Springer's @code{llncs} class")
+    (description
+     "The package extends Springer's @code{llncs} class for adding additional
+notes describing the status of the paper (submitted, accepted) as well as for
+creating author-archived versions that include the references to the official
+version hosted by Springer (as requested by the copyright transfer agreement
+for Springer's LNCS series).")
+    (license license:lppl1.3c)))
+
+(define-public texlive-lni
+  (package
+    (name "texlive-lni")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/lni/" "doc/latex/lni/"
+                   "source/latex/lni/" "tex/latex/lni/")
+             (base32
+              "0d23j9yc9q45j9l9vzpndpgsvl5d76mkhmfjjjjrqmgmqmf3fzn0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lni")
+    (synopsis "Official class for the @emph{Lecture Notes in Informatics}")
+    (description
+     "This is the official version of the class @code{lni} for submissions to
+the @emph{Lecture Notes in Informatics} published by the Gesellschaft fur
+Informatik.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-lobster2
   (package
@@ -17164,6 +20178,27 @@ Fitch style, with subproofs indented and offset by scope lines.  The proofs
 from use of the package are in the format used in the textbook @emph{Language,
 Proof, and Logic} by Dave Barker-Plummer, Jon Barwise, and John Etchemendy.")
     (license license:lppl1.3+)))
+
+(define-public texlive-lps
+  (package
+    (name "texlive-lps")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/lps/" "source/latex/lps/"
+                   "tex/latex/lps/")
+             (base32
+              "11jd8k1w2mk0xmwaxb1ps8pabxlzvs24z5hl74dwcim2xad7ahvj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/lps")
+    (synopsis "Class for @emph{Logic and Philosophy of Science}")
+    (description
+     "The @emph{Logic and Philosophy of Science} journal is an online
+publication of the University of Trieste (Italy).  The class builds on the
+standard article class to offer a format that LaTeX authors may use when
+submitting to the journal.")
+    (license license:lppl)))
 
 (define-public texlive-lshort-bulgarian
   (package
@@ -17912,6 +20947,47 @@ the citation key into the margin.")
 Mathématiques Appliquées et Industrielles (SMAI).")
     (license license:lppl1.3c)))
 
+(define-public texlive-matc3
+  (package
+    (name "texlive-matc3")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/matc3/" "source/latex/matc3/"
+                   "tex/latex/matc3/")
+             (base32
+              "1rmrkdcda87pjl1lvyvzky0vdhghx0j6z1vdi9fdz2122f2drmpm")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/matc3")
+    (synopsis "Commands for Matematica C3 textbooks")
+    (description
+     "The package provides support for the Matematica C3 project to produce
+mathematical textbooks for use in Italian high schools.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-matc3mem
+  (package
+    (name "texlive-matc3mem")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/matc3mem/"
+                   "source/latex/matc3mem/"
+                   "tex/latex/matc3mem/")
+             (base32
+              "10igcyqzddl25gxasa9dxj2j49gqs9vi2g1ay0z6jyd5nfsp8ic0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/matc3mem")
+    (synopsis "Class for MatematicaC3 textbooks")
+    (description
+     "The class is a development of @code{memoir}, with
+additions (specifically, mathematical extensions) that provide support for
+writing the books for the Matematica C3 project to produce mathematical
+textbooks for use in Italian high schools.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-math-into-latex-4
   (package
     (name "texlive-math-into-latex-4")
@@ -17995,6 +21071,33 @@ The package provides means of loading maths alphabets (such as are normally
 addressed via macros @code{\\mathcal}, @code{\\mathbb}, @code{\\mathfrak} and
 @code{\\mathscr}).")
     (license license:lppl1.3c)))
+
+(define-public texlive-mathastext
+  (package
+    (name "texlive-mathastext")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mathastext/"
+                   "source/latex/mathastext/"
+                   "tex/latex/mathastext/")
+             (base32
+              "1660w9yhgw9ihhy06f9zqgw9isvprrs2x9yikhbz7szphq3cfpfv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mathastext")
+    (synopsis "Use the text font in maths mode")
+    (description
+     "The package uses a text font (usually the document's text font) for the
+letters of the Latin alphabet needed when typesetting
+mathematics. (Optionally, other characters in the font may also be used).
+This facility makes possible (for a document with simple mathematics) a far
+wider choice of text font, with little worry that no specially designed
+accompanying maths fonts are available.  The package also offers a simple
+mechanism for using many different choices of (text hence, now, maths) font in
+the same document.  Of course, using one font for two purposes helps produce
+smaller PDF files.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-mathcommand
   (package
@@ -18251,6 +21354,27 @@ The mazes generated by this package are natural and their solution is not too
 obvious.  The output it based on the @code{picture} environment.")
     (license license:lppl1.3c)))
 
+(define-public texlive-mcmthesis
+  (package
+    (name "texlive-mcmthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mcmthesis/"
+                   "source/latex/mcmthesis/"
+                   "tex/latex/mcmthesis/")
+             (base32
+              "1hz4c2mjfk3169phgy39m2y15k7jybfd4k36f26m17k6c490qpfc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mcmthesis")
+    (synopsis "Template designed for MCM and ICM")
+    (description
+     "The package offers a template for @acronym{MCM, The Mathematical Contest
+in Modeling} and @acronym{ICM, The Interdisciplinary Contest in Modeling} for
+typesetting the submitted paper.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-mdputu
   (package
     (name "texlive-mdputu")
@@ -18423,6 +21547,26 @@ that represent the memory of a computer program during its execution.")
      "This package provides documentation for Mendex (Japanese index
 processor).")
     (license license:bsd-3)))
+
+(define-public texlive-mentis
+  (package
+    (name "texlive-mentis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mentis/" "source/latex/mentis/"
+                   "tex/latex/mentis/")
+             (base32
+              "0js6gp93jzj6kzvwqycilp42zbwslxk6z77g2198gip2i4m1li0i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mentis")
+    (synopsis "Basis for books to be published by Mentis publishers")
+    (description
+     "This LaTeX class loads @code{scrbook} and provides changes necessary for
+publishing at Mentis publishers in Paderborn, Germany.  It is not an official
+Mentis class, but developed in close co-operation with Mentis.")
+    (license license:lppl)))
 
 (define-public texlive-merriweather
   (package
@@ -18693,6 +21837,30 @@ with an easy syntax.  Minus signs are printed as bar above the corresponding
 number.")
     (license license:lppl)))
 
+(define-public texlive-minimalist
+  (package
+    (name "texlive-minimalist")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/minimalist/"
+                   "tex/latex/minimalist/")
+             (base32
+              "01j72iqf15jx3larxkmcvsviw1z9wba9vl5g0x6d1ch3jpg32xpg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-projlib))
+    (home-page "https://ctan.org/pkg/minimalist")
+    (synopsis "Write your articles or books in a simple and clear way")
+    (description
+     "This package offers you a LaTeX style file and two classes to typeset
+articles or books in a simple and clear way.  These classes currently have
+native support for English, French, German, Italian, Portuguese (European and
+Brazilian), and Spanish typesetting.  They compile with any major TeX engine.
+You may also wish to consider the packages @code{einfart} and
+@code{simplivre}, which are enhanced versions of the classes provided here.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-mintspirit
   (package
     (name "texlive-mintspirit")
@@ -18776,6 +21944,28 @@ a XeLaTeX style file that makes it easier to achieve the classic incunabula
 look.")
     (license (list license:silofl1.1 license:lppl1.3+))))
 
+(define-public texlive-mlacls
+  (package
+    (name "texlive-mlacls")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mlacls/" "source/latex/mlacls/"
+                   "tex/latex/mlacls/")
+             (base32
+              "1g6kqsrvcvf8xmygb7rh18a1amqc83fp7fghvd17klsaslal83cd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mlacls")
+    (synopsis "LaTeX class for MLA papers")
+    (description
+     "In the United States, secondary and undergraduate students are generally
+expected to adhere to the format prescribed by the @acronym{MLA, Modern
+Language Association} for typewritten essays, research papers and writings.
+This package provides a simple, straightforward LaTeX class for composing
+papers almost perfectly adherent to the MLA style guide.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-mlmodern
   (package
     (name "texlive-mlmodern")
@@ -18839,6 +22029,51 @@ accented letters using ordinary Computer Modern (CM) fonts.  The system is
 distributed as a TeX change file.")
     (license license:knuth)))
 
+(define-public texlive-mluexercise
+  (package
+    (name "texlive-mluexercise")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mluexercise/"
+                   "source/latex/mluexercise/"
+                   "tex/latex/mluexercise/")
+             (base32
+              "1zvnz3rm9dq8h00hlbzll5cvw4zlcy8xr8l6cfjg0winfnyznky8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:build-targets #~(list "mluexercice.dtx")))
+    (home-page "https://ctan.org/pkg/mluexercise")
+    (synopsis
+     "Exercises and homework at the Martin Luther University Halle-Wittenberg")
+    (description
+     "This package provides a template class for solving weekly exercises at
+the Institute for Computer Science of Martin Luther University
+Halle-Wittenberg.  The class can be used by all students --- especially first
+semesters --- to typeset their exercises with low effort in beautiful LaTeX.
+A bunch of handy macros are included that are used throughout many lectures
+during the bachelor's degree program.")
+    (license license:expat)))
+
+(define-public texlive-mnras
+  (package
+    (name "texlive-mnras")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/mnras/" "doc/latex/mnras/"
+                   "tex/latex/mnras/")
+             (base32
+              "1lw2y3vbg8ndvhy5p00blbfwp3bzw40kkrwzs289kphjq249bwnb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mnras")
+    (synopsis "Monthly Notices of the Royal Astronomical Society")
+    (description
+     "This package is used for preparing papers in the journal @emph{Monthly
+Notices of the Royal Astronomical Society}.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-mnsymbol
   (package
     (name "texlive-mnsymbol")
@@ -18870,6 +22105,25 @@ the MinionPro font with the MinionPro package.  The fonts are available both
 as Metafont source and as Adobe Type 1 format, and a comprehensive support
 package is provided.")
     (license license:public-domain)))
+
+(define-public texlive-modeles-factures-belges-assocs
+  (package
+    (name "texlive-modeles-factures-belges-assocs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/modeles-factures-belges-assocs/"
+                   "tex/latex/modeles-factures-belges-assocs/")
+             (base32
+              "1rj4r3qa5khgc54f1gz73zywrh61rdw76hlrk9jb6b08gz56wzdz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/modeles-factures-belges-assocs")
+    (synopsis "Generate invoices for Belgian non-profit organizations")
+    (description
+     "This package provides templates and a @file{.sty} file for generating
+invoices for Belgian non-profit organizations.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-montserrat
   (package
@@ -18903,6 +22157,26 @@ shapes that are much more rounded than the default version, reflecting the
 signage in the neighborhood of Montserrat.")
     (license (list license:silofl1.1 license:lppl1.3+))))
 
+(define-public texlive-mparhack
+  (package
+    (name "texlive-mparhack")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mparhack/"
+                   "source/latex/mparhack/"
+                   "tex/latex/mparhack/")
+             (base32
+              "1ajlpri5bi62k9wsmic3j2xjkz1wzjc3n4fr04c5d667jsibpfmg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mparhack")
+    (synopsis "Work around a LaTeX bug in marginpars")
+    (description
+     "This package works around the LaTeX bug that marginpars will sometimes
+come out at the wrong margin.")
+    (license license:gpl2+)))
+
 (define-public texlive-mpfonts
   (package
     (name "texlive-mpfonts")
@@ -18931,6 +22205,68 @@ printing.")
                    license:lppl1.2+
                    license:silofl1.1
                    license:public-domain))))
+
+(define-public texlive-mucproc
+  (package
+    (name "texlive-mucproc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mucproc/" "source/latex/mucproc/"
+                   "tex/latex/mucproc/")
+             (base32
+              "0l6xycas6asggpd4hd1b7x5x867nsx8aw2fkdd1ib8g98i5a8vhk")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mucproc")
+    (synopsis "Conference proceedings for the German MuC-conference")
+    (description
+     "The @file{mucproc.cls} is a document class to support the formatting
+guidelines for submissions to the German Mensch und Computer conference.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-mugsthesis
+  (package
+    (name "texlive-mugsthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/mugsthesis/"
+                   "source/latex/mugsthesis/"
+                   "tex/latex/mugsthesis/")
+             (base32
+              "0xf3zjwx6k2dg1hrz4nw6shn6xk3lvmjprg3psfrh3z38r1sp9nh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/mugsthesis")
+    (synopsis
+     "Thesis class complying with Marquette University Graduate School
+requirements")
+    (description
+     "The bundle offers a thesis class, based on @code{memoir}, that complies
+with Marquette University Graduate School requirements.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-muling
+  (package
+    (name "texlive-muling")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/muling/" "source/latex/muling/"
+                   "tex/latex/muling/")
+             (base32
+              "0i4yvi1b12x8k2i2hi284b4zxwpxrzkfyqvw45m5f27qsr33h61x")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/muling")
+    (synopsis
+     "MA thesis class for the Department of Linguistics, University of
+Mumbai")
+    (description
+     "This is a class file for writing MA thesis as required by the
+Department of Linguistics at the University of Mumbai.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-multibib
   (package
@@ -19234,6 +22570,69 @@ example is extracting single-instrument parts from a multi-instrument score.
 source file.  This should be used before using @code{\\TransformNotes}.")
     (license license:gpl2)))
 
+(define-public texlive-musuos
+  (package
+    (name "texlive-musuos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/musuos/" "source/latex/musuos/"
+                   "tex/latex/musuos/")
+             (base32
+              "1a7cyjfgch6fvwdv2wi78sx2fdgmjbpb85gp2clhvgf15nkw0h94")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/musuos")
+    (synopsis "Typeset papers for the department of music, Osnabruck")
+    (description
+     "The package provides a LaTeX class for typesetting term papers at the
+institute of music and musicology of the University of Osnabruck, Germany,
+according to the specifications of Prof.@: Stefan Hahnheide.  A BibLaTeX style
+is provided.")
+    (license license:lppl)))
+
+(define-public texlive-muthesis
+  (package
+    (name "texlive-muthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/muthesis/" "tex/latex/muthesis/")
+             (base32
+              "1yydkhxpa9c5w8bpdx09w3mjggff0q2zsq8gkkbjjg29mg5x559j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/muthesis")
+    (synopsis "Classes for University of Manchester Dept.@: of Computer
+Science")
+    (description
+     "The bundle provides thesis and project report document classes from the
+University of Manchester's Department of Computer Science.")
+    (license license:lppl)))
+
+(define-public texlive-msu-thesis
+  (package
+    (name "texlive-msu-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/msu-thesis/"
+                   "tex/latex/msu-thesis/")
+             (base32
+              "0fsnrq8fvy8wgqfj5ccyw582142vd2haqlmgaxilvp7pybg9m100")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/msu-thesis")
+    (synopsis "Class for Michigan State University Master's and PhD theses")
+    (description
+     "This is a class file for producing dissertations and theses according to
+the Michigan State University Graduate School Guidelines for Electronic
+Submission of master's theses and dissertations.  The class should meet all
+current requirements and is updated whenever the university guidelines change.
+The class is based on the @code{memoir} document class, and inherits the
+functionality of that class.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-mwcls
   (package
     (name "texlive-mwcls")
@@ -19286,6 +22685,35 @@ blank pages.")
      "This package provides two Georgian fonts, in both Metafont and Type
 1 formats, which cover the Mxedruli and the Xucuri alphabets.")
     (license license:lppl)))
+
+(define-public texlive-mynsfc
+  (package
+    (name "texlive-mynsfc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/mynsfc/"
+                   "source/xelatex/mynsfc/"
+                   "tex/xelatex/mynsfc/")
+             (base32
+              "15vbgqmqsjqz068gn5ql5ca3wbw7gdq1vnaazpwmc71jdybxxv14")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:phases
+           #~(modify-phases %standard-phases
+               ;; "mynsfc.ins" writes files to "./examples".  Create this
+               ;; directory first to prevent an error.
+               (add-before 'build 'prepare-build
+                 (lambda _ (mkdir-p "build/examples"))))))
+    (home-page "https://ctan.org/pkg/mynsfc")
+    (synopsis "XeLaTeX template for writing the main body of NSFC proposals")
+    (description
+     "The package provides a XeLaTeX template for writing the main body of
+@acronym{NSFC, National Natural Science Foundation of China} proposals, which
+are allowed to apply online.  The package defines styles of the outlines and
+uses BibLaTeX and Biber for the management of references.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-na-box
   (package
@@ -19456,6 +22884,49 @@ adapt their size to the material enclosed, rendering @code{\\left} and
 @code{\\right} almost obsolete.")
     (license license:gpl3+)))
 
+(define-public texlive-nature
+  (package
+    (name "texlive-nature")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/nature/" "doc/latex/nature/"
+                   "tex/latex/nature/")
+             (base32
+              "04jxf6i83qnhy6i3rpqzm4nzqvc7r56ygx37741ii8yckz58xiah")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nature")
+    (synopsis "Prepare papers for the journal @emph{Nature}")
+    (description
+     "@emph{Nature} does not accept papers in LaTeX, but it does accept PDF.
+This class and BibTeX style provide what seems to be necessary to produce
+papers in a format acceptable to the publisher.")
+    (license license:lppl)))
+
+(define-public texlive-navydocs
+  (package
+    (name "texlive-navydocs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/navydocs/"
+                   "source/latex/navydocs/"
+                   "tex/latex/navydocs/")
+             (base32
+              "1qisck3lr1nhjnqs195agvmiw93yld801nahr3bb7yyhzgn2f443")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/navydocs")
+    (synopsis "Support for technical reports by US Navy organizations")
+    (description
+     "The @code{navydocs} package provides an easy means for creating title
+pages and the following supplementary material pages used in technical reports
+by United States Navy organizations.  These pages are generated by specifying
+the page content via a set of commands and then calling a macro to create the
+page at its occurence in the document.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-nchairx
   (package
     (name "texlive-nchairx")
@@ -19475,6 +22946,26 @@ adapt their size to the material enclosed, rendering @code{\\left} and
 physics at the University of Wurzburg as a collection of macros and predefined
 environments for quickly creating nice mathematical documents.")
     (license license:lppl1.3+)))
+
+(define-public texlive-nddiss
+  (package
+    (name "texlive-nddiss")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/nddiss/" "doc/latex/nddiss/"
+                   "source/latex/nddiss/" "tex/latex/nddiss/")
+             (base32
+              "131gzskjqhh5v677rxf2pap87jvi6jdznimqmql468y3pwc2zja0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nddiss")
+    (synopsis "Notre Dame Dissertation format class")
+    (description
+     "This class file conforms to the requirements of the Graduate School of
+the University of Notre Dame; with it a user can format a thesis or
+dissertation in LaTeX.")
+    (license license:lppl1.2+)))
 
 (define-public texlive-nevelok
   (package
@@ -19904,6 +23395,198 @@ University in order to make it easy to write experiment reports and homework
 for the bachelor's curriculum.")
     (license license:lppl1.3c)))
 
+(define-public texlive-ndsu-thesis
+  (package
+    (name "texlive-ndsu-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ndsu-thesis/"
+                   "tex/latex/ndsu-thesis/")
+             (base32
+              "0nwn17993jqiwgjjfi2jqj6m1qq8b1cbgxvq7shqvk48a0zh6y6h")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ndsu-thesis")
+    (synopsis "North Dakota State University disquisition class")
+    (description
+     "This package provides a class for generating disquisitions, intended to
+be in compliance with North Dakota State University requirements.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ndsu-thesis-2022
+  (package
+    (name "texlive-ndsu-thesis-2022")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ndsu-thesis-2022/"
+                   "tex/latex/ndsu-thesis-2022/")
+             (base32
+              "0dpkqwl7w2rqv0k0a3s72incfp9qg04m1ql3mc1hsjnn8f9dysq2")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ndsu-thesis-2022")
+    (synopsis "North Dakota State University disquisition class 2022")
+    (description
+     "This package provides a class for generating disquisitions intended to
+be in compliance with North Dakota State University requirements.
+Updated (2022) North Dakota State University LaTeX thesis class features
+several functionalities, including not limited to, numbered and non-numbered
+versions, overall justification, document point sizes, fonts options, SI
+units, show frames, URL breaking, long tables, subfigures, multi-page figures,
+chapter styles, sub-files, algorithm listing, BibTeX and BibLaTeX support,
+individual chapter and whole document bibliography, @code{natbib} citations,
+and clever references.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-nih
+  (package
+    (name "texlive-nih")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/nih/" "tex/latex/nih/")
+             (base32
+              "1fa4z598i5hvlc4g9zjvqfn34pmmpab37ghi5miklvji5r2a1835")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nih")
+    (synopsis "Class for NIH grant applications")
+    (description
+     "The @code{nih} class offers support for grant applications to @acronym{NIH,
+National Institutes of Health}, a US government agency.")
+    (license license:lppl)))
+
+(define-public texlive-nihbiosketch
+  (package
+    (name "texlive-nihbiosketch")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/nihbiosketch/"
+                   "tex/latex/nihbiosketch/")
+             (base32
+              "15d22va4bxwy6h0dwahpakiqry0pq0j4mpc0rbm10lgm3z7hz25c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nihbiosketch")
+    (synopsis "Class for NIH biosketches based on the 2015 updated format")
+    (description
+     "This LaTeX document class tries to adhere to the Biographical Sketch
+formatting requirements outlined in NIH Notice NOT-OD-15-032..  This new
+format is required for applications submitted for due dates on or after May
+25, 2015.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-njustthesis
+  (package
+    (name "texlive-njustthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/njustthesis/"
+                   "source/latex/njustthesis/"
+                   "tex/latex/njustthesis/")
+             (base32
+              "11xbxz3vvq15v5nr32ww6llq08v7r0x52zmq13dp90nmh0xyj7y6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/njustthesis")
+    (synopsis
+     "Thesis template for the Nanjing University of Science and Technology")
+    (description
+     "This is a thesis template for the Nanjing University of Science and
+Technology.")
+    (license license:gpl3+)))
+
+(define-public texlive-njuthesis
+  (package
+    (name "texlive-njuthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/njuthesis/"
+                   "source/latex/njuthesis/"
+                   "tex/latex/njuthesis/")
+             (base32
+              "0vzm6iwc025vahbng9nirf1iljrdgqd2w0kz30wczaiy70p1lm5q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/njuthesis")
+    (synopsis "LaTeX thesis template for Nanjing University")
+    (description
+     "The @code{njuthesis} class is intended for typesetting Nanjing
+University dissertations with LaTeX, providing support for bachelor, master,
+and doctoral theses as well as postdoctoral reports.  Compilation of this
+class requires either XeLaTeX or LuaLaTeX.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-njuvisual
+  (package
+    (name "texlive-njuvisual")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/njuvisual/"
+                   "source/latex/njuvisual/"
+                   "tex/latex/njuvisual/")
+             (base32
+              "1v5iv44wi0hh77j56jjccgyrh9kyyfvzbl305vqryphq0r73bk36")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/njuvisual")
+    (synopsis "Display logos related to Nanjing University")
+    (description
+     "The njuvisual package collects standard colors and logos related to
+Nanjing University, saves the vector logos as TikZ pictures and provides
+a user-friendly interface to display them in documents and beamers.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-nostarch
+  (package
+    (name "texlive-nostarch")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/nostarch/" "doc/latex/nostarch/"
+                   "makeindex/nostarch/"
+                   "source/latex/nostarch/"
+                   "tex/latex/nostarch/")
+             (base32
+              "06r1nmwg59ai6v2f80ndkwrcz2ssp1g03g3k5mq0wyyzs1rg4m9q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nostarch")
+    (synopsis "LaTeX class for No Starch Press")
+    (description
+     "The package provides the official LaTeX style for No Starch Press.
+Provided are a class, a package for interfacing to @code{hyperref} and an
+index style file.  The style serves both for printed and for electronic
+books.")
+    (license license:lppl)))
+
+(define-public texlive-nrc
+  (package
+    (name "texlive-nrc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/nrc/" "source/latex/nrc/"
+                   "tex/latex/nrc/")
+             (base32
+              "10h5adzwj8558rwgwipjsbq4j5h674v8nrqfp6hvs3wbn8gdd9hj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/nrc")
+    (synopsis "Class for the NRC technical journals")
+    (description
+     "This package provides macros, and some documentation, for typesetting
+papers for submission to journals published by the National Research Council
+Research Press.  At present, only @file{nrc2.cls} (for two-column layout)
+should be used.")
+    (license license:lppl)))
+
 (define-public texlive-nucleardata
   (package
     (name "texlive-nucleardata")
@@ -20032,6 +23715,56 @@ mathematical function values.")
      "This package provides LaTeX and pdfLaTeX support for the Nunito family
 of fonts, designed by Vernon Adams.")
     (license (list license:silofl1.1 license:lppl))))
+
+(define-public texlive-nwafuthesis
+  (package
+    (name "texlive-nwafuthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/nwafuthesis/"
+                   "source/latex/nwafuthesis/"
+                   "tex/latex/nwafuthesis/")
+             (base32
+              "001axgdkvkcwfhzg9iw5sgahxh54sp6imi2b442li8f6n5c717lx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:tex-format "xetex" #:build-targets #~(list "nwafuthesis.dtx")))
+    (native-inputs (list texlive-xetex))
+    (home-page "https://ctan.org/pkg/nwafuthesis")
+    (synopsis "Thesis template package for Northwest A&F University, China")
+    (description
+     "This template supports doctoral and master dissertations and
+undergraduate theses in Chinese.  It aims to create a simple interface,
+a normative format, as well as a hackable class for the users.  At present, it
+only supports XeTeX and LuaTeX engines.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-nwejm
+  (package
+    (name "texlive-nwejm")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/nwejm/" "source/latex/nwejm/"
+                   "tex/latex/nwejm/")
+             (base32
+              "16amdv0zzh9aax6c4adqai7zi2zknh168x4awsi1b8gbbspp2vbl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list  #:build-targets #~(list "nwejm.dtx")))
+    (home-page "https://ctan.org/pkg/nwejm")
+    (synopsis
+     "Support for the journal @emph{North-Western European Journal of
+Mathematics}")
+    (description
+     "The bundle includes LaTeX classes and BibLaTeX styles files dedicated to
+the new journal @emph{North-Western European Journal of Mathematics}:
+@code{nwejm} for the complete issues of the journal, aimed at the NWEJM's
+team, @code{nwejmart}, intended for the authors who wish to publish an article
+in the NWEJM.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-objectz
   (package
@@ -20373,6 +24106,28 @@ LuaTeX.")
      "This package provides the documentation for Omega executables.")
     (license license:gpl3+)))
 
+(define-public texlive-onrannual
+  (package
+    (name "texlive-onrannual")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/onrannual/"
+                   "tex/latex/onrannual/")
+             (base32
+              "1m701gqf0my947jh4lsgwryn3h9m6w4b6rimm8wmzsxlvnag9ag7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/onrannual")
+    (synopsis
+     "Class for Office of Naval Research Ocean Battlespace Sensing annual
+report")
+    (description
+     "This is an unofficial document class for writing @acronym{ONR, Office of
+Naval Research} annual reports using LaTeX; as ONR has had numerous problems
+with LaTeX-generated PDF submissions in the past.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-opensans
   (package
     (name "texlive-opensans")
@@ -20418,6 +24173,27 @@ original TrueType fonts, as well as Type 1 versions.")
 easily available.  Especially, these symbols are used in scientific plots, but
 the potential user is allowed to use them in other ways.")
     (license license:lppl1.3+)))
+
+(define-public texlive-opteng
+  (package
+    (name "texlive-opteng")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/opteng/" "tex/latex/opteng/")
+             (base32
+              "1svis9n0ssrc6pnvlshwprfjimdfrbisb0jjnlhhys343dv95jqs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/opteng")
+    (synopsis "SPIE Optical Engineering and OE Letters manuscript template")
+    (description
+     "With this template, and associated style and LaTeX packages, it is
+possible to estimate the page length of manuscripts for submission to the SPIE
+journals @emph{Optical Engineering} and @emph{Optical Engineering Letters}.
+With a strict three-page limit, this is particularly important for the latter.
+The template gives simple instructions on how to prepare the manuscript.")
+    (license license:lppl)))
 
 (define-public texlive-ordinalpt
   (package
@@ -20625,6 +24401,29 @@ also supported.")
     ;; are permitted provided that the above copyright notice and this
     ;; condition for use are retained".
     (license (license:fsf-free "file://tex/latex/oubraces/oubraces.sty"))))
+
+(define-public texlive-oup-authoring-template
+  (package
+    (name "texlive-oup-authoring-template")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/oup-authoring-template/"
+                   "tex/latex/oup-authoring-template/")
+             (base32
+              "1fbkrka650pv2k5n0fcdcgmzlfpj2kzlg9d72d145b24zza79qh0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/oup-authoring-template")
+    (synopsis
+     "General template for journals published by Oxford University
+Press (OUP)")
+    (description
+     "This package provides a general LaTeX template for journals published by
+@acronym{OUP, Oxford University Press}.  The template outputs to the three
+official page designs (traditional, contemporary, modern) used by many
+journals published by OUP, with large, medium and small page options.")
+    (license license:lppl1.2+)))
 
 (define-public texlive-overarrows
   (package
@@ -21003,6 +24802,28 @@ The font is available in Adobe Type 1 and OpenType formats (the latter using
 the Unicode positions for the symbols).")
     (license license:lppl)))
 
+(define-public texlive-philosophersimprint
+  (package
+    (name "texlive-philosophersimprint")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/philosophersimprint/"
+                   "source/latex/philosophersimprint/"
+                   "tex/latex/philosophersimprint/")
+             (base32
+              "12rflr3w8lxk9yg1fx3kpyz52002571lh4g3m6hcp73mb393fq1w")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/philosophersimprint")
+    (synopsis "Typesetting articles for @emph{Philosophers' Imprint}")
+    (description
+     "The @emph{Philosophers' Imprint} is a series of original papers in
+philosophy, edited by philosophy faculty at the University of Michigan, and
+published on the World Wide Web by the University of Michigan Digital Library.
+The class helps authors to typeset their own articles in Web-ready format.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-phonetic
   (package
     (name "texlive-phonetic")
@@ -21184,6 +25005,47 @@ source, and as an Adobe Type 1 file), and macros for its use.")
 It is designed as a tool that is easy to use, with a lean syntax, native to
 LaTeX, and directly supporting PDF output format.")
     (license license:lppl1.3c)))
+
+(define-public texlive-pittetd
+  (package
+    (name "texlive-pittetd")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pittetd/" "source/latex/pittetd/"
+                   "tex/latex/pittetd/")
+             (base32
+              "1q8ikj4qqlzw3kimywdmbvkvwyvyjn8q6gr68kc0wpypqd1a91as")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pittetd")
+    (synopsis
+     "Electronic theses and dissertations at the University of Pittsburgh")
+    (description
+     "This package provides a document class for theses and dissertations at
+the University of Pittsburgh.")
+    (license license:lppl)))
+
+(define-public texlive-pkuthss
+  (package
+    (name "texlive-pkuthss")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pkuthss/" "tex/latex/pkuthss/")
+             (base32
+              "046r1m8bgif6mvm2cln95whh3nnwnwwpzs9hd6szaz91xa1dwyd9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pkuthss")
+    (synopsis "LaTeX template for dissertations in Peking University")
+    (description
+     "The package provides a simple, clear and flexible LaTeX template for
+dissertations in Peking University.")
+    (license
+     (list license:lppl1.3+
+           license:bsd-3
+           license:public-domain))))
 
 (define-public texlive-plainyr
   (package
@@ -21601,6 +25463,68 @@ localization of real roots to arbitrary precision as well as the determination
 of all rational roots is implemented via such macros.")
     (license license:lppl1.3c)))
 
+(define-public texlive-powerdot-fuberlin
+  (package
+    (name "texlive-powerdot-fuberlin")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/powerdot-fuberlin/"
+                   "tex/latex/powerdot-fuberlin/")
+             (base32
+              "0q49f7sbywfgdgn24ayg7ybfnqdnaqiwn463hiahib0vznwv1fn6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/powerdot-fuberlin")
+    (synopsis "Powerdot, using the style of FU Berlin")
+    (description
+     "The bundle provides a Powerdot-derived class and a package for use with
+Powerdot to provide the corporate design of the Free University in Berlin.
+Users may use the class itself (FUpowerdot) or use the package in the usual
+way with @code{\\style=BerlinFU} as a class option.")
+    (license license:lppl)))
+
+(define-public texlive-powerdot-tuliplab
+  (package
+    (name "texlive-powerdot-tuliplab")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/powerdot-tuliplab/"
+                   "tex/latex/powerdot-tuliplab/")
+             (base32
+              "0wwml3n7lrfm4m9xw3a14ksa8mcrrp2gbwi9y4m5pgz1r92jmph3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/powerdot-tuliplab")
+    (synopsis "Style package for Powerdot to provide the design of TULIP Lab")
+    (description
+     "@code{powerdot-tuliplab} is the LaTeX package used in TULIP Lab for
+presentation drafting.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-pracjourn
+  (package
+    (name "texlive-pracjourn")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/pracjourn/"
+                   "source/latex/pracjourn/"
+                   "tex/latex/pracjourn/")
+             (base32
+              "0pavlcxv7jqni6rl2hdqfmmns566151rvsaa1p5xhgfb6qa4l1b1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/pracjourn")
+    (synopsis "Typeset articles for PracTeX")
+    (description
+     "The @code{pracjourn} class is used for typesetting articles in the
+@emph{PracTeX Journal}.  It is based on the @code{article} class with
+modifications to allow for more flexible front-matter and revision control,
+among other small changes.")
+    (license license:gpl3+)))
+
 (define-public texlive-prftree
   (package
     (name "texlive-prftree")
@@ -21657,6 +25581,27 @@ Whitehead and Russell's 1910 @emph{Principia Mathematica}.")
 probability texts, e.g., probability, expectation, variance, etc.  It also
 includes some short commands for set (blackboard) or
 filtrations (calligraphic).")
+    (license license:lppl)))
+
+(define-public texlive-prociagssymp
+  (package
+    (name "texlive-prociagssymp")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/prociagssymp/"
+                   "tex/latex/prociagssymp/")
+             (base32
+              "1c8fa2d0rsq5drrrckvm1b9mfdfn3p0b9wwwzr263lw7qdqhnlwj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/prociagssymp")
+    (synopsis "Macros for IAG symposium papers")
+    (description
+     "This package provides (re-)definitions of some LaTeX commands that can
+be useful for the preparation of papers with the style of the proceedings of
+symposia sponsored by the @acronym{IAG, International Association of Geodesy}
+published by Springer-Verlag.")
     (license license:lppl)))
 
 (define-public texlive-prodint
@@ -21742,6 +25687,29 @@ drawings (using TikZ) for laboratory stuff.")
 for 15-18 years olds.")
     (license license:lppl1.3c)))
 
+(define-public texlive-projlib
+  (package
+    (name "texlive-projlib")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/projlib/" "source/latex/projlib/"
+                   "tex/latex/projlib/")
+             (base32
+              "1yhn0xj4xwnr7ngmv8skdj89gi8i71v710d899g9pnjgfkk7w35d")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-create-theorem))
+    (home-page "https://ctan.org/pkg/projlib")
+    (synopsis "Tools to simplify your workflow")
+    (description
+     "ProjLib is a collection of tools to help you write LaTeX documents.
+With the main package ProjLib loaded, you no longer need to set up the
+@code{theorem}-like environments, nor to manually configure the appropriate
+multilingual settings.  In addition, a series of auxiliary functionalities are
+introduced.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-proof-at-the-end
   (package
     (name "texlive-proof-at-the-end")
@@ -21788,6 +25756,61 @@ a variety of tools for annotating, customising and highlighting such trees.
 A cross-referencing system is provided for trees which cite line numbers in
 justifications for proof lines or branch closures.")
     (license license:lppl1.3+)))
+
+(define-public texlive-proposal
+  (package
+    (name "texlive-proposal")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/proposal/base/"
+                   "doc/latex/proposal/dfg/"
+                   "doc/latex/proposal/eu/"
+                   "source/latex/proposal/base/"
+                   "source/latex/proposal/bin/"
+                   "source/latex/proposal/dfg/"
+                   "source/latex/proposal/eu/"
+                   "source/latex/proposal/lib/"
+                   "tex/latex/proposal/base/"
+                   "tex/latex/proposal/dfg/"
+                   "tex/latex/proposal/eu/")
+             (base32
+              "0km6i418hdcbl457dfwh1hl3q8qshp1gvqc1frqc84f9a6cr0kzc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/proposal")
+    (synopsis
+     "Set of LaTeX classes preparing proposals for collaborative projects")
+    (description
+     "The process of preparing a collaborative proposal, to a major funding body,
+involves integration of contributions of a many people at many sites.  It is
+therefore an ideal application for a text-based document preparation system
+such as LaTeX, in concert with a distributed version control system such as
+SVN.  The @code{proposal} class itself provides a basis for such an
+enterprise.  The @code{dfgproposal} and @code{dfgproposal} classes provide two
+specialisations of the base class for (respectively) German and European
+research proposals.")
+    (license license:lppl)))
+
+(define-public texlive-prtec
+  (package
+    (name "texlive-prtec")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/prtec/" "doc/latex/prtec/"
+                   "tex/latex/prtec/")
+             (base32
+              "15l75a6blk1dpcj2q841i92cdvlfjxmmaqi5lk01rac8rxa5cghx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/prtec")
+    (synopsis "Template for PRTEC conference papers")
+    (description
+     "This package provides a LaTeX class, a BibTeX style, and a LaTeX
+template to format conference papers for the @acronym{PRTEC, Pacific Rim
+Thermal Engineering Conference}.")
+    (license license:expat)))
 
 (define-public texlive-pseudo
   (package
@@ -21866,6 +25889,25 @@ algorithms in a natural manner.")
 several other places.  It dates from rather early in the development of TeX82;
 as a result, some of the descriptions of limitations look rather quaint to
 modern eyes.")
+    (license license:lppl)))
+
+(define-public texlive-ptptex
+  (package
+    (name "texlive-ptptex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ptptex/" "tex/latex/ptptex/")
+             (base32
+              "1f040dv31g8bdn0awa40mvhzp095glsfsxcg28cbslckbdds5k6c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ptptex")
+    (synopsis "Macros for @emph{Progress of Theoretical Physics}")
+    (description
+     "The distribution contains the class (which offers an option file for
+preprints), a template, and macros for writing articles in @emph{Progress of
+Theoretical Physics}.")
     (license license:lppl)))
 
 (define-public texlive-punk
@@ -21996,6 +26038,26 @@ specifying the elements of the tree; you build up your tree with those
 commands, and then issue the @code{\\tree} command to typeset the whole.")
     (license license:lppl)))
 
+(define-public texlive-qrbill
+  (package
+    (name "texlive-qrbill")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/qrbill/" "scripts/qrbill/"
+                   "source/latex/qrbill/" "tex/latex/qrbill/")
+             (base32
+              "0q0m2vfpndrdvihskc50imkzx6098syq9rz8mgpnl0h1ickfmx33")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/qrbill")
+    (synopsis "Create QR bills using LaTeX")
+    (description
+     "This LaTeX package provides support for creating QR-bills for the new
+Swiss payment standards.  This implementation is intended to offer an option
+to support these regulations and can be adapted for international use.")
+    (license (list license:lppl1.3c license:bsd-3))))
+
 (define-public texlive-qsharp
   (package
     (name "texlive-qsharp")
@@ -22054,6 +26116,37 @@ end.")
     (description
      "This is a collection of 45 fonts, created by QualiType.")
     (license (list license:silofl1.1 license:gpl2+))))
+
+(define-public texlive-quantumarticle
+  (package
+    (name "texlive-quantumarticle")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/quantumarticle/"
+                   "doc/latex/quantumarticle/"
+                   "tex/latex/quantumarticle/")
+             (base32
+              "00v04n109mbi7w0xcmfdzs8f1fabwd2qhf53fqps99k3dj4z5f0a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/quantumarticle")
+    (synopsis "Document class for submissions to the @emph{Quantum} journal")
+    (description
+     "This package provides the preferred document class for papers to be
+submitted to @emph{Quantum --- the open journal of quantum science}.  It is
+based on the @code{article} document class.
+
+As a service to authors, the document class comes with a predefined
+bibliography style @file{quantum.bst} that is optimized to be used with the
+@code{quantumarticle} document class.  Additionally, the @code{quantumview}
+document class is provided, which can be used as a proxy to typeset the
+HTML-only editorial pieces in @emph{Quantum Views}.
+
+The @code{quantumarticle} document class also offers an option to remove the
+@emph{Quantum}-related branding.  In that way, users can use it for their
+notes as well.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-quattrocento
   (package
@@ -22298,6 +26391,27 @@ solution of a linear system;
 @end itemize")
     (license license:lppl1.3c)))
 
+(define-public texlive-resphilosophica
+  (package
+    (name "texlive-resphilosophica")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/resphilosophica/"
+                   "doc/latex/resphilosophica/"
+                   "source/latex/resphilosophica/"
+                   "tex/latex/resphilosophica/")
+             (base32
+              "12a0pnksxh3b0w9iwhly9sb8j6jhhmk9r1957mb7m01h435n9yb4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/resphilosophica")
+    (synopsis "Typeset articles for the journal @emph{Res Philosophica}")
+    (description
+     "The bundle provides a class for typesetting articles for the journal
+@emph{Res Philosophica}.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-rest-api
   (package
     (name "texlive-rest-api")
@@ -22319,6 +26433,26 @@ documentation purposes.  The endpoints can hold the following information:
 method description path parameter request body and content type response body,
 content type and status code.")
     (license license:lppl1.3c)))
+
+(define-public texlive-resumecls
+  (package
+    (name "texlive-resumecls")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/resumecls/"
+                   "source/xelatex/resumecls/"
+                   "tex/xelatex/resumecls/")
+             (base32
+              "14za3bvvksq6xjvbppfm17cj8abspj7h7l7snyd2vciy0dc305yg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/resumecls")
+    (synopsis "Typeset a resume both in English and Chinese")
+    (description
+     "This package provides a LaTeX document class to typeset a resume or CV
+both in English and Chinese with more ease and flexibility.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-reverxii
   (package
@@ -22365,6 +26499,71 @@ use within quantum information.  In doing so, it imports and configures
 a number of commonly-available and used packages, and where reasonable,
 provides fallbacks.  It also warns when users try to load packages which are
 known to be incompatible with @code{revtex4-1}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-revtex4
+  (package
+    (name "texlive-revtex4")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/revtex4/" "doc/latex/revtex4/"
+                   "source/latex/revtex4/" "tex/latex/revtex4/")
+             (base32
+              "0mfjp8ycsvq63vk5348r7yfcskldx6ipcwflxz7pnf60xfla5646")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/revtex4-0")
+    (synopsis "Styles for various physics journals (old version)")
+    (description
+     "This is an old version of @code{revtex}, and is kept as a courtesy to
+users having difficulty with the incompatibility of that latest version.")
+    (license license:lppl)))
+
+(define-public texlive-revtex4-1
+  (package
+    (name "texlive-revtex4-1")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/revtex4-1/"
+                   "doc/latex/revtex4-1/"
+                   "source/latex/revtex4-1/"
+                   "tex/latex/revtex4-1/")
+             (base32
+              "023pzbf8hgyk6038zz9g4g95pwqrsqy1ahzy6byxh28b2p8qyk9a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list
+      #:modules '((ice-9 match)
+                  (ice-9 regex)
+                  (srfi srfi-1)
+                  (guix build texlive-build-system)
+                  (guix build utils))
+      #:build-targets #~(list "revtex4-1.dtx")
+      #:phases
+      #~(modify-phases %standard-phases
+          ;; In order to build revtex4-1, we need files from revtex source.
+          ;; Add them to TEXINPUTS.
+          (add-before 'build 'extend-texinputs
+            (lambda* (#:key inputs native-inputs #:allow-other-keys)
+              (let ((revtex-source
+                     (any (match-lambda
+                            ((_ . dir)
+                             (and (string-match "texlive-revtex-[0-9]+-checkout"
+                                                dir)
+                                  dir)))
+                          (or native-inputs inputs))))
+                (setenv "TEXINPUTS"
+                        (string-append revtex-source
+                                       "/source/latex/revtex/:"))))))))
+    (native-inputs (list (package-source texlive-revtex)))
+    (home-page "https://ctan.org/pkg/revtex4-1")
+    (synopsis "Styles for various physics journals")
+    (description
+     "This is an old version of @code{revtex}, and is kept as a courtesy to
+users having difficulty with the incompatibility of that latest version.")
     (license license:lppl1.3+)))
 
 (define-public texlive-ribbonproofs
@@ -22621,6 +26820,87 @@ their associated rotation sequences.
 @end itemize")
     (license license:lppl1.3+)))
 
+(define-public texlive-rutitlepage
+  (package
+    (name "texlive-rutitlepage")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/rutitlepage/"
+                   "source/latex/rutitlepage/"
+                   "tex/latex/rutitlepage/")
+             (base32
+              "0pcd6cqlm3r7wq9k96ignvars436hg9j5la4aaq35ldm01sqy268")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/rutitlepage")
+    (synopsis "Radboud University titlepage package")
+    (description
+     "This is an unofficial LaTeX package to generate titlepages for the
+Radboud University, Nijmegen.  It uses official vector logos from the
+university.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ryersonsgsthesis
+  (package
+    (name "texlive-ryersonsgsthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ryersonsgsthesis/"
+                   "tex/latex/ryersonsgsthesis/")
+             (base32
+              "170z5xqxwbx999dxlxhwf7mbml6j4pak6a8lgi4vbj8ii4njlygb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ryersonsgsthesis")
+    (synopsis "Ryerson School of Graduate Studies thesis template")
+    (description
+     "This package provides a LaTeX class and template files for Ryerson
+School of Graduate Studies (SGS) theses.")
+    (license license:asl2.0)))
+
+(define-public texlive-ryethesis
+  (package
+    (name "texlive-ryethesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ryethesis/"
+                   "source/latex/ryethesis/"
+                   "tex/latex/ryethesis/")
+             (base32
+              "1xjzl1ng0nbcakiasi6sfbkannfipcfv96crq6y6cb7p7l707wg7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ryethesis")
+    (synopsis "Class for Ryerson Unversity Graduate School requirements")
+    (description
+     "The class offers support for formatting a thesis, dissertation or
+project according to Ryerson University's School of Graduate Studies thesis
+formatting regulations.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-sageep
+  (package
+    (name "texlive-sageep")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/sageep/" "doc/latex/sageep/"
+                   "source/latex/sageep/" "tex/latex/sageep/")
+             (base32
+              "1xmfqqsabc7vv3rh74qlry5jkvp0ddyi8m4yynriv5vzyqigfw5y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sageep")
+    (synopsis "Format papers for the annual meeting of EEGS")
+    (description
+     "The class provides formatting for papers for the annual meeting of the
+@acronym{EEGS, Environmental and Engineering Geophysical Society}: Application
+of Geophysics to Engineering and Environmental Problems, known as SAGEEP.")
+    (license license:lppl)))
+
 (define-public texlive-sankey
   (package
     (name "texlive-sankey")
@@ -22663,6 +26943,26 @@ to the flow rate.")
 @code{sfmath} package) often has accents positioned incorrectly.  This package
 fixes the positioning of such accents when the default font (@code{cmssi}) is
 used for sans serif maths.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-sapthesis
+  (package
+    (name "texlive-sapthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/sapthesis/"
+                   "doc/latex/sapthesis/"
+                   "tex/latex/sapthesis/")
+             (base32
+              "15livlw0xbc6ys408pqqvh3qvzphigar9cr57dd0is4zrh4c2y36")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sapthesis")
+    (synopsis "Typeset theses for Sapienza-University, Rome")
+    (description
+     "The class will typeset PhD, master, and bachelor theses that adhere to
+the publishing guidelines of the Sapienza University of Rome.")
     (license license:lppl1.3+)))
 
 (define-public texlive-sasnrdisplay
@@ -22759,6 +27059,32 @@ provided by one of two options to @code{newtxmath}, one of which uses an
 adaptation of the Fourier math Greek letters.")
     (license license:lppl)))
 
+(define-public texlive-schule
+  (package
+    (name "texlive-schule")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/schule/" "tex/latex/schule/")
+             (base32
+              "0pwc75s9r95rcq9xh2wjzv3hd2xqhkls39pgagg7gvdvax11dbvh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/schule")
+    (synopsis "Support for teachers at German schools")
+    (description
+     "The @code{schule} bundle was built to provide packages and commands that
+could be useful for documents in German schools.  At the moment, its main
+focus lies on documents for informatics as a school subject.  An extension for
+physics is currently in progress.
+
+For the time being, the whole package splits up into individual packages for
+informatics (including syntax diagrams, Nassi-Shneiderman diagrams, sequence
+diagrams, object diagrams, and class diagrams) as well as classes for written
+exams (tests, quizzes, teaching observations, information sheets, worksheets,
+and answer keys).")
+    (license license:lppl1.3+)))
+
 (define-public texlive-schulschriften
   (package
     (name "texlive-schulschriften")
@@ -22783,6 +27109,26 @@ folgenden Schulausgangsschriften: Suetterlinschrift, Deutsche Normalschrift,
 Lateinische Ausgangsschrift, Schulausgangsschrift, and Vereinfachte
 Ausgangsschrift.")
     (license license:lppl)))
+
+(define-public texlive-scientific-thesis-cover
+  (package
+    (name "texlive-scientific-thesis-cover")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/scientific-thesis-cover/"
+                   "source/latex/scientific-thesis-cover/"
+                   "tex/latex/scientific-thesis-cover/")
+             (base32
+              "1ny19pczzrrwb20sin1qn914hy1npwxkx573g3n5gm62kzl1vc4k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/scientific-thesis-cover")
+    (synopsis "Provides cover page and affirmation at the end of a thesis")
+    (description
+     "Institutions require a cover page and an affirmation at the end of
+a thesis.  This package provides both.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-shobhika
   (package
@@ -22950,6 +27296,92 @@ class in the form of a package so that screenplay fragments can be included
 within another document class.")
     (license license:lppl1.3+)))
 
+(define-public texlive-scripture
+  (package
+    (name "texlive-scripture")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/scripture/"
+                   "source/latex/scripture/"
+                   "tex/latex/scripture/")
+             (base32
+              "05qw58is7qhs5nfmj1d576wc5wx5cg6aihnm8hm8npvqd4njl2gj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/scripture")
+    (synopsis "LaTeX style for typesetting @emph{Bible} quotations")
+    (description
+     "The @code{scripture} package provides a set of macros for typesetting
+quotations from the @emph{Bible}.  It provides many features commonly seen in
+bibles such as dropped text for chapter numbers, superscripts for verse
+numbers, indented lines for poetry sections, narrow sections and hanging
+paragraphs.  A reference for the quotation can optionally be added.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-scrjrnl
+  (package
+    (name "texlive-scrjrnl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/scrjrnl/" "source/latex/scrjrnl/"
+                   "tex/latex/scrjrnl/")
+             (base32
+              "10smy8cq2papzv63q5lsharxcn1l1ln97fhrd39wm2jf48967lbn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/scrjrnl")
+    (synopsis "Typeset diaries or journals")
+    (description
+     "This package provides a class, based on @code{scrbook}, designed for
+typesetting diaries, journals or devotionals.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-sduthesis
+  (package
+    (name "texlive-sduthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sduthesis/"
+                   "source/latex/sduthesis/"
+                   "tex/latex/sduthesis/")
+             (base32
+              "1c9dmgjbxc0xyphi4hcb9yilmhh6hg0l2r4vkyjds3xgii7kwkn7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sduthesis")
+    (synopsis "Thesis template of Shandong University")
+    (description
+     "This package provides a thesis template of Shandong University.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-se2thesis
+  (package
+    (name "texlive-se2thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/se2thesis/"
+                   "source/latex/se2thesis/"
+                   "tex/latex/se2thesis/")
+             (base32
+              "0ixdj8klgj9i7hcrmwrxngyc5pgxpfkw3awkn5s0dcppz88rid1n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/se2thesis")
+    (synopsis
+     "Thesis class for the Chair of Software Engineering II at the
+University of Passau, Germany")
+    (description
+     "The @code{se2thesis} bundle provides a document class for writing
+a theses with the Chair of Software Engineering II at the University of
+Passau, Germany.  The class is based on KOMA-Script classes.  While the class
+provides some basic settings, mostly regrading the type area, fonts, and the
+title page, it still provides large degrees of freedom to its users.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-serbian-apostrophe
   (package
     (name "texlive-serbian-apostrophe")
@@ -23049,6 +27481,68 @@ a @code{sesamanuelTIKZ} style to be used for TikZ pictures in the Sesamath
 book.")
     (license license:lppl1.3+)))
 
+(define-public texlive-seu-ml-assign
+  (package
+    (name "texlive-seu-ml-assign")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/seu-ml-assign/"
+                   "tex/latex/seu-ml-assign/")
+             (base32
+              "1w8dhp0kmgi9ywskq772ccj5n0kd7j55y15xwm3ss3jjdh4vzh8m")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/seu-ml-assign")
+    (synopsis "Southeast University Machine Learning Assignment template")
+    (description
+     "This is a template for the Southeast University Machine Learning
+Assignment that can be easily adapted to other usages.  This template features
+a colorful theme that makes it look elegant and attractive.")
+    (license license:expat)))
+
+(define-public texlive-seuthesis
+  (package
+    (name "texlive-seuthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/seuthesis/"
+                   "doc/latex/seuthesis/"
+                   "source/latex/seuthesis/")
+             (base32
+              "1gb1bql0llnms1c18xzp4g8j16zffinjjydiv4gsasyvxc0p8c5n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/seuthesis")
+    (synopsis "LaTeX template for theses at Southeastern University")
+    (description
+     "This template is for theses at Southeastern University, Nanjing,
+China.")
+    (license license:gpl3)))
+
+(define-public texlive-seuthesix
+  (package
+    (name "texlive-seuthesix")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/seuthesix/"
+                   "doc/latex/seuthesix/"
+                   "source/latex/seuthesix/"
+                   "tex/latex/seuthesix/")
+             (base32
+              "0k87ib96pbihph399rc3kl1c3ncb4w4ljmwmvw880vvrxvz8mxjs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/seuthesix")
+    (synopsis "LaTeX class for theses at Southeast University, Nanjing, China")
+    (description
+     "This project provides a LaTeX document class as well as a bibliography
+style file for typesetting theses at the Southeast University, Nanjing, China.
+It is based on the @code{seuthesis}.")
+    (license license:gpl3)))
+
 (define-public texlive-sfg
   (package
     (name "texlive-sfg")
@@ -23088,6 +27582,26 @@ around the payoffs, (b) payoff columns of equal width, and (c) payoffs
 vertically centered within the boxes.")
     (license license:lppl)))
 
+(define-public texlive-shortmathj
+  (package
+    (name "texlive-shortmathj")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/shortmathj/"
+                   "tex/latex/shortmathj/")
+             (base32
+              "0rkrskx2fay7h6naa995l46xjj8v3ffdd6kx6fq6fknr091yfp7q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/shortmathj")
+    (synopsis "Automatically shortify titles of mathematical journals")
+    (description
+     "This small dummy package just contains a simple list of full and short
+journal names as written in AMS standard:
+@url{https://mathscinet.ams.org/msnhtml/serials.pdf}.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-showtags
   (package
     (name "texlive-showtags")
@@ -23105,6 +27619,53 @@ vertically centered within the boxes.")
      "This package prints the tag right-aligned on each line of the
 bibliography.")
     (license license:public-domain)))
+
+(define-public texlive-shtthesis
+  (package
+    (name "texlive-shtthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/shtthesis/"
+                   "tex/latex/shtthesis/")
+             (base32
+              "1l7vfqvfcgpndp5kmpdx4d9w89b83j5s2kwkr37hih9cp9l3n9vz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs
+     (list texlive-alphalph
+           texlive-biber
+           texlive-biblatex
+           texlive-biblatex-gb7714-2015
+           texlive-booktabs
+           texlive-caption
+           texlive-colortbl
+           texlive-ctex
+           texlive-datetime
+           texlive-enumitem
+           texlive-fancyhdr
+           texlive-fmtcount
+           texlive-lastpage
+           texlive-latexmk
+           texlive-listings
+           texlive-lua-alt-getopt
+           texlive-lualatex-math
+           texlive-mathtools
+           texlive-ntheorem
+           texlive-tex-gyre
+           texlive-tocvsec2
+           texlive-transparent
+           texlive-undolabl
+           texlive-unicode-math
+           texlive-xits
+           texlive-xstring))
+    (home-page "https://ctan.org/pkg/shtthesis")
+    (synopsis "Unofficial LaTeX thesis template for ShanghaiTech University")
+    (description
+     "This package, forked from @code{ucasthesis}, is an unofficial LaTeX
+thesis template for ShanghaiTech University and satisfies all format
+requirements of the school.")
+    (license license:gpl3)))
 
 (define-public texlive-shuffle
   (package
@@ -23387,6 +27948,39 @@ skull.  A package is supplied to make this character available as a symbol in
 maths mode.")
     (license license:gpl3+)))
 
+(define-public texlive-smflatex
+  (package
+    (name "texlive-smflatex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/smflatex/" "doc/latex/smflatex/"
+                   "source/latex/smflatex/"
+                   "tex/latex/smflatex/")
+             (base32
+              "160bdav5rzx2hzaqxqcmlc841awr7ks1k0bmpj8kq3gzzz1pqnwj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments (list #:tex-format "latex"))
+    (home-page "https://ctan.org/pkg/smflatex")
+    (synopsis "Classes for @emph{Societe mathematique de France} publications")
+    (description
+     "The @emph{Societe mathematique de France} provides a set of classes,
+packages and BibTeX styles that are used in its publications.  They are based
+on AMS classes.  Besides a quite different design, their main features are:
+
+@itemize
+
+@item new environments for typesetting some information in two languages
+@code{altabstract}, @code{alttitle}, @code{altkeywords});
+
+@item if necessary, use of Babel (option @code{frenchb});
+
+@item deactivation of some features of @code{frenchb}.
+
+@end itemize")
+    (license license:lppl1.3c)))
+
 (define-public texlive-songbook
   (package
     (name "texlive-songbook")
@@ -23490,6 +28084,25 @@ bibliography entry.  The styles are adapted from standard ones or from
 @code{natbib} ones.")
     (license license:knuth)))
 
+(define-public texlive-soton
+  (package
+    (name "texlive-soton")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/soton/" "tex/latex/soton/")
+             (base32
+              "0ib4i98x14g5bl4l5bd9ciw6aay5n6fihkyzfls52l5y9vpyglix")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/soton")
+    (synopsis "University of Southampton-compliant slides")
+    (description
+     "The bundle contains two packages: @code{soton-palette} which defines
+colour-ways, and @code{soton-beamer}, which uses the colours to produce
+compliant presentations.")
+    (license license:lppl)))
+
 (define-public texlive-soup
   (package
     (name "texlive-soup")
@@ -23586,6 +28199,47 @@ a new and versatile serif face available in seven weights of roman and italic,
 with small caps.")
     (license (list license:silofl1.1 license:lppl))))
 
+(define-public texlive-sphdthesis
+  (package
+    (name "texlive-sphdthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sphdthesis/"
+                   "tex/latex/sphdthesis/")
+             (base32
+              "05ncll9vd2yh15vp6gqzidrp011d1i2hsmlzfrfz954f9449ydx4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sphdthesis")
+    (synopsis "LaTeX template for writing PhD thesis")
+    (description
+     "The package provides a LaTeX document class for writing a PhD thesis.
+By default, the class adheres to the @acronym{NUS, National University of
+Singapore} Guidelines on Format of Research Thesis Submitted For Examination.
+However, modifying the class for conformation to a different guideline should
+not be difficult.")
+    (license license:public-domain)))
+
+(define-public texlive-spie
+  (package
+    (name "texlive-spie")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bib/spie/" "bibtex/bst/spie/"
+                   "doc/latex/spie/" "tex/latex/spie/")
+             (base32
+              "1z4nbm2w96lvwfcj8ghnzarv5f5klriyr3b6jjnb34wd3kw52xg8")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/spie")
+    (synopsis "Support for formatting SPIE Proceedings manuscripts")
+    (description
+     "This package provides support for formatting SPIE Proceedings
+manuscripts.  A class and a BibTeX style are provided.")
+    (license license:lppl)))
+
 (define-public texlive-splitbib
   (package
     (name "texlive-splitbib")
@@ -23606,6 +28260,28 @@ with small caps.")
 and subcategories.  It does not depend on BibTeX: any bibliography may be
 split and reordered.")
     (license license:lppl)))
+
+(define-public texlive-sr-vorl
+  (package
+    (name "texlive-sr-vorl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sr-vorl/" "source/latex/sr-vorl/"
+                   "tex/latex/sr-vorl/")
+             (base32
+              "1izgzwg6a9i93zfxi0qvfrdgza3q8z5b4nhlhgq072glmdqzymf0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sr-vorl")
+    (synopsis "Class for Springer books")
+    (description
+     "This package provides a LaTeX class and templates for books to be
+published at Springer Gabler Research, Springer Vieweg Research, Springer
+Spektrum Research, Springer VS Research, or Springer VS Forschung.  It may be
+used to produce monographs in different formats and several-authors-books
+fitting the conditions of the aforementioned publishers.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-srbtiks
   (package
@@ -23630,6 +28306,29 @@ split and reordered.")
 package that enables usage of the STIX2 font in LaTeX for the Serbian and
 Macedonian languages.")
     (license (list license:silofl1.1 license:lppl1.3+))))
+
+(define-public texlive-srdp-mathematik
+  (package
+    (name "texlive-srdp-mathematik")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/srdp-mathematik/"
+                   "tex/latex/srdp-mathematik/")
+             (base32
+              "0pbsj6gkk5zblvhwgpymz64gwzf84mzciybm2m9jqf7x9va2xqp0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/srdp-mathematik")
+    (synopsis "Typeset Austrian SRDP in mathematics")
+    (description
+     "This package provides basic commands for the defined formats of the
+Austrian @acronym{sRDP, Standardisierte Reife- und Diplomprufung} in
+mathematics.  Furthermore, it includes ways to implement answers in the
+@file{.tex} file which can optionally be displayed in the PDF file, and it
+offers a way to vary the answers in order to create different groups (e.g.,
+for tests) easily.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-stage
   (package
@@ -23865,6 +28564,38 @@ in Adobe Type 1 format and LaTeX support.")
     (description
      "The @code{steinmetz} package provides a command for typesetting complex
 numbers in the Steinmetz notation used in electrotechnics.")
+    (license license:lppl)))
+
+(define-public texlive-stellenbosch
+  (package
+    (name "texlive-stellenbosch")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/stellenbosch/"
+                   "doc/latex/stellenbosch/"
+                   "source/latex/stellenbosch/"
+                   "tex/latex/stellenbosch/")
+             (base32
+              "0yqlwlwlszrwg8bihkfxh77b3rkf8yx978vwb4a3xjmb5yyyx3q6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/stellenbosch")
+    (synopsis "Stellenbosch thesis bundle")
+    (description
+     "The @code{usthesis} class and style files are provided to typeset
+reports, theses and dissertations that conform to the requirements of the
+Engineering Faculty of the University of Stellenbosch.  The class file
+@file{usthesis.cls} is based on the standard LaTeX @code{book} class, while
+@file{usthesis.sty} is a style file to be loaded on top of the very powerful
+@code{memoir} class.
+
+Usthesis is primarily concerned with the formatting of the front matter such
+as the title page, abstract, etc., and a decent page layout on A4 paper.  It
+also works together with the Babel package to provide language options to
+typeset documents in Afrikaans or in English.  Additional packages are
+provided for bibliographic matter, note title pages, lists of symbols, as well
+as various graphic files for logos.")
     (license license:lppl)))
 
 (define-public texlive-step
@@ -24167,6 +28898,91 @@ of parameters that the user sets via macros.
 The bundle comes with a set of ready-prepared puzzle files.")
     (license license:lppl)))
 
+(define-public texlive-suftesi
+  (package
+    (name "texlive-suftesi")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/suftesi/" "source/latex/suftesi/"
+                   "tex/latex/suftesi/")
+             (base32
+              "1m1gsnfcnw9ylz2aik20rqs6jk0p647wlkfm813spl0hbjnpzkpc")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:tex-format "lualatex"
+           #:phases #~(modify-phases %standard-phases
+                        (add-after 'unpack 'support-greek-input
+                          (lambda _
+                            (substitute* "source/latex/suftesi/suftesi.dtx"
+                              (("\\\\usepackage\\[T1\\]\\{fontenc\\}")
+                               "\\usepackage[LGR, T1]{fontenc}")))))))
+    (native-inputs
+     (list (texlive-updmap.cfg
+            (list texlive-babel-greek
+                  texlive-biblatex
+                  texlive-biblatex-philosophy
+                  texlive-booktabs
+                  texlive-cbfonts
+                  texlive-cbfonts-fd
+                  texlive-cochineal
+                  texlive-csquotes
+                  texlive-etoolbox
+                  texlive-fontaxes
+                  texlive-fontsize
+                  texlive-fontspec
+                  texlive-greek-fontenc
+                  texlive-guitlogo
+                  texlive-hologo
+                  texlive-hypdoc
+                  texlive-inconsolata
+                  texlive-libertine
+                  texlive-listings
+                  texlive-ltxdockit
+                  texlive-manfnt
+                  texlive-mathalpha
+                  texlive-mdframed
+                  texlive-microtype
+                  texlive-multirow
+                  texlive-needspace
+                  texlive-newtx
+                  texlive-parskip
+                  texlive-pgf
+                  texlive-sectsty
+                  texlive-siunitx
+                  texlive-txfonts
+                  texlive-upquote
+                  texlive-xcolor
+                  texlive-xkeyval
+                  texlive-xstring
+                  texlive-zref))))
+    (home-page "https://ctan.org/pkg/suftesi")
+    (synopsis "Document class for typesetting theses, books and articles")
+    (description
+     "The class can be used to typeset any kind of book (originally designed
+for use in the humanities).")
+    (license license:lppl1.3+)))
+
+(define-public texlive-sugconf
+  (package
+    (name "texlive-sugconf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/sugconf/" "tex/latex/sugconf/")
+             (base32
+              "1v9fp0dpbk4g9aab8jvwhfzh71w4276awi8lyf2pgk66d5qhfxsb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/sugconf")
+    (synopsis "SAS(R) user group conference proceedings document class")
+    (description
+     "The class may be used to typeset articles to be published in the
+proceedings of SAS(R) User group conferences and workshops.  The layout
+produced by the class is based on that published by SAS Institute (2021).")
+    (license license:lppl)))
+
 (define-public texlive-superiors
   (package
     (name "texlive-superiors")
@@ -24387,6 +29203,28 @@ configuration of the language to be used in the diagrams.  The @code{tablor}
 package requires that shell escape be enabled.")
     (license license:lppl)))
 
+(define-public texlive-tabriz-thesis
+  (package
+    (name "texlive-tabriz-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tabriz-thesis/"
+                   "doc/xelatex/tabriz-thesis/"
+                   "tex/latex/tabriz-thesis/"
+                   "tex/xelatex/tabriz-thesis/")
+             (base32
+              "13k6kmg1x143m1kfc3wcvyy6l60vpzz5ivmdpcqhjbdd3wz7b2ry")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tabriz-thesis")
+    (synopsis "Template for the University of Tabriz")
+    (description
+     "The package offers a document class for typesetting theses and
+dissertations at the University of Tabriz.  The class requires use of
+XeLaTeX.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-tabvar
   (package
     (name "texlive-tabvar")
@@ -24476,6 +29314,25 @@ Czech, Slovak and Polish languages.")
 in colleges and lycées (and perhaps elsewhere).  It is hoped that the package
 will facilitate the everyday use of LaTeX by mathematics teachers.")
     (license license:lppl)))
+
+(define-public texlive-technion-thesis-template
+  (package
+    (name "texlive-technion-thesis-template")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/technion-thesis-template/"
+                   "tex/xelatex/technion-thesis-template/")
+             (base32
+              "1fnz3d3knflhm9349rn9xw3k698fn6dyxxh2a7zv8rx3z3y7kzwn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/technion-thesis-template")
+    (synopsis "Template for theses on the Technion graduate school")
+    (description
+     "This is a template for writing a thesis according to the Technion
+specifications.")
+    (license license:cc-by4.0)))
 
 (define-public texlive-tempora
   (package
@@ -24633,6 +29490,40 @@ that support calculational proofs and Dijkstra's guarded command language.")
 about TeX and Co.  It contains information for beginners, LaTeX packages,
 descriptions, etc.")
     (license license:fdl1.3+)))
+
+(define-public texlive-texilikechaps
+  (package
+    (name "texlive-texilikechaps")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "tex/latex/texilikechaps/")
+             (base32
+              "1z9nvv2y2nzpkpxyf18p426wcl0g6gbg7qppq70b285kdbczbijd")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/texilikechaps")
+    (synopsis "Format chapters with a Texi-like format")
+    (description
+     "The package enables the user to reduce the size of the rather large
+chapter headings in standard classes into a Texi-like smaller format.")
+    (license license:lppl)))
+
+(define-public texlive-texilikecover
+  (package
+    (name "texlive-texilikecover")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "tex/latex/texilikecover/")
+             (base32
+              "04bljvhvmrxh1a4sfqw57yysaw03c5ldi1bq63mlqqvd9p3hmyck")))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/texilikecover")
+    (synopsis "Cover-page package, like TeXinfo")
+    (description
+     "The package creates document cover pages, like those that TeXinfo
+produces.")
+    (license license:lppl)))
 
 (define-public texlive-texsis
   (package
@@ -24955,6 +29846,91 @@ of one's notes from one textbook to another can be achieved relatively easily
 by changing package options.")
     (license license:lppl1.3+)))
 
+(define-public texlive-thesis-ekf
+  (package
+    (name "texlive-thesis-ekf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/thesis-ekf/"
+                   "source/latex/thesis-ekf/"
+                   "tex/latex/thesis-ekf/")
+             (base32
+              "06jc8h1195h6440yc2xblv7x8cyf6yhfh99x3p6hk97hcvq0ing4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/thesis-ekf")
+    (synopsis "Thesis class for Eszterhazy Karoly Catholic University")
+    (description
+     "This is a class file for theses and dissertations at the Eszterhazy
+Karoly Catholic University (Eger, Hungary).  The documentation is in
+Hungarian.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-thesis-gwu
+  (package
+    (name "texlive-thesis-gwu")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/thesis-gwu/"
+                   "tex/latex/thesis-gwu/")
+             (base32
+              "120w3wfh5b7f6lmsf0l3wy6agxkds4rnpy5pzjnpa6rwk59plk8k")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/thesis-gwu")
+    (synopsis
+     "Thesis class for George Washington University School of Engineering and
+Applied Science")
+    (description
+     "This class is an attempt to create a standard format for @acronym{GWU
+SEAS, George Washington University School of Engineering and Applied Science}
+dissertations and theses.")
+    (license license:gpl3)))
+
+(define-public texlive-thesis-qom
+  (package
+    (name "texlive-thesis-qom")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/thesis-qom/"
+                   "tex/xelatex/thesis-qom/")
+             (base32
+              "0cjx3yqnx6ijm664i747sxd19g7pmwpqsw24mh4bvdf0k1wqjj2a")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/thesis-qom")
+    (synopsis "Thesis style of the University of Qom, Iran")
+    (description
+     "This package provides a class file for writing theses and dissertations
+according to the University of Qom Graduate Schools's guidelines for the
+electronic submission of master theses and PhD dissertations.  The class
+should meet all the current requirements and is updated whenever the
+university guidelines change.  The class needs XeLaTeX in conjunction with the
+following fonts: XB Niloofar, IranNastaliq, IRlotus, XB Zar, XB Titre, and
+Yas.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-thesis-titlepage-fhac
+  (package
+    (name "texlive-thesis-titlepage-fhac")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/thesis-titlepage-fhac/"
+                   "source/latex/thesis-titlepage-fhac/"
+                   "tex/latex/thesis-titlepage-fhac/")
+             (base32
+              "1zs1k43q4br29vyxk007ld0rmiz8z803i6xhlc6rmhmb1nb594nj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/thesis-titlepage-fhac")
+    (synopsis "Style to create a standard titlepage for diploma thesis")
+    (description "This is yet another thesis titlepage style.")
+    (license license:lppl)))
+
 (define-public texlive-thmbox
   (package
     (name "texlive-thmbox")
@@ -24975,6 +29951,156 @@ definitions and similar objects in boxes decorated with frames and various
 aesthetic features.  The standard macro @code{\\newtheorem} may be redefined
 to use the environment.")
     (license license:lppl)))
+
+(define-public texlive-thuaslogos
+  (package
+    (name "texlive-thuaslogos")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/thuaslogos/"
+                   "tex/latex/thuaslogos/")
+             (base32
+              "1ndqqc5rgxsdkanycgxi79czx6ri9fsfghh1lwyrx6ssjz2hfd7p")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/thuaslogos")
+    (synopsis
+     "Logos for @acronym{THUAS, The Hague University of Applied Sciences}")
+    (description
+     "This package contains some logos of @acronym{THUAS, The Hague University
+of Applied Sciences}.  These Logos are available in English and in Dutch.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-thubeamer
+  (package
+    (name "texlive-thubeamer")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/thubeamer/"
+                   "doc/latex/thubeamer/"
+                   "source/latex/thubeamer/"
+                   "tex/latex/thubeamer/")
+             (base32
+              "07jha3pfklqas3f2mwpxqfi6h7dm4sl9jm4kl9kg68an4drzp4zj")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/thubeamer")
+    (synopsis "Beamer theme for Tsinghua University")
+    (description
+     "This package provides a Beamer theme designed for Tsinghua University.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-thucoursework
+  (package
+    (name "texlive-thucoursework")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/thucoursework/"
+                   "source/latex/thucoursework/"
+                   "tex/latex/thucoursework/")
+             (base32
+              "1cv2kadwzwwrw3q98wy7cjjl3084qqp55ki50v7m2ylrjxinwkv4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list
+      #:tex-format "xelatex"
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'skip-documentation-build
+            ;; Only extract the ".sty" files.
+            (lambda _
+              (substitute* "source/latex/thucoursework/thucoursework.dtx"
+                (("\\\\DocInput\\{\\\\jobname\\.dtx\\}") "")))))))
+    (native-inputs
+     (list texlive-booktabs
+           texlive-carlisle
+           texlive-ctex
+           texlive-enumitem
+           texlive-etoolbox
+           texlive-fancyhdr
+           texlive-hypdoc
+           texlive-kastrup
+           texlive-listings
+           texlive-metalogo
+           texlive-newpx
+           texlive-newtx
+           texlive-oberdiek
+           texlive-realscripts
+           texlive-xcolor
+           texlive-xstring))
+    (home-page "https://ctan.org/pkg/thucoursework")
+    (synopsis "Coursework template for Tsinghua University")
+    (description
+     "This package provides a LaTeX package for students of Tsinghua
+University to write coursework more efficiently.  It can also be used by
+students from other universities.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-thuthesis
+  (package
+    (name "texlive-thuthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/thuthesis/"
+                   "doc/latex/thuthesis/"
+                   "source/latex/thuthesis/"
+                   "tex/latex/thuthesis/")
+             (base32
+              "11l434c6v0sdhk4y776nrswj53sj2hba4i3dwbspgkh61ckxxhyx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/thuthesis")
+    (synopsis "Thesis template for Tsinghua University")
+    (description
+     "This package establishes a simple and easy-to-use LaTeX template for
+Tsinghua dissertations, including general undergraduate research papers,
+masters theses, doctoral dissertations, and postdoctoral reports.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-tidyres
+  (package
+    (name "texlive-tidyres")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tidyres/" "tex/latex/tidyres/")
+             (base32
+              "0ls8qcj8jdv954p4mlhhdqvhp4kq016h41i6mj42fnwg598a3ms1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tidyres")
+    (synopsis "Create formal resumes easily")
+    (description
+     "This LaTeX package aims to provide users with a simple interface to
+create multi-column formal resumes.")
+    (license license:cc-by4.0)))
+
+(define-public texlive-timbreicmc
+  (package
+    (name "texlive-timbreicmc")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/timbreicmc/"
+                   "source/latex/timbreicmc/"
+                   "tex/latex/timbreicmc/")
+             (base32
+              "0nd44car7vksfrz53h54r7cz1flgkgmyjri5ai1k7s9g2fn16x2n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/timbreicmc")
+    (synopsis "Typeset documents with ICMC/USP watermarks")
+    (description
+     "With this package you can typeset documents with ICMC/USP Sao Carlos
+watermarks.  ICMC is acronym for @emph{Instituto de Ciencias Matematicas e de
+Computacao} of the @emph{Universidade de Sao Paulo} (USP), in the city of Sao
+Carlos-SP, Brazil.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-tinos
   (package
@@ -25017,6 +30143,93 @@ metrically compatible with Times New Roman.")
     (description
      "This package mimics the screen of older Texas Instruments dot matrix
 display calculators, specifically the TI-82 STATS.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-tlc-article
+  (package
+    (name "texlive-tlc-article")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tlc-article/"
+                   "tex/latex/tlc-article/")
+             (base32
+              "1zxghkxg1yls97zrcfyjn8nk45mg5ygcjiprdwcs0ha1bl3pybxs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tlc-article")
+    (synopsis "LaTeX document class for formal documents")
+    (description
+     "The package provides a LaTeX document class that orchestrates a logical
+arrangement for document header, footer, author, abstract, table of contents,
+and margins.  It standardizes a document layout intended for formal
+documents.")
+    (license license:bsd-3)))
+
+(define-public texlive-tocbibind
+  (package
+    (name "texlive-tocbibind")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tocbibind/"
+                   "source/latex/tocbibind/"
+                   "tex/latex/tocbibind/")
+             (base32
+              "086yi3d11pj5cnf0jfsmyy495y6kcind88569mig2yvq2adjmq3b")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tocbibind")
+    (synopsis "Add bibliography/index/contents to table of contents")
+    (description
+     "This package automatically adds the bibliography and/or the index and/or
+the contents, etc., to the table of contents.")
+    (license license:lppl)))
+
+(define-public texlive-topletter
+  (package
+    (name "texlive-topletter")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/topletter/"
+                   "source/latex/topletter/"
+                   "tex/latex/topletter/")
+             (base32
+              "0s9yq65wwcw6mg09lk3x756iski1k55skik3n45l9wdbdz81w1p9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/topletter")
+    (synopsis "Letter class for the @emph{Politecnico di Torino}")
+    (description
+     "This package provides a LaTeX class for typesetting letters conforming
+to the official Corporate Image guidelines for the @emph{Politecnico di
+Torino}.  The class can be used for letters written in Italian and in
+English.")
+    (license license:asl2.0)))
+
+(define-public texlive-toptesi
+  (package
+    (name "texlive-toptesi")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/toptesi/" "source/latex/toptesi/"
+                   "tex/latex/toptesi/")
+             (base32
+              "0mskk7swjgcy6lw1l81brcnw7n870mrz3la64ln0f3mxps98gik6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/toptesi")
+    (synopsis "Bundle for typesetting multilanguage theses")
+    (description
+     "This bundle contains everything needed for typesetting a bachelor,
+master, or PhD thesis in any language supported by LaTeX.  The infix strings
+may be selected and specified at will by means of a configuration file, so as
+to customize the layout of the front page to the requirements of a specific
+university.  Thanks to its language management, the bundle is suited for
+multi-language theses.  Toptesi is designed to save the PDF version of
+a thesis in PDF/A-1b compliant mode and with all the necessary metadata.")
     (license license:lppl1.3c)))
 
 (define-public texlive-tpslifonts
@@ -25171,6 +30384,169 @@ The package @code{lingmacros.sty} defines a few macros for linguists:
 @code{tabular}-based non-connected tree macros, and gloss macros.")
     (license license:lppl1.0+)))
 
+(define-public texlive-tuda-ci
+  (package
+    (name "texlive-tuda-ci")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tuda-ci/" "tex/latex/tuda-ci/")
+             (base32
+              "0bga3v6byk8v18xzj3vp7hp10wmapil5snqj1qp721a5lakwx0w9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tuda-ci")
+    (synopsis "LaTeX templates of Technische Universitat Darmstadt")
+    (description
+     "The TUDa-CI-Bundle provides a possibility to use the corporate design
+of TU Darmstadt in LaTeX.  It contains document classes as well as
+some helper packages and config files together with some templates for
+user documentation, which currently are only available in German.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-tudscr
+  (package
+    (name "texlive-tudscr")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tudscr/" "source/latex/tudscr/"
+                   "tex/latex/tudscr/")
+             (base32
+              "1whwmablazz41hy1p99ls8l4lk80h202ynzhabpwcmhk7mj60ikn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs
+     (list texlive-cbfonts
+           texlive-environ
+           texlive-etoolbox
+           texlive-geometry
+           texlive-graphics
+           texlive-greek-inputenc
+           texlive-iwona
+           texlive-koma-script
+           texlive-mathastext
+           texlive-mweights
+           texlive-oberdiek
+           texlive-opensans
+           texlive-trimspaces
+           texlive-xcolor
+           texlive-xpatch))
+    (home-page "https://ctan.org/pkg/tudscr")
+    (synopsis "Corporate design of Technische Universitat Dresden")
+    (description
+     "The TUD-Script bundle provides both classes and packages in order to
+create LaTeX documents in the corporate design of the Technische Universitat
+Dresden.  It bases on the KOMA-Script bundle.
+
+The bundle offers:
+
+@itemize
+
+@item the three document classes @code{tudscrartcl}, @code{tudscrreprt}, and
+@code{tudscrbook};
+
+@item the class @code{tudscrposter} for creating posters;
+
+@item the package @code{tudscrsupervisor} providing environments and macros to
+create tasks, evaluations and notices for scientific theses;
+
+@item the package @code{tudscrfonts}, which makes the corporate design fonts
+of the Technische Universitat Dresden available for LaTeX standard classes and
+KOMA-Script classes;
+
+@item the package @code{fix-tudscrfonts}, which provides the same fonts to
+additional corporate design classes not related to TUD-Script;
+
+@item the package @code{tudscrcomp}, which simplifies the switch to TUD-Script
+from external corporate design classes,
+
+@item the package @code{mathswap} for swapping math delimiters within
+numbers (similar to @code{ionumbers}),
+
+@item and the package @code{twocolfix} for fixing the positioning bug of
+headings in @code{twocolumn} layout.
+
+@end itemize")
+    (license license:lppl1.3c)))
+
+(define-public texlive-tugboat
+  (package
+    (name "texlive-tugboat")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/tugboat/" "doc/latex/tugboat/"
+                   "source/latex/tugboat/" "tex/latex/tugboat/")
+             (base32
+              "1yf9g7bszxdkzb4calsd03kwnjs4i0y7vh0d7z4fwiv49qrbkzks")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tugboat")
+    (synopsis "LaTeX macros for @emph{TUGboat} articles")
+    (description
+     "This package provides @file{ltugboat.cls} for both regular and
+proceedings issues of the @emph{TUGboat} journal.  It also provides a BibTeX
+style, @file{tugboat.bst}.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-tugboat-plain
+  (package
+    (name "texlive-tugboat-plain")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/plain/tugboat-plain/"
+                   "tex/plain/tugboat-plain/")
+             (base32
+              "0bzjkhgzf9zp1p6knkdnpcr2hp9hr5fj6v3781i1y0f13qv63axg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tugboat-plain")
+    (synopsis "Plain TeX macros for @emph{TUGboat}")
+    (description
+     "The macros defined in this package are used in papers written in Plain
+TeX for publication in @emph{TUGboat}.")
+    (license license:knuth)))
+
+(define-public texlive-tui
+  (package
+    (name "texlive-tui")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tui/" "tex/latex/tui/")
+             (base32
+              "14wl2n8wbc2p6nmrallwsxp4s6h73h97qm1w8algyv67bfl5i0hs")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tui")
+    (synopsis "Thesis style for the University of the Andes, Colombia")
+    (description
+     "The class is used for doctoral dissertations from the Faculty of
+Engineering at the Universidad de los Andes, Bogota, Colombia.  It is
+implemented as an extension of the @code{memoir} class.")
+    (license license:lppl)))
+
+(define-public texlive-turabian
+  (package
+    (name "texlive-turabian")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/turabian/" "tex/latex/turabian/")
+             (base32
+              "1waqdm6r4fpy602jfqjbfhm2x71llpg4wj4a9w61pkbca19xcnki")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/turabian")
+    (synopsis "Create Turabian-formatted material using LaTeX")
+    (description
+     "The bundle provides a class file and a template for creating
+Turabian-formatted projects.  The class file supports citation formatting
+conforming to the Turabian 8th Edition style guide.")
+    (license license:lppl)))
+
 (define-public texlive-turabian-formatting
   (package
     (name "texlive-turabian-formatting")
@@ -25303,6 +30679,323 @@ A scaled option is provided to allow arbitrary scaling.")
 included Typicons font, designed by Stephen Hutchings.")
     (license license:lppl1.3+)))
 
+(define-public texlive-uaclasses
+  (package
+    (name "texlive-uaclasses")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uaclasses/"
+                   "source/latex/uaclasses/"
+                   "tex/latex/uaclasses/")
+             (base32
+              "0n0bz3cq9zgl5ppwq02izjgiw6gpza05ymc6x0gsc8v13wfcgvz0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uaclasses")
+    (synopsis "University of Arizona thesis and dissertation format")
+    (description
+     "This package provides a LaTeX2e document class named @code{ua-thesis}
+for typesetting theses and dissertations in the official format required by
+the University of Arizona.  Moreover, there is a fully compatible alternative
+document class @code{my-thesis} for private nice copies of the dissertation,
+and the respective title pages are available as separate packages to work with
+any document class.")
+    (license license:public-domain)))
+
+(define-public texlive-uafthesis
+  (package
+    (name "texlive-uafthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uafthesis/"
+                   "tex/latex/uafthesis/")
+             (base32
+              "0vxd9vk4dzpxcpn4l20r5hm3cz04mwqvd8kw1yg7vvjlnpshi4i6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uafthesis")
+    (synopsis "Document class for theses at University of Alaska Fairbanks")
+    (description
+     "This is document class for theses at University of Alaska Fairbanks.")
+    (license license:lppl)))
+
+(define-public texlive-uantwerpendocs
+  (package
+    (name "texlive-uantwerpendocs")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uantwerpendocs/"
+                   "source/latex/uantwerpendocs/"
+                   "tex/latex/uantwerpendocs/")
+             (base32
+              "0v1fj5bbx6whzp5csljf0hqlxhib6ajdc3diygxjr4pkv5156zxn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uantwerpendocs")
+    (synopsis
+     "Course texts, master theses, and exams in University of Antwerp style")
+    (description
+     "These class files implement the house style of the University of
+Antwerp.  Using these class files will make it easy for you to make and keep
+your documents compliant to this version and future versions of the house
+style of the University of Antwerp.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ucalgmthesis
+  (package
+    (name "texlive-ucalgmthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ucalgmthesis/"
+                   "tex/latex/ucalgmthesis/")
+             (base32
+              "0krqj0vpl5k6v1m1v7qh14yfqf0lbriqsdz5jmwqgswljf8ld954")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ucalgmthesis")
+    (synopsis
+     "LaTeX thesis class for University of Calgary Faculty of Graduate Studies")
+    (description
+     "@file{ucalgmthesis.cls} is a LaTeX class file that produces documents
+according to the thesis guidelines of the University of Calgary Faculty of
+Graduate Studies.  It uses the @code{memoir} class.")
+    (license license:expat)))
+
+(define-public texlive-ucbthesis
+  (package
+    (name "texlive-ucbthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ucbthesis/"
+                   "tex/latex/ucbthesis/")
+             (base32
+              "0kwy84r7vz5nvq8nrar1ykik4ycpvgl1kwiyi0da6wjn4cazxxh9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ucbthesis")
+    (synopsis "Thesis and dissertation class supporting UCB requirements")
+    (description
+     "The class provides the necessary framework for electronic submission
+of masters theses and PhD dissertations at the University of
+California, Berkeley.  It is based on the @code{memoir} class.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ucdavisthesis
+  (package
+    (name "texlive-ucdavisthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ucdavisthesis/"
+                   "source/latex/ucdavisthesis/"
+                   "tex/latex/ucdavisthesis/")
+             (base32
+              "0ymgnb2q77j5gfhcb4w4hvsafvs3vyygvzbq7zl9zgzzb02ml35j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ucdavisthesis")
+    (synopsis
+     "Thesis and dissertation class for University of California at Davis")
+    (description
+     "The @code{ucdavisthesis} class is a LaTeX class that allows you to
+create a dissertation or thesis conforming to UC Davis formatting
+requirements as of April 2016.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-ucsmonograph
+  (package
+    (name "texlive-ucsmonograph")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ucsmonograph/"
+                   "source/latex/ucsmonograph/"
+                   "tex/latex/ucsmonograph/")
+             (base32
+              "13yf91i1c4bin9vbvsjpl5s7fkina5ai5zw868wdk5fiqvmqvgx7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ucsmonograph")
+    (synopsis
+     "Typesetting academic documents from the University of Caxias do Sul")
+    (description
+     "This is a LaTeX class for typesetting academic documents according to
+the @acronym{ABNT, Brazilian Technical Standards Association} standards and
+the @acronym{UCS, University of Caxias do Sul} specifications.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-ucthesis
+  (package
+    (name "texlive-ucthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ucthesis/" "tex/latex/ucthesis/")
+             (base32
+              "19s6s4wxq494shi2pgrdyaz9qx52zma62czd92mrkjp2diim1197")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ucthesis")
+    (synopsis "University of California thesis format")
+    (description
+     "This package provides a modified version of the standard LaTeX report
+style that is accepted for use with University of California PhD dissertations
+and masters theses.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-udes-genie-these
+  (package
+    (name "texlive-udes-genie-these")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/udes-genie-these/"
+                   "source/latex/udes-genie-these/"
+                   "tex/latex/udes-genie-these/")
+             (base32
+              "0hhc8d0cmc6miylkc137cxlkw44z23zi17sz31f68im5rl94a4m6")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/udes-genie-these")
+    (synopsis
+     "Thesis class for the @emph{Faculte de genie} at the Universite de
+Sherbrooke")
+    (description
+     "The @code{udes-genie-these} class can be used for PhD theses,
+master's theses and project definitions at the @emph{Faculte de genie} of the
+Universite de Sherbrooke (Quebec, Canada).  The class file is coherent with
+the latest version of the @emph{Protocole de redaction aux etudes superieures}
+which is available on the faculte's intranet.  The class file documentation is
+in French, the language of the typical user at the Universite de Sherbrooke.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-uestcthesis
+  (package
+    (name "texlive-uestcthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/uestcthesis/"
+                   "doc/latex/uestcthesis/"
+                   "tex/latex/uestcthesis/")
+             (base32
+              "1gqa6yyj3nq75vfjxrcn0pxc9gmgdaf7mdhp5sf3hy3br9ix8qgw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uestcthesis")
+    (synopsis "Thesis class for UESTC")
+    (description
+     "The class is for typesetting a thesis at the University of Electronic
+Science and Technology of China.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ufrgscca
+  (package
+    (name "texlive-ufrgscca")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ufrgscca/" "tex/latex/ufrgscca/")
+             (base32
+              "0xrmgs9zjqqa09gasf2b96mjvwqshjqpyaz4icvrlr7yx9hqqs2y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ufrgscca")
+    (synopsis
+     "Bundle for undergraduate students final work or report (TCC) at
+UFRGS/EE")
+    (description
+     "This bundled is aimed at producing undergraduate students final work or
+report at UFRGS/EE (Engineering School at the Federal University of Rio Grande
+do Sul), closely following ABNT rules (Brazilian Association for Technical
+Norms).  It is composed of a main class, @code{ufrgscca}, and a set of
+auxiliary packages, some of which can be used independently.")
+    (license (list license:lppl1.3c license:gpl3+))))
+
+(define-public texlive-uhhassignment
+  (package
+    (name "texlive-uhhassignment")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uhhassignment/"
+                   "source/latex/uhhassignment/"
+                   "tex/latex/uhhassignment/")
+             (base32
+              "15yvq00xsikb8c78gkyyqjdgcz2yw8dnp586mjcrk1p4kvlpwyam")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uhhassignment")
+    (synopsis "Document class for typesetting homework assignments")
+    (description
+     "This document class was created for typesetting solutions to homework
+assignments at the university of Hamburg (Universitat Hamburg).")
+    (license license:lppl1.3c)))
+
+(define-public texlive-uiucredborder
+  (package
+    (name "texlive-uiucredborder")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uiucredborder/"
+                   "source/latex/uiucredborder/"
+                   "tex/latex/uiucredborder/")
+             (base32
+              "0wsf3cfmpfmsv3afm78gc91fsiba415ir4p5fa0ivfny3dh34qnq")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uiucredborder")
+    (synopsis "Class for UIUC thesis red-bordered forms")
+    (description
+     "The class offers a means of filling out the ``red-bordered form''
+that gets signed by the department head, your advisor, and --- for
+doctoral dissertations --- your thesis committee members.")
+    (license license:lppl1.2+)))
+
+(define-public texlive-uiucthesis
+  (package
+    (name "texlive-uiucthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uiucthesis/"
+                   "source/latex/uiucthesis/"
+                   "tex/latex/uiucthesis/")
+             (base32
+              "0kzp2p03p1v7qij2kz82xis88vh1g477vs2aa0sqfa24w9y28h5i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uiucthesis")
+    (synopsis "UIUC thesis class")
+    (description
+     "The class produces a document that conforms to the format described in
+the University's Handbook for Graduate Students Preparing to Deposit.")
+    (license license:lppl)))
+
+(define-public texlive-ukbill
+  (package
+    (name "texlive-ukbill")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ukbill/" "tex/latex/ukbill/")
+             (base32
+              "1kdz2dfa9y5gjm61k3l9cyc95fc8ibq8c1vlap3gfzwadl4fggp1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ukbill")
+    (synopsis "Class for typesetting UK legislation")
+    (description
+     "This package provides formatting to easily typeset draft UK legislation.
+The font Palatine Parliamentary is required to use this package.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-ulqda
   (package
     (name "texlive-ulqda")
@@ -25339,6 +31032,89 @@ providing the LaTeX user with macros which are used to markup textual
 information.")
     (license license:lppl)))
 
+(define-public texlive-ulthese
+  (package
+    (name "texlive-ulthese")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ulthese/" "source/latex/ulthese/"
+                   "tex/latex/ulthese/")
+             (base32
+              "1kcw1zsgj0dr00h555qcld9dn58i8iipnka9s10fn9q0x46sq05q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ulthese")
+    (synopsis "Thesis class and templates for Universite Laval")
+    (description
+     "The package provides a class based on @code{memoir} to prepare theses
+and memoirs compliant with the presentation rules set forth by the Faculty of
+Graduate Studies of Universite Laval, Quebec, Canada.  The class also comes
+with an extensive set of templates for the various types of theses and memoirs
+offered at Laval.
+
+Please note that the documentation for the class and the comments in the
+templates are all written in French, the language of the target audience.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-umbclegislation
+  (package
+    (name "texlive-umbclegislation")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/umbclegislation/"
+                   "tex/latex/umbclegislation/")
+             (base32
+              "0znzm0ymvz43f4kgvww79mnr7nl78xcmi7yw2vlwx332kq8hcw2v")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/umbclegislation")
+    (synopsis
+     "LaTeX class for legislation files for UMBC Student Government
+Association Bills")
+    (description
+     "This is a LaTeX class for building legislation files for UMBC Student
+Government Association Bills.")
+    (license license:gpl3)))
+
+(define-public texlive-umich-thesis
+  (package
+    (name "texlive-umich-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/umich-thesis/"
+                   "tex/latex/umich-thesis/")
+             (base32
+              "15y25n9j2zh7hmgpq9fir6y0ydjwqhvyy6cx59jm8i0swkgw33vz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/umich-thesis")
+    (synopsis "University of Michigan thesis LaTeX class")
+    (description
+     "This package provides a LaTeX2e class to create a University of
+Michigan dissertation according to the Rackham dissertation handbook.")
+    (license license:lppl)))
+
+(define-public texlive-umthesis
+  (package
+    (name "texlive-umthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/umthesis/" "tex/latex/umthesis/")
+             (base32
+              "1y2ba0k9d2sab9mkfhpsm92v4wx6rhapj887jbvcl7871b4idbps")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/umthesis")
+    (synopsis "Dissertations at the University of Michigan")
+    (description
+     "This is a class for dissertations at the University of Michigan. it
+loads @code{book} class, and makes minimal changes to it.")
+    (license license:lppl)))
+
 (define-public texlive-umtypewriter
   (package
     (name "texlive-umtypewriter")
@@ -25359,6 +31135,88 @@ from glyphs from the CB Greek fonts, the CyrTUG Cyrillic alphabet fonts (LH),
 and the standard Computer Modern font family.  It contains four OpenType fonts
 which are required for use of the @code{xgreek} package for XeLaTeX.")
     (license license:silofl1.1)))
+
+(define-public texlive-unam-thesis
+  (package
+    (name "texlive-unam-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/unam-thesis/"
+                   "tex/latex/unam-thesis/")
+             (base32
+              "1cn4qd3rvh9z8sp7g94fh11khij2vykv89inbmy7g52hxgxzkdhh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unam-thesis")
+    (synopsis "Create documents according to the UNAM guidelines")
+    (description
+     "This is a class for creating dissertation documents according to the
+National Autonomous University of Mexico (UNAM) guidelines.")
+    (license license:gpl3+)))
+
+(define-public texlive-unamth-template
+  (package
+    (name "texlive-unamth-template")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/unamth-template/")
+             (base32
+              "018vpcbxfzch8qsrrqakcxxir53nalvj39l2kn45kn26p5nfkfbn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unamth-template")
+    (synopsis "UNAM thesis LaTeX Template")
+    (description
+     "The bundle provides a template for UNAM's College of Engineering
+Theses.")
+    (license license:gpl3)))
+
+(define-public texlive-unamthesis
+  (package
+    (name "texlive-unamthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/unamthesis/"
+                   "doc/latex/unamthesis/"
+                   "tex/latex/unamthesis/")
+             (base32
+              "1jdppibm49491ddgx6ny6hqsfs9qan948614bfcy67f5syjzx2jh")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unamthesis")
+    (synopsis "Style for Universidad Nacional Autonoma de Mexico theses")
+    (description
+     "The package provides a customisable format to typeset Theses according
+to the Universidad Nacional Autonoma de Mexico guidelines.  The bundle also
+includes an appropriate bibliographic style which enables the use of
+author-year schemes using the @code{natbib} package.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-unbtex
+  (package
+    (name "texlive-unbtex")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/unbtex/" "tex/latex/unbtex/")
+             (base32
+              "0s45np0j9xw4gfga593rpcxzagcn3yhr8m2q44jj4mf6sp9ldlbw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unbtex")
+    (synopsis "Class for theses at @acronym{UnB, University of Brasilia}")
+    (description
+     "This package provides a class based on abnTeX and compatible with
+pdfLaTex and Biber to prepare bachelor, master, and doctoral theses for the
+@acronym{UnB, University of Brasilia}, Brazil.  The class also comes with
+a template for the various types of theses for undergraduate and graduate
+programs at UnB.  The documentation for the class and the comments in the
+templates are all written in Portuguese, the language of the target
+audience.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-unfonts-core
   (package
@@ -25481,6 +31339,70 @@ LaTeX (AGL, CYFI, MUFI, SIL, TITUS, UCSUR, UNZ), to enable transcription and
 display of medieval and other documents.")
     (license license:cc-by-sa4.0)))
 
+(define-public texlive-unifith
+  (package
+    (name "texlive-unifith")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/unifith/" "doc/latex/unifith/"
+                   "tex/latex/unifith/")
+             (base32
+              "06y9hkxv8y9p06pcyy2nv0nqma6bnh0n9i9pwpdadks9zs9sqn8r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unifith")
+    (synopsis "Typeset theses for University of Florence (Italy)")
+    (description
+     "The package provides a class to typeset PhD, master, and bachelor theses
+that adhere to the publishing guidelines of the University of
+Florence (Italy).")
+    (license license:lppl1.3c)))
+
+(define-public texlive-unigrazpub
+  (package
+    (name "texlive-unigrazpub")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/unigrazpub/"
+                   "source/latex/unigrazpub/"
+                   "tex/latex/unigrazpub/")
+             (base32
+              "02xnlp7p1ap0wvkn4skskh6av4rj8fh28gqk27x97yp0c255w3qv")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unigrazpub")
+    (synopsis
+     "LaTeX templates for University of Graz Library Publishing Services")
+    (description
+     "This package provides a LaTeX class matching the preparation guidelines
+of the Library Publishing Services of University of Graz.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-unitn-bimrep
+  (package
+    (name "texlive-unitn-bimrep")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/unitn-bimrep/"
+                   "tex/latex/unitn-bimrep/")
+             (base32
+              "0id55sfi9bzj7vp7dm9wxy355ca6k6dmxq488r4dwmndy2z4v8hl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unitn-bimrep")
+    (synopsis
+     "Bimonthly report class for the PhD School of Materials,
+Mechatronics and System Engineering")
+    (description
+     "This package allows to rapidly write the bimonthly report for The PhD
+School in Materials, Mechatronics and System Engineering.  It allows to define
+the research activities, the participation to school and congress, and the
+publication performed by a student.")
+    (license license:expat)))
+
 (define-public texlive-unitsdef
   (package
     (name "texlive-unitsdef")
@@ -25553,6 +31475,168 @@ is suitable as an alternative to fonts such as Adrian Frutiger's Univers and
 Frutiger.")
     (license (list license:gpl2+ license:lppl))))
 
+(define-public texlive-univie-ling
+  (package
+    (name "texlive-univie-ling")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/univie-ling/"
+                   "tex/latex/univie-ling/")
+             (base32
+              "1678hl6bzpvsa9h8hlap84cnl82g5kkpg9kkwpq4r4zrj90fhgda")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/univie-ling")
+    (synopsis
+     "Papers, theses and research proposals in (Applied) Linguistics at Vienna
+University")
+    (description
+     "This bundle provides LaTeX2e classes, BibLaTeX files, and templates
+suitable for student papers, PhD research proposals (Exposes), and theses
+in (Applied) Linguistics at the University of Vienna.  The classes implement
+some standards for these types of text, such as suitable title pages.  They
+are particularly suited for the field of (Applied) Linguistics and pre-load
+some packages that are considered useful in this context.  The classes can
+also be used for General and Historical Linguistics as well as for other
+fields of study at Vienna University.  In this case, however, some settings
+may have to be adjusted.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-unizgklasa
+  (package
+    (name "texlive-unizgklasa")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/unizgklasa/"
+                   "tex/latex/unizgklasa/")
+             (base32
+              "1lrw0j34r9p2ydsajkvg2k7n8kirpi6lqj2iwhvfqh0pg230y82q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unizgklasa")
+    (synopsis
+     "LaTeX class for theses at the Faculty Of Graphic Arts in Zagreb")
+    (description
+     "This class is intended for generating graduate and final theses
+according to the instructions of the Faculty of Graphic Arts, University of
+Zagreb.  It does not necessarily correspond to the requirements of each
+component of the University, but is designed as an idea for linking and
+uniformizing the look of all graduate papers.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-unswcover
+  (package
+    (name "texlive-unswcover")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/unswcover/"
+                   "tex/latex/unswcover/")
+             (base32
+              "0vdi90i07s8914sm7axn1pzks9d0w3qrsijynx5hxr7a36byafhp")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/unswcover")
+    (synopsis "Typeset a dissertation cover page following UNSW guidelines")
+    (description
+     "The package an UNSW cover sheet following the 2011 GRS guidelines.  It
+may also (optionally) provide other required sheets such as Originality,
+Copyright and Authenticity statements.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-uol-physics-report
+  (package
+    (name "texlive-uol-physics-report")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uol-physics-report/"
+                   "source/latex/uol-physics-report/"
+                   "tex/latex/uol-physics-report/")
+             (base32
+              "00rvqmrc1k67136748vq4j5c90iqa2ry65jkaqarazvlv8x77m4d")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uol-physics-report")
+    (synopsis "LaTeX document class for writing lab reports")
+    (description
+     "The package provides physics students at the University of Oldenburg
+with a prepared document class for writing laboratory reports for the
+laboratory courses conducted by the Institute of Physics.  The document class
+consists of predefinded margins and heading formats.  Furthermore, it presets
+the headers of the pages and excludes the titlepage and table of contents from
+the page numbering.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-uothesis
+  (package
+    (name "texlive-uothesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uothesis/"
+                   "source/latex/uothesis/"
+                   "tex/latex/uothesis/")
+             (base32
+              "04md5wkh11hpczvl7gpi2a5k2j5yalssjw5azpbr2g9q8fc99zp3")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uothesis")
+    (synopsis "Class for dissertations and theses at the University of Oregon")
+    (description
+     "The class generates documents that are suitable for submission to the
+Graduate School and conform with the style requirements for dissertations and
+theses as laid out in the Fall 2010 UO graduate school student manual.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-uowthesis
+  (package
+    (name "texlive-uowthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uowthesis/"
+                   "tex/latex/uowthesis/")
+             (base32
+              "196w8ics6r9n4x05ydpr0hprpmcwqwfqa92h200kxgflp595xm43")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uowthesis")
+    (synopsis
+     "Document class for dissertations at the University of Wollongong")
+    (description
+     "This package provides a document class for higher degree research theses
+in compliance with the specifications of @acronym{UoW, University of
+Wollongong} theses in the @emph{Guidelines for Preparation and Submission of
+Higher Degree Research Theses} (March 2006), by the Research Student Centre,
+Research & Innovation Division, UoW.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-uowthesistitlepage
+  (package
+    (name "texlive-uowthesistitlepage")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uowthesistitlepage/"
+                   "tex/latex/uowthesistitlepage/")
+             (base32
+              "0mspjj6wvcb9cdbp3qp2cqd3mmmf3kyd77pmk1kji0wspg0jra6y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uowthesistitlepage")
+    (synopsis "Title page for dissertations at the University of Wollongong")
+    (description
+     "The package redefines @code{\\maketitle} to generate a title page for
+a @acronym{UoW, University of Wollongong} thesis, in accordance with the UoW
+branding guidelines.  The package should be used with the @code{book} class to
+typeset a thesis.  The package also defines a @code{\\declaration} command
+that typesets the declaration that this thesis is your own work, etc., which
+is required in the front of each PhD thesis.")
+    (license (list license:lppl1.3c license:cc-by-sa4.0))))
+
 (define-public texlive-uppunctlm
   (package
     (name "texlive-uppunctlm")
@@ -25602,6 +31686,29 @@ file which has a reasonably conventional structure.  The result is meant to be
 robust rather than pretty.")
     (license (list license:gpl2 license:lppl))))
 
+(define-public texlive-urcls
+  (package
+    (name "texlive-urcls")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/urcls/" "tex/latex/urcls/")
+             (base32
+              "1fkz3jqrfay9kzaq1iyyz95n1m7xg6cw8rar878dlgb1rmkds1fb")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/urcls")
+    (synopsis
+     "Beamer and @code{scrlttr2} classes and styles for the University of
+Regensburg")
+    (description
+     "The bundle provides a Beamer-derived class and a theme style file for
+the corporate design of the @acronym{UR, University of Regensburg}.  It also
+contains a @code{scrlttr2}-derived class for letters using the corporate
+design of the UR. Users may use the class itself (URbeamer) or use the theme
+in the usual way with @code{\\usetheme@{UR@}}.")
+    (license license:lppl)))
+
 (define-public texlive-urwchancal
   (package
     (name "texlive-urwchancal")
@@ -25648,6 +31755,195 @@ specifies a database to use, and @code{\\usebibdata}, which typesets a single
 field from a specified entry in that database.")
     (license license:lppl1.3+)))
 
+(define-public texlive-uspatent
+  (package
+    (name "texlive-uspatent")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uspatent/" "tex/latex/uspatent/")
+             (base32
+              "0f2w7zczl6zmxysdwyksbq3zniyw6mfr9zhdz55j5l84fgkwcd3n")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uspatent")
+    (synopsis "U.S. Patent Application Tools for LaTeX and LyX")
+    (description
+     "The package provides a class and other tools for developing
+a beautifully formatted, consistent U.S. Patent Application using LaTeX and/or
+LyX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-ut-thesis
+  (package
+    (name "texlive-ut-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/ut-thesis/"
+                   "source/latex/ut-thesis/"
+                   "tex/latex/ut-thesis/")
+             (base32
+              "0z1rvgy4d2zdagb7x5ymdid02fwnpv2x4dd4jxxkhg9mgq0lscyn")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/ut-thesis")
+    (synopsis "University of Toronto thesis style")
+    (description
+     "This LaTeX document class implements the formatting requirements of the
+University of Toronto School of Graduate Studies (SGS), as of Fall 2020.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-utexasthesis
+  (package
+    (name "texlive-utexasthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/utexasthesis/"
+                   "tex/latex/utexasthesis/")
+             (base32
+              "12qgidbdyjj9mdjp6lzidw0ifkdh7hskxdmpmsk5wybjicvf24w4")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/utexasthesis")
+    (synopsis "University of Texas at Austin graduate thesis style")
+    (description
+     "This class file complies with the Digital Submission Requirement for
+masters and PhD thesis submissions of the University of Texas at Austin.")
+    (license license:cc0)))
+
+(define-public texlive-uvaletter
+  (package
+    (name "texlive-uvaletter")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uvaletter/"
+                   "tex/latex/uvaletter/")
+             (base32
+              "12y57x4np1asfcbm6izn31rzqbxdxmsfc8gibgz6sh7nj2vvhf22")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uvaletter")
+    (synopsis "Unofficial letterhead template for the University of Amsterdam")
+    (description
+     "This is an unofficial LaTeX package that provides a letterhead template
+for the University of Amsterdam.")
+    (license license:expat)))
+
+(define-public texlive-uwa-colours
+  (package
+    (name "texlive-uwa-colours")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uwa-colours/"
+                   "source/latex/uwa-colours/"
+                   "tex/latex/uwa-colours/")
+             (base32
+              "1lryscsnwayp0s74rcdlr36bi2n45fbdq9f2h3av2n1nj57259a9")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uwa-colours")
+    (synopsis "Colour palette of the University of Western Australia")
+    (description
+     "This package uses the @code{xcolor} package to define macros for the
+colour palette of the University of Western Australia.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-uwa-letterhead
+  (package
+    (name "texlive-uwa-letterhead")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uwa-letterhead/"
+                   "source/latex/uwa-letterhead/"
+                   "tex/latex/uwa-letterhead/")
+             (base32
+              "06p4c6m8dizq4y3pd95bzf81y296r1gg134jnx5h0qzh4l5ywpyx")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uwa-letterhead")
+    (synopsis "Letterhead of the University of Western Australia")
+    (description
+     "This package generates the letterhead of the @acronym{UWA, University of
+Western Australia}.  It requires the UWA logo in PDF format, which is
+available in SVG format at
+@url{https://static-listing.weboffice.uwa.edu.au/visualid/core-rebrand/img/uwacrest/},
+and uses the Arial and UWA Slab fonts by default.  The package works with
+XeLaTeX and LuaLaTeX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-uwa-pcf
+  (package
+    (name "texlive-uwa-pcf")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uwa-pcf/" "source/latex/uwa-pcf/"
+                   "tex/latex/uwa-pcf/")
+             (base32
+              "0b41nfrrqmcq3abcwb13hb9anhb5c12c5ha60ni1yz2xqvimr1im")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uwa-pcf")
+    (synopsis
+     "@acronym{PCF, Participant Consent Form} for a human research protocol
+at the University of Western Australia")
+    (description
+     "This LaTeX class generates a @acronym{PCF, Participant Consent Form} for
+a human research protocol at the @acronym{UWA, University of Western
+Australia}.  It requires the UWA logo in PDF format, which is available in SVG
+format at
+@url{https://static-listing.weboffice.uwa.edu.au/visualid/core-rebrand/img/uwacrest/},
+and uses the Arial and UWA Slab fonts by default.  The class works with
+XeLaTeX and LuaLaTeX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-uwa-pif
+  (package
+    (name "texlive-uwa-pif")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uwa-pif/" "source/latex/uwa-pif/"
+                   "tex/latex/uwa-pif/")
+             (base32
+              "048367w14wnk8h517xc914xvp0g10ysk0kziikk2s4q70qk2jci0")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uwa-pif")
+    (synopsis
+     "@acronym{PIF, Participant Information Form} for a human research
+protocol at the University of Western Australia")
+    (description
+     "This package generates a @acronym{PIF, Participant Information Form} for
+a human research protocol at the @acronym{UWA, University of Western
+Australia}.  It requires the UWA logo in PDF format, which is available in SVG
+format at
+@url{https://static-listing.weboffice.uwa.edu.au/visualid/core-rebrand/img/uwacrest/},
+and uses the Calibri fonts by default.  The class works with XeLaTeX and
+LuaLaTeX.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-uwthesis
+  (package
+    (name "texlive-uwthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/uwthesis/" "tex/latex/uwthesis/")
+             (base32
+              "0wcxpvr86556gxbcprwcv6ipdq3flyfwbcmjkxhy6x6220sfwp56")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/uwthesis")
+    (synopsis "University of Washington thesis class")
+    (description "This is a thesis class for the University of Washington.")
+    (license license:asl2.0)))
+
 (define-public texlive-vak
   (package
     (name "texlive-vak")
@@ -25670,6 +31966,26 @@ to perform a semiautomatic, or a completely manual sort of the list of the
 references.  Processing bibliographies produced by the style requires a 8-bit
 BibTeX system.")
     (license license:lppl)))
+
+(define-public texlive-vancouver
+  (package
+    (name "texlive-vancouver")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "bibtex/bst/vancouver/"
+                   "doc/bibtex/vancouver/")
+             (base32
+              "1r8x945cx32zn6ky4qqrki4xrj8ipbmkgm2dijmws5m0bkkh276r")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/vancouver")
+    (synopsis "Bibliographic style file for Biomedical journals")
+    (description
+     "This BibTeX style file is expected to meet the Uniform Requirements for
+Manuscripts Submitted to Biomedical Journals (also known as the Vancouver
+style).")
+    (license license:lppl1.3+)))
 
 (define-public texlive-velthuis
   (package
@@ -25873,6 +32189,27 @@ bundle, for which map files are available to provide a Vietnamese version.")
     (license (list license:lppl1.3+
                    (license:fsf-free "file://source/generic/vntex/LICENSE-utopia.txt")))))
 
+(define-public texlive-wallpaper
+  (package
+    (name "texlive-wallpaper")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/wallpaper/"
+                   "tex/latex/wallpaper/")
+             (base32
+              "07ynf0b7czqqz0ha70ccvdxmcm3s6px82s1101llwbpxhwpqis5i")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/wallpaper")
+    (synopsis
+     "Add wallpapers (background images) to LaTeX documents, including tiling")
+    (description
+     "This collection contains files to add wallpapers (background images) to
+LaTeX documents.  It provides simple commands to include effects such as
+tiling.")
+    (license license:lppl)))
+
 (define-public texlive-wargame
   (package
     (name "texlive-wargame")
@@ -25983,6 +32320,28 @@ Native American languages.")
      "This package provides LaTeX support for the @code{wnri} fonts.")
     (license license:gpl2)))
 
+(define-public texlive-wsemclassic
+  (package
+    (name "texlive-wsemclassic")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/wsemclassic/"
+                   "source/latex/wsemclassic/"
+                   "tex/latex/wsemclassic/")
+             (base32
+              "1kq871pbf2xq0h0njsp3j0wygz6970y5nkara5v5kpby42kx96rl")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/wsemclassic")
+    (synopsis "LaTeX class for Bavarian school w-seminar papers")
+    (description
+     "The class is designed either to conform with the recommendations of the
+Bavarian Kultusministerium for typesetting w-seminar papers (strict mode), or
+to use another style which should look better.  The class is based on the
+LaTeX standard @code{report} class.")
+    (license license:bsd-3)))
+
 (define-public texlive-wsuipa
   (package
     (name "texlive-wsuipa")
@@ -26053,6 +32412,52 @@ functionality has been taken over by @code{xr}, so this final version is just
 a stub that loads @code{xr}.")
     (license license:lppl1.3c)))
 
+(define-public texlive-xduthesis
+  (package
+    (name "texlive-xduthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xduthesis/"
+                   "source/latex/xduthesis/"
+                   "tex/latex/xduthesis/")
+             (base32
+              "1sdl1m869s4hcxdj3q2205x9xdgx0qy9ri9vjyma9rsv70sa648p")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/xduthesis")
+    (synopsis "XeLaTeX template for writing Xidian University thesis")
+    (description
+     "This is a XeLaTeX template for writing theses to apply academic degrees
+in Xidian University.  The template is designed according to the official
+requirements on typesetting theses.  The template currently supports all
+levels of degrees from bachelor to doctor, including both academic master and
+professional master.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-xduts
+  (package
+    (name "texlive-xduts")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/xduts/" "source/xelatex/xduts/"
+                   "tex/xelatex/xduts/")
+             (base32
+              "17zd5i4vxpg2n7w9449q754i2k280jjm18pfl6d8b6r1adv5hy4c")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-ctex))
+    (home-page "https://ctan.org/pkg/xduts")
+    (synopsis "Xidian University TeX suite")
+    (description
+     "XDUTS is designed to help Xidian University students use LaTeX
+typesetting efficiently.  XDUTS contains a font configuration package that
+meets the school's requirements and can be applied to any document class.  In
+addition, there are thesis and thesis proposal templates for both
+undergraduate and postgraduate that meet the school's requirements.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-xecjk
   (package
     (name "texlive-xecjk")
@@ -26116,6 +32521,25 @@ the way users have become used to, in the CJK package.")
 Cyrillic Mongolian using either XeLaTeX or LuaLaTeX.  The command
 @code{\\setlanguage} can be used to load alternative hyphenation patterns so
 to be able to create multilingual documents.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-xmuthesis
+  (package
+    (name "texlive-xmuthesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/xmuthesis/"
+                   "source/latex/xmuthesis/"
+                   "tex/latex/xmuthesis/")
+             (base32
+              "1qnsh0q61zv4jrh92zkhgdk1lzk3fksa2iiv2c2hkyk55sjza6ac")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (native-inputs (list texlive-ctex))
+    (home-page "https://ctan.org/pkg/xmuthesis")
+    (synopsis "XMU thesis style")
+    (description "This class is designed for XMU thesis's writing.")
     (license license:lppl1.3c)))
 
 (define-public texlive-xq
@@ -26202,6 +32626,155 @@ without unwanted side effects.  The macros are based on the XY-Pic package.")
 structural formulas in a way that reflects their structure.  The package
 provides three output modes: LaTeX, PostScript and PDF.")
     (license license:lppl1.3+)))
+
+(define-public texlive-yathesis
+  (package
+    (name "texlive-yathesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/yathesis/"
+                   "source/latex/yathesis/"
+                   "tex/latex/yathesis/")
+             (base32
+              "1qp1a0y8hkv0wfkbh2rbgkm2il08a320gl0kqppam4rb8y6wn77z")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (arguments
+     (list #:build-targets #~(list "yathesis.dtx")
+           #:tex-format "lualatex"))
+    (native-inputs
+     (list (texlive-updmap.cfg
+            (list texlive-accsupp
+                  texlive-alphalph
+                  texlive-attachfile2
+                  texlive-babel-french
+                  texlive-biblatex
+                  texlive-booktabs
+                  texlive-caption
+                  texlive-cleveref
+                  texlive-comment
+                  texlive-csquotes
+                  texlive-datetime2
+                  texlive-denisbdoc
+                  texlive-enumitem
+                  texlive-environ
+                  texlive-fancyvrb
+                  texlive-fixfoot
+                  texlive-fontawesome
+                  texlive-fontspec
+                  texlive-footmisc
+                  texlive-glossaries
+                  texlive-glossaries-extra
+                  texlive-gofonts
+                  texlive-hologo
+                  texlive-hypdoc
+                  texlive-ifmtarg
+                  texlive-imakeidx
+                  texlive-libertine
+                  texlive-listings
+                  texlive-marginnote
+                  texlive-morewrites
+                  texlive-mparhack
+                  texlive-multirow
+                  texlive-newunicodechar
+                  texlive-path
+                  texlive-parskip
+                  texlive-pdfcol
+                  texlive-pdflscape
+                  texlive-pgf
+                  texlive-refcount
+                  texlive-siunitx
+                  texlive-tcolorbox
+                  texlive-textcase
+                  texlive-tikzfill
+                  texlive-tocbibind
+                  texlive-tocvsec2
+                  texlive-translator
+                  texlive-underscore
+                  texlive-xifthen
+                  texlive-xpatch
+                  texlive-zref))))
+    (home-page "https://ctan.org/pkg/yathesis")
+    (synopsis "LaTeX class for writing a thesis following French rules")
+    (description
+     "The purpose of @code{yathesis} is to facilitate the typesetting of
+theses prepared in France, whatever the disciplines and institutes.  It
+implements most notably recommendations from the Ministry of Higher Education
+and Research, and this transparently to the user.  It has also been designed
+to (optionally) take advantage of powerful tools available in LaTeX, including
+packages: BibLaTeX for the bibliography; @code{glossaries} for the glossary,
+list of acronyms and symbols list.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-yazd-thesis
+  (package
+    (name "texlive-yazd-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/xelatex/yazd-thesis/"
+                   "tex/xelatex/yazd-thesis/")
+             (base32
+              "0zwzzzf8z0p0cl6l3wjqnfj80pym4wx5halb3rl1i6bmvyypgafz")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/yazd-thesis")
+    (synopsis "Template for the Yazd University")
+    (description
+     "This package offers a document class for typesetting theses and
+dissertations at the Yazd University.  The class requires use of XeLaTeX.")
+    (license license:lppl1.3c)))
+
+(define-public texlive-yb-book
+  (package
+    (name "texlive-yb-book")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/yb-book/" "source/latex/yb-book/"
+                   "tex/latex/yb-book/")
+             (base32
+              "1brgy4y92888z7mc6yryasbv7xhcj560zsy5wz6ahcwny8f67mgg")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs
+     (list texlive-anyfontsize
+           texlive-biblatex
+           texlive-bigfoot
+           texlive-changepage
+           texlive-chngcntr
+           texlive-csquotes
+           texlive-enumitem
+           texlive-fancyhdr
+           texlive-float
+           texlive-footmisc
+           texlive-geometry
+           texlive-ifmtarg
+           texlive-imakeidx
+           texlive-lastpage
+           texlive-libertine
+           texlive-mdframed
+           texlive-microtype
+           texlive-needspace
+           texlive-paralist
+           texlive-pgf
+           texlive-qrcode
+           texlive-setspace
+           texlive-soul
+           texlive-titlesec
+           texlive-ulem
+           texlive-wrapfig
+           texlive-xcolor
+           texlive-xifthen
+           texlive-xkeyval
+           texlive-zref))
+    (home-page "https://ctan.org/pkg/yb-book")
+    (synopsis "Template for YB branded books")
+    (description
+     "This template helps the author design books published on Amazon under
+the ``Y.B.'' brand.")
+    (license license:expat)))
 
 (define-public texlive-yfonts
   (package
@@ -26313,6 +32886,27 @@ and a LaTeX package for using them.")
      "This package is a conversion of the @code{yinit} font into OTF.
 Original Metafont files for @code{yinit} are in the @code{yinit} package.")
     (license license:public-domain)))
+
+(define-public texlive-york-thesis
+  (package
+    (name "texlive-york-thesis")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/york-thesis/"
+                   "source/latex/york-thesis/"
+                   "tex/latex/york-thesis/")
+             (base32
+              "0wcl1zqmif2chramah8zmbgp5axbhlnjiygl7kgqnwqw5ajxkw4y")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/york-thesis")
+    (synopsis "Thesis class file for York University, Toronto")
+    (description
+     "York Graduate Studies has again changed the requirements for theses and
+dissertations.  The established @code{york-thesis} class file now implements
+the changes made in Spring 2005.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-youngtab
   (package
@@ -28938,6 +35532,30 @@ unstructured.  The user who looks for thought-through verbatim facilities is
 advised to consider using the @code{fancyvrb} package in place of
 @code{moreverb}.")
     (license license:lppl)))
+
+(define-public texlive-morewrites
+  (package
+    (name "texlive-morewrites")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/morewrites/"
+                   "source/latex/morewrites/"
+                   "tex/latex/morewrites/")
+             (base32
+              "0vdpyzfzhb58q9fj8c4n23hb0day7gxm90ml5dsnizfn44g9nr2q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/morewrites")
+    (synopsis "Always room for a new write stream")
+    (description
+     "The package aims to solve the error @emph{No room for a new \\write},
+which occurs when the user, or when the user's packages have allocated too
+many streams using @code{\\newwrite} (TeX has a fixed maximum number ---
+16 --- of such streams built-in to its code).  The package hooks into TeX
+primitive commands associated with writing to files; it should be loaded near
+the beginning of the sequence of loading packages for a document.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-morisawa
   (package
@@ -45697,6 +52315,49 @@ create new @samp{List of ...}.  The ToC @code{\\parskip} may be changed.")
 
 (define-deprecated-package texlive-latex-tocloft texlive-tocloft)
 
+(define-public texlive-tocvsec2
+  (package
+    (name "texlive-tocvsec2")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/tocvsec2/"
+                   "source/latex/tocvsec2/"
+                   "tex/latex/tocvsec2/")
+             (base32
+              "0ybw8dra074pbl9l0ilp13naz73mgb57agy79bvmrb7v2r8a6zm7")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/tocvsec2")
+    (synopsis "Section numbering and table of contents control")
+    (description
+     "This package provides control over section numbering (without recourse
+to starred sectional commands) and the entries in the table of contents on
+a section by section basis.")
+    (license license:lppl1.3+)))
+
+(define-public texlive-transparent
+  (package
+    (name "texlive-transparent")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/transparent/"
+                   "source/latex/transparent/"
+                   "tex/latex/transparent/")
+             (base32
+              "161lfx6yv8qgk76lz0j375swrk6012djay3sjxggrsx7l92qjvhd")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/transparent")
+    (synopsis "Using a color stack for transparency with pdfTeX")
+    (description
+     "This package shows how a separate color stack can be used for
+transparency, a property besides color that works across page breaks.  If the
+PDF management is used it can also be used with other engines, but without
+support for page breaks.")
+    (license license:lppl1.3c)))
+
 (define-public texlive-trimspaces
   (package
     (name "texlive-trimspaces")
@@ -45798,6 +52459,26 @@ Unicode block to another in the text of a document.  This way, you can write
 a document with no explicit font selection, but a series of rules of the form
 ``when entering block ..., switch font to use ...''.")
     (license license:public-domain)))
+
+(define-public texlive-undolabl
+  (package
+    (name "texlive-undolabl")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/undolabl/"
+                   "source/latex/undolabl/"
+                   "tex/latex/undolabl/")
+             (base32
+              "1pa1m610j46623wm59inxmaqpjhd9cfmbwmyh02pbmpqid47p9l1")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/undolabl")
+    (synopsis "Override existing labels")
+    (description
+     "The package allows the user to override existing labels (for example,
+those generated automatically).")
+    (license license:lppl1.3+)))
 
 (define-public texlive-unicode-bidi
   (package
@@ -59761,6 +66442,296 @@ often LaTeX, and occasionally other formats.")
      "This collection provides PSTricks core and all add-on packages.")
     (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
 
+(define-public texlive-collection-publishers
+  (package
+    (name "texlive-collection-publishers")
+    (version (number->string %texlive-revision))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments (list #:builder #~(mkdir #$output)))
+    (propagated-inputs
+     (list texlive-aastex
+           texlive-abnt
+           texlive-abntex2
+           texlive-abntexto
+           texlive-acmart
+           texlive-acmconf
+           texlive-active-conf
+           texlive-adfathesis
+           texlive-afparticle
+           texlive-afthesis
+           texlive-aguplus
+           texlive-aiaa
+           texlive-anonymous-acm
+           texlive-anufinalexam
+           texlive-aomart
+           texlive-apa
+           texlive-apa6
+           texlive-apa6e
+           texlive-apa7
+           texlive-arsclassica
+           texlive-articleingud
+           texlive-asaetr
+           texlive-ascelike
+           texlive-asmeconf
+           texlive-asmejour
+           texlive-aucklandthesis
+           texlive-bangorcsthesis
+           texlive-bangorexam
+           texlive-bath-bst
+           texlive-beamer-fuberlin
+           texlive-beamer-verona
+           texlive-beilstein
+           texlive-bfh-ci
+           texlive-bgteubner
+           texlive-bjfuthesis
+           texlive-bmstu
+           texlive-bmstu-iu8
+           texlive-br-lex
+           texlive-brandeis-dissertation
+           texlive-brandeis-problemset
+           texlive-brandeis-thesis
+           texlive-buctthesis
+           texlive-cascadilla
+           texlive-cesenaexam
+           texlive-chem-journal
+           texlive-chifoot
+           texlive-chs-physics-report
+           texlive-cje
+           texlive-classicthesis
+           texlive-cleanthesis
+           texlive-cmpj
+           texlive-collection-latex
+           texlive-confproc
+           texlive-cquthesis
+           texlive-dccpaper
+           texlive-dithesis
+           texlive-ebook
+           texlive-ebsthesis
+           texlive-ecothesis
+           texlive-ejpecp
+           texlive-ekaia
+           texlive-elbioimp
+           texlive-els-cas-templates
+           texlive-elsarticle
+           texlive-elteikthesis
+           texlive-emisa
+           texlive-erdc
+           texlive-estcpmm
+           texlive-etsvthor
+           texlive-facture-belge-simple-sans-tva
+           texlive-fbithesis
+           texlive-fcavtex
+           texlive-fcltxdoc
+           texlive-fei
+           texlive-ftc-notebook
+           texlive-gaceta
+           texlive-gammas
+           texlive-geradwp
+           texlive-gfdl
+           texlive-gradstudentresume
+           texlive-grant
+           texlive-gsemthesis
+           texlive-gzt
+           texlive-h2020proposal
+           texlive-hagenberg-thesis
+           texlive-har2nat
+           texlive-hecthese
+           texlive-hep-paper
+           texlive-hfutexam
+           texlive-hfutthesis
+           texlive-hithesis
+           texlive-hitszbeamer
+           texlive-hitszthesis
+           texlive-hobete
+           texlive-hu-berlin-bundle
+           texlive-hustthesis
+           texlive-icsv
+           texlive-ieeeconf
+           texlive-ieeepes
+           texlive-ieeetran
+           texlive-ijmart
+           texlive-ijsra
+           texlive-imac
+           texlive-imtekda
+           texlive-inkpaper
+           texlive-iodhbwm
+           texlive-iscram
+           texlive-jacow
+           texlive-jmlr
+           texlive-jnuexam
+           texlive-jourcl
+           texlive-jpsj
+           texlive-jwjournal
+           texlive-kdgdocs
+           texlive-kdpcover
+           texlive-kfupm-math-exam
+           texlive-kluwer
+           texlive-ksp-thesis
+           texlive-ku-template
+           texlive-langsci
+           texlive-langsci-avm
+           texlive-limecv
+           texlive-lion-msc
+           texlive-llncs
+           texlive-llncsconf
+           texlive-lni
+           texlive-lps
+           texlive-matc3
+           texlive-matc3mem
+           texlive-mcmthesis
+           texlive-mentis
+           texlive-mlacls
+           texlive-mluexercise
+           texlive-mnras
+           texlive-modeles-factures-belges-assocs
+           texlive-msu-thesis
+           texlive-mucproc
+           texlive-mugsthesis
+           texlive-muling
+           texlive-musuos
+           texlive-muthesis
+           texlive-mynsfc
+           texlive-nature
+           texlive-navydocs
+           texlive-nddiss
+           texlive-ndsu-thesis
+           texlive-ndsu-thesis-2022
+           texlive-nih
+           texlive-nihbiosketch
+           texlive-njustthesis
+           texlive-njuthesis
+           texlive-njuvisual
+           texlive-nostarch
+           texlive-novel
+           texlive-nrc
+           texlive-nwafuthesis
+           texlive-nwejm
+           texlive-onrannual
+           texlive-opteng
+           texlive-oup-authoring-template
+           texlive-philosophersimprint
+           texlive-pittetd
+           texlive-pkuthss
+           texlive-powerdot-fuberlin
+           texlive-powerdot-tuliplab
+           texlive-pracjourn
+           texlive-prociagssymp
+           texlive-proposal
+           texlive-prtec
+           texlive-ptptex
+           texlive-qrbill
+           texlive-quantumarticle
+           texlive-resphilosophica
+           texlive-resumecls
+           texlive-revtex
+           texlive-revtex4
+           texlive-revtex4-1
+           texlive-rutitlepage
+           texlive-ryersonsgsthesis
+           texlive-ryethesis
+           texlive-sageep
+           texlive-sapthesis
+           texlive-schule
+           texlive-scientific-thesis-cover
+           texlive-scripture
+           texlive-scrjrnl
+           texlive-sduthesis
+           texlive-se2thesis
+           texlive-seu-ml-assign
+           texlive-seuthesis
+           texlive-seuthesix
+           texlive-shortmathj
+           texlive-shtthesis
+           texlive-smflatex
+           texlive-soton
+           texlive-sphdthesis
+           texlive-spie
+           texlive-sr-vorl
+           texlive-srdp-mathematik
+           texlive-stellenbosch
+           texlive-suftesi
+           texlive-sugconf
+           texlive-tabriz-thesis
+           texlive-technion-thesis-template
+           texlive-texilikechaps
+           texlive-texilikecover
+           texlive-thesis-ekf
+           texlive-thesis-gwu
+           texlive-thesis-qom
+           texlive-thesis-titlepage-fhac
+           texlive-thuaslogos
+           texlive-thubeamer
+           texlive-thucoursework
+           texlive-thuthesis
+           texlive-tidyres
+           texlive-timbreicmc
+           texlive-tlc-article
+           texlive-topletter
+           texlive-toptesi
+           texlive-tuda-ci
+           texlive-tudscr
+           texlive-tugboat
+           texlive-tugboat-plain
+           texlive-tui
+           texlive-turabian
+           texlive-uaclasses
+           texlive-uafthesis
+           texlive-uantwerpendocs
+           texlive-ucalgmthesis
+           texlive-ucbthesis
+           texlive-ucdavisthesis
+           texlive-ucsmonograph
+           texlive-ucthesis
+           texlive-udes-genie-these
+           texlive-uestcthesis
+           texlive-ufrgscca
+           texlive-uhhassignment
+           texlive-uiucredborder
+           texlive-uiucthesis
+           texlive-ukbill
+           texlive-ulthese
+           texlive-umbclegislation
+           texlive-umich-thesis
+           texlive-umthesis
+           texlive-unam-thesis
+           texlive-unamth-template
+           texlive-unamthesis
+           texlive-unbtex
+           texlive-unifith
+           texlive-unigrazpub
+           texlive-unitn-bimrep
+           texlive-univie-ling
+           texlive-unizgklasa
+           texlive-unswcover
+           texlive-uol-physics-report
+           texlive-uothesis
+           texlive-uowthesis
+           texlive-uowthesistitlepage
+           texlive-urcls
+           texlive-uspatent
+           texlive-ut-thesis
+           texlive-utexasthesis
+           texlive-uvaletter
+           texlive-uwa-colours
+           texlive-uwa-letterhead
+           texlive-uwa-pcf
+           texlive-uwa-pif
+           texlive-uwthesis
+           texlive-vancouver
+           texlive-wsemclassic
+           texlive-xduthesis
+           texlive-xduts
+           texlive-xmuthesis
+           texlive-yathesis
+           texlive-yazd-thesis
+           texlive-yb-book
+           texlive-york-thesis))
+    (home-page "https://www.tug.org/texlive/")
+    (synopsis "Publisher styles, theses, etc.")
+    (description "This collection includes publisher styles, theses, etc.")
+    (license (license:fsf-free "https://www.tug.org/texlive/copying.html"))))
+
 (define-public texlive-collection-xetex
   (package
     (name "texlive-collection-xetex")
@@ -64272,6 +71243,30 @@ designed).  As a result, @code{pslatex} is widely considered obsolete.")
 uses PostScript @code{\\special} commands.  The package is now largely
 superseded by @code{pict2e}.")
     (license license:lppl)))
+
+(define-public texlive-datetime
+  (package
+    (name "texlive-datetime")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/datetime/"
+                   "source/latex/datetime/"
+                   "tex/latex/datetime/")
+             (base32
+              "07rx0bcr8b73669xmvl1q3qy96jfqlfs2yv2khjcaf2yfid3c2vw")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/datetime")
+    (synopsis "Change format of \\today with commands for current time")
+    (description
+     "This package provides various different formats for the text created by
+the command @code{\\today}, and also provides commands for displaying the
+current time (or any given time), in 12-hour, 24-hour or text format.  It
+overrides Babel's date format, having its own library of date formats in
+different languages.  This package is now obsolete and has been replaced by
+@code{datetime2}.")
+    (license license:lppl1.3+)))
 
 (define-public texlive-datetime2
   (package
