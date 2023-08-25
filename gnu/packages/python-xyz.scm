@@ -19177,7 +19177,7 @@ database, file, dict stores.  Cachy supports python versions 2.7+ and 3.2+.")
        (uri (pypi-uri "poetry" version))
        (sha256
         (base32
-         "0g0vczn6qa4b2bdkq4k7fm1g739vyxp2iiblwwsrcmw24jj81m8b"))))
+         "1lirh32fcmxd56w6hx4x205cqwlwl7pammmqaarch73kjajv3f8a"))))
     (build-system pyproject-build-system)
     (arguments
      `(#:tests? #f                      ;PyPI does not have tests
