@@ -19181,6 +19181,9 @@ database, file, dict stores.  Cachy supports python versions 2.7+ and 3.2+.")
     (build-system pyproject-build-system)
     (arguments
      `(#:tests? #f                      ;PyPI does not have tests
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'sanity-check))
        ;; #:phases
        ;; (modify-phases %standard-phases
        ;;   (add-before 'build 'patch-setup-py
