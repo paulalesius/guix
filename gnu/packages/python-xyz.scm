@@ -19211,6 +19211,7 @@ database, file, dict stores.  Cachy supports python versions 2.7+ and 3.2+.")
            python-requests-toolbelt
            python-shellingham
            python-tomlkit
+           python-cleo
            python-virtualenv))
     (home-page "https://python-poetry.org")
     (synopsis "Python dependency management and packaging made easy")
