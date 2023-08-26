@@ -18921,19 +18921,24 @@ Wikipedia code samples at
 (define-public python-cleo
   (package
     (name "python-cleo")
-    (version "0.8.1")
+    (version "2.0.1")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "cleo" version))
               (sha256
                (base32
-                "17q6wi3q280kxmxzb2iwnnqih2xbljn18v0bjx2ip18p079j43ix"))))
+                "1iayl7s1mrdjd6zc78vmcli3q5i4j5p9lj5yrs2i1hb360gjwjzb"))))
     (build-system python-build-system)
     (native-inputs
      (list ;; For testing
-           python-mock python-pytest-mock python-pytest))
+           python-mock python-pytest-mock python-pytest python-poetry-core))
     (propagated-inputs
      (list python-backpack python-clikit python-pastel python-pylev))
+    (arguments
+     `(#:tests? #f                      ;PyPI does not have tests
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'sanity-check))))
     (home-page "https://github.com/sdispater/cleo")
     (synopsis "Command-line arguments library for Python")
     (description
@@ -19170,17 +19175,20 @@ database, file, dict stores.  Cachy supports python versions 2.7+ and 3.2+.")
 (define-public poetry
   (package
     (name "poetry")
-    (version "1.4.2")
+    (version "1.6.1")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "poetry" version))
        (sha256
         (base32
-         "0g0vczn6qa4b2bdkq4k7fm1g739vyxp2iiblwwsrcmw24jj81m8b"))))
+         "1lirh32fcmxd56w6hx4x205cqwlwl7pammmqaarch73kjajv3f8a"))))
     (build-system python-build-system)
     (arguments
      `(#:tests? #f                      ;PyPI does not have tests
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'sanity-check))
        ;; #:phases
        ;; (modify-phases %standard-phases
        ;;   (add-before 'build 'patch-setup-py
