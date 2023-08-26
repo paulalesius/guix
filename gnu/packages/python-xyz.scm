@@ -19183,7 +19183,7 @@ database, file, dict stores.  Cachy supports python versions 2.7+ and 3.2+.")
        (sha256
         (base32
          "1lirh32fcmxd56w6hx4x205cqwlwl7pammmqaarch73kjajv3f8a"))))
-    (build-system python-build-system)
+    (build-system pyproject-build-system)
     (arguments
      `(#:tests? #f                      ;PyPI does not have tests
        #:phases
