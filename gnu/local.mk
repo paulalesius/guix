@@ -1598,7 +1598,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/mcrypt-CVE-2012-4527.patch			\
   %D%/packages/patches/libmemcached-build-with-gcc7.patch	\
   %D%/packages/patches/libmhash-hmac-fix-uaf.patch		\
-  %D%/packages/patches/libsigrokdecode-python3.9-fix.patch	\
   %D%/packages/patches/maturin-no-cross-compile.patch		\
   %D%/packages/patches/mecab-variable-param.patch		\
   %D%/packages/patches/memtest86+-build-reproducibly.patch	\
@@ -1965,6 +1964,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/source-highlight-gcc-compat.patch	\
   %D%/packages/patches/softhsm-fix-openssl3-tests.patch		\
   %D%/packages/patches/spectre-meltdown-checker-externalize-fwdb.patch \
+  %D%/packages/patches/spdlog-fix-tests.patch			\
   %D%/packages/patches/spectre-meltdown-checker-find-kernel.patch \
   %D%/packages/patches/sphinxbase-fix-doxygen.patch		\
   %D%/packages/patches/sssd-system-directories.patch		\
