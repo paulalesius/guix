@@ -17162,6 +17162,28 @@ Plain TeX and Eplain.  This is its French translation.")
 French Imprimerie Nationale.")
     (license license:lppl1.3+)))
 
+(define-public texlive-import
+  (package
+    (name "texlive-import")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/import/" "tex/latex/import/")
+             (base32
+              "0wlzs31li6nvzigkxw59bbpmyqrkzpdangvjqq3z7wl6y79sic6g")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/import")
+    (synopsis "Establish input relative to a directory")
+    (description
+     "The commands @code{\\import@{full_path@}@{file@}} and
+@code{\\subimport@{path_extension@}@{file@}} set up input through standard
+LaTeX mechanisms (@code{\\input}, @code{\\include} and
+@code{\\includegraphics}) to load files relative to the imported directory.
+There are also @code{\\includefrom}, @code{\\subincludefrom}, and starred
+variants of the commands.")
+    (license license:public-domain)))
+
 (define-public texlive-imsproc
   (package
     (name "texlive-imsproc")
@@ -28794,6 +28816,29 @@ conventions for alternatives, etc.  The charts are drawn using the
 @code{picture} environment (using @code{pict2e} for preference).")
     (license license:lppl1.2+)))
 
+(define-public texlive-subfiles
+  (package
+    (name "texlive-subfiles")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/subfiles/"
+                   "source/latex/subfiles/"
+                   "tex/latex/subfiles/")
+             (base32
+              "1lwbpf852qi0gmibwgd3i63mlwi2p8zb1ps0fis21r69hnisym8j")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (propagated-inputs (list texlive-import))
+    (home-page "https://ctan.org/pkg/subfiles")
+    (synopsis "Individual typesetting of sub-files of a main document")
+    (description
+     "Using this package one can handle multi-file projects more comfortably,
+making it possible to both process the subsidiary files by themselves and to
+process the main file that includes them, without making any changes to
+either.")
+    (license license:lppl1.3+)))
+
 (define-public texlive-substances
   (package
     (name "texlive-substances")
@@ -29024,6 +29069,36 @@ Times, the other matching Libertine.")
     (description "The package macros for SuperSymmetry-related work, such as
 abbreviations of longer expressions.")
     (license license:lppl)))
+
+(define-public texlive-svg
+  (package
+    (name "texlive-svg")
+    (version (number->string %texlive-revision))
+    (source (texlive-origin
+             name version
+             (list "doc/latex/svg/" "source/latex/svg/"
+                   "tex/latex/svg/")
+             (base32
+              "1yizgrjn6l9j1cf8mvkjz0zni7bzmajszc1y8q80xc723nwnbq7q")))
+    (outputs '("out" "doc"))
+    (build-system texlive-build-system)
+    (home-page "https://ctan.org/pkg/svg")
+    (synopsis "Include and extract SVG pictures in LaTeX documents")
+    (description
+     "This bundle contains the two packages @code{svg} and @code{svg-extract}.
+
+The @code{svg} package is intended for the automated integration of SVG
+graphics into LaTeX documents.  Therefore the capabilities provided by
+Inkscape --- or more precisely its command line tool --- are used to export
+the text within an SVG graphic to a separate file, which is then rendered by
+LaTeX.  For this purpose the two commands @code{\\includesvg} and
+@code{\\includeinkscape} are provided which are very similar to the
+@code{\\includegraphics} command of the @code{graphicx} package.
+
+In addition, the package @code{svg-extract} allows the extraction of these
+graphics into independent files in different graphic formats, exactly as it is
+rendered within the LaTeX document, using either ImageMagick or Ghostscript.")
+    (license license:lppl1.3c)))
 
 (define-public texlive-svrsymbols
   (package
