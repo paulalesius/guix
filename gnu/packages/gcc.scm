@@ -1531,4 +1531,3 @@ to be a tutorial of the language.  Rather, it outlines all of the constructs
 of the language.  Library functions are not included.")
     (home-page "https://www.gnu.org/software/gnu-c-manual/")
     (license fdl1.3+)))
-

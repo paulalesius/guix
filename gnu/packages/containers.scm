@@ -55,7 +55,7 @@
   (let ((commit "c381048530aa750495cf502ddb7181f2ded5b400"))
     (package
       (name "crun")
-      (version "1.8.6")
+      (version "1.4.5")
       (source
        (origin
          (method git-fetch)
@@ -112,7 +112,7 @@ Container Runtime fully written in C.")
 (define-public conmon
   (package
     (name "conmon")
-    (version "2.1.7")
+    (version "2.0.31")
     (source
      (origin
        (method git-fetch)
@@ -120,7 +120,7 @@ Container Runtime fully written in C.")
              (url "https://github.com/containers/conmon")
              (commit (string-append "v" version))))
        (sha256
-        (base32 "0yi6r4cxqhh7bjc2kiqjy66ry1k0n1xa3hmply1njgr8462ymaav"))
+        (base32 "1cxklcihb2i4ywli0fxafkp2gi1x831r37z7spnigaj6pzj1517w"))
        (file-name (git-file-name name version))))
     (build-system gnu-build-system)
     (arguments
@@ -261,7 +261,7 @@ network namespaces.")
 (define-public cni-plugins
   (package
     (name "cni-plugins")
-    (version "1.3.0")
+    (version "1.0.1")
     (source
      (origin
        (method git-fetch)
@@ -269,7 +269,7 @@ network namespaces.")
              (url "https://github.com/containernetworking/plugins")
              (commit (string-append "v" version))))
        (sha256
-        (base32 "1s7vwbnhh8h2drsi82vs50xh47ab2akh1398ikyxxjdp0bvqdfbi"))
+        (base32 "1j91in0mg4nblpdccyq63ncbnn2pc2zzjp1fh3jy0bsndllgv0nc"))
        (file-name (git-file-name name version))))
     (build-system go-build-system)
     (arguments
@@ -312,7 +312,7 @@ configure network interfaces in Linux containers.")
 (define-public podman
   (package
     (name "podman")
-    (version "4.6.1")
+    (version "4.4.1")
     (source
      (origin
        (method git-fetch)
@@ -324,8 +324,7 @@ configure network interfaces in Linux containers.")
        (snippet '(substitute* "Makefile"
                    ((".*hack/btrfs.*") "")))
        (sha256
-        (base32
-         "0d5lfj8i0250f2lrirbq8ayihagmws0hnkjwbyb9nrh6zs6lns3c"))
+        (base32 "0qbr6rbyig3c2hvdvmd94jjkg820hpdz6j7dgyv62dl6wfwvj5jj"))
        (file-name (git-file-name name version))))
 
     (build-system gnu-build-system)
@@ -404,7 +403,7 @@ containers.")
 (define-public buildah
   (package
     (name "buildah")
-    (version "1.31.0")
+    (version "1.29.1")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -413,7 +412,7 @@ containers.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "12sv836v7kj63w015l3b7spzl1xdi30yycrnklgqqjf16ipz7wib"))))
+                "1mcqkz68fjccdla1bgxw57w268a586brm6x28fcm6x425ah0w07h"))))
     (build-system go-build-system)
     (arguments
      (list #:import-path "github.com/containers/buildah/cmd/buildah"

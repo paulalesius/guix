@@ -97,18 +97,17 @@
 (define-public emacs
   (package
     (name "emacs")
-    (version "29.1")
+    (version "28.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/emacs/emacs-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "009f7q08vg919b90k2jrsznq73s3n224avz80dd2y7i3rjjq3y6j"))
+                "12144dcaihv2ymfm7g2vnvdl4h71hqnsz1mljzf34cpg6ci1h8gf"))
               (patches (search-patches "emacs-exec-path.patch"
                                        "emacs-fix-scheme-indent-function.patch"
-                                       ;; Does not apply to emacs 29.1 "emacs-source-date-epoch.patch"
-                                       ))
+                                       "emacs-source-date-epoch.patch"))
               (modules '((guix build utils)))
               (snippet
                '(with-directory-excursion "lisp"
@@ -145,15 +144,10 @@
       #:tests? #f                      ; no check target
       #:modules (%emacs-modules build-system)
       #:configure-flags #~(list "--with-modules"
-                                "--with-native-compilation=no"
-				"--with-sound=no"
-				"--with-x-toolkit=no"
-				"--without-x"
-				"--without-cairo"
-				"--without-systemd"
-				"--without-gpm"
+                                "--with-cairo"
+                                "--with-native-compilation"
                                 "--disable-build-details")
-      #:make-flags #~(list "NATIVE_FULL_AOT=0")
+      #:make-flags #~(list "NATIVE_FULL_AOT=1")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'set-paths 'set-libgccjit-path

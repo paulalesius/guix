@@ -18921,24 +18921,19 @@ Wikipedia code samples at
 (define-public python-cleo
   (package
     (name "python-cleo")
-    (version "2.0.1")
+    (version "0.8.1")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "cleo" version))
               (sha256
                (base32
-                "1iayl7s1mrdjd6zc78vmcli3q5i4j5p9lj5yrs2i1hb360gjwjzb"))))
+                "17q6wi3q280kxmxzb2iwnnqih2xbljn18v0bjx2ip18p079j43ix"))))
     (build-system python-build-system)
     (native-inputs
      (list ;; For testing
-           python-mock python-pytest-mock python-pytest python-poetry-core))
+           python-mock python-pytest-mock python-pytest))
     (propagated-inputs
      (list python-backpack python-clikit python-pastel python-pylev))
-    (arguments
-     `(#:tests? #f                      ;PyPI does not have tests
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'sanity-check))))
     (home-page "https://github.com/sdispater/cleo")
     (synopsis "Command-line arguments library for Python")
     (description

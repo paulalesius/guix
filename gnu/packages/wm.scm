@@ -1754,7 +1754,7 @@ corners, shadows, inactive window dimming, etc.")
 (define-public swayidle
   (package
     (name "swayidle")
-    (version "1.8.0")
+    (version "1.7.1")
     (source
      (origin
        (method git-fetch)
@@ -1763,8 +1763,7 @@ corners, shadows, inactive window dimming, etc.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32
-         "0y0qdqzx90kvk6l80darldvizr7p5g65bnblhxlq5a2rgvs9hkpx"))))
+        (base32 "06iq12p4438d6bv3jlqsf01wjaxrzlnj1bnicn41kad563aq41xl"))))
     (build-system meson-build-system)
     (arguments
      `(#:configure-flags '("-Dlogind-provider=elogind")))
@@ -1896,7 +1895,7 @@ compository, supporting the following featuers:
 (define-public waybar
   (package
     (name "waybar")
-    (version "0.9.20")
+    (version "0.9.18")
     (source
      (origin
        (method git-fetch)
@@ -1905,7 +1904,7 @@ compository, supporting the following featuers:
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "07h5l7h7wmzqgg7fbp98khrxg2sq2s4ncp4fiiz1yg62r752idy4"))))
+        (base32 "11yia2fs5a05jlbrdhxm26c2sgmbj3iwsk3bsqcvjvv3mlsrhxkf"))))
     (build-system meson-build-system)
     (inputs (list date
                   fmt

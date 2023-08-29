@@ -102,7 +102,6 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
-  #:use-module (gnu packages python-compression)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages ruby)
@@ -1065,7 +1064,7 @@ extracting, creating, and converting between formats.")
 (define-public conda
   (package
     (name "conda")
-    (version "23.3.1")
+    (version "22.9.0")
     (source
      (origin
        (method git-fetch)
@@ -1075,7 +1074,7 @@ extracting, creating, and converting between formats.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "03v2hpmm8il3vzkk2q6jpqf88xky2b9lq2n8bli3qjrskf312qva"))))
+         "16vz4vx311ry9w35mi5wna8p8n3abd6wdqrpqzjfdlwv7hcr44s4"))))
     (build-system python-build-system)
     (arguments
      `(#:phases
@@ -1165,13 +1164,7 @@ extracting, creating, and converting between formats.")
                         ;; Not sure if this is really wrong.  This fails because
                         ;; /gnu/store/...conda-22.9.0/bin/python
                         ;; is not /gnu/store/...python-wrapper-3.9.9/bin/python
-                        " and not test_make_entry_point"
-                        ;; Performs network connections or checks python executable
-                        " and not test_create_update_remote_env_file"
-                        " and not test_explicit_missing_cache_entries"
-                        " and not test_install_conda_fish"
-                        " and not test_install_conda_csh"
-                        " and not test_download_and_hash")))))
+                        " and not test_make_entry_point")))))
          (add-after 'install 'init
            ;; This writes a whole bunch of shell initialization files to the
            ;; prefix directory.  Many features of conda can only be used after
@@ -1203,10 +1196,6 @@ extracting, creating, and converting between formats.")
     (native-inputs
      (list python-coverage
            python-flaky
-           python-flask
-           python-jsonpatch
-           python-zstandard
-           python-pytest-mock
            python-pytest-timeout
            python-pytest-xprocess))
     (home-page "https://github.com/conda/conda")
