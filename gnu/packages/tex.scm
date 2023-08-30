@@ -15190,6 +15190,7 @@ Polyglossia.")
     (build-system texlive-build-system)
     (arguments
      (list #:link-scripts #~(list "makeglossaries" "makeglossaries-lite.lua")))
+    (inputs (list perl))
     (propagated-inputs
      (list texlive-amsmath
            texlive-datatool
@@ -33252,6 +33253,7 @@ supported via the ICU library.")
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
     (arguments (list #:link-scripts #~(list "arlatex" "bundledoc")))
+    (inputs (list perl))
     (home-page "https://ctan.org/pkg/bundledoc")
     (synopsis "Bundle together all the files needed to build a LaTeX document")
     (description
@@ -33364,6 +33366,7 @@ Filters are also provided for checking the LaTeX parts of CWEB documents.")
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
     (arguments (list #:link-scripts #~(list "pamphletangler")))
+    (inputs (list perl))
     (home-page "https://ctan.org/pkg/clojure-pamphlet")
     (synopsis "Literate programming tool based on Clojure's Pamphlet system")
     (description
@@ -35495,6 +35498,7 @@ of TeX and one of Metafont are needed.")
     (outputs '("out" "doc"))
     (build-system texlive-build-system)
     (arguments (list #:link-scripts #~(list "mkgrkindex")))
+    (inputs (list perl))
     (home-page "https://ctan.org/pkg/greek-makeindex")
     (synopsis "MakeIndex working with Greek")
     (description
