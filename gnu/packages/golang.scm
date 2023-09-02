@@ -74,6 +74,7 @@
   #:use-module (gnu packages base)
   #:use-module ((gnu packages bootstrap) #:select (glibc-dynamic-linker))
   #:use-module (gnu packages check)
+  #:use-module (gnu packages fonts)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnupg)
@@ -2436,6 +2437,132 @@ obfuscated via the Elligator 2 mapping.
 the golang proxy package which connects through a TURN relay.  It provides
 parsing and encoding support for STUN and TURN protocols.")
       (license license:bsd-3))))
+
+(define-public go-github-com-flopp-go-findfont
+  (package
+    (name "go-github-com-flopp-go-findfont")
+    (version "0.1.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/flopp/go-findfont")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "05jvs5sw6yid0qr2ld7aw0n1mjp47jxhvbg9lsdig86668i2fj2q"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/flopp/go-findfont"))
+    (home-page "https://github.com/flopp/go-findfont")
+    (synopsis "go-findfont")
+    (description
+     "This package provides a platform-agnostic Go library to locate
+TrueType font files in your system's user and system font directories.")
+    (license license:expat)))
+
+(define-public go-github-com-phpdave11-gofpdi
+  (package
+    (name "go-github-com-phpdave11-gofpdi")
+    (version "1.0.13")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/phpdave11/gofpdi")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "01r8a3k2d48fxmhyvix0ry2dc1z5xankd14yxlm496a26vfnc9nq"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:import-path "github.com/phpdave11/gofpdi"
+      #:phases #~(modify-phases %standard-phases
+                   (add-after 'unpack 'fix-source
+                     (lambda _
+                       (substitute* (find-files "." "writer\\.go$")
+                         (("%s-%s") "%d-%s")))))))
+    (propagated-inputs (list go-github-com-pkg-errors))
+    (home-page "https://github.com/phpdave11/gofpdi")
+    (synopsis "PDF document importer")
+    (description
+     "gofpdi allows you to import an existing PDF into a new PDF.")
+    (license license:expat)))
+
+(define-public go-github-com-signintech-gopdf
+  (package
+    (name "go-github-com-signintech-gopdf")
+    (version "0.18.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/signintech/gopdf")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1jf8a896qh871mdr1i7f0fdpqki5pkk1sp6p5dq404zqxpd7lq5l"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/signintech/gopdf"))
+    (propagated-inputs (list go-github-com-pkg-errors
+                             go-github-com-phpdave11-gofpdi))
+    (home-page "https://github.com/signintech/gopdf")
+    (synopsis "Generating PDF documents")
+    (description "gopdf is a Go library for generating PDF documents.")
+    (license license:expat)))
+
+(define-public go-github-com-wraparound-wrap
+  (package
+    (name "go-github-com-wraparound-wrap")
+    (version "0.3.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/Wraparound/wrap")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0scf7v83p40r9k7k5v41rwiy9yyanfv3jm6jxs9bspxpywgjrk77"))
+              (patches (search-patches
+                        "go-github-com-wraparound-wrap-free-fonts.patch"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:import-path "github.com/Wraparound/wrap/"
+      #:tests? #f                       ; no tests
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'build
+            (lambda* (#:key import-path #:allow-other-keys)
+              (invoke "go" "install" "-v" "-x"
+                      "-ldflags=-s -w"
+                      (string-append import-path "cmd/wrap"))))
+          (add-after 'wrap 'wrap-fonts
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (for-each
+               (lambda (program)
+                 (wrap-program program
+                   `("XDG_DATA_DIRS" suffix
+                     ,(map dirname
+                           (search-path-as-list '("share/fonts")
+                                                (map cdr inputs))))))
+               (find-files (string-append (assoc-ref outputs "out")
+                                          "/bin"))))))))
+    (propagated-inputs (list go-github-com-spf13-cobra
+                             go-github-com-signintech-gopdf
+                             go-github-com-flopp-go-findfont))
+    (inputs (list font-liberation font-gnu-freefont))
+    (home-page "https://github.com/Wraparound/wrap")
+    (synopsis "Format Fountain screenplays")
+    (description
+     "Wrap is a command line tool that is able to convert Fountain files into a
+correctly formatted screen- or stageplay as an HTML or a PDF.  It supports
+standard Fountain, but also has some custom syntax extensions such as
+translated keywords and acts.")
+    (license license:gpl3)))
 
 (define-public go-torproject-org-pluggable-transports-goptlib
   (package

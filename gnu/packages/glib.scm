@@ -44,6 +44,7 @@
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages cpp)
   #:use-module (gnu packages docbook)
   #:use-module (gnu packages documentation)
   #:use-module (gnu packages elf)
@@ -1255,26 +1256,37 @@ programming language.  It also provides the @command{dbusxx-xml2cpp} and
 (define-public dbus-cxx
   (package
     (name "dbus-cxx")
-    (version "0.12.0")
+    (version "2.4.0")
     (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/dbus-cxx/dbus-cxx/"
-                                  version "/dbus-cxx-" version ".tar.gz"))
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/dbus-cxx/dbus-cxx")
+                    (commit version)))
+              (file-name (git-file-name name version))
               (sha256
                (base32
-                "1acsgpkd9v7b9jdc79ijmh9dbdfrzgkwkaff518i3zpk7y6g5mzw"))))
+                "0c9q2bjs4m66zq0qysyip8fnkvvjpj46rkjcvw15nhmfhzbq16ag"))
+              (modules '((guix build utils)))
+              (snippet '(delete-file-recursively "tools/libcppgenerate"))))
     (build-system cmake-build-system)
     (arguments
-     `(#:configure-flags '("-DENABLE_TESTS=ON"
-                           "-DENABLE_TOOLS=ON"
-                           "-DENABLE_GLIBMM=ON")))
-    (inputs (list dbus
-                  libsigc++
-                  glibmm
-                  python
-                  popt
-                  expat))
-    (native-inputs (list pkg-config m4))
+     (list #:configure-flags #~(list "-DBUILD_TESTING=ON"
+                                     "-DENABLE_TOOLS=ON"
+                                     "-DENABLE_GLIB_SUPPORT=ON"
+                                     "-DTOOLS_BUNDLED_CPPGENERATE=OFF")
+           #:phases
+           #~(modify-phases %standard-phases
+               (replace 'check
+                 (lambda* (#:key tests? #:allow-other-keys)
+                   (when tests?
+                     ;; There is no /etc/machine-id file in the build
+                     ;; environment.
+                     (invoke "ctest" "-E" "test-machine-uuid-method")))))))
+    ;; These are propagated due to being referenced in headers and pkg-config
+    ;; .pc files.
+    (propagated-inputs (list glib libsigc++))
+    (inputs (list dbus expat libcppgenerate popt))
+    (native-inputs (list pkg-config))
     (synopsis "C++ wrapper for dbus")
     (description "Dbus-cxx is a C++ wrapper for dbus.\n
 It exposes the C API to allow direct manipulation and
@@ -1288,7 +1300,47 @@ This package provide 2 utils:
 Some codes examples can be find at:
 @url{https://dbus-cxx.github.io/examples.html}")
     (home-page "https://dbus-cxx.github.io/")
-    (license license:gpl3)))
+    (license (list license:lgpl3+ license:bsd-3)))) ;dual licensed
+
+(define-public sdbus-c++
+  ;; Use the latest commit, which includes unreleased fixes to the pkg-config
+  ;; file.
+  (package
+    (name "sdbus-c++")
+    (version "1.3.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/Kistler-Group/sdbus-cpp")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "03maivi3nj4g5wcydk9ih703ivmqkc93yip47wlyjni6dhikzzsb"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      ;; Avoid the integration test, which requires a system bus.
+      #:test-target "sdbus-c++-unit-tests"
+      #:configure-flags #~(list "-DBUILD_CODE_GEN=ON"
+                                "-DBUILD_TESTS=ON"
+                                ;; Do not install tests.
+                                "-DTESTS_INSTALL_PATH=/tmp"
+                                "-DCMAKE_VERBOSE_MAKEFILE=ON")
+      #:phases #~(modify-phases %standard-phases
+                   (add-after 'unpack 'do-not-install-tests
+                     (lambda _
+                       (substitute* "tests/CMakeLists.txt"
+                         (("/etc/dbus-1/system.d") "/tmp")))))))
+    (native-inputs (list googletest pkg-config))
+    (inputs (list expat))
+    (propagated-inputs (list elogind)) ;required by sdbus-c++.pc
+    (home-page "https://github.com/Kistler-Group/sdbus-cpp")
+    (synopsis "High-level C++ D-Bus library")
+    (description "@code{sdbus-c++} is a high-level C++ D-Bus library designed
+to provide easy-to-use yet powerful API in modern C++.  It adds another layer
+of abstraction on top of @code{sd-bus}, the C D-Bus implementation by systemd.")
+    (license license:lgpl2.1+)))
 
 (define-public sdbus-c++
   ;; Use the latest commit, which includes unreleased fixes to the pkg-config
