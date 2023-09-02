@@ -1974,7 +1974,7 @@ high-performance parallel differential evolution (DE) optimization algorithm.")
   ;; See <https://debbugs.gnu.org/cgi/bugreport.cgi?bug=27344#236>.
   (package
     (name "libngspice")
-    (version "40")
+    (version "41")
     (source
      (origin
        (method url-fetch)
@@ -1985,7 +1985,7 @@ high-performance parallel differential evolution (DE) optimization algorithm.")
                             "old-releases/" version
                             "/ngspice-" version ".tar.gz")))
        (sha256
-        (base32 "03c9irc44msdpqhbn2fhvb4g0sry8a2qgxl4mbbf557mq1xwl0z3"))))
+        (base32 "1i78im03kx6vp5yml0fiwvqnic8qhczl1893n8zc6l1gblwikqhw"))))
     (build-system gnu-build-system)
     (arguments
      `(;; No tests for libngspice exist.
@@ -2730,7 +2730,7 @@ comments.")))
 (define-public freecad
   (package
     (name "freecad")
-    (version "0.21.0")
+    (version "0.21.1")
     (source
      (origin
        (method git-fetch)
@@ -2739,7 +2739,7 @@ comments.")))
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1i1wv3swnnimmn3kwphb2fcmsc64z96rcg7fhfsgqxcbyrygw6w7"))))
+        (base32 "0qwh6b1s432j5piwgfkphvz0slmxf0m8m8pdr3ny9zna9mghz42k"))))
     (build-system qt-build-system)
     (native-inputs
      (list doxygen
@@ -3113,13 +3113,13 @@ program that can perform mesh processing tasks in batch mode, without a GUI.")
 (define-public poke
   (package
     (name "poke")
-    (version "3.2")
+    (version "3.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnu/poke/poke-" version
                                   ".tar.gz"))
               (sha256
-               (base32 "15qd9z3wv7jrdlh6f9hwgni54ssdz8hzrn4lxiacwv1sslfmb3km"))
+               (base32 "0vlm9xcr7rrfli2x4hi2q41nh8vjd2izpz4zd0xwhqshx2flb000"))
               (modules '((guix build utils)))
               (snippet
                '(begin

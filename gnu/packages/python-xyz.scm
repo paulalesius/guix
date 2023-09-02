@@ -32673,13 +32673,13 @@ message queues for Python.")
 (define-public python-itemadapter
   (package
     (name "python-itemadapter")
-    (version "0.5.0")
+    (version "0.8.0")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "itemadapter" version))
         (sha256
-          (base32 "083wp3h2brh8x19jbdr8rz3biqwp3jlqd0rfzcyrjyhssffsgdh5"))))
+          (base32 "1aa898gjgwy3axxfrgsh4kdvhp6n6wz3ccdishq0gh8azf2q8xbp"))))
     (build-system python-build-system)
     (home-page "https://github.com/scrapy/itemadapter")
     (synopsis "Common interface for data container classes")
@@ -32703,16 +32703,17 @@ implementing a pre-defined interface.")
 (define-public python-itemloaders
   (package
     (name "python-itemloaders")
-    (version "1.0.4")
+    (version "1.1.0")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "itemloaders" version))
         (sha256
-          (base32 "15hc78h90qhwass1bga1c3xar2dd6j8sxg61zg6jvh74lf6csxqj"))))
-    (build-system python-build-system)
+          (base32 "0j2aw4ipalj208594x80blpgkh1i63gqqa4nb67b823av9hirn11"))))
+    (build-system pyproject-build-system)
+    (native-inputs (list python-pytest))
     (propagated-inputs
-      (list python-itemadapter python-jmespath python-parsel python-w3lib))
+     (list python-itemadapter python-jmespath python-parsel python-w3lib))
     (home-page "https://github.com/scrapy/itemloaders")
     (synopsis "Base library for scrapy's ItemLoader")
     (description "Itemloaders is a library that helps you collect data

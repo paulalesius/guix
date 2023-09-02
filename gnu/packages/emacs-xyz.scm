@@ -1950,6 +1950,45 @@ forces you to type words correctly as fast as possible, otherwise
 you will die.  The game builds the list of words from the active buffer.")
       (license license:gpl2+))))
 
+(define-public emacs-speed-type
+  (package
+    (name "emacs-speed-type")
+    (version "1.3")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/dakra/speed-type")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0nnvk3qnn61hg5rgwpiy1dqg6sqfh1m5256sbsk2pwrdmk54k85k"))))
+    (build-system emacs-build-system)
+    (arguments
+     (list
+      #:tests? #true
+      #:test-command
+      #~(list "emacs" "-Q" "--batch" "-L" "."
+              "-l" "test-speed-type.el"
+              "-f" "ert-run-tests-batch-and-exit")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'check 'skip-failing-test
+            ;; This test requires an internet connection.
+            (lambda _
+              (substitute* "test-speed-type.el"
+                (("\\(ert-deftest speed-type--retrieve-test .*" all)
+                 (string-append all " (skip-unless nil)"))))))))
+    (propagated-inputs (list emacs-compat))
+    (home-page "https://github.com/dakra/speed-type")
+    (synopsis "Practice touch/speed typing in GNU Emacs.")
+    (description
+     "Speed Type allows you to practice your touch typing skills.  You can
+test yourself by typing snippets from online books or use any piece of text or
+code you have in Emacs.  Speed Type keeps track of your stats (WPM, CPM,
+accuracy) while you are typing.")
+    (license license:gpl3+)))
+
 (define-public emacs-graphql
   (let ((commit "b57b5ca5d2d0837e1fb4a4f30c051d5f3e643f0f")) ;version bump
     (package
@@ -2249,99 +2288,97 @@ replacement.")
       (license license:gpl3+))))
 
 (define-public emacs-haskell-mode
-  (let ((revision "0")
-        (commit "5a9f8072c7b9168f0a8409adf9d62a3e4ad4ea3d"))
-    (package
-      (name "emacs-haskell-mode")
-      (version (git-version "17.2" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/haskell/haskell-mode")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "0np1wrwdq7b9hpqpl9liampacnkx6diphyk8h2sbz2mfn9qr7pxs"))))
-      (propagated-inputs
-       (list emacs-dash))
-      (native-inputs
-       (list emacs-minimal emacs-el-search emacs-stream texinfo))
-      (build-system gnu-build-system)
-      (arguments
-       (list
-        #:make-flags #~(list
-                        (string-append "EMACS=" #$emacs-minimal "/bin/emacs"))
-        #:modules `((ice-9 match)
-                    (srfi srfi-26)
-                    ((guix build emacs-build-system) #:prefix emacs:)
-                    ,@%gnu-build-system-modules)
-        #:imported-modules `(,@%gnu-build-system-modules
-                             (guix build emacs-build-system)
-                             (guix build emacs-utils))
-        #:phases
-        #~(modify-phases %standard-phases
-            (delete 'configure)
-            (add-before 'build 'pre-build
-              (lambda* (#:key inputs #:allow-other-keys)
-                (define (el-dir store-dir)
-                  (match (find-files store-dir "\\.el$")
-                    ((f1 f2 ...) (dirname f1))
-                    (_ "")))
+  (package
+    (name "emacs-haskell-mode")
+    (version "17.4")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/haskell/haskell-mode")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "03j94fgw1bljbjqmikbn9mnrfifxf7g9zrb727zmnnrjwyi0wd4n"))))
+    (propagated-inputs
+     (list emacs-dash))
+    (native-inputs
+     (list emacs-minimal emacs-el-search emacs-stream texinfo))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:make-flags #~(list
+                      (string-append "EMACS=" #$emacs-minimal "/bin/emacs"))
+      #:modules `((ice-9 match)
+                  (srfi srfi-26)
+                  ((guix build emacs-build-system) #:prefix emacs:)
+                  ,@%gnu-build-system-modules)
+      #:imported-modules `(,@%gnu-build-system-modules
+                           (guix build emacs-build-system)
+                           (guix build emacs-utils))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (add-before 'build 'pre-build
+            (lambda* (#:key inputs #:allow-other-keys)
+              (define (el-dir store-dir)
+                (match (find-files store-dir "\\.el$")
+                  ((f1 f2 ...) (dirname f1))
+                  (_ "")))
 
-                (let ((sh (search-input-file inputs "/bin/sh")))
-                  (define emacs-prefix? (cut string-prefix? "emacs-" <>))
+              (let ((sh (search-input-file inputs "/bin/sh")))
+                (define emacs-prefix? (cut string-prefix? "emacs-" <>))
 
-                  (setenv "SHELL" "sh")
-                  (setenv "EMACSLOADPATH"
-                          (string-concatenate
-                           (map (match-lambda
-                                  (((? emacs-prefix? name) . dir)
-                                   (string-append (el-dir dir) ":"))
-                                  (_ ""))
-                                inputs)))
-                  (substitute* (find-files "." "\\.el") (("/bin/sh") sh)))))
-            (add-before 'check 'delete-failing-tests
-              ;; XXX: these tests require GHC executable, which would be a big
-              ;; native input.
-              (lambda _
-                (with-directory-excursion "tests"
-                  ;; File `haskell-indent-tests.el' fails with
-                  ;; `haskell-indent-put-region-in-literate-2'
-                  ;; on Emacs 27.1+
-                  ;; XXX: https://github.com/haskell/haskell-mode/issues/1714
-                  (for-each delete-file
-                            '("haskell-indent-tests.el"
-                              "haskell-customize-tests.el"
-                              "inferior-haskell-tests.el"))
+                (setenv "SHELL" "sh")
+                (setenv "EMACSLOADPATH"
+                        (string-concatenate
+                         (map (match-lambda
+                                (((? emacs-prefix? name) . dir)
+                                 (string-append (el-dir dir) ":"))
+                                (_ ""))
+                              inputs)))
+                (substitute* (find-files "." "\\.el") (("/bin/sh") sh)))))
+          (add-before 'check 'delete-failing-tests
+            ;; XXX: these tests require GHC executable, which would be a big
+            ;; native input.
+            (lambda _
+              (with-directory-excursion "tests"
+                ;; File `haskell-indent-tests.el' fails with
+                ;; `haskell-indent-put-region-in-literate-2'
+                ;; on Emacs 27.1+
+                ;; XXX: https://github.com/haskell/haskell-mode/issues/1714
+                (for-each delete-file
+                          '("haskell-indent-tests.el"
+                            "haskell-customize-tests.el"
+                            "inferior-haskell-tests.el"))
 
-                  ;; requires many external tools (e.g. git, hasktags)
-                  (substitute* "haskell-mode-tests.el"
-                    (("\\(ert-deftest haskell-generate-tags.*" all)
-                     (string-append all " (skip-unless nil)"))))))
-            (replace 'install
-              (lambda* (#:key outputs #:allow-other-keys)
-                (let* ((out (assoc-ref outputs "out"))
-                       (el-dir (emacs:elpa-directory out))
-                       (doc (string-append
-                             out "/share/doc/haskell-mode-" #$version))
-                       (info (string-append out "/share/info")))
-                  (define (copy-to-dir dir files)
-                    (for-each (lambda (f)
-                                (install-file f dir))
-                              files))
+                ;; requires many external tools (e.g. git, hasktags)
+                (substitute* "haskell-mode-tests.el"
+                  (("\\(ert-deftest haskell-generate-tags.*" all)
+                   (string-append all " (skip-unless nil)"))))))
+          (replace 'install
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (el-dir (emacs:elpa-directory out))
+                     (doc (string-append
+                           out "/share/doc/haskell-mode-" #$version))
+                     (info (string-append out "/share/info")))
+                (define (copy-to-dir dir files)
+                  (for-each (lambda (f)
+                              (install-file f dir))
+                            files))
 
-                  (with-directory-excursion "doc"
-                    (invoke "makeinfo" "haskell-mode.texi")
-                    (install-file "haskell-mode.info" info))
-                  (copy-to-dir doc '("CONTRIBUTING.md" "NEWS" "README.md"))
-                  (copy-to-dir el-dir (find-files "." "\\.elc?"))))))))
-      (home-page "https://github.com/haskell/haskell-mode")
-      (synopsis "Haskell mode for Emacs")
-      (description
-       "This is an Emacs mode for editing, debugging and developing Haskell
+                (with-directory-excursion "doc"
+                  (invoke "makeinfo" "haskell-mode.texi")
+                  (install-file "haskell-mode.info" info))
+                (copy-to-dir doc '("CONTRIBUTING.md" "NEWS" "README.md"))
+                (copy-to-dir el-dir (find-files "." "\\.elc?"))))))))
+    (home-page "https://github.com/haskell/haskell-mode")
+    (synopsis "Haskell mode for Emacs")
+    (description
+     "This is an Emacs mode for editing, debugging and developing Haskell
 programs.")
-      (license license:gpl3+))))
+    (license license:gpl3+)))
 
 (define-public emacs-dante
   (package
@@ -4102,14 +4139,14 @@ a set of simplified face specifications and a user-supplied color palette.")
 (define-public emacs-howm
   (package
     (name "emacs-howm")
-    (version "1.4.8")
+    (version "1.5.0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://howm.sourceforge.jp/a/"
                            "howm-" version ".tar.gz"))
        (sha256
-        (base32 "0i5pfnvy130fzk8w62301vgsqf1y22chwhjgnm5hjxr9y0kw5ii4"))))
+        (base32 "0hl3pv6rhljcj4wajccwcy82h9cxp9n8wzn2hwpy05baxc52wy5x"))))
     (build-system gnu-build-system)
     (native-inputs
      (list emacs-minimal))
@@ -11750,7 +11787,7 @@ between symbols.")
 (define-public emacs-hl-todo
   (package
     (name "emacs-hl-todo")
-    (version "3.5.0")
+    (version "3.6.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -11759,7 +11796,7 @@ between symbols.")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1d9mkbd33zyx540ilp1vz8fgckvxv0qd2vyjgz11zh1qv1pfk8gh"))))
+                "1rq16zrdmq9j2jrsg136r5qbqvsgd2bkgpb2wmxca91kfx86r2qq"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-compat))
@@ -13742,7 +13779,7 @@ with Elfeed.")
 (define-public emacs-elfeed-score
   (package
     (name "emacs-elfeed-score")
-    (version "1.2.6")
+    (version "1.2.7")
     (source
      (origin
        (method git-fetch)
@@ -13751,7 +13788,7 @@ with Elfeed.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0d0dxldafgk3knc0d8g8ghm24zsq5x2p1pswh2syyl33nqf61s8s"))))
+        (base32 "0s37m8566g396d8480jac07c89f2jjpg6p3hcwwmz89s27agp81q"))))
     (build-system emacs-build-system)
     (arguments
      (list
@@ -14592,7 +14629,7 @@ ack, ag, helm and pt.")
 (define-public emacs-helm
   (package
     (name "emacs-helm")
-    (version "3.9.0")
+    (version "3.9.4")
     (source
      (origin
        (method git-fetch)
@@ -14601,7 +14638,7 @@ ack, ag, helm and pt.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1i253ani2bl665biha0f071pncr2jh7x5yxp8rg2013sdf4nr74c"))))
+        (base32 "0p3031qa3vdy483yw4hvhrrs1xcfhgl7f0ab5m8kixfnr3facad9"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-async emacs-popup))
@@ -15952,7 +15989,7 @@ passive voice.")
 (define-public emacs-neotree
   (package
     (name "emacs-neotree")
-    (version "0.5.2")
+    (version "0.6.0")
     (home-page "https://github.com/jaypei/emacs-neotree")
     (source (origin
               (method git-fetch)
@@ -15961,7 +15998,7 @@ passive voice.")
                      (commit version)))
               (sha256
                (base32
-                "0hx72fq10772bbyqrj7mhhp02k26cccjxdadiqm1ykainhfmn1x0"))
+                "1rwm8j48ks9fa5q3g8crpfzbikxfjj5m13w9ylimg34xniycrlq2"))
               (file-name (git-file-name name version))))
     (build-system emacs-build-system)
     (synopsis "Folder tree view for Emacs")
@@ -18465,7 +18502,7 @@ code derived from Kelvin H's Org page.")
 (define-public emacs-meow
   (package
     (name "emacs-meow")
-    (version "1.4.2")
+    (version "1.4.4")
     (source
      (origin
        (method git-fetch)
@@ -18474,7 +18511,7 @@ code derived from Kelvin H's Org page.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "11iz95lm25vpdc3plpm3h1zlmfmfz08xlman8iqk5fa13636v7hj"))))
+        (base32 "1xd9v2ac44kxkbd1va70v7mfccmpnchgl7ipnhikq9y8jha02brr"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/meow-edit/meow")
     (synopsis "Yet another modal editing on Emacs")
@@ -21492,7 +21529,7 @@ functionality is inherited from @code{hcl-mode}.")
 (define-public emacs-exec-path-from-shell
   (package
     (name "emacs-exec-path-from-shell")
-    (version "1.12")
+    (version "2.1")
     (source
      (origin
        (method git-fetch)
@@ -21502,7 +21539,7 @@ functionality is inherited from @code{hcl-mode}.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1ga8bpxngd3ph2hdiik92c612ki71qxw818i6rgx6f6a5r0sbf3p"))))
+         "1wmr1z603wmcv8hxzxn84qxzdwmzmdm8x6f3n0x7klviq4jw6v2x"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/purcell/exec-path-from-shell")
     (synopsis "Get environment variables such as @env{PATH} from the shell")
@@ -22523,7 +22560,7 @@ according to a parsing expression grammar.")
 (define-public emacs-eldev
   (package
     (name "emacs-eldev")
-    (version "1.4.1")
+    (version "1.6")
     (source
      (origin
        (method git-fetch)
@@ -22532,7 +22569,7 @@ according to a parsing expression grammar.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1vvqs8x2chm2bgwnlsrq7llgql5m9hjbxi1x3xbnzbx5l1yvldbp"))))
+        (base32 "0m2d607hprkl1pdapxsfjwag7plf822ig59qb6jjzy9m7gwg21k5"))))
     (build-system emacs-build-system)
     (arguments
      (list
@@ -22545,9 +22582,12 @@ according to a parsing expression grammar.")
               (setenv "ELDEV_LOCAL" (getcwd))
               (make-file-writable "test/project-i/project-i-autoloads.el")))
           (add-after 'unpack 'skip-failing-tests
-            ;; FIXME: 2 tests are failing.  Skip them for now.
+            ;; FIXME: 3 tests are failing.  Skip them for now.
             (lambda _
-              (delete-file "test/upgrade-self.el")))
+              (delete-file "test/upgrade-self.el")
+              (substitute* "test/doctor.el"
+                (("\\(ert-deftest eldev-doctor-up-to-date-copyright-2 .*" all)
+                 (string-append all "(skip-unless nil)\n")))))
           (add-after 'install 'install-eldev-executable
             ;; This constructs the eldev executable from templates and
             ;; installs it in the specified directory.
@@ -23922,7 +23962,7 @@ within Emacs.")
 (define-public emacs-ibrowse
   (package
     (name "emacs-ibrowse")
-    (version "0.2.2")
+    (version "0.2.3")
     (source
      (origin
        (method git-fetch)
@@ -23931,7 +23971,7 @@ within Emacs.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1dm46k67smg2m33c6n68blpw2mw7fx1ymq81kv54jjlpmv3xrdsf"))))
+        (base32 "0dqdldb5hmb6r99fkx1cjfr1b40nvf4i6hh44rk8y78kw9yfd4s1"))))
     (build-system emacs-build-system)
     (inputs (list emacs-websocket sqlite))
     (home-page "https://git.sr.ht/~ngraves/ibrowse.el")
@@ -23943,7 +23983,7 @@ tabs, history, or bookmarks from Emacs.")
 (define-public emacs-ibuffer-projectile
   (package
     (name "emacs-ibuffer-projectile")
-    (version "0.3")
+    (version "0.4")
     (source
      (origin
        (method git-fetch)
@@ -23953,20 +23993,21 @@ tabs, history, or bookmarks from Emacs.")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "18cqxnwzzbkcj9jcaw89b210432yzhrl1dwsv48p0jbhfnr17k41"))))
+         "1n9fqkwjxilzlb86ia95pjdv8lbgvsp8lwkw47v9kjvq2vnmarv5"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-projectile))
     (home-page "https://github.com/purcell/ibuffer-projectile")
-    (synopsis "Group ibuffer's list by projectile root")
-    (description "Adds functionality to Emacs @code{ibuffer} for
-grouping buffers by their projectile root directory.")
+    (synopsis "Group Ibuffer's list by Projectile root")
+    (description
+     "This packages adds functionality to Emacs Ibuffer for grouping buffers
+by their Projectile root directory.")
     (license license:gpl3+)))
 
 (define-public emacs-ibuffer-vc
   (package
     (name "emacs-ibuffer-vc")
-    (version "0.11")
+    (version "0.12")
     (source
      (origin
        (method git-fetch)
@@ -23975,7 +24016,7 @@ grouping buffers by their projectile root directory.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1mgn7b786j4hwq1ks012hxxgvrfn5rz90adi2j190gmjz60rc5g5"))))
+        (base32 "0mnxh6annmys4h1xhc2c7l7ajp4pwvdg68n30x7a21ad9qlvizil"))))
     (build-system emacs-build-system)
     (home-page "https://github.com/purcell/ibuffer-vc")
     (synopsis "Group Ibuffer's list by revision control system indications")
@@ -27414,7 +27455,7 @@ buffers – other modes on the TODO list).
 (define-public emacs-magit-todos
   (package
     (name "emacs-magit-todos")
-    (version "1.6")
+    (version "1.7")
     (source
      (origin
        (method git-fetch)
@@ -27424,7 +27465,7 @@ buffers – other modes on the TODO list).
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "184b650lsq9h93ibx8lmr9xn5kjmr0czxx2vzdn8frkbrhdig0sw"))))
+         "1zjlf3bhz0a7r9sa5ic22vwr2w1zxbfk9z545pdd1fvp00c2kzd0"))))
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-async
@@ -33176,7 +33217,7 @@ information from the tags gathered by CEDET's semantic analyzer.)")
 (define-public emacs-eshell-prompt-extras
   (package
     (name "emacs-eshell-prompt-extras")
-    (version "1.0")
+    (version "1.1")
     (home-page "https://github.com/zwild/eshell-prompt-extras")
     (source
      (origin
@@ -33187,7 +33228,7 @@ information from the tags gathered by CEDET's semantic analyzer.)")
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0gb07mns23dgqqr6qfy7d6ndizy15sqgbgfaig6k5xbjnwi02v9g"))))
+         "04wgffj43lw1i853s8vkw8hvjx29vv5lnmhjyqcclwfnbj7ddvn9"))))
     (build-system emacs-build-system)
     (synopsis "Display extra information and color for your Eshell prompt")
     (description "This library displays various customizable elements for
@@ -37915,6 +37956,29 @@ navigate through it.")
        "Project-X provides convenience features for Emacs' Project library.
 In particular, it saves and restores project files and window configurations
 across sessions.")
+      (license license:gpl3+))))
+
+(define-public emacs-vcard-mode
+  ;; Use the latest commit, as there are no tagged releases.
+  (let ((commit "ab1a2885a5720d7fb02d9b6583ee908ba2260b78")
+        (revision "0"))
+    (package
+      (name "emacs-vcard-mode")
+      (home-page "https://github.com/dochang/vcard-mode")
+      (version (git-version "0.0.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0w44ax9dxkj8mh4np9mg3yp2yakjwrgy13izq53p0vimrhywza0w"))))
+      (build-system emacs-build-system)
+      (synopsis "Emacs major mode to edit vCard files")
+      (description "This package provides a major mode for editing vCard files
+in Emacs.")
       (license license:gpl3+))))
 
 (define-public emacs-vertico-posframe
