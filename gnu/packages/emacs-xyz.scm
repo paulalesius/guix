@@ -9384,24 +9384,23 @@ comparing characters, removing cursors, and more.")
       (license license:bsd-2))))
 
 (define-public emacs-substitute
-  (let ((commit "b81bb7789847f3d1645a60422fa080c48b93dd47")) ;version bump
-    (package
-      (name "emacs-substitute")
-      (version "0.1.8")
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://git.sr.ht/~protesilaos/substitute")
-                      (commit commit)))
-                (file-name (git-file-name name version))
-                (sha256
-                 (base32
-                  "0s1lgpwmdjz17rd4r6qp41agmpqwa9976v1pb55p648zjh0p2vlz"))))
-      (build-system emacs-build-system)
-      (home-page "https://git.sr.ht/~protesilaos/substitute")
-      (synopsis "Efficiently replace targets in the buffer or context")
-      (description
-       "Substitute is a set of commands that perform text replacement (i)
+  (package
+    (name "emacs-substitute")
+    (version "0.2.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://git.sr.ht/~protesilaos/substitute")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1qb2nqwy870jh66iv46bx63mp0hg7ds79259m9l783h2cr74mqjx"))))
+    (build-system emacs-build-system)
+    (home-page "https://git.sr.ht/~protesilaos/substitute")
+    (synopsis "Efficiently replace targets in the buffer or context")
+    (description
+     "Substitute is a set of commands that perform text replacement (i)
 throughout the buffer, (ii) limited to the current definition (per
 narrow-to-defun), (iii) from point to the end of the buffer, and (iv) from
 point to the beginning of the buffer.
@@ -9409,7 +9408,7 @@ point to the beginning of the buffer.
 These substitutions are meant to be as quick as possible and, as such, differ
 from the standard @code{query-replace} tool.  The provided commands prompt for
 substitute text and perform the substitution outright.")
-      (license license:gpl3+))))
+    (license license:gpl3+)))
 
 (define-public emacs-typo
   (package
@@ -16008,7 +16007,7 @@ passive voice.")
 (define-public emacs-org
   (package
     (name "emacs-org")
-    (version "9.6.8")
+    (version "9.6.9")
     (source
      (origin
        (method git-fetch)
@@ -16017,7 +16016,7 @@ passive voice.")
              (commit (string-append "release_" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0cv1wkvfvr1aj8rv0frnlcwk34ib210ys2419b5fp1lfcfdi9in5"))))
+        (base32 "1j1bv6pz8s15ymr1mzrsb465vv39qmd6sb5cjq3sb9c0nzm1mzif"))))
     (build-system emacs-build-system)
     (arguments
      (list
@@ -16058,8 +16057,6 @@ passive voice.")
                  (string-append all "  (skip-unless nil)\n")))
               (substitute* "testing/lisp/test-org.el"
                 (("test-org/org-(encode-time|time-string-to-time) .*" all)
-                 (string-append all "  (skip-unless nil)\n"))
-                (("test-org/insert-heading .*" all)
                  (string-append all "  (skip-unless nil)\n")))))
           (replace 'install
             (lambda _
@@ -16089,7 +16086,7 @@ programming and reproducible research.")
 (define-public emacs-org-contrib
   (package
     (name "emacs-org-contrib")
-    (version "0.4.1")
+    (version "0.4.2")
     (source
      (origin
        (method git-fetch)
@@ -16098,7 +16095,7 @@ programming and reproducible research.")
              (commit (string-append "release_" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0f3zjy3ybkqmvvlx04251add0vcz248qibxy5akal96l8bdhjajx"))))
+        (base32 "11p83gp5lpajf3aaaijs0p6y83sd9g6cv65h7021prcn4qbvipl8"))))
     (build-system emacs-build-system)
     (arguments
      `(#:phases
@@ -24194,34 +24191,47 @@ their meaning for the current Emacs major-mode.")
     (license license:gpl3+)))
 
 (define-public emacs-org-ref
-  (package
-    (name "emacs-org-ref")
-    (version "2.0.0")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/jkitchin/org-ref")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "0xd1qp8dfy8n8b2n3rsdzm8vrfl7dii142kw330s8jp3pavww1f6"))))
-    (build-system emacs-build-system)
-    (propagated-inputs
-     (list emacs-dash
-           emacs-f
-           emacs-helm
-           emacs-helm-bibtex
-           emacs-htmlize
-           emacs-hydra
-           emacs-ivy
-           emacs-key-chord
-           emacs-pdf-tools
-           emacs-s))
-    (home-page "https://github.com/jkitchin/org-ref")
-    (synopsis "Citations, cross-references and bibliographies in Org mode")
-    (description
-     "Org Ref is an Emacs library that provides rich support for citations,
+  (let ((commit "bb375f366f883e5b60e3bb625f2acd026811fb55")
+        (revision "0"))
+    (package
+      (name "emacs-org-ref")
+      (version (git-version "3.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/jkitchin/org-ref")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "01wxcyzdrx6ysv9rjd64fr7kkvm4fjr03ib4mmpchraxxm8g8z43"))))
+      (build-system emacs-build-system)
+      (arguments
+       (list
+        #:include #~(cons* "org-ref.org" "org-ref.bib" %default-include)
+        #:exclude #~(list
+                     ;; github.com/jkitchin/org-ref/issues/1085
+                     "openalex.el"
+                     ;; author doesn't recommend using it
+                     "org-ref-pdf.el")))
+      (propagated-inputs
+       (list emacs-avy
+             emacs-citeproc-el
+             emacs-dash
+             emacs-f
+             emacs-helm
+             emacs-helm-bibtex
+             emacs-htmlize
+             emacs-hydra
+             emacs-ivy
+             emacs-ox-pandoc
+             emacs-parsebib
+             emacs-s))
+      (home-page "https://github.com/jkitchin/org-ref")
+      (synopsis "Citations, cross-references and bibliographies in Org mode")
+      (description
+       "Org Ref is an Emacs library that provides rich support for citations,
 labels and cross-references in Org mode.
 
 The basic idea of Org Ref is that it defines a convenient interface to insert
@@ -24239,7 +24249,7 @@ a DOI.
 Org Ref is especially suitable for Org documents destined for LaTeX export and
 scientific publication.  Org Ref is also useful for research documents and
 notes.")
-    (license license:gpl3+)))
+      (license license:gpl3+))))
 
 (define-public emacs-org-reveal
   (let ((commit "f55c851bf6aeb1bb2a7f6cf0f2b7bd0e79c4a5a0"))
@@ -27419,23 +27429,24 @@ Tramp's own encoding methods for moving data between systems.")
     (license license:gpl3+)))
 
 (define-public emacs-pcre2el
-  (package
-    (name "emacs-pcre2el")
-    (version "1.9")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/joddie/pcre2el")
-             (commit version)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "0s6by4arny1w4i0hm4xghhjgjgb4iy7n189ddqdcsh4jrgwjyaxl"))))
-    (build-system emacs-build-system)
-    (home-page "https://github.com/joddie/pcre2el")
-    (synopsis "Convert between PCRE, Emacs and rx regexp syntax")
-    (description "@code{pcre2el} or @code{rxt} (RegeXp Translator or RegeXp
+  (let ((commit "018531ba0cf8e2b28d1108136a0e031b6a45f1c1")) ;version bump
+    (package
+      (name "emacs-pcre2el")
+      (version "1.12")
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/joddie/pcre2el")
+               (commit version)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "09mzgrxcxr0a4k45k469vj9yh5ld8pi6v6kph7wvjsjd71q9rj4s"))))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/joddie/pcre2el")
+      (synopsis "Convert between PCRE, Emacs and rx regexp syntax")
+      (description "@code{pcre2el} or @code{rxt} (RegeXp Translator or RegeXp
 Tools) is a utility for working with regular expressions in Emacs, based on a
 recursive-descent parser for regexp syntax.  In addition to converting (a
 subset of) PCRE syntax into its Emacs equivalent, it can do the following:
@@ -27450,7 +27461,7 @@ provided the list is finite
 @item provide live font-locking of regexp syntax (so far only for Elisp
 buffers – other modes on the TODO list).
 @end itemize\n")
-    (license license:gpl3)))
+      (license license:gpl3))))
 
 (define-public emacs-magit-todos
   (package
@@ -35853,32 +35864,30 @@ in other major modes.  Links can be opened and edited like in Org mode.")
     (license license:gpl3+)))
 
 (define-public emacs-scpaste
-  (let ((commit "cd4fa0aafecd839736e0b6cba68b4fc4d7045472")
-        (revision "0"))
-    (package
-      (name "emacs-scpaste")
-      (version "0.6.5")
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://git.sr.ht/~technomancy/scpaste")
-               (commit commit)))
-         (file-name (git-file-name name commit))
-         (sha256
-          (base32
-           "1nvwbwl26z03963g9c82b3ggm39r95z1vp7c9qsa9mjm46dyq27w"))))
-      (build-system emacs-build-system)
-      (propagated-inputs
-       (list emacs-htmlize))
-      (home-page "https://git.sr.ht/~technomancy/scpaste")
-      (synopsis "Emacs-based static HTML pastebin")
-      (description "This library will place an HTML copy of a
+  (package
+    (name "emacs-scpaste")
+    (version "0.7.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.sr.ht/~technomancy/scpaste")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "0hahk2m0cvky77h9p5zrfx0qcig4r3qyp9c1ji02kal64i9aib1s"))))
+    (build-system emacs-build-system)
+    (propagated-inputs
+     (list emacs-htmlize))
+    (home-page "https://git.sr.ht/~technomancy/scpaste")
+    (synopsis "Emacs-based static HTML pastebin")
+    (description "This library will place an HTML copy of a
 buffer on an active webserver to which the user has SSH access.
 It is similar in purpose to services such as Gist or Pastebin,
 but is much simpler since it assumes the user has access to a
 publicly-accessible HTTP server.")
-      (license license:gpl3+))))
+    (license license:gpl3+)))
 
 (define-public emacs-company-reftex
   (package
@@ -36421,7 +36430,7 @@ rules about where space should be left to separate words and parentheses.")
 (define-public emacs-seriestracker
   (package
     (name "emacs-seriestracker")
-    (version "1.1")
+    (version "1.3.1")
     (source
      (origin
        (method git-fetch)
@@ -36430,7 +36439,7 @@ rules about where space should be left to separate words and parentheses.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0b9hf20iah3ym2d4kz67k0kb48dq0442zxw4zmc03zg3sxfdxh0x"))))
+        (base32 "0gfm7ss3bwj3m2y1mb4sdmsv85mjnpkgmzasa3yfj69zbq46glhn"))))
     (build-system emacs-build-system)
     (propagated-inputs (list emacs-dash))
     (home-page "https://github.com/MaximeWack/seriesTracker")
@@ -37425,7 +37434,7 @@ with popups, which also work in the terminal.")
 (define-public emacs-popon
   (package
     (name "emacs-popon")
-    (version "0.12")
+    (version "0.13")
     (source
      (origin
        (method git-fetch)
@@ -37435,7 +37444,7 @@ with popups, which also work in the terminal.")
          (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0wkydg326ql8cvvmibq1nf6y40d1b0ax0p892pwncmi7awnf20gr"))))
+        (base32 "046l8is3rg0c6qhiy7wh91pcdhwqhnw47md8q231w8mxnw5b1n5j"))))
     (build-system emacs-build-system)
     (home-page "https://codeberg.org/akib/emacs-popon/")
     (synopsis "Pop floating text on a window")
