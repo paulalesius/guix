@@ -153,6 +153,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/packages/bioinformatics.scm		\
   %D%/packages/bittorrent.scm			\
   %D%/packages/bison.scm			\
+  %D%/packages/books.scm			\
   %D%/packages/boost.scm			\
   %D%/packages/bootloaders.scm			\
   %D%/packages/bootstrap.scm			\
@@ -1864,7 +1865,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/python-werkzeug-tests.patch		\
   %D%/packages/patches/python-zeep-Fix-pytest_httpx-test-cases.patch	\
   %D%/packages/patches/qemu-build-info-manual.patch		\
-  %D%/packages/patches/qemu-disable-aarch64-migration-test.patch	\
+  %D%/packages/patches/qemu-disable-some-qtests-tests.patch	\
   %D%/packages/patches/qemu-glibc-2.27.patch 			\
   %D%/packages/patches/qemu-glibc-2.30.patch 			\
   %D%/packages/patches/qemu-fix-agent-paths.patch 		\
@@ -1926,6 +1927,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/rust-webbrowser-remove-unsupported-os.patch	\
   %D%/packages/patches/rust-wl-clipboard-rs-newer-wl.patch      \
   %D%/packages/patches/rw-igraph-0.10.patch			\
+  %D%/packages/patches/rxvt-unicode-fix-cursor-position.patch	\
   %D%/packages/patches/sbc-fix-build-non-x86.patch		\
   %D%/packages/patches/sbcl-aserve-add-HTML-5-elements.patch	\
   %D%/packages/patches/sbcl-aserve-fix-rfe12668.patch	\

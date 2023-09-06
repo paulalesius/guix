@@ -1415,7 +1415,7 @@ virtual reality, scientific visualization and modeling.")
 (define-public gr-framework
   (package
     (name "gr-framework")
-    (version "0.58.1")
+    (version "0.69.1")
     (source
       (origin
         (method git-fetch)
@@ -1424,12 +1424,11 @@ virtual reality, scientific visualization and modeling.")
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "0q1rz4iyxbh0dc22y4w28ry3hr0yypdwdm6pw2zlwgjya7wkbvsw"))
+         (base32 "0kllbj4bj3f5w4wzg29ilac66fd0bslqq5srj845ssmzp4ynqglh"))
         (modules '((guix build utils)))
         (snippet
          '(begin
-            (delete-file-recursively "3rdparty")
-            #t))))
+            (delete-file-recursively "3rdparty")))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f))    ; no test target
@@ -2000,9 +1999,9 @@ and engineering community.")
   ;; https://skia.org/docs/user/release/release_notes/.  The commit used
   ;; should be the last commit, as recommended at
   ;; https://skia.org/docs/user/release/.
-  (let ((version "98")
+  (let ((version "112")
         (revision "0")
-        (commit "55c56abac381e1ae3f0116c410bed81b05e0a38a"))
+        (commit "6d0b93856303fcf3021a8b40654d7739fda4dfb0"))
     (package
       (name "skia")
       (version (git-version version revision commit))
@@ -2014,7 +2013,7 @@ and engineering community.")
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "1ldns2j1g2wj2phlxr9zqkdgs5g64pisxhwxcrq9ijn8a3jhafr2"))))
+                  "0g07xlvpbbxqmr9igvy5d1hy11z7dz9nzp2fd3ka9y2jqciniyz6"))))
       (build-system gnu-build-system)   ;actually GN + Ninja
       (arguments
        (list
@@ -2034,6 +2033,7 @@ and engineering community.")
                          "cc=\"gcc\" "              ;defaults to 'cc'
                          "is_official_build=true "  ;to use system libraries
                          "is_component_build=true " ;build as a shared library
+                         "skia_use_system_zlib=true " ; use system zlib library
                          ;; Specify where locate the harfbuzz and freetype
                          ;; includes.
                          (format #f "extra_cflags=[\"-I~a\",\"-I~a\"] "
@@ -2045,7 +2045,10 @@ and engineering community.")
                          "extra_ldflags=[\"-Wl,-rpath=" #$output "/lib\"] "
                          ;; Disabled, otherwise the build system attempts to
                          ;; download the SDK at build time.
-                         "skia_use_dng_sdk=false "))))
+                         "skia_use_dng_sdk=false "
+                         ;; Wuffs is a google language that may improve performance
+                         ;; disabled while unpackaged
+                         "skia_use_wuffs=false "))))
             (replace 'build
               (lambda* (#:key parallel-build? #:allow-other-keys)
                 (let ((job-count (if parallel-build?
@@ -2124,7 +2127,10 @@ Cflags: -I${includedir}~%" #$output #$version)))))
                            "--args="
                            "cc=\"gcc\" "              ;defaults to 'cc'
                            "skia_compile_sksl_tests=false " ; disable some tests
+                           "skia_use_perfetto=false " ; disable performance tests
+                           "skia_use_wuffs=false "  ; missing performance tool
                            "skia_use_system_expat=true " ; use system expat library
+                           "skia_use_system_zlib=true " ; use system zlib library
                            ;; Specify where to locate the includes.
                            "extra_cflags=["
                            (string-join

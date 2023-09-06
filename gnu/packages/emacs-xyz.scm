@@ -132,6 +132,7 @@
 ;;; Copyright © 2023 Fabio Natali <me@fabionatali.com>
 ;;; Copyright © 2023 Arnaud Lechevallier <arnaud.lechevallier@free.fr>
 ;;; Copyright © 2023 Ahmad Draidi <a.r.draidi@redscript.org>
+;;; Copyright © 2023 Sergiu Ivanov <sivanov@colimite.fr>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -1441,8 +1442,10 @@ libgit2 bindings for Emacs, intended to boost the performance of Magit.")
       (license license:gpl2+))))
 
 (define-public emacs-magit
-  (let ((commit "a760dd107843a8fb632e647f6ba9ed34d7c2dd45")
-        (revision "4"))
+    ;; Use this unreleased commit to benefit from a recent change needed to
+    ;; add Reviewed-by: tags for any contributor in commit messages.
+  (let ((commit "186414ae418a07a46c413f05c68413a76256a05e")
+        (revision "5"))
     (package
       (name "emacs-magit")
       (version (git-version "3.3.0" revision commit))
@@ -1454,7 +1457,7 @@ libgit2 bindings for Emacs, intended to boost the performance of Magit.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0pqw171xi9vrlm0jkz53bhl18z2vnycn2bynb7lh6g5zgppkzdy0"))))
+          (base32 "0rhsbcjfjw0z3vy2ix30y4h55c0cx4lyvz6mbijwbbjryln71kpj"))))
       (build-system emacs-build-system)
       (arguments
        (list
@@ -4103,6 +4106,42 @@ as a library for other Emacs packages.")
 writing input files for TeX, LaTeX, ConTeXt, Texinfo, and docTeX using Emacs
 or XEmacs.")
     (license license:gpl3+)))
+
+(define-public emacs-latex-extra
+  (let ((commit "a81e7588448f85c5fcc3f3fc71cf957d0928a656")
+        (revision "0"))
+    (package
+      (name "emacs-latex-extra")
+      (version (git-version "1.14" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/Malabarba/latex-extra")
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "0sajg5vmygnkcnmkrpf8r7c4b8v95hgsv1y6pz868jpznmldnxkb"))
+                (file-name (git-file-name name version))))
+      (build-system emacs-build-system)
+      (arguments
+       (list
+        #:tests? #true
+        #:test-command
+        #~(list "emacs" "-Q" "--batch"
+                "--eval=(cd \"tests/\")"
+                "-l" "latex-extra-test.el"
+                "-f" "ert-run-tests-batch-and-exit")
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-before 'build 'set-home
+              (lambda _ (setenv "HOME" (getcwd)))))))
+      (propagated-inputs (list emacs-auctex))
+      (home-page "https://github.com/Malabarba/latex-extra")
+      (synopsis "Usability improvements for LaTeX mode")
+      (description
+       "Latex-extra defines extra commands and keys for LaTeX mode, as well
+as brings user experience improvements.")
+      (license license:gpl3+))))
 
 (define-public emacs-autothemer
   (let ((commit "8f72afc6dba5ad7cc3a201a084fd20571f945d2e")) ;version bump
@@ -10435,6 +10474,31 @@ org-mode elements depending on cursor position.  Hidden fragment parts appear
 when the cursor enters a fragment and disappear when it leaves.")
     (license license:expat)))
 
+(define-public emacs-org-dailies
+  ;; No tags or versions.
+  (let ((commit "64477d5c5cd92df72ba1375eeb149889d42371d7")
+        (revision "0"))
+    (package
+      (name "emacs-org-dailies")
+      (version (git-version "0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://git.sr.ht/~ngraves/org-dailies")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "1lxm2xr743c2a5wj82qpprcdfsspcw33ijyq5wfbhcv2kngm4yql"))))
+      (build-system emacs-build-system)
+      (propagated-inputs (list emacs-dash))
+      (home-page "https://git.sr.ht/~ngraves/org-dailies")
+      (synopsis "Bare-bones daily journaling with Emacs")
+      (description
+       "This package provides daily journaling helpers.  It is a bare-bones
+copy of the org-roam-dailies extension without org-roam.")
+      (license license:gpl3+))))
+
 (define-public emacs-org-drill
   (package
     (name "emacs-org-drill")
@@ -11467,8 +11531,8 @@ and present results either as single emails or full trees.")
     (license license:gpl3+)))
 
 (define-public emacs-consult-org-roam
-  (let* ((commit "9572c5bc194a583dc9e86ea7d2751959d86b5c78")
-         (revision "0"))
+  (let* ((commit "2ca42a1c1641a29f1447d35be01bd1fda368a9e2")
+         (revision "1"))
     (package
       (name "emacs-consult-org-roam")
       (version (git-version "0.1" revision commit))
@@ -11481,7 +11545,7 @@ and present results either as single emails or full trees.")
          (file-name (git-file-name name version))
          (sha256
           (base32
-           "0c2hjd2gw77h77487fzdqfybg0ricsvlnwwfxai9baawz37bcn7q"))))
+           "142fra7wap6dfwd4c82j7z3nk1yw78slrwhjx6vkiql8ylbiw5fi"))))
       (build-system emacs-build-system)
       (propagated-inputs (list emacs-consult emacs-org-roam))
       (home-page "https://github.com/jgru/consult-org-roam")
@@ -30150,43 +30214,47 @@ as Emacs Lisp.")
     (license license:gpl3+)))
 
 (define-public emacs-transient
-  (package
-    (name "emacs-transient")
-    (version "0.4.3")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/magit/transient")
-                    (commit (string-append "v" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "03qs1bj7dxgdppzcnhzmldpdam1h8kzd0ps2bk82slypm7d63nay"))))
-    (build-system emacs-build-system)
-    (arguments
-     `(#:tests? #f                      ;no test suite
-       #:phases (modify-phases %standard-phases
-                  (add-after 'unpack 'build-info-manual
-                    (lambda _
-                      (invoke "make" "info")
-                      ;; Move the info file to lisp so that it gets
-                      ;; installed by the emacs-build-system.
-                      (rename-file "docs/transient.info"
-                                   "lisp/transient.info")))
-                  (add-after 'build-info-manual 'enter-lisp-directory
-                    (lambda _
-                      (chdir "lisp"))))))
-    (native-inputs (list texinfo))
-    (propagated-inputs (list emacs-compat))
-    (home-page "https://magit.vc/manual/transient")
-    (synopsis "Transient commands in Emacs")
-    (description
-     "Taking inspiration from prefix keys and prefix arguments
+  ;; Use this unreleased commit to support a recent Magit change needed to add
+  ;; Reviewed-by: tags for any contributor.
+  (let ((commit "cc0fa80530b02493f73b870032bfcdd1435286cd")
+        (revision "0"))
+    (package
+      (name "emacs-transient")
+      (version (git-version "0.4.3" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/magit/transient")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "10yaanpz3krh3f9vzyafg6n85yp8sk58gj9vrpsqg926x4m0w1p1"))))
+      (build-system emacs-build-system)
+      (arguments
+       `(#:tests? #f                      ;no test suite
+         #:phases (modify-phases %standard-phases
+                    (add-after 'unpack 'build-info-manual
+                      (lambda _
+                        (invoke "make" "info")
+                        ;; Move the info file to lisp so that it gets
+                        ;; installed by the emacs-build-system.
+                        (rename-file "docs/transient.info"
+                                     "lisp/transient.info")))
+                    (add-after 'build-info-manual 'enter-lisp-directory
+                      (lambda _
+                        (chdir "lisp"))))))
+      (native-inputs (list texinfo))
+      (propagated-inputs (list emacs-compat))
+      (home-page "https://magit.vc/manual/transient")
+      (synopsis "Transient commands in Emacs")
+      (description
+       "Taking inspiration from prefix keys and prefix arguments
 in Emacs, Transient implements a similar abstraction involving a prefix
 command, infix arguments and suffix commands.  We could call this abstraction
 a \"transient command\", but because it always involves at least two
 commands (a prefix and a suffix) we prefer to call it just a \"transient\".")
-    (license license:gpl3+)))
+      (license license:gpl3+))))
 
 (define-public emacs-forge
   (package

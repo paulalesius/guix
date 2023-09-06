@@ -2626,7 +2626,7 @@ users; instead, you should use one of the packages that builds on
 (define-public julia-gr
   (package
     (name "julia-gr")
-    (version "0.58.1")
+    (version "0.69.5")
     (source
       (origin
         (method git-fetch)
@@ -2635,7 +2635,7 @@ users; instead, you should use one of the packages that builds on
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "18zxa1w2wmrf44c5l10qbh99zjdp7h94gxlymh47cf5kj5fc4xmx"))))
+         (base32 "0i4vb5y1m47x1ispr52h5a5gs544205vpiz4cypd4pr242f96dcb"))))
     (build-system julia-build-system)
     (propagated-inputs
      (list julia-gr-jll))
@@ -5168,7 +5168,7 @@ embedded in a real vector space.")
 (define-public julia-recipesbase
   (package
     (name "julia-recipesbase")
-    (version "1.1.1")
+    (version "1.2.1")
     (source
       (origin
         (method git-fetch)
@@ -5177,7 +5177,7 @@ embedded in a real vector space.")
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "1b6m5rz6wprj30rwvlxz4r1jv5gl0ay0f52kfmy2w7lqly7zhap5"))))
+         (base32 "0icyn56b17bqlxqkc3h44ndn0f1g2g9wy2kjvl8b6pfqni4ybazm"))))
     (build-system julia-build-system)
     (home-page "https://github.com/JuliaPlots/RecipesBase.jl")
     (synopsis "Define transformation recipes on user types")
@@ -5192,7 +5192,7 @@ more complex visualizations.")
 (define-public julia-recipespipeline
   (package
     (name "julia-recipespipeline")
-    (version "0.3.4")
+    (version "0.6.6")
     (source
       (origin
         (method git-fetch)
@@ -5201,7 +5201,7 @@ more complex visualizations.")
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "0zq4bzxvq36zr0va6iip3x97mgq5b4fwza8avszx1ryfqm3lg1f7"))))
+         (base32 "1lsjnlkmhcxngrcszfwmzb7hqg8bczi00mn7kbmwp5ffqb7fh0vv"))))
     (build-system julia-build-system)
     (arguments
      (list #:tests? #f))    ; Cycle with Plots.jl.

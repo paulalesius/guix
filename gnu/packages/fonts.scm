@@ -43,7 +43,7 @@
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
 ;;; Copyright © 2021-2023 Paul A. Patience <paul@apatience.com>
 ;;; Copyright © 2021, 2022 Taiju HIGASHI <higashi@taiju.info>
-;;; Copyright © 2022 Philip McGrath <philip@philipmcgrath.com>
+;;; Copyright © 2022-2023 Philip McGrath <philip@philipmcgrath.com>
 ;;; Copyright © 2022 Kitzman <kitzman@disroot.org>
 ;;; Copyright © 2021 Wamm K. D. <jaft.r@outlook.com>
 ;;; Copyright © 2022 Jai Vetrivelan <jaivetrivelan@gmail.com>
@@ -57,6 +57,7 @@
 ;;; Copyright © 2023 Arnaud Lechevallier <arnaud.lechevallier@free.fr>
 ;;; Copyright © 2023 gemmaro <gemmaro.dev@gmail.com>
 ;;; Copyright © 2023 Denis 'GNUtoo' Carikli <GNUtoo@cyberdimension.org>
+;;; Copyright © 2023 chris <chris@bumblehead.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -1910,6 +1911,36 @@ programming.  Iosevka is completely generated from its source code.")
      version of the original, designed for enhanced readability.")
     (license license:silofl1.1)))
 
+(define-public font-junicode
+  (package
+    (name "font-junicode")
+    (version "2.003")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/psb1558/Junicode-font")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1qg1qwk294p2hgq2gbyhfwwdas1xbkfz3csxf5jz4xqiskn4skgl"))))
+    (build-system font-build-system)
+    (home-page "https://github.com/psb1558/Junicode-font")
+    (synopsis "Unicode font for medievalists, linguists, and others")
+    (description "The Junicode font was developed for students and scholars of
+medieval Europe, but its large glyph repertoire also makes it useful as a
+general-purpose font.  Its visual design is based on the typography used by
+Oxford University Press in the late 17th and early 18th centuries.  The font
+implements the @acronym{MUFI, Medieval Unicode Font Initiative} recommendation
+for encoding ligatures, alternative letter forms, and other features of
+interest to medievalists using Unicode's Private Use Area.
+
+Junicode 2 is a major reworking of the font family.  Its OpenType programming
+has been rebuilt to support the creation of searchable, accessible electronic
+documents using the @acronym{MUFI} characters.  The family includes five
+weights and five widths in both Roman and Italic, plus variable fonts.")
+    (license license:silofl1.1)))
+
 (define-public font-sarasa-gothic
   (package
     (name "font-sarasa-gothic")
@@ -3411,3 +3442,25 @@ better code & UI.  It is inspired by casual script signpainting, but designed
 primarily to meet the needs of programming environments and application
 interfaces.")
     (license license:silofl1.1)))
+
+(define-public fonts-tlwg
+ (package
+   (name "fonts-tlwg")
+   (version "0.7.3")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (string-append
+           "https://github.com/tlwg/" name
+           "/releases/download/v" version "/" name "-" version ".tar.xz"))
+     (sha256
+      (base32
+       "00mv8rmjpsk8jbbl978q3yrc2pxj8a86a3d092563dlc9n8gykkf"))))
+   (native-inputs (list fontforge))
+   (build-system gnu-build-system)
+   (home-page "https://github.com/tlwg/fonts-tlwg/")
+   (synopsis "Collection of scalable Thai fonts")
+   (description "Fonts-TLWG is a collection of Thai scalable fonts.  Its goal
+is to provide fonts that conform to existing standards and recommendations, so
+that it can be a reference implementation.")
+   (license license:gpl2+)))

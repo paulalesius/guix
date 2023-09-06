@@ -801,27 +801,13 @@ It adds a large amount of new and improved features to mutt.")
            vala
            which))                      ; to find libtool, &c.
     (inputs (list glib gpgme zlib))
-    (home-page "http://spruce.sourceforge.net/gmime/")
+    (home-page "https://spruce.sourceforge.net/gmime/")
     (synopsis "MIME message parser and creator library")
     (description
      "GMime provides a core library and set of utilities which may be used for
 the creation and parsing of messages using the Multipurpose Internet Mail
 Extension (MIME).")
     (license (list license:lgpl2.1+ license:gpl2+ license:gpl3+))))
-
-;; Some packages are not ready for GMime 3 yet.
-(define-public gmime-2.6
-  (package
-    (inherit gmime)
-    (version "2.6.23")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnome/sources/gmime/"
-                                  (version-major+minor version)
-                                  "/gmime-" version ".tar.xz"))
-              (sha256
-               (base32
-                "0slzlzcr3h8jikpz5a5amqd0csqh2m40gdk910ws2hnaf5m6hjbi"))))))
 
 (define-public altermime
   (package

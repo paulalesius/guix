@@ -25,7 +25,7 @@
 ;;; Copyright © 2020 Martin Becze <mjbecze@riseup.net>
 ;;; Copyright © 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2021 Guillaume Le Vaillant <glv@posteo.net>
-;;; Copyright © 2021 Sharlatan Hellseher <sharlatanus@mgail.com>
+;;; Copyright © 2021, 2023 Sharlatan Hellseher <sharlatanus@mgail.com>
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
 ;;; Copyright © 2021 Raghav Gururajan <rg@raghavgururajan.name>
 ;;; Copyright © 2021 jgart <jgart@dismail.de>
@@ -2113,6 +2113,54 @@ lists (Apple XML, Apple Binary, OpenStep, and GNUStep) from/to arbitrary Go
 types.")
       (license license:giftware))))
 
+(define-public go-github-com-bitly-go-hostpool
+  (package
+    (name "go-github-com-bitly-go-hostpool")
+    (version "0.1.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/bitly/go-hostpool")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1iibj7dwymczw7cknrh6glc6sdpp4yap2plnyr8qphynwrzlz73w"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/bitly/go-hostpool"))
+    (native-inputs (list go-github-com-stretchr-testify))
+    (home-page "https://github.com/bitly/go-hostpool")
+    (synopsis "Pool among multiple hosts from Golang")
+    (description
+     "This package provides a Go package to intelligently and flexibly pool among
+multiple hosts from your Go application.  Host selection can operate in round
+robin or epsilon greedy mode, and unresponsive hosts are avoided.")
+    (license license:expat)))
+
+(define-public go-github-com-bitly-timer-metrics
+  (package
+    (name "go-github-com-bitly-timer-metrics")
+    (version "1.0.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/bitly/timer_metrics")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "02fhx8hx8126m2cgxw9fm8q2401r7zfann8b5zy5yyark1sgkrb4"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/bitly/timer_metrics"))
+    (home-page "https://github.com/bitly/timer_metrics")
+    (synopsis "Capture timings and enable periodic metrics every @var{n} events")
+    (description
+     "This package provides an efficient way to capture timing information and
+periodically output metrics")
+    (license license:expat)))
+
 (define-public go-github-com-blanu-dust
   (package
     (name "go-github-com-blanu-dust")
@@ -3262,6 +3310,55 @@ web framework
 sunset times from geographical coordinates and a date.")
       (license license:expat))))
 
+(define-public go-github-com-nsqio-go-diskqueue
+  (package
+    (name "go-github-com-nsqio-go-diskqueue")
+    (version "1.1.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/nsqio/go-diskqueue")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1hp66hkmfn0nyf3c53a40f94ah11a9rj01r5zp3jph9p54j8rany"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/nsqio/go-diskqueue"))
+    (home-page "https://github.com/nsqio/go-diskqueue")
+    (synopsis "Go package providing a file system backed FIFO queue")
+    (description
+     "The @code{diskqueue} Go package provides a file system backed FIFO
+queue.")
+    (license license:expat)))
+
+(define-public go-github-com-nsqio-go-nsq
+  (package
+    (name "go-github-com-nsqio-go-nsq")
+    (version "1.1.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/nsqio/go-nsq")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1h9z3z225sdgg7fl3l7x11xn5ch6lm5flgmcj046cdp453qj2qhf"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:tests? #f                  ;tests require networking
+           #:import-path "github.com/nsqio/go-nsq"))
+    (propagated-inputs (list go-github-com-golang-snappy))
+    (home-page "https://github.com/nsqio/go-nsq")
+    (synopsis "Consumer/producer library for NSQ")
+    (description
+     "The @code{nsq} Go module provides a high-level @code{Consumer} and
+@code{Producer} types as well as low-level functions to communicate over the
+NSQ protocol @url{https://nsq.io/}.")
+    (license license:expat)))
+
 (define-public go-github-com-hebcal-gematriya
   (let ((commit "fe3043f73e415eb82727701d10f2fb40f87675e9")
         (revision "0"))
@@ -3547,6 +3644,32 @@ per-goroutine.")
     (description "The @code{walker} function is a faster, parallel version, of
 @code{filepath.Walk}")))
 
+(define-public go-github-com-tdewolff-hasher
+  (package
+    (name "go-github-com-tdewolff-hasher")
+    (version "0.0.0-20210521220142-bc97f602bca2")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/tdewolff/hasher")
+                    (commit (go-version->git-ref version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "12dmxpmdy2z7c2z7qv2mv2aq4hyvjncb6fzr0ymg3y5bfjvl4dcw"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:import-path "github.com/tdewolff/hasher"))
+    (native-inputs
+     (list go-github-com-cespare-mph
+           go-github-com-dgryski-go-mph))
+    (home-page "https://github.com/tdewolff/hasher")
+    (synopsis "Go known-keys fast-lookup map generator")
+    (description
+     "Hasher is a tool to automate the creation of methods and tables for a
+@code{string} to @code{uint32} mapper.")
+    (license license:bsd-3)))
+
 (define-public go-github-com-tdewolff-minify-v2
   (package
     (name "go-github-com-tdewolff-minify-v2")
@@ -3562,11 +3685,24 @@ per-goroutine.")
                 "0h006wpfkl0ls0skqxblwcanrhmphgq5q0ii26l2ayh7s99cgmy3"))))
     (build-system go-build-system)
     (arguments
-     (list #:import-path "github.com/tdewolff/minify/v2"))
+     (list #:import-path "github.com/tdewolff/minify/v2"
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'regenerate-hash
+                 (lambda* (#:key import-path #:allow-other-keys)
+                   (for-each
+                    (lambda (dir)
+                      (with-directory-excursion
+                          (format #f "src/~a/~a" import-path dir)
+                        (make-file-writable "hash.go")
+                        (format #t "Generating `hash.go' for ~a...~%" dir)
+                        (invoke "go" "generate")))
+                    '("css" "html" "svg")))))))
     (propagated-inputs
      (list go-github-com-tdewolff-parse-v2))
     (native-inputs
-     (list go-github-com-tdewolff-test))
+     (list go-github-com-tdewolff-hasher
+           go-github-com-tdewolff-test))
     (home-page "https://go.tacodewolff.nl/minify")
     (synopsis "Go minifiers for web formats")
     (description
@@ -3589,9 +3725,22 @@ an interface to implement any other minifier.")
                 "1dqki9ima079k9a3l72igmx5dml8qsl9z8rzw8a433f4gjhlv320"))))
     (build-system go-build-system)
     (arguments
-     (list #:import-path "github.com/tdewolff/parse/v2"))
+     (list #:import-path "github.com/tdewolff/parse/v2"
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'unpack 'regenerate-hash
+                 (lambda* (#:key import-path #:allow-other-keys)
+                   (for-each
+                    (lambda (dir)
+                      (with-directory-excursion
+                          (format #f "src/~a/~a" import-path dir)
+                        (make-file-writable "hash.go")
+                        (format #t "Generating `hash.go' for ~a...~%" dir)
+                        (invoke "go" "generate")))
+                    '("css" "html")))))))
     (native-inputs
-     (list go-github-com-tdewolff-test))
+     (list go-github-com-tdewolff-hasher
+           go-github-com-tdewolff-test))
     (home-page "https://github.com/tdewolff/parse")
     (synopsis "Go parsers for web formats")
     (description
@@ -5390,6 +5539,54 @@ run programs as a service using a variety of supervisors, including systemd,
 SysVinit, and more.")
       (license license:zlib))))
 
+(define-public go-github-com-dgryski-go-metro
+  (package
+    (name "go-github-com-dgryski-go-metro")
+    (version "0.0.0-20211217172704-adc40b04c140")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/dgryski/go-metro")
+                    (commit (go-version->git-ref version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "16y5vc5qf7aipi8basqza8l939hlmp7wqsv4y6gsqac3sp9ziqyj"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:import-path "github.com/dgryski/go-metro"))
+    (home-page "https://github.com/dgryski/go-metro")
+    (synopsis "Go translation of MetroHash")
+    (description
+     "This package provides a Go translation of the
+@url{https://github.com/jandrewrogers/MetroHash, reference C++ code for
+MetroHash}, a high quality, high performance hash algorithm.")
+    (license license:expat)))
+
+(define-public go-github-com-dgryski-go-mph
+  (package
+    (name "go-github-com-dgryski-go-mph")
+    (version "0.0.0-20211217222804-81a8625fb7ed")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/dgryski/go-mph")
+                    (commit (go-version->git-ref version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "10q8l4jdzqf54bnnxka2jk6qzayri3ijv51knn1n0iimfric8w9g"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:import-path "github.com/dgryski/go-mph"))
+    (propagated-inputs
+     (list go-github-com-dgryski-go-metro))
+    (home-page "https://github.com/dgryski/go-mph")
+    (synopsis "Go minimal perfect hash function")
+    (description
+     "This package implements a hash/displace minimal perfect hash function.")
+    (license license:expat)))
+
 (define-public go-github-com-docker-distribution
   (let ((commit "325b0804fef3a66309d962357aac3c2ce3f4d329")
         (revision "0"))
@@ -6350,6 +6547,57 @@ Architecture Processors\" by J. Guilford et al.")
       (description "Fast implementation of base58 encoding on Golang.  A
 trivial @command{big.Int} encoding benchmark results in 6 times faster
 encoding and 8 times faster decoding.")
+      (license license:expat))))
+
+(define-public go-github-com-mreiferson-go-options
+  (package
+    (name "go-github-com-mreiferson-go-options")
+    (version "1.0.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/mreiferson/go-options")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1pxs9ybrh196qy14ijn4zn51h2z28lj31y6vxrz2xxhgvpmfmxyl"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/mreiferson/go-options"))
+    (home-page "https://github.com/mreiferson/go-options")
+    (synopsis "Go package to structure and resolve options")
+    (description
+     "The @code{options} Go package resolves configuration values set via
+command line flags, config files, and default struct values.")
+    (license license:expat)))
+
+(define-public go-github-com-mreiferson-go-svc
+  ;; NSQ specific fork of github.com/judwhite/go-svc, as Guix go build system
+  ;; does not support go.mod with `replace' statement.
+  (let ((commit "7a96e00010f68d9436e3de53a70c53f209a0c244")
+        (revision "0"))
+    (package
+      (name "go-github-com-mreiferson-go-svc")
+      (version (git-version "1.2.1" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mreiferson/go-svc")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1acgb0n3svhnraqj1fz5qc5n3b4vc5ffwyk9vfi6gcfkibm0hgmd"))))
+      (build-system go-build-system)
+      (arguments
+       '(#:import-path "github.com/judwhite/go-svc"))
+      (propagated-inputs (list go-golang-org-x-sys))
+      (home-page "https://github.com/mreiferson/go-svc")
+      (synopsis "Go Windows Service wrapper for GNU/Linux")
+      (description
+       "Go Windows Service wrapper compatible with GNU/Linux.  Windows tests
+@url{https://github.com/judwhite/go-svc/raw/master/svc/svc_windows_test.go,here}.")
       (license license:expat))))
 
 (define-public go-github-com-gxed-hashland-keccakpg
@@ -7419,6 +7667,29 @@ non-UTF-friendly sources.")
      "The utf7 package provides support for the obsolete UTF-7 text
 encoding in Go.")
     (license license:bsd-3)))
+
+(define-public go-github-com-cespare-mph
+  (package
+    (name "go-github-com-cespare-mph")
+    (version "0.1.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/cespare/mph")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0mvd6bkvf3i3555kqkkr3k9jd4c25scjq4xad35sxpny8f72nbg1"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:import-path "github.com/cespare/mph"))
+    (home-page "https://github.com/cespare/mph")
+    (synopsis "Minimal perfect hashing in Go")
+    (description
+     "@code{mph} is a Go package that implements a minimal perfect hash table
+over strings.")
+    (license license:expat)))
 
 (define-public go-github-com-gdamore-tcell
   (let ((commit "aaadc574a6ed8dc3abe56036ca130dcee1ee6b6e")
@@ -9129,6 +9400,30 @@ the library more lightweight.")
 matching and globbing with support for \"doublestar\" patterns.")
     (license license:expat)))
 
+(define-public go-github-com-bmizerany-perks-quantile
+  (package
+    (name "go-github-com-bmizerany-perks-quantile")
+    (version "0.0.0-20230307044200-03f9df79da1e")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/bmizerany/perks")
+                    (commit (go-version->git-ref version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1f2a99v3618bz2mf61iwhdjm3xi1gam6v4apqgcrz71gj7ba9943"))))
+    (build-system go-build-system)
+    (arguments
+     (list #:unpack-path "github.com/bmizerany/perks"
+           #:import-path "github.com/bmizerany/perks/quantile"))
+    (home-page "https://github.com/bmizerany/perks")
+    (synopsis "Library for computing quantiles")
+    (description
+     "Perks contains the Go package @code{quantile} that computes approximate
+quantiles over an unbounded data stream within low memory and CPU bounds.")
+    (license license:bsd-2)))
+
 (define-public go-github-com-dlclark-regexp2
   (package
     (name "go-github-com-dlclark-regexp2")
@@ -9987,6 +10282,29 @@ extensions.")
      "The ansiterm package provides a writer to output the ANSI escape codes
 for color and styles.")
     (license license:lgpl3)))
+
+(define-public go-github-com-julienschmidt-httprouter
+  (package
+    (name "go-github-com-julienschmidt-httprouter")
+    (version "1.3.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/julienschmidt/httprouter")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1a6sy0ysqknsjssjh7qg1dqn21xmj9a36c57nrk7srfmab4ffmk1"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "github.com/julienschmidt/httprouter"))
+    (home-page "https://github.com/julienschmidt/httprouter")
+    (synopsis "High performance HTTP request router")
+    (description
+     "Package @code{httprouter} is a trie based high performance HTTP request
+router.")
+    (license license:bsd-3)))
 
 (define-public go-github-com-kevinburke-ssh-config
   (package
