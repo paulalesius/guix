@@ -4860,7 +4860,7 @@ everything from run time algorithm choice to code generation at compile time.")
 (define-public julia-prettytables
   (package
     (name "julia-prettytables")
-    (version "1.0.1")
+    (version "2.1.2")
     (source
       (origin
         (method git-fetch)
@@ -4869,20 +4869,28 @@ everything from run time algorithm choice to code generation at compile time.")
                (commit (string-append "v" version))))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "1d1sd87kkwbar3l608h0adzws42cwdrmp1idxx7an6mfqcsdrijw"))))
+         (base32 "029niwxgql9rcyx0rxcyhmwkzxciccji4hb59g6752ixam65wxkh"))))
     (build-system julia-build-system)
     (arguments
      (list
       #:phases
       #~(modify-phases %standard-phases
-          (add-after 'link-depot 'skip-color-tests
+          (add-after 'link-depot 'skip-tests-manipulating-terminal-display
             (lambda _
               (substitute* "test/text_backend.jl"
-                ((".*colors\\.jl.*") "")))))))
+                ((".*colors\\.jl.*") "")
+                ((".*custom_cells\\.jl.*") ""))
+              (substitute* "test/general.jl"
+                ((".*string\\.jl.*") ""))
+              (substitute* "test/text_backend/issues.jl"
+                (("testset.*161.*begin" all)
+                 (string-append all " return"))))))))
     (propagated-inputs
      (list julia-crayons
            julia-formatting
+           julia-offsetarrays
            julia-reexport
+           julia-stringmanipulation
            julia-tables))
     (home-page "https://github.com/ronisbr/PrettyTables.jl")
     (synopsis "Print data in formatted tables")
@@ -6028,6 +6036,26 @@ applied to any distance.")
     (description "This package provides support for decoding and encoding
 texts between multiple character encodings.  It is currently based on the
 @code{iconv} interface, and supports all major platforms using GNU libiconv.")
+    (license license:expat)))
+
+(define-public julia-stringmanipulation
+  (package
+    (name "julia-stringmanipulation")
+    (version "0.3.0")
+    (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+               (url "https://github.com/ronisbr/StringManipulation.jl")
+               (commit (string-append "v" version))))
+        (file-name (git-file-name name version))
+        (sha256
+         (base32 "15ss8hkjyjs2x66j1krrrxaa1hdpwz0ygs3cg3bdpm336k7621q8"))))
+    (build-system julia-build-system)
+    (home-page "https://github.com/ronisbr/StringManipulation.jl")
+    (synopsis "Functions to manipulate strings with ANSI escape sequences")
+    (description "This package provides several functions to manipulate strings
+with ANSI escape sequences.")
     (license license:expat)))
 
 (define-public julia-structarrays
