@@ -133,6 +133,7 @@
 ;;; Copyright © 2023 Arnaud Lechevallier <arnaud.lechevallier@free.fr>
 ;;; Copyright © 2023 Ahmad Draidi <a.r.draidi@redscript.org>
 ;;; Copyright © 2023 Sergiu Ivanov <sivanov@colimite.fr>
+;;; Copyright © 2023 Camilo Q.S. (Distopico) <distopico@riseup.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -2536,6 +2537,29 @@ use with Flymake, give users the tools to easily define new syntax checkers
 and help selectively enable or disable diagnostic functions based on major
 modes.")
     (license license:expat)))
+
+(define-public emacs-flymake-guile
+  (package
+    (name "emacs-flymake-guile")
+    (version "0.5")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url
+              "https://framagit.org/flymake-backends/flymake-guile.git")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "0cb2wcn34bzj93y7s1g2b2sxv79vqihb3a5n0rhxbrddfila95hh"))))
+    (build-system emacs-build-system)
+    (home-page "https://framagit.org/flymake-backends/flymake-guile")
+    (synopsis "GNU Guile support for Flymake")
+    (description
+     "This package provides a Flymake backend for GNU Guile using @code{guild
+compile}.")
+    (license license:gpl3+)))
 
 (define-public emacs-flymake-popon
   (package
@@ -11557,25 +11581,28 @@ versions utilizing Consult's internal API.")
       (license license:gpl3+))))
 
 (define-public emacs-consult-eglot
-  (package
-   (name "emacs-consult-eglot")
-   (version "0.2.0")
-   (source (origin
-            (method git-fetch)
-            (uri (git-reference
-                  (url "https://github.com/mohkale/consult-eglot")
-                  (commit (string-append "v" version))))
-            (sha256
-             (base32 "1qxk1npxbf8m3g9spikgdxcf6mzjx6cwy3f5vn6zz5ksh14xw3sd"))
-            (file-name (git-file-name name version))))
-   (build-system emacs-build-system)
-   (propagated-inputs (list emacs-consult emacs-eglot))
-   (home-page "https://github.com/mohkale/consult-eglot")
-   (synopsis "Consulting-read interface for eglot")
-   (description "This package acts as a parallel of consult-lsp for eglot and
+  (let ((revision "0")
+        (commit "db9d41c9812a5a8a7b9a22fa7f3c314e37584d41"))
+    (package
+      (name "emacs-consult-eglot")
+      (version (git-version "0.2.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mohkale/consult-eglot")
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "1xcv9lj4r9s584gfkbqi9dmi045a3phb2x63fzfd7vpdy15xg47n"))
+                (file-name (git-file-name name version))))
+      (build-system emacs-build-system)
+      (propagated-inputs (list emacs-consult emacs-eglot))
+      (home-page "https://github.com/mohkale/consult-eglot")
+      (synopsis "Consulting-read interface for eglot")
+      (description "This package acts as a parallel of consult-lsp for eglot and
 provides a front-end interface for the workspace/symbols LSP procedure
 call.")
-   (license license:gpl3+)))
+      (license license:gpl3+))))
 
 (define-public emacs-consult-flycheck
   ;; This particular commit introduces bug fixes above latest release.
@@ -31148,6 +31175,41 @@ copied into @code{org-mode} buffers.")
 current subtree.  The cards are inserted under a new ``Cards'' heading in the
 current tree.")
       (license license:gpl3+))))
+
+(define-public emacs-org-dynamic-agenda
+  (package
+    (name "emacs-org-dynamic-agenda")
+    (version "0.2.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.sr.ht/~ngraves/org-dynamic-agenda")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1yw5ns7ar5mbj8yfhd6m5kigssb3csxjhwvmjggksq1557w1ypmx"))))
+    (build-system emacs-build-system)
+    (arguments
+     (list #:include
+           #~(list "org-dynamic-agenda\\.el" "README\\.org")))
+    (home-page "https://git.sr.ht/~ngraves/org-dynamic-agenda")
+    (synopsis "Dynamically generate org-agenda-files")
+    (description
+     "This package dynamically generates org-agenda-files.")
+    (license license:gpl3+)))
+
+(define-public emacs-org-ql-dynamic-agenda
+  (package
+    (inherit emacs-org-dynamic-agenda)
+    (name "emacs-org-ql-dynamic-agenda")
+    (arguments
+     (list #:include
+           #~(list "org-ql-dynamic-agenda\\.el" "README\\.org")))
+    (propagated-inputs (list emacs-org-ql))
+    (description
+     "This package dynamically generates org-agenda-files, and take advantage
+of the org-ql cache.")))
 
 (define-public emacs-dash-docs
   (let ((commit "dafc8fc9f1ddb2e4e39e0b8d066c42d5d7ce8d06")
