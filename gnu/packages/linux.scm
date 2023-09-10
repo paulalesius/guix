@@ -508,7 +508,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
 ;; The "longterm" kernels — the older releases with long-term upstream support.
 ;; Here are the support timelines:
 ;; <https://www.kernel.org/category/releases.html>
-(define-public linux-libre-6.1-version "6.1.51")
+(define-public linux-libre-6.1-version "6.1.52")
 (define-public linux-libre-6.1-gnu-revision "gnu")
 (define deblob-scripts-6.1
   (linux-libre-deblob-scripts
@@ -518,12 +518,12 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "1c73516nbhnz0cxjz38b5794dxygb8sznv9idiibw7ablmjbhd11")))
 (define-public linux-libre-6.1-pristine-source
   (let ((version linux-libre-6.1-version)
-        (hash (base32 "0fqhmb6v28rssd44z7jw57mwvvskpl4kabjylck0pg54irnl9c2q")))
+        (hash (base32 "0lis73mxnl7hxz8lyja6sfgmbym944l3k1h7dab6b4mw1nckfxsn")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-6.1)))
 
-(define-public linux-libre-5.15-version "5.15.130")
+(define-public linux-libre-5.15-version "5.15.131")
 (define-public linux-libre-5.15-gnu-revision "gnu")
 (define deblob-scripts-5.15
   (linux-libre-deblob-scripts
@@ -533,7 +533,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
    (base32 "1c3lm0j401lv2lk39dmr4mlf5ic173snm7cc0cckl6czyvxr5ysy")))
 (define-public linux-libre-5.15-pristine-source
   (let ((version linux-libre-5.15-version)
-        (hash (base32 "0qix62jsn3z9yccakac7fvqnip19zi05qn0w5wkgb7rj0x0lwimb")))
+        (hash (base32 "0sacnbw48lblnqaj56nybh588sq4k84gwf0r5zinzyrryj8k6z4r")))
    (make-linux-libre-source version
                             (%upstream-linux-source version hash)
                             deblob-scripts-5.15)))
@@ -1071,6 +1071,7 @@ ARCH and optionally VARIANT, or #f if there is no such configuration."
            elfutils                  ;needed to enable CONFIG_STACK_VALIDATION
            flex
            bison
+           util-linux                ;needed for hexdump
            ;; These are needed to compile the GCC plugins.
            gmp
            mpfr

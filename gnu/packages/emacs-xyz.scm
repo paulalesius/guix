@@ -181,6 +181,7 @@
   #:use-module (gnu packages djvu)
   #:use-module (gnu packages ebook)
   #:use-module (gnu packages emacs)
+  #:use-module (gnu packages enchant)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages games)
@@ -491,6 +492,25 @@ dependencies.  It can interact with ChatGPT from any Emacs buffer with ChatGPT
 responses encoded in Markdown or Org markup.  It supports conversations, not
 just one-off queries and multiple independent sessions.  It requires an OpenAI
 API key.")
+    (license license:gpl3+)))
+
+(define-public emacs-chatgpt-shell
+  (package
+    (name "emacs-chatgpt-shell")
+    (version "0.74.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/xenodium/chatgpt-shell")
+                    (commit "1de7bfa6a34f20cca813006282d9a8f2ef291f95")))
+              (sha256
+               (base32
+                "1rabpp70qlmc47lmp2v7ckvfjhy6wkk881fxpbv2dchzhn77qk5r"))))
+    (build-system emacs-build-system)
+    (home-page "https://github.com/xenodium/chatgpt-shell")
+    (synopsis "ChatGPT and DALL-E Emacs shells + Org Babel")
+    (description
+     "chatgpt-shell is a comint-based ChatGPT shell for Emacs.")
     (license license:gpl3+)))
 
 (define-public emacs-geiser-guile
@@ -10328,6 +10348,66 @@ insertion mode.  When enabled all keys are implicitly prefixed with
     (description
      "Emacs major mode for jinja2 with: syntax highlighting,
 sgml/html integration, and indentation (working with sgml).")
+    (license license:gpl3+)))
+
+(define-public emacs-jinx
+  (package
+    (name "emacs-jinx")
+    (version "0.8")
+    (source
+     (origin
+       (method git-fetch)
+       (uri
+        (git-reference
+         (url "https://github.com/minad/jinx")
+         (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "1y097rnf9zg26jf4vh74a0laddfp4x6pp1fjqs3xqgwc0cmdq59w"))))
+    (build-system emacs-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'expand-load-path 'build-jinx-mod
+            (lambda* _
+              (invoke
+               "emacs" "--batch" "-L" "."
+               "-l" "jinx.el"
+               "-f" "jinx--load-module")))
+          (add-after 'expand-load-path 'build-info
+            (lambda _
+              (invoke "emacs" "--batch"
+                      "--eval=(require 'ox-texinfo)"
+                      "--eval=(find-file \"README.org\")"
+                      "--eval=(org-texinfo-export-to-info)")))
+          (add-after 'build-jinx-mod 'patch-path-to-jinx-mod
+            (lambda _
+              (let ((file "jinx.el"))
+                (make-file-writable file)
+                (emacs-substitute-sexps file
+                  ("\"Compile and load dynamic module.\""
+                   `(module-load
+                     ,(string-append #$output
+                                     "/lib/emacs/jinx-mod.so")))))))
+          (add-after 'install 'install-jinx-mod
+            (lambda _
+              (install-file "jinx-mod.so"
+                            (string-append #$output "/lib/emacs"))))
+          (add-after 'install 'install-info
+            (lambda _
+              (install-file "jinx.info"
+                            (string-append #$output "/share/info")))))))
+    (inputs (list enchant))
+    (propagated-inputs (list emacs-compat))
+    (native-inputs (list emacs-compat enchant pkg-config texinfo))
+    (home-page "https://github.com/minad/jinx")
+    (synopsis "Emacs Enchanted Spell Checker")
+    (description "Jinx is a just-in-time spell-checker for Emacs
+based on the enchant library.  It lazily highlights misspelled words in the
+text of the visible portion of the buffer by honouring window boundaries as
+well as text folding, if any.")
     (license license:gpl3+)))
 
 (define-public emacs-jit-spell

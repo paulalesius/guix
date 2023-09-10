@@ -913,6 +913,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/apr-skip-getservbyname-test.patch	\
   %D%/packages/patches/ark-skip-xar-test.patch			\
   %D%/packages/patches/arpack-ng-propagate-rng-state.patch	\
+  %D%/packages/patches/asli-use-system-libs.patch		\
   %D%/packages/patches/aspell-CVE-2019-25051.patch		\
   %D%/packages/patches/aspell-default-dict-dir.patch		\
   %D%/packages/patches/ath9k-htc-firmware-binutils.patch	\
@@ -1178,9 +1179,15 @@ dist_patch_DATA =						\
   %D%/packages/patches/gajim-honour-GAJIM_PLUGIN_PATH.patch	\
   %D%/packages/patches/ganeti-disable-version-symlinks.patch	\
   %D%/packages/patches/ganeti-haskell-pythondir.patch		\
+  %D%/packages/patches/ganeti-lens-compat.patch			\
   %D%/packages/patches/ganeti-pyyaml-compat.patch		\
+  %D%/packages/patches/ganeti-procps-compat.patch		\
+  %D%/packages/patches/ganeti-reorder-arbitrary-definitions.patch	\
+  %D%/packages/patches/ganeti-relax-dependencies.patch		\
   %D%/packages/patches/ganeti-shepherd-master-failover.patch	\
   %D%/packages/patches/ganeti-shepherd-support.patch		\
+  %D%/packages/patches/ganeti-template-haskell-2.17.patch	\
+  %D%/packages/patches/ganeti-template-haskell-2.18.patch	\
   %D%/packages/patches/gawk-shell.patch				\
   %D%/packages/patches/gcc-arm-bug-71399.patch			\
   %D%/packages/patches/gcc-arm-link-spec-fix.patch		\
@@ -1410,7 +1417,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/inkscape-poppler-compat.patch		\
   %D%/packages/patches/instead-use-games-path.patch		\
   %D%/packages/patches/intltool-perl-compatibility.patch	\
-  %D%/packages/patches/iputils-libcap-compat.patch		\
   %D%/packages/patches/irrlicht-use-system-libs.patch		\
   %D%/packages/patches/irrlicht-link-against-needed-libs.patch	\
   %D%/packages/patches/isl-0.11.1-aarch64-support.patch	\
@@ -1835,7 +1841,6 @@ dist_patch_DATA =						\
   %D%/packages/patches/python-piexif-fix-tests-with-pillow-7.2.patch	\
   %D%/packages/patches/python-pillow-CVE-2022-45199.patch	\
   %D%/packages/patches/python-pyfakefs-remove-bad-test.patch	\
-  %D%/packages/patches/python-pyflakes-test-location.patch	\
   %D%/packages/patches/python-flint-includes.patch		\
   %D%/packages/patches/python-libxml2-utf8.patch		\
   %D%/packages/patches/python-memcached-syntax-warnings.patch	\
@@ -1897,7 +1902,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/rpcbind-CVE-2017-8779.patch		\
   %D%/packages/patches/rtags-separate-rct.patch			\
   %D%/packages/patches/racket-chez-scheme-bin-sh.patch		\
-  %D%/packages/patches/racket-rktboot-riscv64-support.patch	\
+  %D%/packages/patches/racket-backport-8.10-rktboot.patch	\
   %D%/packages/patches/racket-rktio-bin-sh.patch		\
   %D%/packages/patches/racket-zuo-bin-sh.patch			\
   %D%/packages/patches/remake-impure-dirs.patch			\
