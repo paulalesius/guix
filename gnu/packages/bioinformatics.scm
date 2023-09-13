@@ -16229,10 +16229,10 @@ includes operations like compartment, insulation or peak calling.")
      (list
       #:phases
       '(modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key tests? #:allow-other-keys)
-             (when tests?
-               (invoke "python" "-m" "pytest" "-v")))))))
+         (add-after 'unpack 'remove-invalid-syntax
+           (lambda _
+             (substitute* "setup.py"
+               ((".\\*\"") "\"")))))))
     (propagated-inputs
      (list python-cooler
            python-intervaltree
