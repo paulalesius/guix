@@ -490,7 +490,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
 ;; The current "stable" kernels. That is, the most recently released major
 ;; versions that are still supported upstream.
 
-(define-public linux-libre-6.5-version "6.5.2")
+(define-public linux-libre-6.5-version "6.5.3")
 (define-public linux-libre-6.5-gnu-revision "gnu")
 (define deblob-scripts-6.5
   (linux-libre-deblob-scripts
@@ -739,6 +739,7 @@ corresponding UPSTREAM-SOURCE (an origin), using the given DEBLOB-SCRIPTS."
                    (format p "~a-default~%" ,version)))))))
        #:allowed-references ()
        #:tests? #f))
+    (supported-systems (delete "i586-gnu" %supported-systems))
     (home-page "https://www.gnu.org/software/linux-libre/")
     (synopsis "GNU Linux-Libre kernel headers")
     (description "Headers of the Linux-Libre kernel.")
